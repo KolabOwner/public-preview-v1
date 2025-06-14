@@ -28,7 +28,16 @@ export const useKeywordAnalysis = ({
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchAnalysis = useCallback(async (forceRefresh = false) => {
+    console.log('useKeywordAnalysis - fetchAnalysis called:', {
+      hasTitle: !!jobInfo?.title,
+      hasDescription: !!jobInfo?.description,
+      hasExtractedText: !!resumeData?.extracted_text,
+      extractedTextLength: resumeData?.extracted_text?.length || 0,
+      forceRefresh
+    });
+    
     if (!jobInfo?.title || !jobInfo?.description || !resumeData?.extracted_text) {
+      console.log('useKeywordAnalysis - Missing required data, skipping analysis');
       setAnalysis(null);
       return;
     }

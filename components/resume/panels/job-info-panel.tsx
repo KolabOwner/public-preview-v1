@@ -3,6 +3,9 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 
 import { CheckCircle, AlertCircle, Loader, Sparkles } from 'lucide-react';
 import { useJobInfo } from "@/contexts/job-info-context";
+import { useAuth } from "@/contexts/auth-context";
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 
 export interface JobInfoPanelProps {
   onComplete?: () => void;
@@ -187,6 +190,7 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
   disabled = false
 }) => {
   const { jobInfo, updateJobInfo } = useJobInfo();
+  const { getIdToken } = useAuth();
   const { formState, updateFormState } = useFormState();
   const validation = useFormValidation(jobInfo.title, jobInfo.description);
 
@@ -213,33 +217,8 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
     }
   }, [formState.submitSuccess, updateFormState]);
 
-  // Load saved job info on mount
-  useEffect(() => {
-    const loadSavedJobInfo = async () => {
-      const documentId = localStorage.getItem('current_document_id');
-      const userId = localStorage.getItem('current_user_id');
-
-      if (documentId && userId && !jobInfo.isActive && (!jobInfo.title || !jobInfo.description)) {
-        try {
-          const response = await fetch(`/api/resume/get/${documentId}?user_id=${userId}`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data?.job_info) {
-              updateJobInfo({
-                title: data.job_info.title || '',
-                description: data.job_info.description || '',
-                isActive: true
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Failed to load saved job info:', error);
-        }
-      }
-    };
-
-    loadSavedJobInfo();
-  }, []);
+  // Job info is loaded by the parent component (resume-preview-panel)
+  // No need to load it again here
 
   // Form validation
   const isFormValid = useMemo(() => {
@@ -275,20 +254,29 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
 
       if (documentId && userId) {
         try {
-          await fetch(`/api/resume/update-job-info/${documentId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: userId,
-              job_info: {
-                title: jobInfo.title,
-                description: jobInfo.description,
-                updated_at: new Date().toISOString()
-              }
-            }),
+          // Get auth token to ensure user is authenticated
+          const token = await getIdToken();
+          if (!token) {
+            console.error('No auth token available');
+            throw new Error('Authentication required');
+          }
+
+          // Save directly to Firestore
+          const resumeDocRef = doc(db, 'resumes', documentId);
+          await updateDoc(resumeDocRef, {
+            job_info: {
+              title: jobInfo.title.trim(),
+              description: jobInfo.description.trim(),
+              company: jobInfo.company?.trim() || '',
+              keywords: jobInfo.keywords || [],
+              updated_at: serverTimestamp()
+            }
           });
+
+          console.log('Job info saved successfully to Firestore');
         } catch (saveError) {
-          console.error('Failed to save job info to database:', saveError);
+          console.error('Failed to save job info to Firestore:', saveError);
+          throw saveError;
         }
       }
 
@@ -308,7 +296,7 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
       });
       onError?.(errorMessage);
     }
-  }, [isFormValid, formState.isSubmitting, disabled, updateFormState, updateJobInfo, onComplete, onError, jobInfo]);
+  }, [isFormValid, formState.isSubmitting, disabled, updateFormState, updateJobInfo, onComplete, onError, jobInfo, getIdToken]);
 
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {

@@ -1,5 +1,7 @@
 // src/contexts/ResumeDataContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 
 import {
   FormSection,
@@ -270,6 +272,63 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
     return sections;
   };
 
+  // Helper function to generate extracted text from parsed data
+  const generateExtractedText = (parsedData: any): string => {
+    if (!parsedData) return '';
+    
+    const sections: string[] = [];
+    
+    // Contact info
+    if (parsedData.contactInfo) {
+      const contact = parsedData.contactInfo;
+      sections.push([contact.fullName, contact.email, contact.phone, contact.location].filter(Boolean).join(' '));
+    }
+    
+    // Summary/Objective
+    if (parsedData.summary || parsedData.objective) {
+      sections.push(parsedData.summary || parsedData.objective);
+    }
+    
+    // Experience
+    const experienceArray = parsedData.experiences || parsedData.experience || [];
+    if (experienceArray.length > 0) {
+      experienceArray.forEach((exp: any) => {
+        sections.push([exp.position || exp.role, exp.company, exp.location, exp.description].filter(Boolean).join(' '));
+      });
+    }
+    
+    // Education
+    if (parsedData.education?.length > 0) {
+      parsedData.education.forEach((edu: any) => {
+        sections.push([edu.institution, edu.degree || edu.qualification, edu.fieldOfStudy, edu.description].filter(Boolean).join(' '));
+      });
+    }
+    
+    // Skills
+    const skillsArray = parsedData.skillCategories || parsedData.skills || [];
+    if (skillsArray.length > 0) {
+      skillsArray.forEach((category: any) => {
+        sections.push([category.category, category.keywords].filter(Boolean).join(' '));
+      });
+    }
+    
+    // Projects
+    if (parsedData.projects?.length > 0) {
+      parsedData.projects.forEach((proj: any) => {
+        sections.push([proj.name || proj.title, proj.description].filter(Boolean).join(' '));
+      });
+    }
+    
+    // Involvements
+    if (parsedData.involvements?.length > 0) {
+      parsedData.involvements.forEach((inv: any) => {
+        sections.push([inv.organization, inv.role, inv.description].filter(Boolean).join(' '));
+      });
+    }
+    
+    return sections.join(' ').trim();
+  };
+
   // Fetch resume data
   const fetchResumeData = async (id: string) => {
     setLoading(true);
@@ -279,33 +338,83 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
         throw new Error('User not authenticated');
       }
 
-      const data = await StorageService.getDocumentData(userId, id);
+      // Fetch directly from Firestore
+      const resumeRef = doc(db, 'resumes', id);
+      const resumeSnap = await getDoc(resumeRef);
 
-      if (data) {
-        const isNestedFormat = Array.isArray(data.experience) ||
-                              Array.isArray(data.education) ||
-                              Array.isArray(data.skills);
-
-        let resumeDataWithId: ResumeData;
-
-        if (isNestedFormat) {
-          const flattenedData = transformNestedToFlattened(data);
-          resumeDataWithId = {
-            ...flattenedData,
+      if (resumeSnap.exists()) {
+        const firestoreData = resumeSnap.data();
+        
+        // Check if this is the expected format with parsedData and rmsRawData
+        if (firestoreData.parsedData || firestoreData.rmsRawData) {
+          // Use rmsRawData for the flattened format
+          const rawData = firestoreData.rmsRawData || {};
+          
+          // Generate extracted text from parsedData
+          const extractedText = generateExtractedText(firestoreData.parsedData);
+          
+          const resumeDataWithId: ResumeData = {
+            ...rawData,
             id,
-            title: data.title || 'Untitled Resume',
-            sections: data.sections || createDefaultSections(data)
-          } as ResumeData;
+            title: firestoreData.title || 'Untitled Resume',
+            document_id: id,
+            user_id: userId,
+            extracted_text: extractedText,
+            sections: createDefaultSections(rawData)
+          };
+          
+          setResumeData(resumeDataWithId);
         } else {
-          resumeDataWithId = {
-            ...data,
-            id,
-            title: data.title || 'Untitled Resume',
-            sections: data.sections || createDefaultSections(data)
-          } as ResumeData;
-        }
+          // Fallback to old format handling
+          const data = await StorageService.getDocumentData(userId, id);
+          
+          if (data) {
+            const isNestedFormat = Array.isArray(data.experience) ||
+                                  Array.isArray(data.education) ||
+                                  Array.isArray(data.skills);
 
-        setResumeData(resumeDataWithId);
+            let resumeDataWithId: ResumeData;
+
+            if (isNestedFormat) {
+              const flattenedData = transformNestedToFlattened(data);
+              const extractedText = generateExtractedText(data);
+              resumeDataWithId = {
+                ...flattenedData,
+                id,
+                title: data.title || 'Untitled Resume',
+                document_id: id,
+                user_id: userId,
+                extracted_text: extractedText,
+                sections: data.sections || createDefaultSections(data)
+              } as ResumeData;
+            } else {
+              // For old flattened format, reconstruct parsed data for text extraction
+              const processedForText = processResumeData(data);
+              const extractedText = generateExtractedText({
+                contactInfo: processedForText.contact,
+                summary: processedForText.summary,
+                experiences: processedForText.experience,
+                education: processedForText.education,
+                skillCategories: processedForText.skills,
+                projects: processedForText.projects,
+                involvements: processedForText.involvement
+              });
+              resumeDataWithId = {
+                ...data,
+                id,
+                title: data.title || 'Untitled Resume',
+                document_id: id,
+                user_id: userId,
+                extracted_text: extractedText,
+                sections: data.sections || createDefaultSections(data)
+              } as ResumeData;
+            }
+
+            setResumeData(resumeDataWithId);
+          } else {
+            setResumeData(createEmptyResume(id));
+          }
+        }
       } else {
         setResumeData(createEmptyResume(id));
       }

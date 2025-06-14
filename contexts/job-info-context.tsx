@@ -7,6 +7,7 @@ interface JobInfoContextType {
   updateJobInfo: (updates: Partial<JobInfo>) => void;
   resetJobInfo: () => void;
   setCurrentResumeId: (resumeId: string | null) => void;
+  currentResumeId: string | null;
 }
 
 const defaultJobInfo: JobInfo = {
@@ -21,7 +22,8 @@ const JobInfoContext = createContext<JobInfoContextType>({
   jobInfo: defaultJobInfo,
   updateJobInfo: () => {},
   resetJobInfo: () => {},
-  setCurrentResumeId: () => {}
+  setCurrentResumeId: () => {},
+  currentResumeId: null
 });
 
 interface JobInfoProviderProps {
@@ -30,13 +32,28 @@ interface JobInfoProviderProps {
 
 export const JobInfoProvider: React.FC<JobInfoProviderProps> = ({ children }) => {
   const [jobInfoByResume, setJobInfoByResume] = useState<Record<string, JobInfo>>({});
-  const [currentResumeId, setCurrentResumeId] = useState<string | null>(null);
+  const [currentResumeId, setCurrentResumeIdState] = useState<string | null>(null);
+  
+  const setCurrentResumeId = (resumeId: string | null) => {
+    console.log('setCurrentResumeId called:', { from: currentResumeId, to: resumeId });
+    setCurrentResumeIdState(resumeId);
+  };
 
   // Get current job info based on resume ID
   const jobInfo = currentResumeId ? (jobInfoByResume[currentResumeId] || defaultJobInfo) : defaultJobInfo;
+  
+  // Log job info changes
+  useEffect(() => {
+    console.log('JobInfoContext - jobInfo changed:', { currentResumeId, jobInfo, jobInfoByResume });
+  }, [currentResumeId, jobInfo]);
 
   const updateJobInfo = (updates: Partial<JobInfo>) => {
-    if (!currentResumeId) return;
+    if (!currentResumeId) {
+      console.warn('updateJobInfo called without currentResumeId');
+      return;
+    }
+    
+    console.log('updateJobInfo called:', { currentResumeId, updates });
     
     setJobInfoByResume(prev => ({
       ...prev,
@@ -61,7 +78,8 @@ export const JobInfoProvider: React.FC<JobInfoProviderProps> = ({ children }) =>
     jobInfo,
     updateJobInfo,
     resetJobInfo,
-    setCurrentResumeId
+    setCurrentResumeId,
+    currentResumeId
   };
 
   return (

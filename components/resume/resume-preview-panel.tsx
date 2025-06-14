@@ -14,6 +14,7 @@ import JobInfoPanel from "@/components/resume/panels/job-info-panel";
 import SharePanel from "@/components/resume/panels/share-panel";
 import { generateResumePDF } from '@/lib/pdf-generator';
 import { useJobInfo } from '@/contexts/job-info-context';
+import { useResumeData } from '@/contexts/resume-data-context';
 
 interface ResumePreviewProps {
   resumeData: any;
@@ -30,7 +31,8 @@ export default function ResumePreview({
 }: ResumePreviewProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { setCurrentResumeId } = useJobInfo();
+  const { setCurrentResumeId, updateJobInfo } = useJobInfo();
+  const { updateResumeData, fetchResumeData } = useResumeData();
   const headerBarRef = useRef<ResumeHeaderBarRef>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [hasJobInfo, setHasJobInfo] = useState<boolean | null>(null);
@@ -97,6 +99,7 @@ export default function ResumePreview({
 
   // Check if job info exists in Firestore
   const checkJobInfo = useCallback(async () => {
+    console.log('checkJobInfo called with:', { user: !!user, resumeId, showJobPanels });
     if (!user || !resumeId || !showJobPanels) {
       setLoading(false);
       return;
@@ -109,8 +112,37 @@ export default function ResumePreview({
 
       if (resumeSnap.exists()) {
         const data = resumeSnap.data();
+        console.log('Resume data from Firestore:', { 
+          hasJobInfo: !!data.job_info,
+          jobInfo: data.job_info 
+        });
+        
         const hasJob = !!(data.job_info?.title && data.job_info?.description);
         setHasJobInfo(hasJob);
+
+        // Load job info into context if it exists
+        if (hasJob && data.job_info) {
+          console.log('Updating job info in context with:', {
+            title: data.job_info.title || '',
+            description: data.job_info.description || ''
+          });
+          
+          // Ensure resume ID is set before updating job info
+          setCurrentResumeId(resumeId);
+          
+          // Use setTimeout to ensure the resume ID is set in the context
+          setTimeout(() => {
+            updateJobInfo({
+              title: data.job_info.title || '',
+              description: data.job_info.description || '',
+              company: data.job_info.company || '',
+              keywords: data.job_info.keywords || [],
+              isActive: true
+            });
+          }, 0);
+        } else {
+          console.log('No job info found or incomplete:', { hasJob, jobInfo: data.job_info });
+        }
 
         // Store document ID and user ID for the panels to use
         localStorage.setItem('current_document_id', resumeId);
@@ -126,11 +158,9 @@ export default function ResumePreview({
     } finally {
       setLoading(false);
     }
-  }, [user, resumeId, showJobPanels]);
+  }, [user, resumeId, showJobPanels, updateJobInfo, setCurrentResumeId]);
 
-  useEffect(() => {
-    checkJobInfo();
-  }, [checkJobInfo]);
+  // Job info is now checked in the effect below after resume ID is set
 
   // Set current resume ID for job info context
   useEffect(() => {
@@ -140,9 +170,28 @@ export default function ResumePreview({
     
     // Cleanup on unmount
     return () => {
-      setCurrentResumeId(null);
+      if (resumeId) {
+        setCurrentResumeId(null);
+      }
     };
   }, [resumeId, setCurrentResumeId]);
+  
+  // Fetch resume data and check job info after resume ID is set
+  useEffect(() => {
+    const initializeData = async () => {
+      if (resumeId && user) {
+        // Fetch resume data for the ResumeDataContext
+        await fetchResumeData(resumeId);
+        
+        // Check job info after resume data is loaded
+        await checkJobInfo();
+      }
+    };
+    
+    initializeData();
+  }, [resumeId, user]); // Separate effect to avoid race conditions
+
+  // Resume data is now fetched directly by the ResumeDataContext
 
   // Enhanced document settings - now using CSS for styling
   const [documentSettings, setDocumentSettings] = useState<DocumentSettings>({
@@ -176,8 +225,9 @@ export default function ResumePreview({
   }, [isDarkMode]);
 
   // Handle job info completion
-  const handleJobInfoComplete = useCallback(() => {
-    setHasJobInfo(true);
+  const handleJobInfoComplete = useCallback(async () => {
+    // Re-check job info from Firestore to get the updated data
+    await checkJobInfo();
   }, []);
 
   // Handle request to update job info

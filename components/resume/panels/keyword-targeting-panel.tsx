@@ -6,6 +6,8 @@ import { Check, RefreshCw, AlertCircle, Loader, Target } from 'lucide-react';
 import {useKeywordAnalysis} from "@/hooks/use-keyword-analysis";
 import {useJobInfo} from "@/contexts/job-info-context";
 import {useResumeData} from "@/contexts/resume-data-context";
+import { ProcessedResumeData } from '@/src/types';
+import { useAuth } from '@/contexts/auth-context';
 
 export interface KeywordTargetingPanelProps {
   className?: string;
@@ -105,21 +107,151 @@ const EmptyState = memo<{ onAddJob: () => void }>(({ onAddJob }) => {
 
 EmptyState.displayName = 'EmptyState';
 
+// Helper function to generate extracted text from processed resume data
+const generateExtractedTextFromProcessed = (data: ProcessedResumeData): string => {
+  const sections: string[] = [];
+  
+  // Contact info
+  if (data.contact) {
+    sections.push(Object.values(data.contact).filter(Boolean).join(' '));
+  }
+  
+  // Summary
+  if (data.summary) {
+    sections.push(data.summary);
+  }
+  
+  // Experience
+  if (data.experience?.length > 0) {
+    data.experience.forEach(exp => {
+      sections.push([exp.position, exp.company, exp.location, exp.description].filter(Boolean).join(' '));
+    });
+  }
+  
+  // Education
+  if (data.education?.length > 0) {
+    data.education.forEach(edu => {
+      sections.push([edu.institution, edu.qualification, edu.fieldOfStudy, edu.location].filter(Boolean).join(' '));
+    });
+  }
+  
+  // Skills
+  if (data.skills?.length > 0) {
+    data.skills.forEach(skill => {
+      sections.push([skill.category, skill.keywords].filter(Boolean).join(' '));
+    });
+  }
+  
+  // Projects
+  if (data.projects?.length > 0) {
+    data.projects.forEach(proj => {
+      sections.push([proj.name || proj.title, proj.description].filter(Boolean).join(' '));
+    });
+  }
+  
+  // Involvement
+  if (data.involvement?.length > 0) {
+    data.involvement.forEach(inv => {
+      sections.push([inv.organization, inv.role, inv.description].filter(Boolean).join(' '));
+    });
+  }
+  
+  return sections.join(' ').trim();
+};
+
 const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   className = '',
   onJobUpdate
 }) => {
-  const { resumeData } = useResumeData();
-  const { jobInfo } = useJobInfo();
+  const { resumeData: contextResumeData } = useResumeData();
+  const { jobInfo, currentResumeId } = useJobInfo();
+  const { user } = useAuth();
   const [showAllMissing, setShowAllMissing] = useState(false);
+  const [keywordsSaved, setKeywordsSaved] = useState(false);
+
+  // Use resume ID from context, fallback to localStorage
+  const documentId = currentResumeId || localStorage.getItem('current_document_id');
+  const userId = user?.uid || localStorage.getItem('current_user_id');
+
+  // Create a resume data object with the required fields for keyword analysis
+  const resumeData = useMemo(() => {
+    if (!contextResumeData) return null;
+    
+    console.log('KeywordTargetingPanel - contextResumeData:', contextResumeData);
+    
+    // Check if we already have extracted_text
+    if (contextResumeData.extracted_text) {
+      return {
+        ...contextResumeData,
+        document_id: documentId,
+        user_id: userId
+      };
+    }
+    
+    // Otherwise generate it from processedData
+    const { processedData } = contextResumeData;
+    const extractedText = processedData ? generateExtractedTextFromProcessed(processedData) : '';
+    
+    return {
+      ...contextResumeData,
+      extracted_text: extractedText,
+      document_id: documentId,
+      user_id: userId
+    };
+  }, [contextResumeData, documentId, userId]);
 
   const { analysis, loading, error, isCached, refetch } = useKeywordAnalysis({
     jobInfo,
     resumeData
   });
 
+  // Save keywords to job_info when analysis is successful
+  useEffect(() => {
+    const saveKeywords = async () => {
+      if (analysis?.matching_keywords && documentId && user && !keywordsSaved && jobInfo?.title) {
+        try {
+          const allKeywords = analysis.matching_keywords.map(k => k.keyword);
+          
+          // Add missing keywords with lower priority
+          if (analysis.missing_keywords && analysis.missing_keywords.length > 0) {
+            const topMissingKeywords = analysis.missing_keywords
+              .slice(0, 5)
+              .map(k => k.keyword);
+            allKeywords.push(...topMissingKeywords);
+          }
+          
+          // Get user token
+          const token = await user.getIdToken();
+          
+          // Update keywords in Firestore
+          const response = await fetch('/api/resume/update-keywords', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              resumeId: documentId,
+              keywords: allKeywords
+            })
+          });
+          
+          if (response.ok) {
+            setKeywordsSaved(true);
+            console.log('Keywords saved to job_info:', allKeywords);
+          }
+        } catch (error) {
+          console.error('Error saving keywords:', error);
+        }
+      }
+    };
+    
+    saveKeywords();
+  }, [analysis, documentId, user, keywordsSaved, jobInfo?.title]);
+
   const handleJobUpdate = useCallback(() => {
     onJobUpdate?.();
+    setKeywordsSaved(false); // Reset to allow saving new keywords
     refetch(true);
   }, [onJobUpdate, refetch]);
 
@@ -135,8 +267,29 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
     [className]
   );
 
+  // Log the current state for debugging
+  useEffect(() => {
+    console.log('KeywordTargetingPanel state:', {
+      hasJobInfo: !!(jobInfo?.title && jobInfo?.description),
+      jobInfo,
+      hasResumeData: !!resumeData,
+      hasExtractedText: !!resumeData?.extracted_text,
+      extractedTextLength: resumeData?.extracted_text?.length || 0,
+      documentId,
+      userId
+    });
+  }, [jobInfo, resumeData, documentId, userId]);
+
   // Handle different states
   if (!jobInfo?.title || !jobInfo?.description) {
+    console.log('KeywordTargetingPanel - No job info found:', { 
+      hasTitle: !!jobInfo?.title, 
+      hasDescription: !!jobInfo?.description,
+      jobInfo,
+      jobInfoTitle: jobInfo?.title,
+      jobInfoDescription: jobInfo?.description,
+      currentResumeId: documentId
+    });
     return (
       <div className={containerClasses}>
         <div className="flex items-center gap-2 mb-6">
