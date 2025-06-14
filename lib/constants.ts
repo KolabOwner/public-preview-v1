@@ -81,3 +81,39 @@ export const RESUME_TEMPLATES = {
   CLASSIC: 'classic',
   MINIMAL: 'minimal',
 } as const;
+
+export const REDIS_CONFIG = {
+  DEFAULT_TTL: 3600, // 1 hour
+  RATE_LIMIT_TTL: 3600, // 1 hour  
+  SESSION_TTL: 86400, // 24 hours
+  CACHE_TTL: 1800, // 30 minutes
+  KEY_PREFIXES: {
+    RATE_LIMIT: 'rl',
+    SESSION: 'sess',
+    CACHE: 'cache',
+    USER_DATA: 'user',
+  },
+} as const;
+
+export const RATE_LIMITS = {
+  API: {
+    REQUESTS: 100,
+    WINDOW_MS: 60 * 1000, // 1 minute
+  },
+  FILE_UPLOAD: {
+    REQUESTS: 5,
+    WINDOW_MS: 60 * 1000, // 1 minute
+  },
+  AUTH: {
+    REQUESTS: 10,
+    WINDOW_MS: 60 * 1000, // 1 minute
+  },
+  AI_PROCESSING: {
+    REQUESTS: 20,
+    WINDOW_MS: 60 * 1000, // 1 minute
+  },
+  STRICT: {
+    REQUESTS: 30,
+    WINDOW_MS: 60 * 1000, // 1 minute
+  },
+} as const;
