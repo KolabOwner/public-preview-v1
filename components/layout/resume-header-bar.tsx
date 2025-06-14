@@ -840,7 +840,7 @@ dark:text-gray-100"
             <Eye className="w-3.5 h-3.5" />
           </ActionButton>
           <ActionButton
-            onClick={() => {/* Profile picture functionality */}}
+            onClick={() => {}}
             variant="secondary"
             size="sm"
             className="w-8 h-8 p-0"

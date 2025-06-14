@@ -1,6 +1,4 @@
-// src/lib/parser.ts
-// Core resume parsing functionality using Ollama LLM
-
+import { ProcessedResumeData, ResumeData } from '../types';
 
 /**
  * Parse resume text and return RMS compliant data
@@ -9,11 +7,20 @@
  * @param saveToFirebase Whether to save results to Firebase
  * @returns Parsed resume data in RMS format
  */
+export interface ParseResultResponse {
+  success: boolean;
+  data?: ProcessedResumeData;
+  parseTime?: number;
+  model?: string;
+  timestamp?: string;
+  error?: string;
+}
+
 export async function parseResumeText(
   resumeText: string,
   userId: string = 'anonymous',
   saveToFirebase: boolean = true
-): Promise<any> {
+): Promise<ParseResultResponse> {
   console.log(`Parsing resume text using RMSParser (${resumeText.length} chars)`);
 
   try {
@@ -36,25 +43,23 @@ export async function parseResumeText(
       model: result.metadata?.model || 'rms-parser',
       timestamp: new Date().toISOString()
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in parseResumeText:', error);
     return {
       success: false,
-      error: error.message || 'Unknown error parsing resume'
+      error: error instanceof Error ? error.message : 'Unknown error parsing resume'
     };
   }
 }
 
-// Use native fetch instead of node-fetch
 const fetch = global.fetch;
 
-// Types and Interfaces
 export interface ParseResult {
   success: boolean;
-  data?: any;
+  data?: ProcessedResumeData;
   errors?: Array<{ field: string; message: string }>;
   attempts?: number;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ParserOptions {

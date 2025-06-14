@@ -1,4 +1,3 @@
-// app/page.tsx - Refactored to use existing components
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -17,7 +16,6 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-// Import all the landing components
 import { AnimatedBeam } from '../components/landing/AnimatedBeam';
 import { AnimatedText } from '../components/landing/AnimatedText';
 import { FeatureCard } from '../components/landing/FeatureCard';
@@ -36,7 +34,6 @@ import {
   JobMatchScore
 } from '../components/landing/ReziFeatures';
 
-// Hero Section using components
 const HeroSection = () => {
   const [mounted, setMounted] = useState(false);
 
@@ -46,10 +43,7 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Use AnimatedBeam for background effects */}
       <AnimatedBeam />
-
-      {/* Add floating icons for visual interest */}
       <FloatingIcons />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -59,7 +53,6 @@ const HeroSection = () => {
           transition={{ duration: 0.8 }}
           className="space-y-8"
         >
-          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -69,7 +62,6 @@ const HeroSection = () => {
             <span className="text-sm text-purple-300">AI-Powered Resume Builder</span>
           </motion.div>
 
-          {/* Main Heading using AnimatedText and GradientText */}
           <div className="space-y-4">
             <h1 className="text-5xl md:text-7xl font-bold">
               <AnimatedText text="Build Your Perfect Resume" className="text-white" />
@@ -83,7 +75,6 @@ const HeroSection = () => {
             </p>
           </div>
 
-          {/* CTA Buttons using GlowingButton */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <GlowingButton href="/auth/sign-up" size="lg">
               Start Building for Free
@@ -94,7 +85,6 @@ const HeroSection = () => {
             </GlowingButton>
           </div>
 
-          {/* Trust Indicators using StatsCounter */}
           <div className="flex flex-wrap justify-center gap-8 pt-8">
             <StatsCounter end={500} suffix="K+" label="Users" />
             <StatsCounter end={4.9} suffix="/5" label="Rating" />
@@ -102,7 +92,6 @@ const HeroSection = () => {
           </div>
         </motion.div>
 
-        {/* Scroll Indicator */}
         <motion.div
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
           animate={{ y: [0, 10, 0] }}
@@ -115,7 +104,6 @@ const HeroSection = () => {
   );
 };
 
-// Features Section using FeatureCard component
 const FeaturesSection = () => {
   const features = [
     {

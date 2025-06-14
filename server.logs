@@ -1,0 +1,568 @@
+JobInfoContext - jobInfo changed:
+Object { currentResumeId: null, jobInfo: {…}, jobInfoByResume: {} }
+job-info-context.tsx:47:12
+JobInfoContext - jobInfo changed:
+Object { currentResumeId: null, jobInfo: {…}, jobInfoByResume: {} }
+job-info-context.tsx:47:12
+The value of the attribute “expires” for the cookie “_ga_ESFP4V7Q03” has been overwritten. preview
+Fetching resume with ID: VcqChCgACj5OHnMdcLpW 2 page.tsx:43:16
+downloadable font: Glyph bbox was incorrect (glyph ids 1 2 3 4 5 8 9 10 11 12 13 14 16 17 19 22 24 28 32 34 35 38 39 40 43 44 45 46 47 50 51 52 53 55 56 58 60 61 62 64 67 68 70 71 72 73 74 78 79 80 81 83 90 96 101 103 104 105 108 109 115 116 117 118 120 123 125 135 138 139 140 142 143 144 145 146 148 149 154 155 157 161 162 163 164 165 169 170 171 173 179 181 193 195 203 207 208 210 211 214 218 219 223 225 227 228 229 230 235 236 237 238 239 240 245 246 247 248 249 250 251 252 253 254 255 256 257 263 264 266 268 271 275 278 279 280 281 282 283 284 285 286 287 288 291 292 293 294 295 296 297 298 299 300 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 321 335 338 339 340 342 344 345 346 353 354 356 357 358 359 362 363 365 366 371 373 374 379 381 382 383 386 389 390 391 393 394 406 407 412 413 418 419 420 424 432 433 439 448 449 450 451 454 455 456 457 472 479 480 481 482 485 486 490 491 493 499 500 501 503 508 509 513 515 516 525 527 528 532 535 541 542 543 549 550 551 552 554 555 556 558 560 569 571 593 602 603 604 607 608 609 614 615 617 618 623 626 627 643 644 645 647 650 651 654 655 656 657 662 663 664 665 670 671 672 674 675 679 680 681 682 683 698 699 708 712 714 717 718 729 730 732 735 736 739 746 747 752 761 762 767 774 776 777 778 779 788 789 790 794 796 798 799 800 801 803 804 806 826 828 829 831 835 836 838 839 840 841 842 843 844 845 848 849 856 857 861 862 863 871 873 874 880 882 892 895 900 908 911 913 925 928 929 930 933 936 937 938 941 942 943 944 945 948 949 950 952 958 960 961 962 964 966 967 969 973 974 978 979 980 981 982 989 998 1000 1001 1005 1006 1008 1009 1011 1012 1013 1016 1020 1026 1027 1031 1036 1037 1042 1045 1048 1050 1052 1053 1057 1058 1060 1063 1072 1073 1076 1084 1087 1099 1104 1110 1111 1112 1116 1117 1121 1122 1124 1131 1136 1140 1141 1142 1147 1148 1151 1157 1163 1167 1168 1170 1177 1186 1187 1193 1196 1199 1200 1201 1204 1205 1208 1211 1212 1217 1218 1220 1224 1226 1228 1230 1231 1232 1233 1235 1236 1237 1238 1243 1246 1247 1249 1251 1256 1258 1259 1260 1261 1265 1268 1269 1271 1272 1273 1275 1276 1279 1285 1289 1290 1291 1292 1296 1297 1303 1304 1305 1309 1310 1311 1312 1317 1319 1320 1324 1325 1328 1329 1330 1331 1334 1335 1337 1339 1341 1343 1356 1357 1363 1369 1371 1372 1375 1376 1377 1382 1384 1387) (font-family: "Font Awesome 6 Free" style:normal weight:900 stretch:100 src index:0) source: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2
+Fetched resume data:
+Object { experience: "", parsedData: {…}, rmsRawData: {…}, status: "processed", title: "fffff", userId: "1QahHZydwigSFshw45KWmJnpNpx2", processingCompleted: "2025-06-14T18:59:06.724Z", updatedAt: {…}, fileUrl: "https://firebasestorage.googleapis.com/v0/b/my-rms-validator.firebasestorage.app/o/resumes%2F1QahHZydwigSFshw45KWmJnpNpx2%2FVcqChCgACj5OHnMdcLpW%2F1749927523050-RafaelAcevedoResume.pdf?alt=media&token=c103e321-b7c1-4e71-bfc0-4b6a5a5dbafa", rmsVersion: "2.0", … }
+​
+createdAt: Object { seconds: 1749927522, nanoseconds: 9000000 }
+​
+experience: ""
+​
+fileUrl: "https://firebasestorage.googleapis.com/v0/b/my-rms-validator.firebasestorage.app/o/resumes%2F1QahHZydwigSFshw45KWmJnpNpx2%2FVcqChCgACj5OHnMdcLpW%2F1749927523050-RafaelAcevedoResume.pdf?alt=media&token=c103e321-b7c1-4e71-bfc0-4b6a5a5dbafa"
+​
+isTargeted: false
+​
+parsedData: Object { objective: "", awards: [], projects: [], … }
+​​
+awards: Array []
+​​
+certifications: Array []
+​​
+contactInfo: Object { fullName: "Rafael Acevedo", phone: "(707) 486-8385", lastName: "Acevedo", … }
+​​​
+address: ""
+​​​
+city: "San Luis Obispo"
+​​​
+country: "USA"
+​​​
+email: "leo.acevedo362@gmail.com"
+​​​
+firstName: ""
+​​​
+fullName: "Rafael Acevedo"
+​​​
+github: ""
+​​​
+lastName: "Acevedo"
+​​​
+linkedin: "www.linkedin.com/in/leoacevedo1320"
+​​​
+location: "San Luis Obispo, CA, USA"
+​​​
+middleName: ""
+​​​
+phone: "(707) 486-8385"
+​​​
+portfolio: ""
+​​​
+state: "CA"
+​​​
+twitter: ""
+​​​
+website: ""
+​​​
+zip: ""
+​​​
+<prototype>: Object { … }
+​​
+coursework: Array []
+​​
+education: Array [ {…} ]
+​​​
+0: Object { degree: "BS, Business Administration - Concentration: Accounting", id: "edu_0", gpa: "3.257", … }
+​​​​
+activities: ""
+​​​​
+current: false
+​​​​
+degree: "BS, Business Administration - Concentration: Accounting"
+​​​​
+description: ""
+​​​​
+endDate: ""
+​​​​
+fieldOfStudy: ""
+​​​​
+gpa: "3.257"
+​​​​
+gpaScale: "GPA"
+​​​​
+honors: ""
+​​​​
+id: "edu_0"
+​​​​
+location: ""
+​​​​
+school: "California Polytechnic State University"
+​​​​
+startDate: ""
+​​​​
+<prototype>: Object { … }
+​​​
+length: 1
+​​​
+<prototype>: Array []
+​​
+experiences: Array(3) [ {…}, {…}, {…} ]
+​​​
+0: Object { description: "Managed guest needs during events, ensuring smooth operations and high-quality attendees • Coordinated event logistics, including venue setup, material preparation, and post-event breakdown", current: true, company: "Cal Poly Associated Students Inc.", … }
+​​​​
+company: "Cal Poly Associated Students Inc."
+​​​​
+current: true
+​​​​
+description: "Managed guest needs during events, ensuring smooth operations and high-quality attendees • Coordinated event logistics, including venue setup, material preparation, and post-event breakdown"
+​​​​
+endDate: "Present"
+​​​​
+id: "exp_0"
+​​​​
+location: "San Luis Obispo, CA"
+​​​​
+responsibilities: Array []
+​​​​
+startDate: "Aug 2024"
+​​​​
+title: "Event Operations Manager"
+​​​​
+<prototype>: Object { … }
+​​​
+1: Object { current: false, startDate: "June 2024", location: "San Francisco, CA", … }
+​​​​
+company: "KPMG"
+​​​​
+current: false
+​​​​
+description: "Performed Tests of Operating Effectiveness (TOE) on internal controls for a major banking client, selecting samples and reviewing documentation to ensure accurate financial reporting • Utilized Power BI to cleanse, transform, and visualize accounts payable aging data • Coordinated with offshore audit teams (GDC) to delegate tasks, enhancing overall efficiency and ensuring the timely completion of key audit deliverables."
+​​​​
+endDate: "Aug 2024"
+​​​​
+id: "exp_1"
+​​​​
+location: "San Francisco, CA"
+​​​​
+responsibilities: Array []
+​​​​
+startDate: "June 2024"
+​​​​
+title: "Audit Intern"
+​​​​
+<prototype>: Object { … }
+​​​
+2: Object { endDate: "June 2024", id: "exp_2", company: "Better Business Financial Services", … }
+​​​​
+company: "Better Business Financial Services"
+​​​​
+current: false
+​​​​
+description: "Utilized Quick Books to manage accounts payable and accounts receivable tasks, integrating client banking information through bank feeds and manual data entry • Coordinates with clients to resolve open items and facilitates the completion of month-end and year-end closing, including preparing journal entries and reconciling accounts."
+​​​​
+endDate: "June 2024"
+​​​​
+id: "exp_2"
+​​​​
+location: "San Luis Obispo, CA"
+​​​​
+responsibilities: Array []
+​​​​
+startDate: "Jan 2024"
+​​​​
+title: "Tax Intern"
+​​​​
+<prototype>: Object { … }
+​​​
+length: 3
+​​​
+<prototype>: Array []
+​​
+involvements: Array(3) [ {…}, {…}, {…} ]
+​​​
+0: Object { current: false, id: "inv_0", description: "Prepared lesson plans, grade homework/tests, and mentor students", … }
+​​​​
+current: false
+​​​​
+description: "Prepared lesson plans, grade homework/tests, and mentor students"
+​​​​
+endDate: ""
+​​​​
+id: "inv_0"
+​​​​
+location: ""
+​​​​
+organization: ""
+​​​​
+role: "Teaching Assistant"
+​​​​
+startDate: ""
+​​​​
+<prototype>: Object { … }
+​​​
+1: Object { description: "Assistant Junior Varsity Coach for a 10 man roster", current: false, role: "HS Basketball Coach", … }
+​​​​
+current: false
+​​​​
+description: "Assistant Junior Varsity Coach for a 10 man roster"
+​​​​
+endDate: ""
+​​​​
+id: "inv_1"
+​​​​
+location: ""
+​​​​
+organization: ""
+​​​​
+role: "HS Basketball Coach"
+​​​​
+startDate: ""
+​​​​
+<prototype>: Object { … }
+​​​
+2: Object { id: "inv_2", role: "HS Baseball Coach", description: "Outfield JV Coach for a 17 man roster • Organized drills and practices independently of Head Coach", … }
+​​​​
+current: false
+​​​​
+description: "Outfield JV Coach for a 17 man roster • Organized drills and practices independently of Head Coach"
+​​​​
+endDate: ""
+​​​​
+id: "inv_2"
+​​​​
+location: ""
+​​​​
+organization: ""
+​​​​
+role: "HS Baseball Coach"
+​​​​
+startDate: ""
+​​​​
+<prototype>: Object { … }
+​​​
+length: 3
+​​​
+<prototype>: Array []
+​​
+languages: Array []
+​​
+metadata: Object { rmsVersion: "2.0", parseDate: "2025-06-14T18:59:06.718Z", parseTime: 19626, … }
+​​​
+model: "llama3.1:8b-instruct-q2_K"
+​​​
+parseDate: "2025-06-14T18:59:06.718Z"
+​​​
+parseTime: 19626
+​​​
+rmsVersion: "2.0"
+​​​
+<prototype>: Object { … }
+​​
+objective: ""
+​​
+projects: Array []
+​​
+publications: Array []
+​​
+skillCategories: Array(3) [ {…}, {…}, {…} ]
+​​​
+0: Object { id: "category_0", name: "Language", skills: (2) […] }
+​​​​
+id: "category_0"
+​​​​
+name: "Language"
+​​​​
+skills: Array [ {…}, {…} ]
+​​​​
+<prototype>: Object { … }
+​​​
+1: Object { skills: (5) […], name: "Technology", id: "category_1" }
+​​​​
+id: "category_1"
+​​​​
+name: "Technology"
+​​​​
+skills: Array(5) [ {…}, {…}, {…}, … ]
+​​​​
+<prototype>: Object { … }
+​​​
+2: Object { name: "Personal", skills: (4) […], id: "category_2" }
+​​​​
+id: "category_2"
+​​​​
+name: "Personal"
+​​​​
+skills: Array(4) [ {…}, {…}, {…}, … ]
+​​​​
+<prototype>: Object { … }
+​​​
+length: 3
+​​​
+<prototype>: Array []
+​​
+summary: ""
+​​
+<prototype>: Object { … }
+​
+processingCompleted: "2025-06-14T18:59:06.724Z"
+​
+rmsRawData: Object { rms_experience_2_location: "San Luis Obispo, CA", rms_involvement_0_role: "Teaching Assistant", rms_involvement_0_location: "n/a", … }
+​​
+Producer: "rms_v2.0.1"
+​​
+rms_certification_count: "0"
+​​
+rms_contact_city: "San Luis Obispo"
+​​
+rms_contact_country: "USA"
+​​
+rms_contact_email: "leo.acevedo362@gmail.com"
+​​
+rms_contact_fullName: "Rafael Acevedo"
+​​
+rms_contact_github: "n/a"
+​​
+rms_contact_givenNames: "Rafael"
+​​
+rms_contact_lastName: "Acevedo"
+​​
+rms_contact_linkedin: "www.linkedin.com/in/leoacevedo1320"
+​​
+rms_contact_phone: "(707) 486-8385"
+​​
+rms_contact_state: "CA"
+​​
+rms_contact_website: "n/a"
+​​
+rms_education_0_date: "n/a"
+​​
+rms_education_0_dateFormat: "n/a"
+​​
+rms_education_0_dateTS: "n/a"
+​​
+rms_education_0_description: "n/a"
+​​
+rms_education_0_institution: "California Polytechnic State University"
+​​
+rms_education_0_isGraduate: "true"
+​​
+rms_education_0_location: "n/a"
+​​
+rms_education_0_minor: "n/a"
+​​
+rms_education_0_qualification: "BS, Business Administration - Concentration: Accounting"
+​​
+rms_education_0_score: "3.257"
+​​
+rms_education_0_scoreType: "GPA"
+​​
+rms_education_count: "1"
+​​
+rms_experience_0_company: "Cal Poly Associated Students Inc."
+​​
+rms_experience_0_dateBegin: "Aug 2024"
+​​
+rms_experience_0_dateBeginFormat: "MMMM YYYY"
+​​
+rms_experience_0_dateBeginTS: "1722495600000"
+​​
+rms_experience_0_dateEnd: "Present"
+​​
+rms_experience_0_dateEndFormat: "Present"
+​​
+rms_experience_0_dateEndTS: "n/a"
+​​
+rms_experience_0_description: "Managed guest needs during events, ensuring smooth operations and high-quality attendees • Coordinated event logistics, including venue setup, material preparation, and post-event breakdown"
+​​
+rms_experience_0_isCurrent: "true"
+​​
+rms_experience_0_location: "San Luis Obispo, CA"
+​​
+rms_experience_0_role: "Event Operations Manager"
+​​
+rms_experience_1_company: "KPMG"
+​​
+rms_experience_1_dateBegin: "June 2024"
+​​
+rms_experience_1_dateBeginFormat: "MMMM YYYY"
+​​
+rms_experience_1_dateBeginTS: "1717225200000"
+​​
+rms_experience_1_dateEnd: "Aug 2024"
+​​
+rms_experience_1_dateEndFormat: "MMMM YYYY"
+​​
+rms_experience_1_dateEndTS: "1722495600000"
+​​
+rms_experience_1_description: "Performed Tests of Operating Effectiveness (TOE) on internal controls for a major banking client, selecting samples and reviewing documentation to ensure accurate financial reporting • Utilized Power BI to cleanse, transform, and visualize accounts payable aging data • Coordinated with offshore audit teams (GDC) to delegate tasks, enhancing overall efficiency and ensuring the timely completion of key audit deliverables."
+​​
+rms_experience_1_isCurrent: "false"
+​​
+rms_experience_1_location: "San Francisco, CA"
+​​
+rms_experience_1_role: "Audit Intern"
+​​
+rms_experience_2_company: "Better Business Financial Services"
+​​
+rms_experience_2_dateBegin: "Jan 2024"
+​​
+rms_experience_2_dateBeginFormat: "MMMM YYYY"
+​​
+rms_experience_2_dateBeginTS: "1704096000000"
+​​
+rms_experience_2_dateEnd: "June 2024"
+​​
+rms_experience_2_dateEndFormat: "MMMM YYYY"
+​​
+rms_experience_2_dateEndTS: "1717225200000"
+​​
+rms_experience_2_description: "Utilized Quick Books to manage accounts payable and accounts receivable tasks, integrating client banking information through bank feeds and manual data entry • Coordinates with clients to resolve open items and facilitates the completion of month-end and year-end closing, including preparing journal entries and reconciling accounts."
+​​
+rms_experience_2_isCurrent: "false"
+​​
+rms_experience_2_location: "San Luis Obispo, CA"
+​​
+rms_experience_2_role: "Tax Intern"
+​​
+rms_experience_count: "3"
+​​
+rms_involvement_0_dateBegin: "n/a"
+​​
+rms_involvement_0_dateBeginFormat: "n/a"
+​​
+rms_involvement_0_dateBeginTS: "n/a"
+​​
+rms_involvement_0_dateEnd: "n/a"
+​​
+rms_involvement_0_dateEndFormat: "n/a"
+​​
+rms_involvement_0_dateEndTS: "n/a"
+​​
+rms_involvement_0_description: "Prepared lesson plans, grade homework/tests, and mentor students"
+​​
+rms_involvement_0_location: "n/a"
+​​
+rms_involvement_0_organization: "n/a"
+​​
+rms_involvement_0_role: "Teaching Assistant"
+​​
+rms_involvement_1_dateBegin: "n/a"
+​​
+rms_involvement_1_dateBeginFormat: "n/a"
+​​
+rms_involvement_1_dateBeginTS: "n/a"
+​​
+rms_involvement_1_dateEnd: "n/a"
+​​
+rms_involvement_1_dateEndFormat: "n/a"
+​​
+rms_involvement_1_dateEndTS: "n/a"
+​​
+rms_involvement_1_description: "Assistant Junior Varsity Coach for a 10 man roster"
+​​
+rms_involvement_1_location: "n/a"
+​​
+rms_involvement_1_organization: "n/a"
+​​
+rms_involvement_1_role: "HS Basketball Coach"
+​​
+rms_involvement_2_dateBegin: "n/a"
+​​
+rms_involvement_2_dateBeginFormat: "n/a"
+​​
+rms_involvement_2_dateBeginTS: "n/a"
+​​
+rms_involvement_2_dateEnd: "n/a"
+​​
+rms_involvement_2_dateEndFormat: "n/a"
+​​
+rms_involvement_2_dateEndTS: "n/a"
+​​
+rms_involvement_2_description: "Outfield JV Coach for a 17 man roster • Organized drills and practices independently of Head Coach"
+​​
+rms_involvement_2_location: "n/a"
+​​
+rms_involvement_2_organization: "n/a"
+​​
+rms_involvement_2_role: "HS Baseball Coach"
+​​
+rms_involvement_count: "3"
+​​
+rms_project_count: "0"
+​​
+rms_schema_detail: "https://github.com/rezi-io/resume-standard"
+​​
+rms_skill_0_category: "Language"
+​​
+rms_skill_0_keywords: "English, Spanish"
+​​
+rms_skill_1_category: "Technology"
+​​
+rms_skill_1_keywords: "Alteryx, Microsoft Excel, Word, Power Point, JMP"
+​​
+rms_skill_2_category: "Personal"
+​​
+rms_skill_2_keywords: "Sports, Song writing, Singing, Comedy"
+​​
+rms_skill_count: "3"
+​​
+rms_summary: "n/a"
+​​
+<prototype>: Object { … }
+​
+rmsVersion: "2.0"
+​
+status: "processed"
+​
+title: "fffff"
+​
+updatedAt: Object { seconds: 1749927546, nanoseconds: 351000000 }
+​
+userId: "1QahHZydwigSFshw45KWmJnpNpx2"
+​
+<prototype>: Object { … }
+page.tsx:53:16
+Fetched resume data:
+Object { experience: "", parsedData: {…}, rmsRawData: {…}, status: "processed", title: "fffff", userId: "1QahHZydwigSFshw45KWmJnpNpx2", processingCompleted: "2025-06-14T18:59:06.724Z", updatedAt: {…}, fileUrl: "https://firebasestorage.googleapis.com/v0/b/my-rms-validator.firebasestorage.app/o/resumes%2F1QahHZydwigSFshw45KWmJnpNpx2%2FVcqChCgACj5OHnMdcLpW%2F1749927523050-RafaelAcevedoResume.pdf?alt=media&token=c103e321-b7c1-4e71-bfc0-4b6a5a5dbafa", rmsVersion: "2.0", … }
+page.tsx:53:16
+Passing to ResumePreview:
+Object { objective: "", awards: [], projects: [], languages: [], certifications: [], summary: "", metadata: {…}, education: (1) […], experiences: (3) […], skillCategories: (3) […], … }
+page.tsx:103:10
+Passing to ResumePreview:
+Object { objective: "", awards: [], projects: [], languages: [], certifications: [], summary: "", metadata: {…}, education: (1) […], experiences: (3) […], skillCategories: (3) […], … }
+<anonymous code>:1:148389
+setCurrentResumeId called:
+Object { from: null, to: "VcqChCgACj5OHnMdcLpW" }
+job-info-context.tsx:38:12
+setCurrentResumeId called:
+Object { from: null, to: null }
+job-info-context.tsx:38:12
+setCurrentResumeId called:
+Object { from: null, to: "VcqChCgACj5OHnMdcLpW" }
+job-info-context.tsx:38:12
+setCurrentResumeId called:
+Object { from: null, to: null }
+job-info-context.tsx:38:12
+setCurrentResumeId called:
+Object { from: "VcqChCgACj5OHnMdcLpW", to: "VcqChCgACj5OHnMdcLpW" }
+job-info-context.tsx:38:12
+JobInfoContext - jobInfo changed:
+Object { currentResumeId: "VcqChCgACj5OHnMdcLpW", jobInfo: {…}, jobInfoByResume: {} }
+job-info-context.tsx:47:12
+checkJobInfo called with:
+Object { user: true, resumeId: "VcqChCgACj5OHnMdcLpW", showJobPanels: true }
+resume-preview-panel.tsx:102:12
+checkJobInfo called with:
+Object { user: true, resumeId: "VcqChCgACj5OHnMdcLpW", showJobPanels: true }
+resume-preview-panel.tsx:102:12
+Resume data from Firestore:
+Object { hasJobInfo: false, jobInfo: undefined }
+resume-preview-panel.tsx:115:16
+No job info found or incomplete:
+Object { hasJob: false, jobInfo: undefined }
+resume-preview-panel.tsx:144:18
+Resume data from Firestore:
+Object { hasJobInfo: false, jobInfo: undefined }
+resume-preview-panel.tsx:115:16
+No job info found or incomplete:
+Object { hasJob: false, jobInfo: undefined }
+resume-preview-panel.tsx:144:18
+Source map error: Error: request failed with status 404
+Stack in the worker:networkRequest@resource://devtools/client/shared/source-map-loader/utils/network-request.js:43:9
+
+Resource URL: http://localhost:3000/dashboard/resumes/VcqChCgACj5OHnMdcLpW/%3Canonymous%20code%3E
+Source Map URL: installHook.js.map

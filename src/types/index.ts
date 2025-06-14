@@ -1,6 +1,3 @@
-// src/types/index.ts
-
-// Resume Types
 export type FormSection =
   | 'contact'
   | 'summary'
@@ -23,7 +20,6 @@ export interface ResumeData {
   user_id?: string;
   extracted_text?: string;
   sections: Record<FormSection, ResumeSection>;
-  [key: string]: any;
 }
 
 export interface ProcessedResumeData {
@@ -77,15 +73,13 @@ export interface Skill {
 }
 
 export interface Project {
-  name?: string;
-  title?: string;
+  title: string;
   role: string;
   organization?: string;
   description: string;
   dateBegin: string;
   dateEnd: string;
   url?: string;
-  repository?: string;
 }
 
 export interface Certification {

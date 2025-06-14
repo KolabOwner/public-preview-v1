@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { parse as pdfParse } from 'pdf-parse/lib/pdf-parse.js';
+import pdf from 'pdf-parse';
+import { FILE_LIMITS, ERROR_MESSAGES } from '../../../lib/constants';
 
 // Increase timeout for this route to handle large PDFs
 export const maxDuration = 60; // 60 seconds
@@ -11,9 +12,7 @@ export const dynamic = 'force-dynamic'; // Ensure this route is not cached
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log('PDF extraction API called');
-
-    // Parse the form data from the request
+    const formData = await request.formData();
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -32,11 +31,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check file size
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
+    if (file.size > FILE_LIMITS.MAX_PDF_SIZE_BYTES) {
       return NextResponse.json(
-        { success: false, error: 'File size must be less than 10MB' },
+        { success: false, error: ERROR_MESSAGES.FILE_TOO_LARGE },
         { status: 400 }
       );
     }
@@ -45,26 +42,21 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Use pdf-parse to extract text
-    console.log(`Processing PDF (${file.name}, ${buffer.length} bytes)`);
-
     try {
-      // Configure pdf-parse options (avoid using hardcoded paths)
       const options = {
-        max: 100, // Max pages to parse (prevents huge PDFs from causing issues)
-        timeout: 30000, // 30 second timeout
-        pagerender: undefined, // Use default renderer
-        version: 'v1.10.100' // Use specific version
+        max: FILE_LIMITS.MAX_PDF_PAGES,
+        timeout: FILE_LIMITS.PDF_PARSE_TIMEOUT_MS,
+        pagerender: undefined,
+        version: 'v1.10.100'
       };
 
-      // Use direct import of pdf-parse.js to avoid the debug mode issue
-      const pdfData = await pdfParse(buffer, options);
+      // Parse the PDF buffer
+      const pdfData = await pdf(buffer, options);
 
-      if (!pdfData.text || pdfData.text.length < 50) {
-        console.warn('Extracted text is too short, suggesting client-side fallback');
+      if (!pdfData.text || pdfData.text.length < FILE_LIMITS.MIN_TEXT_LENGTH) {
         return NextResponse.json({
           success: false,
-          error: 'Extracted text is too short. Try client-side extraction.',
+          error: ERROR_MESSAGES.TEXT_TOO_SHORT,
           useClientSide: true
         });
       }
