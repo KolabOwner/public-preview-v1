@@ -1,0 +1,36 @@
+{
+  "project": "Hirable AI Resume Analysis Service",
+  "version": "1.0.0",
+  "firebase": {
+    "projectId": "my-rms-validator",
+    "adminProjectId": "kolabai-project"
+  },
+  "defaults": {
+    "mode": "full",
+    "coverage": 90,
+    "researchDepth": "standard",
+    "commitFrequency": "phase",
+    "typeChecking": "strict",
+    "securityFirst": true
+  },
+  "customCommands": {
+    "enabled": true,
+    "path": ".claude/commands"
+  },
+  "coordination": {
+    "enabled": true,
+    "path": "coordination",
+    "multiAgent": true
+  },
+  "security": {
+    "auditEnabled": true,
+    "requireAuth": true,
+    "rateLimiting": true,
+    "inputValidation": "strict"
+  },
+  "performance": {
+    "benchmarking": true,
+    "bundleAnalysis": true,
+    "lighthouse": true
+  }
+}
