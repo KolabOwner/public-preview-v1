@@ -1,0 +1,871 @@
+/* =================================================================
+   External Dependencies
+   ================================================================= */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+/* IMPROVEMENT: Load specific font weights matching PDF */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600&family=Inter:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =================================================================
+   CSS Custom Properties (Design Tokens)
+   ================================================================= */
+@layer base {
+  :root {
+    /* Spacing & Layout */
+    --radius: 0.5rem;
+    --sidebar-width: 280px;
+    --sidebar-collapsed: 72px;
+
+    /* Light Theme Colors */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
+    /* Custom Theme Colors */
+    --bg-primary: #1a2332;
+    --bg-secondary: #2a3f5f;
+    --bg-tertiary: #324966;
+    --bg-hover: #1e2936;
+    --text-primary: #ffffff;
+    --text-secondary: #e5e7eb;
+    --text-tertiary: #9ca3af;
+    --border-primary: #374151;
+    --border-secondary: #4b5563;
+    --accent-primary: #5b7cfd;
+    --accent-hover: #4a6bec;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+
+    /* Brand Colors */
+    --brand-teal: #48c9b0;
+    --brand-teal-dark: #16a085;
+
+    /* Transitions */
+    --transition-base: 200ms ease;
+    --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Typography - Font Families */
+    --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-source-sans: 'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-merriweather: 'Merriweather', Georgia, 'Times New Roman', serif;
+    --font-system: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* Typography - Font Sizes (rem) */
+    --text-xs: 0.75rem;     /* 12px */
+    --text-sm: 0.875rem;    /* 14px */
+    --text-base: 1rem;      /* 16px */
+    --text-lg: 1.125rem;    /* 18px */
+    --text-xl: 1.25rem;     /* 20px */
+    --text-2xl: 1.5rem;     /* 24px */
+    --text-3xl: 1.875rem;   /* 30px */
+    --text-4xl: 2.25rem;    /* 36px */
+
+    /* IMPROVEMENT: PDF-accurate font sizes */
+    --pdf-name-size: 14.8pt;
+    --pdf-section-size: 8.5pt;
+    --pdf-body-size: 6.7pt;
+    --pdf-detail-size: 6.7pt;
+
+    /* Resume-specific font sizes - Optimized for web readability */
+    --scale-factor: 1.3; /* IMPROVEMENT: Reduced from 1.4 for closer match */
+
+    /* Name sizes (base: 14.8pt for print) */
+    --resume-name-sm: calc(14.8pt * 1.2);
+    --resume-name-md: calc(14.8pt * var(--scale-factor));
+    --resume-name-lg: calc(14.8pt * 1.5);
+
+    /* Section header sizes (base: 8.5pt for print) */
+    --resume-section-sm: calc(8.5pt * 1.2);
+    --resume-section-md: calc(8.5pt * var(--scale-factor));
+    --resume-section-lg: calc(8.5pt * 1.5);
+
+    /* Body text sizes (base: 6.7pt for print) */
+    --resume-body-sm: calc(6.7pt * 1.2);
+    --resume-body-md: calc(6.7pt * var(--scale-factor));
+    --resume-body-lg: calc(6.7pt * 1.5);
+
+    /* Detail text sizes */
+    --resume-detail-sm: calc(6.7pt * 1.2);
+    --resume-detail-md: calc(6.7pt * var(--scale-factor));
+    --resume-detail-lg: calc(6.7pt * 1.5);
+
+    /* Typography - Font Weights */
+    --font-thin: 100;
+    --font-extralight: 200;
+    --font-light: 300;
+    --font-regular: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    --font-extrabold: 800;
+    --font-black: 900;
+
+    /* Typography - Line Heights */
+    --leading-none: 1;
+    --leading-tight: 1.1;
+    --leading-snug: 1.2;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.6;
+    --leading-loose: 1.8;
+    --resume-heading: 1.2;
+    --resume-body: 1.4; /* IMPROVEMENT: Tighter for PDF match */
+
+    /* Typography - Letter Spacing */
+    --tracking-tighter: -0.05em;
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.025em;
+    --tracking-wider: 0.05em;
+    --tracking-widest: 0.1em;
+    --resume-name-spacing: 0.02em;
+    --resume-section-spacing: 0.05em;
+    --resume-body-spacing: 0.01em;
+
+    /* Typography - Baseline Grid */
+    --baseline: 1.5rem;
+    --baseline-half: 0.75rem;
+    --baseline-quarter: 0.375rem;
+
+    /* IMPROVEMENT: Compact baseline for PDF match */
+    --baseline-compact: 1.25rem;
+    --baseline-compact-half: 0.625rem;
+    --baseline-compact-quarter: 0.3125rem;
+  }
+
+  .dark {
+    /* Dark Theme Colors */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 9.8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+/* =================================================================
+   Base Styles & Resets
+   ================================================================= */
+@layer base {
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Body defaults */
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color var(--transition-smooth), color var(--transition-smooth);
+  }
+
+  /* Typography defaults */
+  h1 { @apply text-2xl font-bold; }
+  h2 { @apply text-xl font-semibold; }
+  h3 { @apply text-lg font-medium; }
+
+  /* Apply font variables to root elements */
+  body {
+    font-family: var(--font-inter);
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    font-kerning: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: var(--tracking-normal);
+    line-height: var(--leading-normal);
+  }
+
+  /* Focus visible for accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  /* Remove focus outline for mouse users */
+  :focus:not(:focus-visible) {
+    @apply outline-none;
+  }
+}
+
+/* =================================================================
+   Custom Scrollbar
+   ================================================================= */
+@layer utilities {
+  /* Webkit browsers */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-600;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.300') transparent;
+  }
+
+  .dark * {
+    scrollbar-color: theme('colors.gray.700') transparent;
+  }
+}
+
+/* =================================================================
+   Component Styles
+   ================================================================= */
+@layer components {
+  /* Typography Utilities - Professional Quality */
+  .font-inter { font-family: var(--font-inter); }
+  .font-source-sans { font-family: var(--font-source-sans); }
+  .font-merriweather { font-family: var(--font-merriweather); }
+
+  /* Typography Utilities - Adobe-quality text */
+  .text-professional {
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "onum" 1;
+    font-variant-ligatures: common-ligatures discretionary-ligatures;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .text-body-professional {
+    @apply text-professional;
+    letter-spacing: var(--tracking-normal);
+    line-height: var(--leading-normal);
+    font-weight: var(--font-regular);
+  }
+
+  .text-heading-professional {
+    @apply text-professional;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+    font-weight: var(--font-bold);
+  }
+
+  /* Resume Typography Classes - Web Optimized */
+  .resume-name {
+    font-family: var(--font-merriweather);
+    font-size: var(--resume-name-md);
+    font-weight: var(--font-bold);
+    line-height: var(--resume-heading);
+    letter-spacing: var(--resume-name-spacing);
+    @apply text-professional;
+  }
+
+  .resume-section-header {
+    font-family: var(--font-merriweather);
+    font-size: var(--resume-section-md);
+    font-weight: var(--font-bold);
+    line-height: var(--resume-heading);
+    letter-spacing: var(--resume-section-spacing);
+    text-transform: uppercase;
+    @apply text-professional;
+  }
+
+  .resume-job-title {
+    font-family: var(--font-source-sans);
+    font-size: var(--resume-body-lg);
+    font-weight: var(--font-semibold);
+    line-height: var(--resume-body);
+    @apply text-professional;
+  }
+
+  .resume-body {
+    font-family: var(--font-source-sans);
+    font-size: var(--resume-body-md);
+    font-weight: var(--font-regular);
+    line-height: var(--resume-body);
+    letter-spacing: var(--resume-body-spacing);
+    @apply text-professional;
+  }
+
+  .resume-detail {
+    font-family: var(--font-source-sans);
+    font-size: var(--resume-detail-md);
+    font-weight: var(--font-regular);
+    line-height: var(--resume-body);
+    @apply text-professional;
+  }
+
+  /* IMPROVEMENT: Font loading states */
+  .fonts-loading .resume-content {
+    font-family: Georgia, 'Times New Roman', serif;
+    letter-spacing: 0.02em; /* Compensate for metrics */
+  }
+
+  .fonts-loaded .resume-content {
+    transition: letter-spacing 0.2s ease;
+  }
+
+  /* IMPROVEMENT: Compact mode for PDF-like density */
+  .compact-mode {
+    --baseline: var(--baseline-compact);
+    --baseline-half: var(--baseline-compact-half);
+    --baseline-quarter: var(--baseline-compact-quarter);
+  }
+
+  .compact-mode section {
+    margin-bottom: var(--baseline-half) !important;
+  }
+
+  .compact-mode h2 {
+    margin-top: var(--baseline-half) !important;
+    margin-bottom: var(--baseline-quarter) !important;
+    padding-bottom: 1px !important;
+    border-bottom-width: 1px !important;
+  }
+
+  .compact-mode ul {
+    margin-bottom: var(--baseline-quarter) !important;
+    padding-left: 16px !important;
+  }
+
+  .compact-mode li {
+    margin-bottom: 2px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* IMPROVEMENT: PDF weight mode */
+  .pdf-weights {
+    /* Base text is light (300) */
+    font-weight: 300 !important;
+  }
+
+  .pdf-weights h1,
+  .pdf-weights h2,
+  .pdf-weights h3,
+  .pdf-weights .job-title,
+  .pdf-weights .skill-label {
+    /* Headers are bold (700) */
+    font-weight: 700 !important;
+  }
+
+  .pdf-weights .company-name,
+  .pdf-weights .job-date,
+  .pdf-weights .contact-separator,
+  .pdf-weights .emphasis {
+    /* Secondary text is regular (400) */
+    font-weight: 400 !important;
+  }
+
+  /* Responsive typography for different screen sizes */
+  @media (max-width: 768px) {
+    .resume-name { font-size: var(--resume-name-sm); }
+    .resume-section-header { font-size: var(--resume-section-sm); }
+    .resume-body { font-size: var(--resume-body-sm); }
+    .resume-detail { font-size: var(--resume-detail-sm); }
+  }
+
+  @media (min-width: 1024px) {
+    .resume-name { font-size: var(--resume-name-lg); }
+    .resume-section-header { font-size: var(--resume-section-lg); }
+    .resume-body { font-size: var(--resume-body-lg); }
+    .resume-detail { font-size: var(--resume-detail-lg); }
+  }
+
+  /* Baseline Grid Alignment */
+  .baseline-grid {
+    line-height: var(--baseline);
+  }
+
+  .baseline-grid > * {
+    margin-bottom: var(--baseline);
+  }
+
+  .baseline-grid > *:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Professional Justification */
+  .text-justify-professional {
+    text-align: justify;
+    hyphens: auto;
+    text-justify: inter-word;
+    word-spacing: -0.05em;
+    letter-spacing: 0.01em;
+  }
+
+  /* Multi-column Layout */
+  .columns-professional {
+    column-count: 2;
+    column-gap: 2rem;
+    column-rule: 1px solid theme('colors.gray.200');
+    orphans: 3;
+    widows: 3;
+  }
+
+  .columns-professional h2,
+  .columns-professional h3,
+  .columns-professional figure {
+    break-after: avoid;
+    break-inside: avoid;
+  }
+
+  /* Form Elements */
+  .form-label {
+    @apply block text-sm font-medium text-foreground mb-1.5;
+  }
+
+  .form-input {
+    @apply w-full px-3 py-2
+      bg-background dark:bg-secondary
+      border border-input rounded-md
+      text-foreground placeholder:text-muted-foreground
+      transition-colors duration-200
+      focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .form-textarea {
+    @apply form-input min-h-[100px] resize-y;
+  }
+
+  .form-select {
+    @apply form-input appearance-none cursor-pointer
+      bg-[url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")]
+      bg-[length:1.5rem] bg-[right_0.5rem_center] bg-no-repeat pr-10;
+  }
+
+  /* Button System */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2
+      px-4 py-2 rounded-md text-sm font-medium
+      transition-all duration-200
+      focus:outline-none focus:ring-2 focus:ring-offset-2
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn text-primary-foreground bg-primary
+      hover:bg-primary/90 focus:ring-primary;
+  }
+
+  .btn-secondary {
+    @apply btn text-secondary-foreground bg-secondary
+      hover:bg-secondary/80 focus:ring-secondary;
+  }
+
+  .btn-outline {
+    @apply btn border border-input bg-background
+      hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-ghost {
+    @apply btn text-foreground
+      hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-destructive {
+    @apply btn text-destructive-foreground bg-destructive
+      hover:bg-destructive/90 focus:ring-destructive;
+  }
+
+  /* Button Sizes */
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+  .btn-lg { @apply px-6 py-3 text-base; }
+  .btn-icon { @apply p-2; }
+
+  /* Card System */
+  .card {
+    @apply rounded-lg border bg-card text-card-foreground
+      shadow-sm transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply hover:shadow-lg hover:scale-[1.02] hover:border-primary;
+  }
+
+  .card-header {
+    @apply flex flex-col space-y-1.5 p-6;
+  }
+
+  .card-title {
+    @apply text-lg font-semibold leading-none tracking-tight;
+  }
+
+  .card-description {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .card-content {
+    @apply p-6 pt-0;
+  }
+
+  .card-footer {
+    @apply flex items-center p-6 pt-0;
+  }
+}
+
+/* =================================================================
+   Animations
+   ================================================================= */
+@layer utilities {
+  /* Keyframe Definitions */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse {
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+    50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Gradient Animations for Sidebar */
+  @keyframes gradient-shift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -30px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+  }
+
+  /* Animation Classes */
+  .animate-spin { animation: spin 1s linear infinite; }
+  .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  .animate-bounce { animation: bounce 1s infinite; }
+  .animate-slide-down { animation: slideDown 0.3s ease-out; }
+  .animate-slide-up { animation: slideUp 0.3s ease-out; }
+  .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+  .animate-gradient { animation: gradient-shift 20s ease-in-out infinite; }
+}
+
+/* =================================================================
+   Sidebar Styles
+   ================================================================= */
+.app-sidebar {
+  transition: all var(--transition-smooth);
+
+  /* Collapsed state for resume editor routes */
+  &[data-route*="/dashboard/resumes/"] {
+    &[data-route*="/summary"],
+    &[data-route*="/contact"],
+    &[data-route*="/experience"],
+    &[data-route*="/education"],
+    &[data-route*="/skills"],
+    &[data-route*="/projects"],
+    &[data-route*="/involvement"],
+    &[data-route*="/coursework"],
+    &[data-route*="/preview"] {
+      width: var(--sidebar-collapsed);
+      min-width: var(--sidebar-collapsed);
+
+      .sidebar-content {
+        @apply items-center px-2;
+
+        /* Hide non-essential elements */
+        > *:not(nav):not(:first-child) {
+          @apply hidden;
+        }
+      }
+
+      /* Navigation adjustments */
+      nav {
+        @apply flex flex-col items-center;
+
+        a {
+          @apply w-12 h-12 justify-center rounded-xl;
+
+          /* Hide labels, keep icons */
+          > *:not(.sidebar-icon) {
+            @apply hidden;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* =================================================================
+   Resume Styles
+   ================================================================= */
+.resume-content {
+  font-family: var(--font-merriweather);
+  @apply text-professional baseline-grid;
+
+  /* IMPROVEMENT: PDF-accurate base weight */
+  font-weight: 300; /* Light as base */
+
+  /* Web-optimized spacing */
+  --resume-scale: 1;
+  font-size: calc(11pt * var(--resume-scale));
+
+  /* Screen optimization */
+  @media screen {
+    --resume-scale: 1.3; /* 30% larger for screen readability */
+  }
+
+  h1 {
+    @apply resume-name;
+    @apply text-gray-900 dark:text-gray-100;
+    /* IMPROVEMENT: Force bold weight */
+    font-weight: 700 !important;
+  }
+
+  h2 {
+    @apply resume-section-header;
+    @apply text-gray-900 dark:text-gray-100;
+    margin-top: var(--baseline-half);
+    margin-bottom: var(--baseline-quarter);
+    /* IMPROVEMENT: Force bold weight */
+    font-weight: 700 !important;
+  }
+
+  h3 {
+    @apply resume-job-title;
+    @apply text-gray-900 dark:text-gray-100;
+    /* IMPROVEMENT: Force bold weight */
+    font-weight: 700 !important;
+  }
+
+  p, div:not([class]), span:not([class]) {
+    @apply resume-body;
+    @apply text-gray-800 dark:text-gray-200;
+    /* IMPROVEMENT: Ensure light weight for body */
+    font-weight: 300;
+  }
+
+  /* IMPROVEMENT: Tighter spacing for PDF match */
+  section {
+    margin-bottom: calc(var(--baseline) * 0.75);
+  }
+
+  /* Bullet points with proper indentation */
+  ul, ol {
+    @apply resume-body;
+    padding-left: 16px; /* IMPROVEMENT: Tighter indent */
+    margin-bottom: var(--baseline-quarter);
+    font-weight: 300; /* Light for bullets */
+  }
+
+  li {
+    margin-bottom: 2px; /* IMPROVEMENT: Very tight spacing */
+    @apply text-gray-800 dark:text-gray-200;
+    line-height: 1.3; /* IMPROVEMENT: Tighter line height */
+    font-weight: 300;
+  }
+
+  /* Dates and details */
+  .date, .location, time {
+    @apply resume-detail;
+    @apply text-gray-600 dark:text-gray-400;
+    font-weight: 400; /* Regular for secondary text */
+    font-style: italic;
+  }
+
+  /* IMPROVEMENT: Company names */
+  .company-name {
+    font-weight: 400; /* Regular weight */
+  }
+
+  /* IMPROVEMENT: Contact separators */
+  .contact-separator {
+    font-weight: 400; /* Regular weight */
+    color: #666;
+  }
+
+  /* IMPROVEMENT: Skill categories */
+  .skill-label {
+    font-weight: 700; /* Bold for labels */
+  }
+
+  .skill-list {
+    font-weight: 300; /* Light for lists */
+  }
+}
+
+/* IMPROVEMENT: Small text optimization for PDF sizes */
+@media screen and (min-resolution: 2dppx) {
+  /* High DPI screens can handle smaller text better */
+  .resume-content {
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+}
+
+/* =================================================================
+   Print Styles
+   ================================================================= */
+@media print {
+  /* Hide everything except resume content */
+  body * { visibility: hidden; }
+  .resume-content, .resume-content * { visibility: visible; }
+
+  /* Reset layout for print */
+  .resume-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Hide UI elements */
+  .preview-controls,
+  .no-print,
+  .app-sidebar,
+  nav,
+  header,
+  footer {
+    display: none !important;
+  }
+
+  /* Print color adjustments */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Typography for print */
+  .resume-content {
+    font-family: var(--font-merriweather);
+    /* IMPROVEMENT: Use exact PDF sizes for print */
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    color: #000 !important;
+    letter-spacing: 0;
+    font-weight: 300 !important; /* Light base */
+
+    /* Ensure proper font rendering */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-feature-settings: "kern" 1, "liga" 1;
+
+    * {
+      color: #000 !important;
+      background: transparent !important;
+    }
+
+    /* IMPROVEMENT: PDF-accurate print sizes */
+    h1 {
+      font-size: 14.8pt !important;
+      font-weight: 700 !important;
+    }
+    h2 {
+      font-size: 8.5pt !important;
+      font-weight: 700 !important;
+    }
+    h3 {
+      font-size: 7.5pt !important;
+      font-weight: 700 !important;
+    }
+    p, li {
+      font-size: 6.7pt !important;
+      font-weight: 300 !important;
+    }
+    .date, .location {
+      font-size: 6.7pt !important;
+      font-weight: 400 !important;
+    }
+  }
+
+  /* IMPROVEMENT: Tighter page margins for print */
+  @page {
+    margin: 0.5in 0.75in;
+    size: letter;
+  }
+
+  /* Reset scale for print */
+  .resume-content {
+    --resume-scale: 1 !important; /* Normal size for print */
+    padding: 0 !important; /* Let @page handle margins */
+  }
+}
+
+/* =================================================================
+   Utility Classes
+   ================================================================= */
+@layer utilities {
+  /* Transitions */
+  .transition-200 { transition-duration: 200ms; }
+  .transition-300 { transition-duration: 300ms; }
+
+  /* Z-index scale */
+  .z-dropdown { z-index: 50; }
+  .z-modal { z-index: 100; }
+  .z-tooltip { z-index: 150; }
+
+  /* Gradient backgrounds */
+  .bg-gradient-brand {
+    @apply bg-gradient-to-r from-emerald-400 to-teal-400;
+  }
+
+  /* Glass morphism */
+  .glass {
+    @apply bg-white/10 dark:bg-black/10 backdrop-blur-md;
+  }
+
+  /* Text selection */
+  ::selection {
+    @apply bg-primary/20 text-primary;
+  }
+
+  /* IMPROVEMENT: Debug helper for baseline grid */
+  .show-baseline-grid {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent calc(var(--baseline) - 1px),
+      rgba(255, 0, 0, 0.1) calc(var(--baseline) - 1px),
+      rgba(255, 0, 0, 0.1) var(--baseline)
+    );
+  }
+}
