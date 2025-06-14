@@ -13,6 +13,7 @@ import KeywordTargetingPanel from "@/components/resume/panels/keyword-targeting-
 import JobInfoPanel from "@/components/resume/panels/job-info-panel";
 import SharePanel from "@/components/resume/panels/share-panel";
 import { generateResumePDF } from '@/lib/pdf-generator';
+import { useJobInfo } from '@/contexts/job-info-context';
 
 interface ResumePreviewProps {
   resumeData: any;
@@ -29,6 +30,7 @@ export default function ResumePreview({
 }: ResumePreviewProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { setCurrentResumeId } = useJobInfo();
   const headerBarRef = useRef<ResumeHeaderBarRef>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [hasJobInfo, setHasJobInfo] = useState<boolean | null>(null);
@@ -130,9 +132,21 @@ export default function ResumePreview({
     checkJobInfo();
   }, [checkJobInfo]);
 
+  // Set current resume ID for job info context
+  useEffect(() => {
+    if (resumeId) {
+      setCurrentResumeId(resumeId);
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      setCurrentResumeId(null);
+    };
+  }, [resumeId, setCurrentResumeId]);
+
   // Enhanced document settings - now using CSS for styling
   const [documentSettings, setDocumentSettings] = useState<DocumentSettings>({
-    zoom: 100,
+    zoom: 119,
     fontFamily: 'Times New Roman',
     primaryColor: '#000000',
     textColor: '#333333',
@@ -164,8 +178,7 @@ export default function ResumePreview({
   // Handle job info completion
   const handleJobInfoComplete = useCallback(() => {
     setHasJobInfo(true);
-    checkJobInfo();
-  }, [checkJobInfo]);
+  }, []);
 
   // Handle request to update job info
   const handleJobUpdate = useCallback(() => {
@@ -940,15 +953,15 @@ export default function ResumePreview({
   if (showJobPanels && user) {
     return (
       <div className={`w-full ${className}`}>
-        <div className="flex gap-6">
+        <div className="flex gap-4">
           {/* Left Side - Resume Preview */}
-          <div className="flex-1 min-w-0">
+          <div className="w-[1034px] flex-shrink-0">
             {resumePreviewContent}
           </div>
 
           {/* Right Side - Conditional Panels */}
-          <div className="w-96 flex-shrink-0">
-            <div className="sticky top-6">
+          <div className="w-72 flex-shrink-0">
+            <div>
               {loading ? (
                 <div className="bg-white rounded-lg shadow-lg p-6">
                   <div className="animate-pulse">

@@ -643,7 +643,7 @@ const normalizedScore = Math.max(0, Math.min(100, resumeScore));
 return (
   <div
     ref={containerRef}
-    className={`${themeClasses} rounded-lg border shadow-sm mx-auto flex-shrink-0 w-full max-w-[1034px] mb-4 relative transition-all duration-200 ${
+    className={`${themeClasses} rounded-lg border shadow-sm flex-shrink-0 w-full mb-4 relative transition-all duration-200 ${
       disabled ? 'opacity-50 pointer-events-none' : ''
     } ${className}`}
     data-testid={testId}

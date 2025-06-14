@@ -59,8 +59,8 @@ const SharePanel: React.FC<SharePanelProps> = ({ resumeId, className = '' }) => 
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 ${className}`}>
-      <div className="flex w-full flex-col gap-5 px-6 py-6">
+    <div className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
+      <div className="flex w-full flex-col gap-5">
         {/* Header with toggle */}
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Share this resume</h3>

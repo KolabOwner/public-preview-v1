@@ -320,7 +320,7 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
 
   // Styles
   const containerClasses = useMemo(() =>
-    `bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 lg:p-6 transition-all duration-200 max-w-[306px] ${
+    `bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-200 ${
       disabled ? 'opacity-50 pointer-events-none' : ''
     } ${className}`.trim(),
     [disabled, className]
