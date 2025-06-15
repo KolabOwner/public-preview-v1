@@ -20,8 +20,9 @@ import { AIProviderFactory } from '../providers/factory';
 import { TaskQueueManager } from '../execution/task-queue';
 import { MetricsCollector } from '../monitoring/metrics-collector';
 import { ArtifactStore } from '../storage/artifact-store';
-import { SparcEventEmitter } from './event-emitter';
+import { SparcEventEmitter } from '@/lib/sparc';
 import { Logger } from '../utils/logger';
+
 
 export interface SparcFrameworkOptions {
   configPath: string;

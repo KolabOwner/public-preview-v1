@@ -21,6 +21,7 @@ import { FrontendAgent } from './frontend-agent';
 import { BackendAgent } from './backend-agent';
 import { TestingAgent } from './testing-agent';
 import { DevOpsAgent } from './devops-agent';
+import { GCPAgent } from './gcp-agent';
 import { TaskQueueManager } from '../execution/task-queue';
 import { SparcEventEmitter } from '../core/event-emitter';
 import { Logger } from '../utils/logger';
@@ -78,6 +79,12 @@ export class AgentCoordinator {
     await this.initializeAgent(
       AgentRole.DEVOPS,
       new DevOpsAgent(this.config, this.aiProvider)
+    );
+
+    // Initialize GCP agent if cloud integration is needed
+    await this.initializeAgent(
+      'gcp' as AgentRole,
+      new GCPAgent(this.config, this.aiProvider)
     );
 
     this.logger.info(`Initialized ${this.agents.size} agents`);
