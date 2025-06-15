@@ -1,0 +1,39 @@
+/* Font Awesome Compatibility Layer */
+/* This file simulates FontAwesome Pro duotone icons with free versions */
+
+.fad {
+  /* Base icon styles */
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Use fas (solid) as primary style */
+.fad::before {
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+}
+
+/* Map all duotone icons to their solid variants */
+.fad.fa-pen-to-square::before { content: "\f044"; }
+.fad.fa-eye::before { content: "\f06e"; }
+.fad.fa-download::before { content: "\f019"; }
+.fad.fa-copy::before { content: "\f0c5"; }
+.fad.fa-trash::before { content: "\f1f8"; }
+.fad.fa-ellipsis-vertical::before { content: "\f142"; }
+.fad.fa-grid-2::before { content: "\f00a"; } /* Using fa-th as fallback */
+.fad.fa-list::before { content: "\f03a"; }
+.fad.fa-angle-down::before { content: "\f107"; }
+.fad.fa-user::before { content: "\f007"; }
+.fad.fa-palette::before { content: "\f53f"; }
+.fad.fa-right-from-bracket::before { content: "\f2f5"; }
+.fad.fa-bell::before { content: "\f0f3"; }
+.fad.fa-lightbulb::before { content: "\f0eb"; }
+.fad.fa-file-lines::before { content: "\f15c"; }
+.fad.fa-moon-stars::before { content: "\f755"; }
+.fad.fa-sun::before { content: "\f185"; }
+.fad.fa-moon-over-sun::before { content: "\f74a"; }

@@ -1,5 +1,4 @@
-// lib/genkit/schemas/ats-analysis.ts
-// Zod schemas for ATS resume analysis with GenKit
+// lib/features/resume-analysis/schemas/ats-analysis.ts
 
 import { z } from 'zod';
 

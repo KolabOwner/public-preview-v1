@@ -1,7 +1,9 @@
+// lib/core/api/middleware/rate-limit.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import admin from 'firebase-admin';
 import Redis from 'ioredis';
-import {ERROR_MESSAGES, RATE_LIMITS, REDIS_CONFIG} from '@/lib/config/constants';
+import { ERROR_MESSAGES, RATE_LIMITS, REDIS_CONFIG } from '@/lib/config/constants';
 
 
 // Initialize Redis client
@@ -10,13 +12,15 @@ const redis = new Redis({
   port: parseInt(process.env.REDIS_PORT || '6379'),
   password: process.env.REDIS_PASSWORD,
   db: parseInt(process.env.REDIS_DB || '0'),
-  retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3,
   lazyConnect: true,
   keepAlive: 30000,
   connectTimeout: 10000,
   commandTimeout: 5000,
   family: 4,
+  retryStrategy: (times) => {
+    return Math.min(times * 100, 2000);
+  },
 });
 
 redis.on('connect', () => {

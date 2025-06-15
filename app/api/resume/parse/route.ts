@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {withCORS} from "@/lib/core/api/middleware/cors";
 import { FileStatus, PDFProcessor } from "@/lib/features/pdf/processor";
-import { parseResumeText } from "@/src/lib/parser";
+import { parseResumeText } from "@/lib/features/pdf/parsing/parser";
 
 
 // Increase timeout for API route

@@ -2,8 +2,9 @@
 // API route for ATS-optimized resume analysis
 
 import { NextRequest, NextResponse } from 'next/server';
-import { AnalyzeResumeForATSInputSchema } from '@/lib/genkit/schemas/ats-analysis';
-import { analyzeResumeServer } from '@/lib/genkit/analyze-resume-server';
+import { AnalyzeResumeForATSInputSchema } from "@/lib/features/resume-analysis/schemas/ats-analysis";
+import { analyzeResumeServer } from "@/lib/features/resume-analysis/analyzer";
+
 
 // GET handler for checking service status
 export async function GET(request: NextRequest) {

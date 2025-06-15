@@ -9,9 +9,6 @@
     "build": "next build",
     "start": "next start",
     "dev": "next dev",
-    "api:build": "tsc -p tsconfig.api.json",
-    "api:start": "node dist/index.js",
-    "api:dev": "ts-node src/index.ts",
     "test": "jest",
     "lint": "next lint && eslint . --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"app/**/*.{ts,tsx}\""
