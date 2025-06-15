@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/ui/theme-provider';
 import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from "@/lib/core/auth/firebase-config";
 
 interface Resume {
   id: string;
@@ -263,7 +263,7 @@ export default function ResumeEditorLayout({
         <div className="flex justify-center mb-6">
           <div className="flex flex-row flex-wrap gap-1 justify-center">
             {/* Resume Selector Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-1 py-1">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
               <div className="relative" ref={resumeDropdownRef}>
                 <button
                   onClick={() => setShowResumeDropdown(!showResumeDropdown)}
@@ -284,7 +284,7 @@ export default function ResumeEditorLayout({
 
               {/* Resume Dropdown Menu */}
               {showResumeDropdown && (
-                <div className="absolute top-full left-0 mt-2 min-w-[280px] max-w-sm bg-surface-2 rounded-lg border border-surface-2-stroke shadow-lg z-50">
+                <div className="absolute top-full left-0 mt-2 min-w-[280px] max-w-sm bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50">
                   <div className="py-2 max-h-96 overflow-y-auto">
                     {resumes.map((resume) => (
                       <button
@@ -324,17 +324,17 @@ export default function ResumeEditorLayout({
             </div>
 
             {/* Editor Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-1 py-1 gap-1">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
             {visibleTabs.map((tab) => {
               const isActive = pathname === tab.href || (isMainPage && tab.label === 'Contact');
               return (
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 transition-all ${
+                  className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 ${
                     isActive 
-                      ? 'bg-rezi-blue-600 text-neutral-0' 
-                      : 'focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/30' 
+                      : 'focus:bg-slate-100 dark:focus:bg-navy-700'
                   } cursor-pointer`}
                 >
                   <div className="w-full overflow-hidden">
@@ -357,7 +357,7 @@ export default function ResumeEditorLayout({
 
                 {/* More Menu Dropdown */}
                 {showMoreMenu && (
-                  <div className="absolute top-full right-0 mt-2 min-w-[280px] bg-surface-2 rounded-lg border border-surface-2-stroke shadow-lg z-50">
+                  <div className="absolute top-full right-0 mt-2 min-w-[280px] bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50">
                     <div className="p-3 border-b border-surface-2-stroke">
                       <h3 className="text-sm font-semibold text-gray-300">Additional Sections</h3>
                       <p className="text-xs text-gray-500 mt-1">Click to navigate or toggle visibility</p>
@@ -409,7 +409,7 @@ export default function ResumeEditorLayout({
             </div>
 
             {/* Preview/Action Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-1 py-1 gap-1">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
               {actionTabs.map((tab) => {
                 const isActive = pathname === tab.href;
                 return (
@@ -447,7 +447,7 @@ export default function ResumeEditorLayout({
           {user && (
             <button
               type="button"
-              className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition h-8 w-8 !text-xs !font-semibold bg-rezi-blue-600 text-white rounded-full"
+              className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none h-8 w-8 !text-xs !font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-md shadow-blue-500/30"
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <span>{user.displayName?.[0] || user.email?.[0] || 'U'}</span>
@@ -459,7 +459,7 @@ export default function ResumeEditorLayout({
         <div className="overflow-x-auto pb-4 mb-4 -mx-6 px-6">
           <div className="flex flex-row gap-1 w-max">
             {/* Mobile Resume Selector Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-0.5 py-0.5">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
               <button
                 onClick={() => setShowResumeDropdown(!showResumeDropdown)}
                 className="rounded inline-flex items-center gap-1 whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all text-gray-300 hover:text-gray-100"
@@ -479,7 +479,7 @@ export default function ResumeEditorLayout({
             </div>
 
             {/* Mobile Editor Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-0.5 py-0.5 gap-0.5">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 gap-0.5 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
             {visibleTabs.map((tab) => {
               const isActive = pathname === tab.href || (isMainPage && tab.label === 'Contact');
               return (
@@ -511,7 +511,7 @@ export default function ResumeEditorLayout({
             </div>
 
             {/* Mobile Action Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-0.5 py-0.5 gap-0.5">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 gap-0.5 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
               {actionTabs.map((tab) => {
                 const isActive = pathname === tab.href;
                 return (
@@ -589,7 +589,7 @@ export default function ResumeEditorLayout({
 
               <div className="space-y-2">
                 <div className="text-sm text-gray-500 px-2 pb-2 border-b border-surface-2-stroke">
-                  {user.email}
+                  {user?.email}
                 </div>
 
                 <button

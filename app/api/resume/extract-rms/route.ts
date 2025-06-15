@@ -8,7 +8,12 @@ import { writeFile, unlink } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { validateRMSMetadata, generateValidationReport, detectRMSCompliance } from '@/lib/rms-validator';
+import {
+  detectRMSCompliance,
+  generateValidationReport,
+  validateRMSMetadata
+} from "@/lib/features/pdf/metadata/rms-validator";
+
 
 const execFileAsync = promisify(execFile);
 

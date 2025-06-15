@@ -4,9 +4,9 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from "@/lib/core/auth/firebase-config";
 import { useAuth } from '@/contexts/auth-context';
-import ResumePreview from '@/components/resume/resume-preview-panel';
+import ResumePreview from '@/components/resume/panels/resume-preview-panel';
 
 interface ResumeData {
   id: string;

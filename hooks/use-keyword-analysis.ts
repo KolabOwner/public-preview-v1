@@ -1,8 +1,31 @@
 // src/hooks/useKeywordAnalysis.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import KeywordPersistenceService from "@/lib/services/keyword-persistence-service";
-import { AnalysisResponse, JobInfo, ResumeData } from "@/src/types";
+import KeywordPersistenceService from "@/lib/core/database/services/keyword-service";
+
+
+interface AnalysisResponse {
+  matching_keywords: string[];
+  missing_keywords: string[];
+  ats_score: number;
+}
+
+interface JobInfo {
+  title: string;
+  description: string;
+  company?: string;
+  location?: string;
+}
+
+interface ResumeData {
+  extracted_text: string;
+  document_id?: string;
+  user_id?: string;
+  title?: string;
+  file_url?: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
 
 interface UseKeywordAnalysisOptions {
   jobInfo: Partial<JobInfo>;

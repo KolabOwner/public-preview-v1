@@ -5,7 +5,7 @@
 
 import {
   FirebaseAuthProvider,
-  useFirebaseAuth,
+  useAuth as useFirebaseAuth,
   withAuth
 } from './firebase-auth-context';
 

@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from "@/lib/core/auth/firebase-config";
 import { useAuth } from '@/contexts/auth-context';
-import ResumePreviewPanel from '@/components/resume/resume-preview-panel';
-import { generateResumePDF } from '@/lib/pdf-generator';
+import ResumePreviewPanel from '@/components/resume/panels/resume-preview-panel';
+import { generateResumePDF } from "@/lib/features/pdf/generator";
 
 export default function ResumePreviewPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -139,7 +139,7 @@ export default function ResumePreviewPage() {
       </div>
       
       <div className="bg-gray-100 p-6 rounded-lg min-h-screen">
-        <ResumePreviewPanel resumeId={resumeId} />
+        <ResumePreviewPanel resumeId={resumeId} resumeData={resumeData} />
       </div>
     </div>
   );

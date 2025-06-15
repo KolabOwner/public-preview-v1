@@ -5,7 +5,7 @@ import { CheckCircle, AlertCircle, Loader, Sparkles } from 'lucide-react';
 import { useJobInfo } from "@/contexts/job-info-context";
 import { useAuth } from "@/contexts/auth-context";
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from "@/lib/core/auth/firebase-config";
 
 export interface JobInfoPanelProps {
   onComplete?: () => void;

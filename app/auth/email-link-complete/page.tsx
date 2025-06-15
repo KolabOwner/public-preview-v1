@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 
 export default function EmailLinkCompletePage() {
   const [email, setEmail] = useState('');

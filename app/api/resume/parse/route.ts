@@ -2,9 +2,10 @@
 // API route for parsing resumes from PDF or text
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFProcessor, FileStatus } from '@/lib/pdf-processor';
-import { parseResumeText } from '../../../../src/lib/parser';
-import { withCORS } from '@/lib/middleware/cors';
+import {withCORS} from "@/lib/core/api/middleware/cors";
+import { FileStatus, PDFProcessor } from "@/lib/features/pdf/processor";
+import { parseResumeText } from "@/src/lib/parser";
+
 
 // Increase timeout for API route
 export const maxDuration = 300; // 5 minutes timeout

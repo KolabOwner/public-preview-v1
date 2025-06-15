@@ -7,16 +7,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Mail,
-  Lock,
   Eye,
   EyeOff,
   AlertCircle,
-  Loader2,
-  Check
+  Loader2
 } from 'lucide-react';
-import { useFirebaseAuth } from '@/contexts/firebase-auth-context';
-import { userService } from "@/lib/services/user-service";
-import { onAuthStateChange } from '@/lib/firebase/auth';
+import { onAuthStateChange } from "@/lib/core/auth/firebase-auth";
+import { userService } from "@/lib/core/database/services/user-service";
+import { useAuth } from "@/contexts/auth-context";
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,7 +29,7 @@ export default function LoginPage() {
     signInWithFacebook,
     signInWithGithub,
     clearError
-  } = useFirebaseAuth();
+  } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,6 +37,11 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const returnUrl = searchParams.get('from') || '/dashboard/resumes';
 
@@ -157,7 +161,7 @@ export default function LoginPage() {
       {/* Left Side - Login Form - Fixed width on desktop */}
       <div className="w-full lg:w-[560px] xl:w-[640px] flex items-center justify-center px-8 lg:px-0">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={mounted ? { opacity: 0, x: -20 } : { opacity: 1, x: 0 }}
           animate={{ opacity: 1, x: 0 }}
           className="w-full max-w-[400px]"
         >
@@ -424,7 +428,7 @@ export default function LoginPage() {
 
               {/* AI Keyword Targeting Panel - Positioned to appear as overlay */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                initial={mounted ? { opacity: 0, scale: 0.95, y: 20 } : { opacity: 1, scale: 1, y: 0 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.3 }}
                 className="bg-[#252b3b] rounded-lg border border-[#2d3447] p-4 absolute -left-4 bottom-12 h-[420px] w-[260px] shadow-2xl"

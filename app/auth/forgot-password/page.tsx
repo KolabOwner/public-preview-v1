@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '@/lib/firebase/config';
+import { auth } from '@/lib/core/auth/firebase-config';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');

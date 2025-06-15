@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { doc, deleteDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from "@/lib/core/auth/firebase-config";
+
 
 interface ResumeProps {
   resume: {
@@ -299,15 +300,15 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
 
   return (
     <div className="relative">
-      <div className="relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60">
-        <div className="bg-surface-2 rounded-lg border border-surface-2-stroke relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60">
+      <div className="relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60 group">
+        <div className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-navy-700 relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60 shadow-lg shadow-slate-200/30 dark:shadow-navy-900/50">
           {/* Resume Preview Section */}
           <div
             className="relative h-[calc(100%-60px)] cursor-pointer overflow-hidden"
             onClick={handleCardClick}
           >
             <div className="relative h-full">
-              <div className="h-full w-full overflow-hidden rounded-lg rounded-b-none border-b-0 p-0">
+              <div className="h-full w-full overflow-hidden rounded-lg rounded-b-none border-b-0 p-0 bg-white">
                 {isLoading ? (
                   <div className="flex h-full w-full items-center justify-center bg-white">
                     <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#48c9b0] border-t-transparent"></div>
@@ -701,27 +702,22 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
 
             {/* Targeted Badge */}
             {resume.isTargeted && (
-              <div className="absolute right-2 top-2 bg-rezi-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+              <div className="absolute right-2 top-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-md shadow-blue-500/30">
                 TARGETED
               </div>
             )}
           </div>
 
           {/* Card Footer */}
-          <div className="relative flex h-[60px] flex-row items-center justify-between rounded-lg rounded-t-none bg-surface-2 py-2">
+          <div className="relative flex h-[60px] flex-row items-center justify-between rounded-b-xl rounded-t-none bg-gradient-to-r from-slate-100 to-gray-100 dark:from-navy-800 dark:to-navy-700 py-2 border-t border-slate-200 dark:border-navy-600">
             <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
               <div className="w-full">
                 <p className="overflow-hidden overflow-ellipsis whitespace-nowrap pr-2 text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
                   {resume.title}
                 </p>
-                <div className="group relative inline-block">
-                  <p className="text-400 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm leading-5 text-gray-500 dark:text-gray-400">
-                    {getLastUpdatedText()}
-                  </p>
-                  <div className="normal-case pointer-events-none h-fit z-50 bg-surface-3 dark:bg-gray-700 px-2 py-1 text-sm font-normal leading-5 text-surface-3-label dark:text-gray-200 transition-opacity rounded before:border-surface-3 dark:before:border-gray-700 before:absolute before:border-[6px] before:border-l-transparent before:border-r-transparent before:border-t-transparent before:left-1/2 before:-translate-x-1/2 before:-top-[12px] w-fit min-w-fit whitespace-pre opacity-100 fixed invisible group-hover:visible">
-                    {getFormattedDate()}
-                  </div>
-                </div>
+                <p className="text-400 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm leading-5 text-gray-500 dark:text-gray-400">
+                  {getLastUpdatedText()}
+                </p>
               </div>
             </div>
 
@@ -731,10 +727,10 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                 <i className="fad fa-lock text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
               </div>
             ) : (
-              <div className="h-12 min-w-12 relative flex cursor-pointer items-center justify-center text-xl hover:text-rezi-blue-500">
+              <div className="h-12 min-w-12 relative flex cursor-pointer items-center justify-center text-xl">
                 <div className="h-6 w-6 cursor-pointer group relative flex items-center justify-center" id="icon">
                   <i
-                    className="!flex items-center justify-center fas fa-ellipsis-vertical text-gray-900 dark:text-gray-100 text-xl w-6 h-6 hover:text-rezi-blue-500 dark:hover:text-rezi-blue-400"
+                    className="!flex items-center justify-center fas fa-ellipsis-vertical text-gray-900 dark:text-gray-100 text-xl w-6 h-6"
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowMenu(!showMenu);
@@ -744,9 +740,9 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
 
                 {/* Dropdown Menu */}
                 {showMenu && (
-                  <div className="bg-surface-2 rounded-lg border border-surface-2-stroke absolute flex-col items-start py-2 shadow-lg z-50 min-w-28 max-w-72 right-0 top-10">
+                  <div className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 absolute flex-col items-start py-2 shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 backdrop-blur-sm z-50 min-w-28 max-w-72 right-0 top-10">
                     <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEdit();
@@ -770,7 +766,7 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                     </div>
 
                     <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/dashboard/resumes/preview/${resume.id}`);
@@ -794,7 +790,7 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                     </div>
 
                     <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
                       onClick={handleDownload}
                     >
                       <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
@@ -814,7 +810,7 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                     </div>
 
                     <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
                       onClick={handleDuplicate}
                     >
                       <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
@@ -833,10 +829,10 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                       </div>
                     </div>
 
-                    <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
+                    <div className="w-full border-t border-slate-200 dark:border-navy-700 mt-2 mb-2"></div>
 
                     <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
                       onClick={handleDelete}
                     >
                       <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">

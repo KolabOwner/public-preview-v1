@@ -4,9 +4,15 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/ui/theme-provider';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from "@/lib/core/auth/firebase-config";
 import ResumeGridCard from '@/components/resume/resume-grid-card';
-import CreateResumeModal from '@/components/resume/create-resume-modal';
+import dynamic from 'next/dynamic';
+
+// Dynamic import with no SSR to fix serialization error
+const CreateResumeModal = dynamic(
+  () => import('@/components/resume/modals/create-resume-modal'),
+  { ssr: false }
+);
 
 interface Resume {
   id: string;
@@ -107,11 +113,11 @@ export default function ResumesPage() {
   const CreateResumeCard = () => (
     <div className="">
       <div
-        className="flex w-[calc(50vw_-_25px)] cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-400 p-4 xs:h-48 sm:h-[290px] md:w-60"
+        className="flex w-[calc(50vw_-_25px)] cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-300 dark:border-navy-600 bg-white/50 dark:bg-navy-800/30 backdrop-blur-sm p-4 xs:h-48 sm:h-[290px] md:w-60"
         onClick={() => setShowCreateModal(true)}
       >
         <div className="relative flex w-[calc(50vw_-_25px)] items-center justify-center xs:h-48 sm:h-[290px] md:w-60">
-          <div className="line-clamp-3 text-center text-base font-semibold text-gray-500 dark:text-gray-400">Create new resume</div>
+          <div className="line-clamp-3 text-center text-base font-semibold text-slate-600 dark:text-slate-300">Create new resume</div>
         </div>
       </div>
     </div>
@@ -129,14 +135,14 @@ export default function ResumesPage() {
   }
 
   return (
-    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16">
+    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-navy-950 dark:via-navy-900 dark:to-slate-900">
       <div className="relative w-full max-w-full gap-4 flex min-h-[calc(100dvh_-_64px)] w-full flex-col justify-start gap-4 px-4 md:px-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8" id="layout_full_screen">
         <main className="sm:h-full lg:h-auto">
           {/* Tab navigation */}
           <div className="hidden w-full flex-row items-center justify-between self-stretch sm:flex">
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-1 py-1 gap-1 my-6">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 my-6 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
               <div
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 bg-rezi-blue-600 text-neutral-0 cursor-pointer"
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white cursor-pointer shadow-md shadow-blue-500/30"
                 role="tab"
               >
                 <div className="w-full overflow-hidden">
@@ -144,7 +150,7 @@ export default function ResumesPage() {
                 </div>
               </div>
               <div
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-slate-100 dark:focus:bg-navy-700 cursor-pointer"
                 role="tab"
               >
                 <div className="w-full overflow-hidden">
@@ -152,7 +158,7 @@ export default function ResumesPage() {
                 </div>
               </div>
               <div
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-slate-100 dark:focus:bg-navy-700 cursor-pointer"
                 role="tab"
               >
                 <div className="w-full overflow-hidden">
@@ -164,7 +170,7 @@ export default function ResumesPage() {
             {/* Action buttons */}
             <div className="hidden flex-row items-center justify-between gap-4 lg:flex">
               {/* Notification bell */}
-              <div className="relative flex cursor-pointer items-center justify-center text-center font-extrabold hover:text-rezi-blue-500 transition-all duration-200 ease-in-out text-gray-900 dark:text-gray-100">
+              <div className="relative flex cursor-pointer items-center justify-center text-center font-extrabold text-gray-900 dark:text-gray-100">
                 <i className="fad fa-bell fa-lg" aria-hidden="true"></i>
                 <div className="absolute -right-3 -top-4 flex h-4 w-4 select-none items-center justify-center rounded-full border-2 border-surface-1 bg-red-600 p-2 text-xs font-normal leading-4 text-neutral-0">1</div>
               </div>
@@ -175,7 +181,7 @@ export default function ResumesPage() {
                   <div className="flex cursor-pointer flex-row items-center justify-end gap-1 px-0">
                     <button
                       type="button"
-                      className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition transition-200 lg-h-8 flex h-6 !min-h-6 w-6 items-center justify-center !text-xs !font-semibold leading-4 lg:!min-h-8 lg:w-8 lg:!text-base lg:!leading-6 disabled:bg-input-bg-disabled disabled:text-input-disabled disabled:cursor-not-allowed border-0 bg-rezi-blue-600 active:bg-rezi-blue-700 focus:bg-rezi-blue-500 text-white hover:bg-rezi-blue-500 px-2 py-1 min-h-8 leading-4 rounded-md text-xs !rounded-full"
+                      className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none lg-h-8 flex h-6 !min-h-6 w-6 items-center justify-center !text-xs !font-semibold leading-4 lg:!min-h-8 lg:w-8 lg:!text-base lg:!leading-6 disabled:bg-input-bg-disabled disabled:text-input-disabled disabled:cursor-not-allowed border-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2 py-1 min-h-8 leading-4 rounded-md text-xs !rounded-full shadow-md shadow-blue-500/30"
                       onClick={() => setShowUserMenu(!showUserMenu)}
                     >
                       <span className="px-1">{user.displayName?.[0] || user.email?.[0] || 'K'}</span>
@@ -186,22 +192,22 @@ export default function ResumesPage() {
                   </div>
 
                   {showUserMenu && (
-                    <div className="bg-surface-2 rounded-lg border border-surface-2-stroke absolute flex-col items-start bg-surface-2 py-2 shadow-lg z-50 min-w-28 max-w-72 left-0" style={{ width: 'fit-content', top: '34px' }}>
+                    <div className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 absolute flex-col items-start py-2 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50 min-w-28 max-w-72 left-0" style={{ width: 'fit-content', top: '34px' }}>
                       <div className="relative pointer-events-none flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-default">
                         <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
                           <div className="flex flex-row items-start gap-2">
                             <div></div>
                             <div className="flex flex-col">
-                              <div className="select-none !text-gray-500 dark:!text-gray-400 w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title={user.email}>
-                                {user.email}
-                              </div>
+                             <div className="select-none !text-gray-500 dark:!text-gray-400 w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title={user.email ?? undefined}>
+                              {user.email ?? ''}
+                            </div>
                             </div>
                           </div>
                           <div></div>
                         </div>
                       </div>
                       <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
-                      
+
                       <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
                         <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
                           <div className="flex flex-row items-start gap-2">
@@ -260,7 +266,7 @@ export default function ResumesPage() {
                             </div>
                             <div className="flex flex-col">
                               <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Theme">Theme</div>
-                              
+
                               {showThemeMenu && (
                                 <div className="bg-surface-2 rounded-lg border border-surface-2-stroke absolute flex-col items-start bg-surface-2 py-2 shadow-lg z-50 min-w-28 max-w-72 flex-col items-start right-0 left-auto right-0 left-full top-[-1px] -mt-2" style={{ width: 'fit-content' }}>
                                   <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'light' ? '!bg-rezi-blue-600 dark:!bg-rezi-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('light'); setShowThemeMenu(false); }}>
@@ -321,7 +327,7 @@ export default function ResumesPage() {
                       </div>
 
                       <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
-                      
+
                       <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover" onClick={handleLogout}>
                         <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
                           <div className="flex flex-row items-start gap-2">
@@ -346,18 +352,18 @@ export default function ResumesPage() {
 
           {/* Mobile tab navigation */}
           <div className="flex overflow-scroll py-4 xs:flex sm:hidden">
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-1 py-1 gap-1">
-              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 bg-rezi-blue-600 text-neutral-0 cursor-pointer" role="tab">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
+              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white cursor-pointer shadow-md shadow-blue-500/30" role="tab">
                 <div className="w-full overflow-hidden">
                   <p className="font-semibold uppercase truncate">Resumes</p>
                 </div>
               </div>
-              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover hover:text-gray-900 cursor-pointer" role="tab">
+              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-slate-100 dark:focus:bg-navy-700 cursor-pointer" role="tab">
                 <div className="w-full overflow-hidden">
                   <p className="font-semibold uppercase truncate">Cover Letters</p>
                 </div>
               </div>
-              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover hover:text-gray-900 cursor-pointer" role="tab">
+              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-slate-100 dark:focus:bg-navy-700 cursor-pointer" role="tab">
                 <div className="w-full overflow-hidden">
                   <p className="font-semibold uppercase truncate">Resignation Letters</p>
                 </div>
@@ -383,19 +389,19 @@ export default function ResumesPage() {
 
                 {/* View mode toggles */}
                 <div className="group relative flex h-6 w-6 items-center justify-center">
-                  <div 
-                    className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative" 
+                  <div
+                    className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative"
                     onClick={() => setViewMode('grid')}
                   >
-                    <i className={`!flex items-center justify-center fad fa-grid-2 text-xl w-6 h-6 ${viewMode === 'grid' ? 'text-rezi-blue-700 dark:text-rezi-blue-400' : 'text-gray-900 dark:text-gray-100'} hover:text-rezi-blue-500`} aria-hidden="true"></i>
+                    <i className={`!flex items-center justify-center fad fa-grid-2 text-xl w-6 h-6 ${viewMode === 'grid' ? 'text-rezi-blue-700 dark:text-rezi-blue-400' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
                   </div>
                 </div>
                 <div className="group relative flex h-6 w-6 items-center justify-center">
-                  <div 
-                    className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative" 
+                  <div
+                    className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative"
                     onClick={() => setViewMode('list')}
                   >
-                    <i className={`!flex items-center justify-center fad fa-list text-xl w-6 h-6 ${viewMode === 'list' ? 'text-rezi-blue-700 dark:text-rezi-blue-400' : 'text-gray-900 dark:text-gray-100'} hover:text-rezi-blue-500`} aria-hidden="true"></i>
+                    <i className={`!flex items-center justify-center fad fa-list text-xl w-6 h-6 ${viewMode === 'list' ? 'text-rezi-blue-700 dark:text-rezi-blue-400' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
                   </div>
                 </div>
               </div>
@@ -416,7 +422,7 @@ export default function ResumesPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white dark:bg-surface-2 rounded-lg border border-gray-200 dark:border-surface-2-stroke p-8 text-center shadow-sm">
+                  <div className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-navy-700 p-8 text-center shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50">
                     <h4 className="font-medium text-xl mb-3 text-gray-900 dark:text-gray-100">No resumes yet</h4>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
                       Create your first resume to start your job application journey.
@@ -424,13 +430,13 @@ export default function ResumesPage() {
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                       <button
                         onClick={() => setShowCreateModal(true)}
-                        className="bg-rezi-blue-600 hover:bg-rezi-blue-500 text-white font-bold py-3 px-6 rounded-md transition-all duration-200"
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-blue-500/30"
                       >
                         Create Resume
                       </button>
                       <a
                         href="/resumes/upload"
-                        className="border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-surface-2 hover:bg-gray-50 dark:hover:bg-surface-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-bold py-3 px-6 rounded-md transition-all duration-200"
+                        className="border-2 border-slate-300 dark:border-navy-600 bg-white/70 dark:bg-navy-700/50 text-slate-700 dark:text-slate-300 font-bold py-3 px-6 rounded-lg shadow-md"
                       >
                         Upload Existing Resume
                       </a>
@@ -449,12 +455,10 @@ export default function ResumesPage() {
             </button>
           </div>
 
-          {/* Create Resume Modal */}
-          {showCreateModal && (
-            <CreateResumeModal
-              onClose={() => setShowCreateModal(false)}
-            />
-          )}
+          <CreateResumeModal
+            isOpen={showCreateModal}
+            onOpenChange={setShowCreateModal}
+          />
         </main>
       </div>
     </div>

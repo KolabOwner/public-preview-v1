@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import UpgradeModal from '../resume/upgrade-modal';
+import UpgradeModal from '../resume/modals/upgrade-modal';
 
 const AppSidebarNav = () => {
   const pathname = usePathname();
@@ -106,12 +106,12 @@ const AppSidebarNav = () => {
   return (
     <>
       <aside
-        className={`app-sidebar ${isResumeEditorRoute ? 'w-[72px]' : 'w-[280px]'} h-screen min-h-screen bg-[#1a2332] relative overflow-hidden flex flex-col transition-all duration-300 ease-in-out border-r border-[#374151]/30`}
+        className={`app-sidebar ${isResumeEditorRoute ? 'w-[72px]' : 'w-[280px]'} h-screen min-h-screen bg-white/80 dark:bg-navy-900/95 backdrop-blur-sm relative overflow-hidden flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200 dark:border-navy-700`}
         data-route={pathname}
       >
         {/* Enhanced gradient background with moving gradients */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a2332] via-[#1e2936] to-[#1a2332]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-gray-100 dark:from-navy-950 dark:via-navy-900 dark:to-navy-800" />
 
           {/* Professional animated gradients like the example */}
           <div className="absolute inset-0" style={{ '--size': '400px' } as React.CSSProperties}>
@@ -180,10 +180,82 @@ const AppSidebarNav = () => {
             <div className={`flex items-center gap-3 ${isResumeEditorRoute ? 'justify-center' : ''}`}>
               {/* Modern Logo Mark with blue gradient */}
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                <div className="relative bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] p-2.5 rounded-xl">
-                  <svg className={`${isResumeEditorRoute ? 'w-5 h-5' : 'w-6 h-6'} text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl blur-xl opacity-60 group-hover:opacity-80 transition-all duration-300" />
+                <div className="relative bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-2xl shadow-xl shadow-blue-600/20">
+                  {/* Premium Modern H Logo */}
+                  <svg className={`${isResumeEditorRoute ? 'w-5 h-5' : 'w-7 h-7'}`} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      {/* Premium metallic gradient */}
+                      <linearGradient id="h-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="50%" stopColor="#f3f4f6" />
+                        <stop offset="100%" stopColor="#e5e7eb" />
+                      </linearGradient>
+                      
+                      {/* Accent gradient for depth */}
+                      <linearGradient id="h-accent" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
+                      </linearGradient>
+                      
+                      {/* Shadow gradient */}
+                      <radialGradient id="h-shadow-grad">
+                        <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
+                        <stop offset="100%" stopColor="#1e40af" stopOpacity="0" />
+                      </radialGradient>
+                      
+                      {/* Mask for cut effect */}
+                      <mask id="h-mask">
+                        <rect width="40" height="40" fill="white" />
+                        <path d="M12 18h16v4h-16z" fill="black" />
+                      </mask>
+                    </defs>
+                    
+                    {/* Subtle shadow base */}
+                    <ellipse cx="20" cy="38" rx="12" ry="2" fill="url(#h-shadow-grad)" />
+                    
+                    {/* Main H structure - modern geometric design */}
+                    <g mask="url(#h-mask)">
+                      {/* Left pillar */}
+                      <path
+                        d="M8 8 Q8 6 10 6 L14 6 Q16 6 16 8 L16 32 Q16 34 14 34 L10 34 Q8 34 8 32 Z"
+                        fill="url(#h-metal)"
+                        filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
+                      />
+                      
+                      {/* Right pillar */}
+                      <path
+                        d="M24 8 Q24 6 26 6 L30 6 Q32 6 32 8 L32 32 Q32 34 30 34 L26 34 Q24 34 24 32 Z"
+                        fill="url(#h-metal)"
+                        filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
+                      />
+                    </g>
+                    
+                    {/* Crossbar with elegant curve */}
+                    <path
+                      d="M8 18 Q8 16 10 16 L30 16 Q32 16 32 18 L32 22 Q32 24 30 24 L10 24 Q8 24 8 22 Z"
+                      fill="url(#h-metal)"
+                      filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
+                    />
+                    
+                    {/* Premium highlights */}
+                    <path
+                      d="M10 8 Q10 7 11 7 L13 7 Q14 7 14 8 L14 10 Q14 11 13 11 L11 11 Q10 11 10 10 Z"
+                      fill="url(#h-accent)"
+                      opacity="0.8"
+                    />
+                    <path
+                      d="M26 8 Q26 7 27 7 L29 7 Q30 7 30 8 L30 10 Q30 11 29 11 L27 11 Q26 11 26 10 Z"
+                      fill="url(#h-accent)"
+                      opacity="0.8"
+                    />
+                    
+                    {/* Subtle inner stroke for definition */}
+                    <g fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5">
+                      <path d="M9 7 Q9 6.5 9.5 6.5 L14.5 6.5 Q15 6.5 15 7 L15 33 Q15 33.5 14.5 33.5 L9.5 33.5 Q9 33.5 9 33 Z" />
+                      <path d="M25 7 Q25 6.5 25.5 6.5 L30.5 6.5 Q31 6.5 31 7 L31 33 Q31 33.5 30.5 33.5 L25.5 33.5 Q25 33.5 25 33 Z" />
+                      <path d="M9 17 Q9 16.5 9.5 16.5 L30.5 16.5 Q31 16.5 31 17 L31 23 Q31 23.5 30.5 23.5 L9.5 23.5 Q9 23.5 9 23 Z" />
+                    </g>
                   </svg>
                 </div>
               </div>
@@ -191,7 +263,7 @@ const AppSidebarNav = () => {
               {/* Company Name - Hidden in collapsed state */}
               {!isResumeEditorRoute && (
                 <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-white tracking-tight">Hirable</span>
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Hirable</span>
                   <span className="text-2xl font-bold bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] text-transparent bg-clip-text ml-0.5">AI</span>
                 </div>
               )}
@@ -202,7 +274,7 @@ const AppSidebarNav = () => {
           {!isResumeEditorRoute && (
             <button
               onClick={() => router.push('/dashboard/resumes/new')}
-              className="group relative overflow-hidden bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] hover:from-[#4a6bec] hover:to-[#3a5bdc] text-white font-semibold py-3 px-4 rounded-xl mb-6 transition-all duration-300 w-full shadow-lg shadow-[#5b7cfd]/20"
+              className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-4 rounded-xl mb-6 w-full shadow-lg shadow-blue-500/30"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <span className="relative flex items-center justify-center gap-2">
@@ -223,26 +295,26 @@ const AppSidebarNav = () => {
                 <div key={item.href} className="relative">
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-3 ${isResumeEditorRoute ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl transition-all duration-200 relative overflow-hidden ${
+                    className={`group flex items-center gap-3 ${isResumeEditorRoute ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#5b7cfd]/20 to-[#4a6bec]/10 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/10 text-slate-900 dark:text-white'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5'
                     }`}
                     onMouseEnter={() => setHoveredItem(item.href)}
                     onMouseLeave={() => setHoveredItem(null)}
                   >
                     {/* Active indicator */}
                     {isActive && !isResumeEditorRoute && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-[#5b7cfd] to-[#4a6bec] rounded-r-full shadow-lg shadow-[#5b7cfd]/30" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-r-full shadow-lg shadow-blue-500/30" />
                     )}
 
                     {/* Hover effect */}
                     <div className={`absolute inset-0 bg-gradient-to-r from-[#5b7cfd]/10 to-[#4a6bec]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
 
                     {/* Icon with subtle animation */}
-                    <span className={`sidebar-icon relative transition-all duration-200 ${
-                      isActive ? 'text-[#5b7cfd]' : 'group-hover:text-[#5b7cfd]'
-                    } ${hoveredItem === item.href ? 'scale-110' : ''} ${isResumeEditorRoute ? 'text-lg' : ''}`}>
+                    <span className={`sidebar-icon relative ${
+                      isActive ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                    } ${isResumeEditorRoute ? 'text-lg' : ''}`}>
                       {item.icon}
                     </span>
 
@@ -258,7 +330,7 @@ const AppSidebarNav = () => {
                           )}
                         </div>
                         {hoveredItem === item.href && !isActive && (
-                          <p className="text-xs text-slate-500 mt-0.5 transition-all duration-200">
+                          <p className="text-xs text-slate-600 dark:text-slate-500 mt-0.5">
                             {item.description}
                           </p>
                         )}
@@ -276,7 +348,7 @@ const AppSidebarNav = () => {
                   {/* Tooltip for collapsed state */}
                   {isResumeEditorRoute && hoveredItem === item.href && (
                     <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50">
-                      <div className="bg-[#2a3f5f] text-white px-3 py-2 rounded-lg shadow-xl border border-[#374151]/30">
+                      <div className="bg-white dark:bg-navy-800 text-slate-900 dark:text-white px-3 py-2 rounded-lg shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 border border-slate-200 dark:border-navy-700">
                         <p className="font-medium text-sm whitespace-nowrap">{item.label}</p>
                         {item.badge && (
                           <span className={`${item.badgeColor} text-white text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block`}>
@@ -292,19 +364,19 @@ const AppSidebarNav = () => {
 
             {/* AI Generations - Updated with blue accents */}
             {!isResumeEditorRoute && (
-              <div className="mt-6 p-3 bg-gradient-to-r from-[#5b7cfd]/10 to-[#4a6bec]/10 rounded-xl border border-[#5b7cfd]/20 backdrop-blur-sm">
-                <div className="flex items-center justify-between text-white">
+              <div className="mt-6 p-3 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-xl border border-blue-600/20 dark:border-blue-500/20 backdrop-blur-sm">
+                <div className="flex items-center justify-between text-slate-900 dark:text-white">
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#5b7cfd]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
                     <span className="text-sm font-medium">AI Generations</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] text-transparent bg-clip-text text-lg">{aiGenerations}</span>
+                    <span className="font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text text-lg">{aiGenerations}</span>
                     <button
                       onClick={() => setAiGenerations(prev => prev + 1)}
-                      className="text-xl hover:bg-[#5b7cfd]/20 rounded-lg p-1 transition-all duration-200 hover:scale-110"
+                      className="text-xl hover:bg-blue-600/20 dark:hover:bg-blue-500/20 rounded-lg p-1"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -320,19 +392,19 @@ const AppSidebarNav = () => {
           {!isResumeEditorRoute && (
             <div className="space-y-4 mt-4">
               {/* Upgrade Card with blue gradient */}
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#2a3f5f] to-[#324966] p-4 border border-[#374151]/30">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-[#5b7cfd]/20 rounded-full blur-2xl" />
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-100 to-gray-100 dark:from-navy-800 dark:to-navy-700 p-4 border border-slate-200 dark:border-navy-600">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/20 rounded-full blur-2xl" />
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-2">
                     <svg className="w-5 h-5 text-[#5b7cfd]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
-                    <h3 className="font-bold text-white">Get Hired Faster</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Get Hired Faster</h3>
                   </div>
-                  <p className="text-slate-400 text-xs mb-3">Unlock premium AI features</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs mb-3">Unlock premium AI features</p>
                   <button
                     onClick={() => setShowUpgradeModal(true)}
-                    className="w-full bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] hover:from-[#4a6bec] hover:to-[#3a5bdc] text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-[#5b7cfd]/25"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md shadow-blue-500/30"
                   >
                     Upgrade to Pro
                   </button>
@@ -342,7 +414,7 @@ const AppSidebarNav = () => {
               {/* Community Link */}
               <Link
                 href="/dashboard/community"
-                className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-all duration-200 p-2 rounded-lg hover:bg-white/5"
+                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm p-2 rounded-lg hover:bg-slate-100/50 dark:hover:bg-white/5"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -357,18 +429,18 @@ const AppSidebarNav = () => {
             <div className="mt-auto mb-2">
               <button
                 onClick={() => setShowUpgradeModal(true)}
-                className="p-2 rounded-lg bg-gradient-to-r from-[#5b7cfd]/20 to-[#4a6bec]/20 hover:from-[#5b7cfd]/30 hover:to-[#4a6bec]/30 transition-all duration-200 group relative"
+                className="p-2 rounded-lg bg-gradient-to-r from-blue-600/20 to-indigo-600/20 group relative"
                 aria-label="Upgrade to Pro"
               >
-                <svg className="w-5 h-5 text-[#5b7cfd]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
 
                 {/* Tooltip */}
                 <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-50">
-                  <div className="bg-[#2a3f5f] text-white px-3 py-2 rounded-lg shadow-xl border border-[#374151]/30 whitespace-nowrap">
+                  <div className="bg-white dark:bg-navy-800 text-slate-900 dark:text-white px-3 py-2 rounded-lg shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 border border-slate-200 dark:border-navy-700 whitespace-nowrap">
                     <p className="font-medium text-sm">Upgrade to Pro</p>
-                    <p className="text-xs text-slate-400 mt-1">Unlock premium features</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Unlock premium features</p>
                   </div>
                 </div>
               </button>

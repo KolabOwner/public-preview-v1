@@ -85,6 +85,20 @@ const config: Config = {
           DEFAULT: '#48c9b0',
           dark: '#16a085',
         },
+        // Navy color palette for dark theme
+        'navy': {
+          50: '#e4e9f2',
+          100: '#c9d2e5',
+          200: '#93a5cb',
+          300: '#5e78b1',
+          400: '#364d7d',
+          500: '#1e2a4a',
+          600: '#19233d',
+          700: '#141b30',
+          800: '#0f1424',
+          900: '#0a0d17',
+          950: '#05070d',
+        },
 
         // Additional UI colors for the new design
         'neutral-0': '#ffffff',

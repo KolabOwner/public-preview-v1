@@ -1,62 +1,62 @@
 import React from 'react'
-import { sanitizeThemeValue } from '@/lib/security-utils'
 
 interface ThemeScriptProps {
   defaultTheme?: 'light' | 'dark' | 'system'
 }
 
+const VALID_THEMES = ['light', 'dark', 'system'] as const;
+type ValidTheme = typeof VALID_THEMES[number];
+
+function isValidTheme(theme: unknown): theme is ValidTheme {
+  return typeof theme === 'string' && VALID_THEMES.includes(theme as ValidTheme);
+}
+
 export function ThemeScript({ defaultTheme = 'system' }: ThemeScriptProps) {
-  // Sanitize the theme to prevent XSS injection
-  const safeTheme = sanitizeThemeValue(defaultTheme);
-  
-  // Use JSON.stringify to safely escape the theme value
-  const safeThemeString = JSON.stringify(safeTheme);
-  
+  // Ensure we have a valid theme (TypeScript should already guarantee this)
+  const validatedTheme = isValidTheme(defaultTheme) ? defaultTheme : 'system';
+
   return (
     <script
       dangerouslySetInnerHTML={{
         __html: `
           (function() {
             try {
-              const storageKey = 'theme';
-              const validThemes = ['light', 'dark', 'system'];
-              const defaultTheme = ${safeThemeString};
+              const STORAGE_KEY = 'theme';
+              const VALID_THEMES = ${JSON.stringify(VALID_THEMES)};
+              const DEFAULT_THEME = ${JSON.stringify(validatedTheme)};
               
-              // Validate theme from storage
               function isValidTheme(theme) {
-                return validThemes.includes(theme);
+                return typeof theme === 'string' && VALID_THEMES.includes(theme);
+              }
+              
+              function getSystemTheme() {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+              }
+              
+              function resolveTheme(theme) {
+                if (theme === 'system') {
+                  return getSystemTheme();
+                }
+                return theme;
               }
               
               // Get stored theme with validation
-              const storedTheme = localStorage.getItem(storageKey);
-              const validStoredTheme = storedTheme && isValidTheme(storedTheme) ? storedTheme : null;
+              const storedTheme = localStorage.getItem(STORAGE_KEY);
+              const activeTheme = isValidTheme(storedTheme) ? storedTheme : DEFAULT_THEME;
               
-              // Determine which theme to use
-              let activeTheme;
-              if (validStoredTheme) {
-                activeTheme = validStoredTheme;
-              } else if (defaultTheme === 'system') {
-                activeTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-              } else {
-                activeTheme = defaultTheme;
-              }
-              
-              // Apply theme to document immediately to prevent flash
+              // Apply theme classes
+              const resolvedTheme = resolveTheme(activeTheme);
               document.documentElement.classList.remove('light', 'dark');
-
-              if (activeTheme === 'dark' ||
-                 (activeTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-              } else {
-                document.documentElement.classList.add('light');
+              document.documentElement.classList.add(resolvedTheme);
+              
+              // Store valid theme
+              if (!isValidTheme(storedTheme)) {
+                localStorage.setItem(STORAGE_KEY, activeTheme);
               }
               
-              // Store the theme (only if it's valid)
-              if (!validStoredTheme && isValidTheme(activeTheme)) {
-                localStorage.setItem(storageKey, activeTheme);
-              }
-            } catch (e) {
+            } catch (error) {
               // Fallback to light theme on any error
+              console.warn('Theme script error:', error);
               document.documentElement.classList.remove('light', 'dark');
               document.documentElement.classList.add('light');
             }
