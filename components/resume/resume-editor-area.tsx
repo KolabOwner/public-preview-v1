@@ -1,12 +1,11 @@
 // components/resume/resume-editor-area.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { usePathname, useParams } from 'next/navigation';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from "@/lib/core/auth/firebase-config";
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
 import ContactForm, { ContactFormData } from '../resume-editor/contact-form';
 import ExperienceForm, { ExperienceEntry } from '../resume-editor/experience-form';
 import EducationForm, { EducationEntry } from '../resume-editor/education-form';
@@ -16,75 +15,327 @@ import InvolvementForm, { InvolvementEntry } from '../resume-editor/involvement-
 import { CourseworkEntry, CourseworkForm } from '../resume-editor/coursework-form';
 import SummaryForm from '../resume-editor/summary-form';
 
-// Import all form components
+// Unified Resume Data Structure
+interface UnifiedResumeData {
+  contactInfo: ContactFormData;
+  summary: string;
+  experiences: ExperienceEntry[];
+  education: EducationEntry[];
+  skills: SkillEntry[];
+  projects: ProjectEntry[];
+  involvements: InvolvementEntry[];
+  coursework: CourseworkEntry[];
+  certifications: CertificationEntry[];
+  awards: AwardEntry[];
+  languages: LanguageEntry[];
+  publications: PublicationEntry[];
+}
 
+interface CertificationEntry {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+  expiryDate?: string;
+  credentialId?: string;
+  url?: string;
+}
 
-interface ResumeData {
+interface AwardEntry {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string;
+  description?: string;
+}
+
+interface LanguageEntry {
+  id: string;
+  language: string;
+  proficiency: string;
+}
+
+interface PublicationEntry {
+  id: string;
+  title: string;
+  publisher: string;
+  date: string;
+  authors: string;
+  url?: string;
+  description?: string;
+}
+
+interface ResumeDocument {
   id: string;
   title: string;
   userId: string;
-  parsedData?: any;
+  data: UnifiedResumeData;
   createdAt: string;
   updatedAt: string;
 }
 
 interface ResumeEditorAreaProps {
-  resume: ResumeData;
+  resume: ResumeDocument;
 }
 
-function ResumePreview(props: { resumeData: any, resumeId: string }) {
+function ResumePreview(props: { resumeData: UnifiedResumeData, resumeId: string }) {
   return null;
 }
+
+// Default empty resume data structure
+const createDefaultResumeData = (): UnifiedResumeData => ({
+  contactInfo: {
+    fullName: '',
+    email: '',
+    phone: '',
+    linkedin: '',
+    website: '',
+    country: '',
+    state: '',
+    city: '',
+    showEmail: true,
+    showPhone: true,
+    showLinkedin: true,
+    showWebsite: true,
+    showLocation: true
+  },
+  summary: '',
+  experiences: [],
+  education: [],
+  skills: [],
+  projects: [],
+  involvements: [],
+  coursework: [],
+  certifications: [],
+  awards: [],
+  languages: [],
+  publications: []
+});
+
+// Helper function to parse legacy/RMS format into unified format
+const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
+  if (!legacyData) return createDefaultResumeData();
+
+  // If it's already in the unified format, return as is
+  if (legacyData.contactInfo && !legacyData.parsedData) {
+    return {
+      ...createDefaultResumeData(),
+      ...legacyData
+    };
+  }
+
+  const unified = createDefaultResumeData();
+
+  // Handle nested parsedData structure
+  const data = legacyData.parsedData || legacyData;
+
+  // Parse contact info
+  if (data.contactInfo) {
+    unified.contactInfo = {
+      ...unified.contactInfo,
+      ...data.contactInfo
+    };
+  } else if (data.Rms_contact_fullName) {
+    // Handle RMS format
+    unified.contactInfo = {
+      fullName: data.Rms_contact_fullName || '',
+      email: data.Rms_contact_email || '',
+      phone: data.Rms_contact_phone || '',
+      linkedin: data.Rms_contact_linkedin || '',
+      website: data.Rms_contact_website || '',
+      country: data.Rms_contact_country || '',
+      state: data.Rms_contact_state || '',
+      city: data.Rms_contact_city || '',
+      showEmail: true,
+      showPhone: true,
+      showLinkedin: true,
+      showWebsite: true,
+      showLocation: true
+    };
+  }
+
+  // Parse summary
+  unified.summary = data.summary || data.Rms_summary || '';
+
+  // Parse experiences
+  if (data.experiences && Array.isArray(data.experiences)) {
+    unified.experiences = data.experiences;
+  } else if (data.Rms_experience_count) {
+    // Handle RMS format
+    unified.experiences = [];
+    for (let i = 0; i < data.Rms_experience_count; i++) {
+      const description = data[`Rms_experience_${i}_description`] || '';
+      // Convert description to bullet points if it contains line breaks or bullet markers
+      const bulletPoints = description
+        .split(/[\n•·▪]/g)
+        .map((point: string) => point.trim())
+        .filter((point: string) => point.length > 0)
+        .map((point: string) => point.replace(/^[?-]\s*/, '')); // Remove leading markers
+
+      unified.experiences.push({
+        id: `exp_${i}`,
+        title: data[`Rms_experience_${i}_role`] || '',
+        company: data[`Rms_experience_${i}_company`] || '',
+        location: data[`Rms_experience_${i}_location`] || '',
+        startDate: data[`Rms_experience_${i}_dateBegin`] || '',
+        endDate: data[`Rms_experience_${i}_dateEnd`] || '',
+        current: data[`Rms_experience_${i}_isCurrent`] || false,
+        description: description,
+        bulletPoints: bulletPoints
+      });
+    }
+  }
+
+  // Parse education
+  if (data.education && Array.isArray(data.education)) {
+    unified.education = data.education.map((edu: any) => ({
+      id: edu.id || `edu_${Date.now()}`,
+      institution: edu.institution || edu.school || '',
+      qualification: edu.qualification || edu.degree || '',
+      location: edu.location || '',
+      date: edu.date || edu.endDate || edu.formattedDate || '',
+      dateFormat: edu.dateFormat || 'MMMM YYYY',
+      minor: edu.minor || edu.fieldOfStudy || '',
+      score: edu.score || edu.gpa || '',
+      scoreType: edu.scoreType || edu.gpaScale || '',
+      details: edu.details || edu.description || '',
+      isGraduate: edu.isGraduate !== undefined ? edu.isGraduate : true
+    }));
+  } else if (data.Rms_education_count) {
+    // Handle RMS format
+    unified.education = [];
+    for (let i = 0; i < data.Rms_education_count; i++) {
+      unified.education.push({
+        id: `edu_${i}`,
+        institution: data[`Rms_education_${i}_institution`] || '',
+        qualification: data[`Rms_education_${i}_qualification`] || '',
+        location: data[`Rms_education_${i}_location`] || '',
+        date: data[`Rms_education_${i}_date`] || '',
+        dateFormat: 'MMMM YYYY',
+        minor: '',
+        score: data[`Rms_education_${i}_score`]?.toString() || '',
+        scoreType: data[`Rms_education_${i}_scoreType`] || '',
+        details: '',
+        isGraduate: data[`Rms_education_${i}_isGraduate`] || true
+      });
+    }
+  }
+
+  // Parse skills
+  if (data.skillCategories && Array.isArray(data.skillCategories)) {
+    unified.skills = data.skillCategories.map((cat: any) => ({
+      id: cat.id || `skill_${Date.now()}`,
+      category: cat.name || cat.category || '',
+      keywords: Array.isArray(cat.skills)
+        ? cat.skills.map((s: any) => s.name || s).join(', ')
+        : cat.keywords || ''
+    }));
+  } else if (data.Rms_skill_count) {
+    // Handle RMS format
+    unified.skills = [];
+    for (let i = 0; i < data.Rms_skill_count; i++) {
+      unified.skills.push({
+        id: `skill_${i}`,
+        category: data[`Rms_skill_${i}_category`] || '',
+        keywords: data[`Rms_skill_${i}_keywords`] || ''
+      });
+    }
+  }
+
+  // Parse projects
+  if (data.projects && Array.isArray(data.projects)) {
+    unified.projects = data.projects.map((proj: any) => ({
+      id: proj.id || `proj_${Date.now()}`,
+      title: proj.title || '',
+      organization: proj.organization || '',
+      startDate: proj.startDate || '',
+      endDate: proj.endDate || '',
+      url: proj.url || '',
+      description: proj.description || '',
+      technologies: Array.isArray(proj.technologies) ? proj.technologies : []
+    }));
+  } else if (data.Rms_project_count) {
+    // Handle RMS format
+    unified.projects = [];
+    for (let i = 0; i < data.Rms_project_count; i++) {
+      unified.projects.push({
+        id: `proj_${i}`,
+        title: data[`Rms_project_${i}_title`] || '',
+        organization: data[`Rms_project_${i}_organization`] || '',
+        startDate: '',
+        endDate: '',
+        url: data[`Rms_project_${i}_url`] || '',
+        description: data[`Rms_project_${i}_description`] || '',
+        technologies: []
+      });
+    }
+  }
+
+  // Parse involvements
+  if (data.involvements && Array.isArray(data.involvements)) {
+    unified.involvements = data.involvements;
+  } else if (data.Rms_involvement_count) {
+    // Handle RMS format
+    unified.involvements = [];
+    for (let i = 0; i < data.Rms_involvement_count; i++) {
+      unified.involvements.push({
+        id: `inv_${i}`,
+        organization: data[`Rms_involvement_${i}_organization`] || '',
+        role: data[`Rms_involvement_${i}_role`] || '',
+        location: data[`Rms_involvement_${i}_location`] || '',
+        startDate: data[`Rms_involvement_${i}_dateBegin`] || '',
+        endDate: data[`Rms_involvement_${i}_dateEnd`] || '',
+        current: false,
+        description: data[`Rms_involvement_${i}_description`] || ''
+      });
+    }
+  }
+
+  // Parse certifications
+  if (data.certifications && Array.isArray(data.certifications)) {
+    unified.certifications = data.certifications;
+  } else if (data.Rms_certification_count) {
+    // Handle RMS format
+    unified.certifications = [];
+    for (let i = 0; i < data.Rms_certification_count; i++) {
+      unified.certifications.push({
+        id: `cert_${i}`,
+        name: data[`Rms_certification_${i}_name`] || '',
+        issuer: data[`Rms_certification_${i}_department`] || '',
+        date: data[`Rms_certification_${i}_date`] || ''
+      });
+    }
+  }
+
+  // Copy over remaining fields
+  unified.coursework = data.coursework || [];
+  unified.awards = data.awards || [];
+  unified.languages = data.languages || [];
+  unified.publications = data.publications || [];
+
+  return unified;
+};
 
 export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
   const pathname = usePathname();
   const params = useParams();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
-  const [resumeData, setResumeData] = useState<any>(resume?.parsedData || {});
+
+  // Initialize with unified format
+  const [resumeData, setResumeData] = useState<UnifiedResumeData>(() => {
+    if (resume?.data) {
+      return resume.data;
+    }
+    // Handle legacy format
+    return parseToUnifiedFormat(resume);
+  });
 
   // Determine which section to show based on the current route
   const section = pathname.split('/').pop() || 'summary';
 
-  // Initialize empty data structure if parsedData is missing
-  useEffect(() => {
-    if (!resume || !resume.parsedData) {
-      const defaultData = {
-        contactInfo: {
-          fullName: '',
-          email: '',
-          phone: '',
-          linkedin: '',
-          website: '',
-          country: '',
-          state: '',
-          city: '',
-          showEmail: true,
-          showPhone: true,
-          showLinkedin: true,
-          showWebsite: true,
-          showLocation: true
-        },
-        summary: '',
-        experiences: [],
-        education: [],
-        skillCategories: [],
-        projects: [],
-        involvements: [],
-        coursework: [],
-        certifications: [],
-        awards: [],
-        languages: [],
-        publications: []
-      };
-      setResumeData(defaultData);
-    } else {
-      setResumeData(resume.parsedData);
-    }
-  }, [resume?.parsedData]);
-
   // Save data to Firebase
-  const saveToFirebase = async (updatedData: any) => {
+  const saveToFirebase = async (updatedData: UnifiedResumeData) => {
     if (!resume || !resume.id) {
       toast({
         title: "Save Failed",
@@ -98,6 +349,8 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
     try {
       const resumeRef = doc(db, 'resumes', resume.id);
       await updateDoc(resumeRef, {
+        data: updatedData,
+        // Keep parsedData for backward compatibility during migration
         parsedData: updatedData,
         updatedAt: serverTimestamp()
       });
@@ -137,128 +390,25 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
   };
 
   const handleEducationChange = async (education: EducationEntry[]) => {
-    // Transform education entries to match the expected Firestore format
-    const transformedEducation = education.map((edu, idx) => {
-      // Convert Date object to string format for storage
-      let formattedDate = '';
-      if (edu.date) {
-        if (edu.date instanceof Date) {
-          // Format based on specified format
-          if (edu.dateFormat === 'YYYY') {
-            formattedDate = format(edu.date, 'yyyy');
-          } else if (edu.dateFormat === 'MM/YYYY') {
-            formattedDate = format(edu.date, 'MM/yyyy');
-          } else {
-            // Default format (MMMM YYYY)
-            formattedDate = format(edu.date, 'MMMM yyyy');
-          }
-        } else if (typeof edu.date === 'string') {
-          formattedDate = edu.date;
-        }
-      }
-
-      // Create a comprehensive object that works with both our form and Firestore schema
-      // Check for RMS qualification data (this often has the richest data)
-      const richQualification = edu.rms_education_0_qualification || edu.qualification || edu.degree || "";
-
-      return {
-        // Fields expected by the Firestore schema
-        id: edu.id || `edu_${idx}`,
-        school: edu.institution,  // Primary field for Firestore
-        degree: richQualification, // Primary field for Firestore
-        fieldOfStudy: edu.minor || "",
-        location: edu.location || "",
-        startDate: "",
-        endDate: formattedDate,
-        current: false,
-        gpa: edu.score || "",
-        gpaScale: edu.scoreType || "",
-        honors: "",
-        activities: "",
-        description: edu.details || "",
-
-        // Extra fields for our form to use when editing - these maintain backward compatibility
-        date: edu.date,
-        dateFormat: edu.dateFormat,
-        institution: edu.institution, // Primary field for form
-        qualification: richQualification, // Primary field for form
-        minor: edu.minor,
-        score: edu.score,
-        scoreType: edu.scoreType,
-        details: edu.details,
-        isGraduate: edu.isGraduate,
-        formattedDate
-      };
-    });
-
-    const updatedData = { ...resumeData, education: transformedEducation };
+    const updatedData = { ...resumeData, education };
     setResumeData(updatedData);
     await saveToFirebase(updatedData);
   };
 
-  const handleSkillsChange = async (skillCategories: SkillEntry[]) => {
-    // Transform skill entries to match the expected format
-    const transformedSkills = skillCategories.map((category, idx) => ({
-      id: category.id || `category_${idx}`,
-      name: category.category,
-      skills: category.keywords.split(/[,\n]/).map((skill, skillIdx) => ({
-        id: `skill_${idx}_${skillIdx}`,
-        name: skill.trim(),
-        level: ''
-      })).filter(s => s.name)
-    }));
-
-    const updatedData = { ...resumeData, skillCategories: transformedSkills };
+  const handleSkillsChange = async (skills: SkillEntry[]) => {
+    const updatedData = { ...resumeData, skills };
     setResumeData(updatedData);
     await saveToFirebase(updatedData);
   };
 
   const handleProjectsChange = async (projects: ProjectEntry[]) => {
-    // Transform project entries to match the expected Firestore schema format
-    const transformedProjects = projects.map((proj, idx) => {
-      return {
-        id: proj.id || `proj_${idx}`,
-        title: proj.title,
-        organization: proj.organization,
-        startDate: proj.startDate,
-        endDate: proj.endDate,
-        url: proj.url,
-        description: proj.description,
-        technologies: Array.isArray(proj.technologies) ? proj.technologies :
-                     typeof proj.technologies === 'string' ? [proj.technologies] : [],
-
-        // Add any additional fields that might be expected by the Firestore schema
-        current: false,
-        projectType: ""
-      };
-    });
-
-    const updatedData = { ...resumeData, projects: transformedProjects };
+    const updatedData = { ...resumeData, projects };
     setResumeData(updatedData);
     await saveToFirebase(updatedData);
   };
 
   const handleInvolvementChange = async (involvements: InvolvementEntry[]) => {
-    // Transform involvement entries to match the expected Firestore schema format
-    const transformedInvolvements = involvements.map((inv, idx) => {
-      return {
-        id: inv.id || `inv_${idx}`,
-        organization: inv.organization,
-        role: inv.role,
-        location: inv.location,
-        startDate: inv.startDate,
-        endDate: inv.endDate,
-        current: inv.current,
-        description: inv.description,
-
-        // Extra fields that might be expected by the Firestore schema
-        position: inv.role, // alias for role
-        activities: "",
-        achievements: ""
-      };
-    });
-
-    const updatedData = { ...resumeData, involvements: transformedInvolvements };
+    const updatedData = { ...resumeData, involvements };
     setResumeData(updatedData);
     await saveToFirebase(updatedData);
   };
@@ -269,45 +419,13 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
     await saveToFirebase(updatedData);
   };
 
-  // Transform data for forms
-  const getContactFormData = (): ContactFormData => {
-    const contact = resumeData.contactInfo || {};
-    return {
-      fullName: contact.fullName || '',
-      email: contact.email || '',
-      phone: contact.phone || '',
-      linkedin: contact.linkedin || '',
-      website: contact.website || '',
-      country: contact.country || '',
-      state: contact.state || '',
-      city: contact.city || '',
-      showEmail: contact.showEmail !== false,
-      showPhone: contact.showPhone !== false,
-      showLinkedin: contact.showLinkedin !== false,
-      showWebsite: contact.showWebsite !== false,
-      showLocation: contact.showLocation !== false
-    };
-  };
-
-  const getSkillsFormData = (): SkillEntry[] => {
-    if (!resumeData.skillCategories || resumeData.skillCategories.length === 0) {
-      return [{ id: `skill-${Date.now()}`, category: '', keywords: '' }];
-    }
-
-    return resumeData.skillCategories.map((category: any) => ({
-      id: category.id,
-      category: category.name,
-      keywords: category.skills.map((s: any) => s.name).join(', ')
-    }));
-  };
-
   // Render the appropriate form based on the current section
   const renderSection = () => {
     switch (section) {
       case 'summary':
         return (
           <SummaryForm
-            initialData={resumeData.summary || ''}
+            initialData={resumeData.summary}
             onSave={handleSummaryChange}
           />
         );
@@ -315,7 +433,7 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       case 'contact':
         return (
           <ContactForm
-            initialData={getContactFormData()}
+            initialData={resumeData.contactInfo}
             onSave={handleContactChange}
             autoSave={false}
           />
@@ -324,7 +442,7 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       case 'experience':
         return (
           <ExperienceForm
-            initialData={resumeData.experiences || []}
+            initialData={resumeData.experiences}
             onSave={handleExperienceChange}
           />
         );
@@ -332,7 +450,7 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       case 'education':
         return (
           <EducationForm
-            initialData={resumeData.education || []}
+            initialData={resumeData.education}
             onSave={handleEducationChange}
           />
         );
@@ -340,7 +458,7 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       case 'skills':
         return (
           <SkillsForm
-            initialData={getSkillsFormData()}
+            initialData={resumeData.skills}
             onSave={handleSkillsChange}
           />
         );
@@ -348,7 +466,7 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       case 'projects':
         return (
           <ProjectsForm
-            initialData={resumeData.projects || []}
+            initialData={resumeData.projects}
             onSave={handleProjectsChange}
           />
         );
@@ -356,7 +474,7 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       case 'involvement':
         return (
           <InvolvementForm
-            initialData={resumeData.involvements || []}
+            initialData={resumeData.involvements}
             onSave={handleInvolvementChange}
           />
         );
@@ -364,7 +482,7 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       case 'coursework':
         return (
           <CourseworkForm
-            initialData={resumeData.coursework || []}
+            initialData={resumeData.coursework}
             onSave={handleCourseworkChange}
           />
         );
@@ -391,6 +509,11 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       <div className="resume-editor-content">
         {renderSection()}
       </div>
+      {isSaving && (
+        <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow">
+          Saving...
+        </div>
+      )}
     </div>
   );
 }

@@ -2,12 +2,11 @@
 
 // components/resume/ResumeProcessingStatus.tsx
 import React, { useEffect, useState } from 'react';
-import { FileStatus } from '@/lib/pdf-processor';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
-import { Spinner } from '@/components/ui/spinner';
+import { db } from "@/lib/core/auth/firebase-config";
 import { XCircleIcon, CheckCircleIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { ArrowPathIcon as ArrowPathSolidIcon } from '@heroicons/react/24/solid';
+import { FileStatus } from '@/lib/features/pdf/processor';
 
 interface ResumeProcessingStatusProps {
   resumeId: string;

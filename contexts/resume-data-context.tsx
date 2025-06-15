@@ -1,7 +1,7 @@
 // src/contexts/ResumeDataContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from "@/lib/core/auth/firebase-config";
 
 import {
   FormSection,
@@ -13,9 +13,10 @@ import {
   Project,
   Certification,
   Involvement
-} from '@/src/types';
-import { useAuth } from "@/contexts/auth-context";
-import { StorageService } from "@/lib/services/storage-service";
+} from '@/types/resume';
+import { useAuth } from "@/contexts/firebase-auth-context";
+import { StorageService } from "@/lib/core/database/services/storage-service";
+
 
 interface ResumeDataContextType {
   resumeData: ResumeData | null;

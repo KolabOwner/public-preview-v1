@@ -1,13 +1,8 @@
-// app/api/parse/route.ts
-// Redirect for backward compatibility - sends requests to the correct endpoint at /api/resume/parse
-
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-  console.log('=== /api/parse redirect called, forwarding to /api/resume/parse ===');
-  
   try {
     // Clone the request to forward it
     const clonedBody = await request.clone().formData();
@@ -25,12 +20,12 @@ export async function POST(request: NextRequest) {
     // Return the response from the actual API endpoint
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in /api/parse redirect:', error);
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message || 'Failed to redirect to resume parsing endpoint',
+        error: error instanceof Error ? error.message : 'Failed to redirect to resume parsing endpoint',
         note: 'The API endpoint has moved to /api/resume/parse - please update your code to use the new endpoint'
       },
       { status: 500 }

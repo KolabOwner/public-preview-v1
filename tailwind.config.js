@@ -43,13 +43,12 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Rezi color system - keep for backward compatibility
-        'surface-1': '#1a1f2e',
-        'surface-1-1': '#0f1419',
-        'surface-2': '#252b3b',
-        'surface-2-stroke': '#2d3748',
-        'surface-3': '#2d3748',
-        'surface-3-label': '#e2e8f0',
+        // Surface colors - will change based on theme
+        'surface-1': 'var(--surface-1)',
+        'surface-2': 'var(--surface-2)',
+        'surface-2-stroke': 'var(--surface-2-stroke)',
+        'surface-3': 'var(--surface-3)',
+        'surface-3-label': 'var(--surface-3-label)',
         'side-nav-bg': '#1a1f2e',
         'side-nav-stroke': '#2d3748',
         'nav-label': '#a0aec0',
@@ -77,7 +76,7 @@ const config: Config = {
           300: '#69c0ff',
           400: '#40a9ff',
           500: '#1890ff',
-          600: '#1271ff',
+          600: '#096dd9',
           700: '#0050b3',
           800: '#003a8c',
           900: '#002766',
@@ -86,7 +85,33 @@ const config: Config = {
           DEFAULT: '#48c9b0',
           dark: '#16a085',
         },
+        // Navy color palette for dark theme
+        'navy': {
+          50: '#e4e9f2',
+          100: '#c9d2e5',
+          200: '#93a5cb',
+          300: '#5e78b1',
+          400: '#364d7d',
+          500: '#1e2a4a',
+          600: '#19233d',
+          700: '#141b30',
+          800: '#0f1424',
+          900: '#0a0d17',
+          950: '#05070d',
+        },
 
+        // Additional UI colors for the new design
+        'neutral-0': '#ffffff',
+        'tab-focus': '#f3f4f6',
+        'tab-hover': '#e5e7eb',
+        'menu-item-hover': 'var(--menu-item-hover)',
+        'button-text-focus': '#f9fafb',
+        'button-text-active': '#e5e7eb',
+        'button-text-hover': '#f3f4f6',
+        'button-secondary-stroke': '#d1d5db',
+        'button-secondary-hover': '#f3f4f6',
+        'button-secondary-active': '#e5e7eb',
+        
         // Button colors
         'color-button-created': {
           background: '#48c9b0',

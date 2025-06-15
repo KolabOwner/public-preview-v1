@@ -1,13 +1,12 @@
 // src/components/resume/panels/KeywordTargetingPanel.tsx
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
-
-
 import { Check, RefreshCw, AlertCircle, Loader, Target } from 'lucide-react';
-import {useKeywordAnalysis} from "@/hooks/use-keyword-analysis";
-import {useJobInfo} from "@/contexts/job-info-context";
-import {useResumeData} from "@/contexts/resume-data-context";
-import { ProcessedResumeData } from '@/src/types';
+import { useKeywordAnalysis } from "@/hooks/use-keyword-analysis";
+import { useJobInfo } from "@/contexts/job-info-context";
+import { useResumeData } from "@/contexts/resume-data-context";
+
 import { useAuth } from '@/contexts/auth-context';
+import { ProcessedResumeData } from "@/types/resume";
 
 export interface KeywordTargetingPanelProps {
   className?: string;

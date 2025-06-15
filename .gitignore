@@ -69,3 +69,8 @@ logs/
 # Temporary files
 tmp/
 temp/
+# SPARC files
+coordination/orchestration/
+performance-reports/
+.claude/local/
+*.log

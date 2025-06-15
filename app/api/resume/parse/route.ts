@@ -2,14 +2,21 @@
 // API route for parsing resumes from PDF or text
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFProcessor, FileStatus } from '@/lib/pdf-processor';
-import { parseResumeText } from '@/src/lib/parser';
+import {withCORS} from "@/lib/core/api/middleware/cors";
+import { FileStatus, PDFProcessor } from "@/lib/features/pdf/processor";
+import { parseResumeText } from "@/lib/features/pdf/parsing/parser";
+
 
 // Increase timeout for API route
 export const maxDuration = 300; // 5 minutes timeout
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
+// Handle CORS preflight requests
+export const OPTIONS = withCORS(async (request: NextRequest) => {
+  return new NextResponse(null, { status: 200 });
+});
+
+export const POST = withCORS(async (request: NextRequest) => {
   console.log('=== Parse Resume API Called ===');
   const startTime = Date.now();
 
@@ -35,7 +42,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * Handle file upload requests
@@ -141,7 +148,7 @@ async function handleTextParsing(request: NextRequest, startTime: number) {
 }
 
 // GET request for checking the status of a resume processing job
-export async function GET(request: NextRequest) {
+export const GET = withCORS(async (request: NextRequest) => {
   try {
     const url = new URL(request.url);
     const resumeId = url.searchParams.get('resumeId');
@@ -180,4 +187,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

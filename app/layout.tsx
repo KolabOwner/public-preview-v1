@@ -1,6 +1,6 @@
 // app/layout.tsx
 import './globals.css';
-import '../styles/fontawesome.css';
+import '@/app/fontawesome.css';
 import type { Metadata } from 'next';
 import { Inter, Source_Sans_3, Merriweather } from 'next/font/google';
 import { Providers } from './Providers';

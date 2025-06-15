@@ -7,16 +7,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Mail,
-  Lock,
   Eye,
   EyeOff,
   AlertCircle,
-  Loader2,
-  Check
+  Loader2
 } from 'lucide-react';
-import { useFirebaseAuth } from '@/contexts/firebase-auth-context';
-import { userService } from "@/lib/services/user-service";
-import { onAuthStateChange } from '@/lib/firebase/auth';
+import { onAuthStateChange } from "@/lib/core/auth/firebase-auth";
+import { userService } from "@/lib/core/database/services/user-service";
+import { useAuth } from "@/contexts/auth-context";
+
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -30,7 +29,7 @@ export default function SignUpPage() {
     signInWithFacebook,
     signInWithGithub,
     clearError
-  } = useFirebaseAuth();
+  } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

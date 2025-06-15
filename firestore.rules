@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Resumes - users can only access their own resumes
+    match /resumes/{resumeId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.user_id;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.user_id;
+    }
+    
+    // Cover Letters - users can only access their own cover letters
+    match /coverLetters/{letterId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.user_id;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.user_id;
+    }
+    
+    // Job Info - per resume, user-specific
+    match /jobInfo/{resumeId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.user_id;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.user_id;
+    }
+    
+    // Keywords analysis - per resume, user-specific
+    match /keywords/{resumeId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.user_id;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.user_id;
+    }
+    
+    // Public templates (read-only)
+    match /templates/{templateId} {
+      allow read: if true;
+      allow write: if false; // Only admins can write templates
+    }
+    
+    // Admin-only collections
+    match /admin/{document=**} {
+      allow read, write: if request.auth != null && 
+        'admin' in request.auth.token.custom_claims;
+    }
+  }
+}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase/auth';
+import { db } from "@/lib/core/auth/firebase-config";
 import AICoverLetterForm from '@/components/resume-editor/ai-cover-letter-form';
 
 export default function CoverLettersPage() {

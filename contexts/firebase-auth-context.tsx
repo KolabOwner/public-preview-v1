@@ -1,9 +1,12 @@
-// contexts/firebase-auth-context.tsx - FIXED VERSION
+// ==========================================
+// 2. Fixed contexts/auth-context.tsx
+// ==========================================
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { User } from 'firebase/auth';
+import { User, AuthError } from 'firebase/auth';
 import {
   onTokenChange,
   loginWithEmail,
@@ -22,13 +25,7 @@ import {
   deleteAccount as firebaseDeleteAccount,
   setPersistenceLevel,
   getAuthErrorMessage,
-} from '@/lib/firebase/auth';
-
-export type AuthError = {
-  code: string;
-  message: string;
-  customData?: { email?: string };
-};
+} from '@/lib/core/auth/firebase-auth';
 
 interface AuthContextType {
   user: User | null;
@@ -116,10 +113,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const register = async (email: string, password: string, displayName?: string) => {
     try {
       setError(null);
-      await registerWithEmail(email, password);
-      if (displayName && user) {
-        await updateUserProfile({ displayName });
-      }
+      await registerWithEmail(email, password, displayName);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -305,10 +299,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export const useFirebaseAuth = () => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useFirebaseAuth must be used within a FirebaseAuthProvider');
+    throw new Error('useAuth must be used within a FirebaseAuthProvider');
   }
   return context;
 };
@@ -316,7 +310,7 @@ export const useFirebaseAuth = () => {
 // HOC for protected routes
 export function withAuth<P extends object>(Component: React.ComponentType<P>) {
   return function ProtectedComponent(props: P) {
-    const { user, loading } = useFirebaseAuth();
+    const { user, loading } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
 
