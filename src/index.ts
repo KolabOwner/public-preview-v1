@@ -6,6 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import { expressCORSConfig } from '../lib/cors-config';
 
 // Load environment variables
 dotenv.config();
@@ -21,7 +22,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Apply middleware
 app.use(helmet()); // Security headers
-app.use(cors()); // Enable CORS
+app.use(cors(expressCORSConfig)); // Enable secure CORS
 app.use(morgan('dev')); // Logging
 app.use(express.json({ limit: '10mb' })); // Parse JSON with increased limit for resume text
 

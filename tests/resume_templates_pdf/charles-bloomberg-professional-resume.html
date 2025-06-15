@@ -1,0 +1,378 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Charles Bloomberg - Software Engineer</title>
+      <style>
+        /* Import Professional Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500;700&display=swap');
+        
+        /* Reset and Base Styles */
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        /* Fallback for Calibri if not available */
+        @font-face {
+          font-family: 'Calibri-Fallback';
+          src: local('Calibri'), local('Arial'), local('Helvetica Neue'), local('sans-serif');
+        }
+        
+        body {
+          font-family: 'Calibri', Arial, 'Helvetica Neue', sans-serif;
+          font-size: 11pt;
+          line-height: 1.15;
+          color: #000000;
+          background: white;
+          margin: 0;
+          padding: 0;
+        }
+        
+        .document-container {
+          width: 816px;
+          min-height: 1056px;
+          margin: 0 auto;
+          background: white;
+          padding: 36px 48px;
+          position: relative;
+        }
+        
+        /* Header Styles */
+        .header {
+          text-align: center;
+          margin-bottom: 16px;
+        }
+        
+        .name {
+          font-size: 20pt;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          margin-bottom: 8px;
+          color: #000000;
+          text-transform: uppercase;
+        }
+        
+        .contact-info {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 12px;
+          font-size: 10pt;
+          color: #333333;
+          margin-bottom: 16px;
+        }
+        
+        .contact-item {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        
+        .contact-divider {
+          color: #666666;
+          font-weight: 300;
+        }
+        
+        /* Section Styles */
+        .section {
+          margin-bottom: 20px;
+        }
+        
+        .section-heading {
+          font-size: 11pt;
+          font-weight: 700;
+          text-transform: uppercase;
+          margin-bottom: 8px;
+          color: #000000;
+          border-bottom: 1px solid #000000;
+          padding-bottom: 2px;
+          letter-spacing: 0.5px;
+        }
+        
+        /* Experience Styles */
+        .experience-block {
+          margin-bottom: 16px;
+        }
+        
+        .job-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          margin-bottom: 4px;
+        }
+        
+        .job-title {
+          font-size: 12pt;
+          font-weight: 700;
+          color: #000000;
+        }
+        
+        .company-line {
+          font-size: 10pt;
+          color: #333333;
+          margin-bottom: 6px;
+        }
+        
+        .company-name {
+          font-weight: 600;
+        }
+        
+        .date-location {
+          font-size: 10pt;
+          color: #333333;
+          text-align: right;
+          font-style: italic;
+        }
+        
+        /* Bullet Points */
+        .bullet-list {
+          list-style: none;
+          padding-left: 20px;
+          margin-top: 4px;
+        }
+        
+        .bullet-list li {
+          position: relative;
+          margin-bottom: 4px;
+          padding-left: 12px;
+          font-size: 10pt;
+          line-height: 1.4;
+          color: #000000;
+          text-align: justify;
+        }
+        
+        .bullet-list li:before {
+          content: "•";
+          position: absolute;
+          left: -8px;
+          color: #000000;
+          font-weight: bold;
+        }
+        
+        /* Strong emphasis for metrics */
+        strong {
+          font-weight: 600;
+          color: #000000;
+        }
+        
+        /* Project Section */
+        .project-block {
+          margin-bottom: 12px;
+        }
+        
+        .project-title {
+          font-size: 11pt;
+          font-weight: 700;
+          margin-bottom: 4px;
+          color: #000000;
+        }
+        
+        /* Education Section */
+        .education-block {
+          margin-bottom: 8px;
+        }
+        
+        .degree {
+          font-size: 11pt;
+          font-weight: 700;
+          color: #000000;
+        }
+        
+        .school-info {
+          font-size: 10pt;
+          color: #333333;
+          margin-top: 2px;
+        }
+        
+        /* Skills Section */
+        .skills-block {
+          margin-bottom: 6px;
+          font-size: 10pt;
+          line-height: 1.4;
+        }
+        
+        .skill-category {
+          font-weight: 600;
+          color: #000000;
+        }
+        
+        /* Links */
+        a {
+          color: #000000;
+          text-decoration: none;
+        }
+        
+        a:hover {
+          text-decoration: underline;
+        }
+        
+        /* Print Optimization */
+        @media print {
+          body {
+            margin: 0;
+            padding: 0;
+          }
+          
+          .document-container {
+            width: 100%;
+            padding: 0.5in 0.6in;
+            min-height: auto;
+          }
+          
+          .section {
+            break-inside: avoid;
+          }
+          
+          .experience-block {
+            break-inside: avoid;
+          }
+        }
+        
+        /* Fine-tuning for exact PDF match */
+        .tight-spacing {
+          letter-spacing: -0.02em;
+        }
+        
+        .wide-spacing {
+          letter-spacing: 0.02em;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="document-container">
+        <!-- Header -->
+        <header class="header">
+          <h1 class="name">Charles Bloomberg</h1>
+          <div class="contact-info">
+            <span class="contact-item">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#333333"/>
+    </svg>
+              <span>New York City, New York, United States</span>
+            </span>
+            <span class="contact-divider">•</span>
+            <span class="contact-item">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#333333"/>
+    </svg>
+              <a href="mailto:charlesbloomberg@wisc.edu">charlesbloomberg@wisc.edu</a>
+            </span>
+            <span class="contact-divider">•</span>
+            <span class="contact-item">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="#333333"/>
+    </svg>
+              <span>(621) 799-5548</span>
+            </span>
+            <span class="contact-divider">•</span>
+            <span class="contact-item">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" fill="#333333"/>
+    </svg>
+              <a href="https://linkedin.com/in/bloomberg">in/bloomberg</a>
+            </span>
+          </div>
+        </header>
+        
+        <!-- Experience Section -->
+        <section class="section">
+          <h2 class="section-heading">EXPERIENCE</h2>
+          
+          <div class="experience-block">
+            <div class="job-header">
+              <h3 class="job-title">Software Engineer</h3>
+              <span class="date-location">June 2021 - Present</span>
+            </div>
+            <div class="company-line">
+              <span class="company-name">Company A</span> • New York, NY
+            </div>
+            <ul class="bullet-list">
+              <li>Bootstrapped & led a team of 4 developers to modernize fulfillment automation using a novel human-in-the-loop approach, unlocking an <strong>80% increase</strong> in operational scale for a 40-person team.</li>
+              <li>Increased software development velocity by mentoring 4 developers and facilitating user interviews, leading to consistent resolution of <strong>90% of bug reports within 24 hours</strong>.</li>
+              <li>Built and maintained distributed systems that served <strong>1M daily requests</strong>, coordinating with operations, business, technical, and customer teams to serve cross-functional priorities.</li>
+              <li>Built CI/CD pipelines to lint, build, test, review, and deploy containerized applications to production <strong>&lt;30 minutes</strong> after development with Docker, GitHub Actions, and Heroku.</li>
+              <li>Led initiative in a team of 8 engineers to improve engineering on-call system, reducing the number of alerts per shift by <strong>50%</strong> without dropping mission-critical information.</li>
+              <li>Streamlined critical operational processes to achieve a <strong>6% boost in productivity</strong> for a team of 40 operators.</li>
+            </ul>
+          </div>
+          
+          <div class="experience-block">
+            <div class="job-header">
+              <h3 class="job-title">Software Engineer Intern</h3>
+              <span class="date-location">June 2020 - June 2021</span>
+            </div>
+            <div class="company-line">
+              <span class="company-name">Company B</span> • New York, NY
+            </div>
+            <ul class="bullet-list">
+              <li>Created and maintained cloud-based service endpoints with Python, Flask, & Django, increasing service uptime to <strong>99%</strong> for an early-stage machine vision startup.</li>
+              <li>Designed & developed intuitive UIs for internal users to train & deploy new machine learning models, decreasing manual set-up time by <strong>90%</strong>.</li>
+              <li>Developed embedded software for an ML-powered camera product, achieving <strong>10X system throughput</strong> using concurrent programming.</li>
+              <li>Generated & curated visual AI training data and tested deep learning systems to ensure <strong>90% accuracy</strong> with &lt;10% training data compared with competitors.</li>
+            </ul>
+          </div>
+          
+          <div class="experience-block">
+            <div class="job-header">
+              <h3 class="job-title">Script Programmer</h3>
+              <span class="date-location">June 2019 - June 2020</span>
+            </div>
+            <div class="company-line">
+              <span class="company-name">Company C</span> • New York, NY
+            </div>
+            <ul class="bullet-list">
+              <li>Bootstrapped project to automate reporting while part of a team of hazardous waste management specialists, eliminating <strong>25% of reporting labor</strong> using custom UIs and 3rd-party API calls.</li>
+              <li>Wrote one-off scripts to automate revisions of thousands of legacy reports, cutting manual editing hours by <strong>80%</strong>.</li>
+            </ul>
+          </div>
+        </section>
+        
+        <!-- Project Section -->
+        <section class="section">
+          <h2 class="section-heading">PROJECT</h2>
+          
+          <div class="project-block">
+            <h3 class="project-title">Web-Based Musical Instrument</h3>
+            <ul class="bullet-list">
+              <li>Prototyped and deployed a music-based web app in 2 days using React, Flask, and AWS EC2.</li>
+              <li>Hosted the code on GitHub.</li>
+            </ul>
+          </div>
+        </section>
+        
+        <!-- Education Section -->
+        <section class="section">
+          <h2 class="section-heading">EDUCATION</h2>
+          
+          <div class="education-block">
+            <h3 class="degree">Bachelor of Science in Biochemistry</h3>
+            <div class="school-info">
+              Minor in Computer Science • New York University • New York, NY • 2021
+            </div>
+          </div>
+        </section>
+        
+        <!-- Skills Section -->
+        <section class="section">
+          <h2 class="section-heading">SKILLS</h2>
+          
+          <div class="skills-block">
+            <span class="skill-category">Languages:</span> Python, JavaScript, SQL
+          </div>
+          <div class="skills-block">
+            <span class="skill-category">Frameworks:</span> Flask, Django, Node, Web extensions
+          </div>
+          <div class="skills-block">
+            <span class="skill-category">Tools:</span> Unix, Bash, GitHub, GitHub Actions, Docker, Cloud, Heroku, CI/CD, PostgreSQL
+          </div>
+        </section>
+      </div>
+    </body>
+    </html>
+  

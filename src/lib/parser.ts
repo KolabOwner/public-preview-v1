@@ -384,13 +384,74 @@ class DescriptionFixer {
   }
 
   private static fixProjectDescription(proj: any, originalResume: string): void {
+    const currentTitle = String(proj.title || '').trim();
     const currentDesc = String(proj.description || '').trim();
-    if (!currentDesc || currentDesc === 'n/a') {
+    
+    // Check if title contains description content (common parsing error)
+    if (currentTitle) {
+      // Indicators that the title contains more than just a title
+      const hasBulletPoints = currentTitle.includes('•') || currentTitle.includes('- ') || currentTitle.includes('* ');
+      const hasMultipleLines = currentTitle.includes('\n');
+      const hasActionVerbs = /\b(developed|built|created|designed|implemented|deployed|prototyped|hosted|managed|increased)\b/i.test(currentTitle);
+      const isTooLong = currentTitle.length > 80;
+      
+      if (hasBulletPoints || hasMultipleLines || (hasActionVerbs && isTooLong)) {
+        // Split by common separators
+        const parts = currentTitle.split(/[•\n]|(?:\.\s+(?=[A-Z]))/);
+        
+        if (parts.length > 0) {
+          // First part is likely the actual title
+          const actualTitle = parts[0].trim();
+          
+          // Look for a cleaner title by checking for sentence endings
+          const sentenceMatch = actualTitle.match(/^([^.!?]+?)(?:[.!?]|$)/);
+          if (sentenceMatch) {
+            proj.title = sentenceMatch[1].trim();
+          } else {
+            proj.title = actualTitle;
+          }
+          
+          // Rest becomes the description
+          if (parts.length > 1 || currentTitle.length > proj.title.length + 2) {
+            // Extract everything after the title
+            const descStartIndex = currentTitle.indexOf(proj.title) + proj.title.length;
+            let extractedDesc = currentTitle.substring(descStartIndex).trim();
+            
+            // Clean up the description
+            extractedDesc = extractedDesc.replace(/^[.\s]+/, ''); // Remove leading dots and spaces
+            
+            // Format bullet points properly
+            if (extractedDesc) {
+              const bullets = extractedDesc
+                .split(/[•\n]|(?:\.\s+(?=[A-Z]))/)
+                .map(b => b.trim())
+                .filter(b => b.length > 0 && b !== '.');
+              
+              proj.description = bullets.map(b => `• ${b}`).join('\n');
+            }
+          }
+        }
+      }
+    }
+    
+    // If we still don't have a description, try to find it in the original resume
+    if (!proj.description || proj.description === 'n/a' || proj.description === '') {
       const title = String(proj.title || '');
-      const pattern = new RegExp(`${this.escapeRegex(title)}[^\\n]*\\n((?:["\\-\\*][^\\n]+\\n?)+)`, 'is');
-      const match = originalResume.match(pattern);
-      if (match && match[1]) {
-        proj.description = match[1].trim();
+      if (title) {
+        // Try multiple patterns to find the description
+        const patterns = [
+          new RegExp(`${this.escapeRegex(title)}[^\\n]*\\n((?:["\\-\\*•][^\\n]+\\n?)+)`, 'is'),
+          new RegExp(`${this.escapeRegex(title)}[^\\n]*?[.:]\\s*([^\\n]+(?:\\n["\\-\\*•][^\\n]+)*)`, 'is'),
+          new RegExp(`${this.escapeRegex(title)}\\s*[-–—]\\s*([^\\n]+)`, 'is')
+        ];
+        
+        for (const pattern of patterns) {
+          const match = originalResume.match(pattern);
+          if (match && match[1]) {
+            proj.description = match[1].trim();
+            break;
+          }
+        }
       }
     }
   }
@@ -404,11 +465,20 @@ class DescriptionCleaner {
   static cleanDescriptions(data: any): any {
     const corrected = { ...data };
 
-    ['experiences', 'projects', 'involvement'].forEach(section => {
+    ['experiences', 'projects', 'involvement', 'education'].forEach(section => {
       if (Array.isArray(corrected[section])) {
         corrected[section].forEach((item: any) => {
           if (item.description) {
             item.description = this.cleanDescription(item.description);
+            // Split bullet points that are separated by • character
+            if (item.description.includes('•')) {
+              item.bulletPoints = item.description
+                .split('•')
+                .map(point => point.trim())
+                .filter(point => point.length > 0);
+              // Format the description with bullet points
+              item.description = item.bulletPoints.map(point => `• ${point}`).join('\n');
+            }
           }
         });
       }
@@ -857,10 +927,12 @@ PARSING RULES:
 1. ALWAYS extract job titles/roles - never put "n/a" if a role is mentioned
 2. ALWAYS extract dates - look for patterns like "June 2023", "2022-2024", "Present"
 3. When you see [BULLETS] tags, include ALL bullet points in the description
-4. For ALL descriptions with multiple points, separate them with • character
-5. Extract company names, institutions, and organizations accurately
-6. Look for education information (degrees, schools, graduation dates)
-7. Extract skills sections with categories and keywords
+4. For ALL descriptions with multiple points, separate COMPLETE bullet points with • character
+5. IMPORTANT: Keep numbers with commas intact (e.g., "2,800+" should stay as "2,800+" not split into "2" and "800+")
+6. Each bullet point should be a complete sentence or phrase from start to finish
+7. Extract company names, institutions, and organizations accurately
+8. Look for education information (degrees, schools, graduation dates)
+9. Extract skills sections with categories and keywords
 
 REQUIRED EXTRACTION PATTERNS:
 - Job Title at Company Name | Location | Dates
@@ -891,7 +963,7 @@ JSON FORMAT:
       "dateBegin": "REQUIRED - start date", 
       "dateEnd": "REQUIRED - end date or Present",
       "isCurrent": boolean,
-      "description": "string with ALL bullet points separated by • character"
+      "description": "string with ALL bullet points from the resume, each complete bullet point separated by • character (keep numbers like 2,800 intact)"
     }
   ],
   "education": [
@@ -904,7 +976,7 @@ JSON FORMAT:
       "score": "GPA if mentioned or n/a",
       "scoreType": "GPA or n/a", 
       "minor": "string or n/a",
-      "description": "relevant coursework or achievements with bullet points separated by • character or n/a"
+      "description": "relevant coursework or achievements with each complete bullet point separated by • character (keep numbers intact) or n/a"
     }
   ],
   "skills": [
@@ -915,9 +987,9 @@ JSON FORMAT:
   ],
   "projects": [
     {
-      "title": "REQUIRED - project name",
+      "title": "REQUIRED - ONLY the project name/title (NOT the description)",
       "organization": "string or n/a",
-      "description": "REQUIRED - project details with ALL bullet points separated by • character"
+      "description": "REQUIRED - project details/bullet points separated by • character (keep numbers intact)"
     }
   ],
   "involvement": [
@@ -927,7 +999,7 @@ JSON FORMAT:
       "location": "string or n/a",
       "dateBegin": "start date or n/a",
       "dateEnd": "end date or n/a", 
-      "description": "REQUIRED - activities with ALL bullet points separated by • character"
+      "description": "REQUIRED - activities with each complete bullet point separated by • character (keep numbers intact)"
     }
   ],
   "certifications": []
@@ -946,6 +1018,9 @@ CRITICAL REMINDERS:
 - ALWAYS extract skills if present
 - ALWAYS format descriptions with bullet points: separate each point with • character
 - Example: "Developed web app • Managed team of 5 • Increased sales by 20%"
+- For PROJECTS: The "title" field should ONLY contain the project name (e.g., "Web-Based Musical Instrument")
+- For PROJECTS: The "description" field should contain ALL the details/bullet points about what was done
+- NEVER combine title and description in the title field
 Return ONLY valid JSON.`;
   }
 
@@ -954,10 +1029,39 @@ Return ONLY valid JSON.`;
 
     corrected = DataClassifier.fixClassifications(corrected);
     corrected = DescriptionFixer.fixMissingDescriptions(corrected, originalResume);
+    corrected = this.validateAndFixProjects(corrected);
     corrected = DescriptionCleaner.cleanDescriptions(corrected);
     corrected = DateFormatter.fixDates(corrected);
 
     return corrected;
+  }
+
+  private validateAndFixProjects(data: any): any {
+    if (Array.isArray(data.projects)) {
+      data.projects = data.projects.map((proj: any) => {
+        // Ensure title is actually just a title
+        const title = String(proj.title || '').trim();
+        
+        // If title looks like it contains a full sentence with description
+        if (title && title.match(/^([^.!?]+?)\s*[.!?]\s*(.+)$/)) {
+          const match = title.match(/^([^.!?]+?)\s*[.!?]\s*(.+)$/);
+          if (match) {
+            proj.title = match[1].trim();
+            // Prepend the description part to existing description
+            const descPart = match[2].trim();
+            if (proj.description && proj.description !== 'n/a') {
+              proj.description = `• ${descPart}\n${proj.description}`;
+            } else {
+              proj.description = descPart;
+            }
+          }
+        }
+        
+        return proj;
+      });
+    }
+    
+    return data;
   }
 
   private convertToIndexedFormat(data: any): any {

@@ -470,13 +470,87 @@ export class PDFProcessor {
         throw new Error('PDF text extraction failed or resulted in too little text');
       }
 
-      // Parse the resume using the API
-      const { parsedData, rmsData, validationErrors } = await this.parseResumeText(
-        pdfText,
-        options.userId,
-        options.validateRMS
-      );
-      console.log('Parsed resume data successfully');
+      // Try to extract RMS metadata using ExifTool API
+      let exifRMSMetadata = null;
+      try {
+        console.log('Calling ExifTool API to extract RMS metadata...');
+        
+        // Create FormData with the PDF file
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch('/api/resume/extract-rms', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.hasRMSData && result.metadata) {
+            exifRMSMetadata = result.metadata;
+            console.log(`Successfully extracted RMS metadata with ${result.fieldCount} fields via API`);
+          } else {
+            console.log('No RMS metadata found in PDF');
+          }
+        } else {
+          const error = await response.json();
+          console.warn('ExifTool API error:', error.error);
+        }
+      } catch (error) {
+        console.warn('Failed to extract RMS metadata via API:', error);
+      }
+
+      let parsedData: any;
+      let rmsData: any;
+      let validationErrors: any;
+
+      // Debug RMS metadata before completeness check
+      console.log('RMS metadata check:', {
+        hasExifRMSMetadata: !!exifRMSMetadata,
+        fieldCount: exifRMSMetadata ? Object.keys(exifRMSMetadata).length : 0,
+        sampleFields: exifRMSMetadata ? Object.keys(exifRMSMetadata).slice(0, 5) : []
+      });
+
+      // Check if we have complete RMS metadata - if so, skip expensive AI parsing
+      if (exifRMSMetadata && this.isCompleteRMSData(exifRMSMetadata)) {
+        const fastPathStartTime = Date.now();
+        console.log('🚀 Complete RMS metadata detected - using FAST PATH (skipping AI parsing)');
+        
+        // Convert RMS metadata to our standard parsed format
+        parsedData = this.convertRMSToParseFormat(exifRMSMetadata);
+        rmsData = exifRMSMetadata;
+        validationErrors = null;
+        
+        console.log('Fast Path - Parsed Data:', {
+          hasContactInfo: !!parsedData.contactInfo,
+          fullName: parsedData.contactInfo?.fullName,
+          email: parsedData.contactInfo?.email
+        });
+        
+        const fastPathTime = Date.now() - fastPathStartTime;
+        console.log(`✅ RMS Fast Path completed in ${fastPathTime}ms (typical AI parsing: 10,000-60,000ms)`);
+        console.log(`💰 Performance gain: ~${Math.round(30000/fastPathTime)}x faster processing`);
+      } else {
+        console.log('Incomplete or no RMS metadata - proceeding with AI parsing');
+        
+        // Parse the resume using the AI API
+        const parseResult = await this.parseResumeText(
+          pdfText,
+          options.userId,
+          options.validateRMS
+        );
+        parsedData = parseResult.parsedData;
+        rmsData = parseResult.rmsData;
+        validationErrors = parseResult.validationErrors;
+        
+        console.log('Parsed resume data successfully using AI');
+
+        // Merge ExifTool RMS metadata with AI-parsed data if available
+        if (exifRMSMetadata && rmsData) {
+          console.log('Merging ExifTool RMS metadata with AI-parsed data...');
+          rmsData = this.mergeRMSMetadata(exifRMSMetadata, rmsData);
+        }
+      }
 
       // If title wasn't provided, use the parsed name as title
       const title = options.title || parsedData.contactInfo.fullName || 'Untitled Resume';
@@ -486,8 +560,10 @@ export class PDFProcessor {
         await this.saveResultsToFirebase(resumeId, {
           fileUrl,
           parsedData,
-          rmsData,
-          title
+          rmsData: rmsData,
+          title,
+          exifToolExtracted: !!exifRMSMetadata,
+          usedRMSFastPath: exifRMSMetadata && this.isCompleteRMSData(exifRMSMetadata)
         });
         console.log('Saved results to Firebase');
       }
@@ -1003,6 +1079,7 @@ export class PDFProcessor {
       parsedData: ParsedResumeData;
       rmsData?: any;
       title: string;
+      exifToolExtracted?: boolean;
     }
   ): Promise<void> {
     try {
@@ -1010,16 +1087,56 @@ export class PDFProcessor {
 
       const resumeRef = doc(db, 'resumes', resumeId);
 
-      await updateDoc(resumeRef, {
-        fileUrl: data.fileUrl,
-        parsedData: data.parsedData,
-        rmsRawData: data.rmsData || null,
-        title: data.title,
+      // Clean data to avoid Firebase undefined value errors
+      const cleanData: any = {
         updatedAt: serverTimestamp(),
         status: FileStatus.PROCESSED,
         processingCompleted: new Date().toISOString(),
-        rmsVersion: this.RMS_VERSION
+        rmsVersion: this.RMS_VERSION,
+        exifToolExtracted: data.exifToolExtracted || false
+      };
+
+      console.log('Data values before filtering:', {
+        fileUrl: data.fileUrl,
+        hasFileUrl: data.fileUrl !== undefined,
+        parsedData: typeof data.parsedData,
+        hasParsedData: data.parsedData !== undefined,
+        rmsData: typeof data.rmsData,
+        hasRmsData: data.rmsData !== undefined,
+        title: data.title,
+        hasTitle: data.title !== undefined
       });
+
+      if (data.fileUrl !== undefined) cleanData.fileUrl = data.fileUrl;
+      if (data.parsedData !== undefined) cleanData.parsedData = data.parsedData;
+      if (data.rmsData !== undefined) cleanData.rmsRawData = data.rmsData;
+      if (data.title !== undefined) cleanData.title = data.title;
+
+      // Recursively remove all undefined values
+      const removeUndefined = (obj: any): any => {
+        if (Array.isArray(obj)) {
+          return obj.map(removeUndefined).filter(item => item !== undefined);
+        } else if (obj !== null && typeof obj === 'object') {
+          const cleaned: any = {};
+          for (const [key, value] of Object.entries(obj)) {
+            if (value !== undefined) {
+              const cleanedValue = removeUndefined(value);
+              if (cleanedValue !== undefined) {
+                cleaned[key] = cleanedValue;
+              }
+            }
+          }
+          return cleaned;
+        }
+        return obj;
+      };
+
+      // Clean all data recursively
+      const finalCleanData = removeUndefined(cleanData);
+      
+      console.log('Final clean data keys:', Object.keys(finalCleanData));
+
+      await updateDoc(resumeRef, finalCleanData);
 
       console.log('Results saved successfully');
     } catch (error) {
@@ -1365,6 +1482,252 @@ export class PDFProcessor {
 
     const parts = [cityStr, stateStr, countryStr].filter(Boolean);
     return parts.join(', ');
+  }
+
+  /**
+   * Check if RMS metadata contains enough information to skip AI parsing
+   */
+  private static isCompleteRMSData(rmsMetadata: any): boolean {
+    // Check for essential fields that indicate complete resume data
+    const hasContact = rmsMetadata.rms_contact_fullName || rmsMetadata.Rms_contact_fullName;
+    const hasEmail = rmsMetadata.rms_contact_email || rmsMetadata.Rms_contact_email;
+    
+    // Check for at least one substantial section
+    const hasExperience = (rmsMetadata.rms_experience_count || rmsMetadata.Rms_experience_count) > 0;
+    const hasEducation = (rmsMetadata.rms_education_count || rmsMetadata.Rms_education_count) > 0;
+    const hasSkills = (rmsMetadata.rms_skill_count || rmsMetadata.Rms_skill_count) > 0;
+    
+    // Check for RMS version compliance
+    const hasVersion = rmsMetadata.rms_version || rmsMetadata.Rms_version || 
+                      (rmsMetadata.producer && rmsMetadata.producer.includes('rms_v'));
+    
+    // Detect and exclude test/default/fallback data patterns
+    const email = hasEmail ? (rmsMetadata.rms_contact_email || rmsMetadata.Rms_contact_email) : '';
+    const fullName = hasContact ? (rmsMetadata.rms_contact_fullName || rmsMetadata.Rms_contact_fullName) : '';
+    
+    const testDataPatterns = [
+      // Common test emails
+      'john.doe@example.com',
+      'test@example.com', 
+      'user@example.com',
+      'sample@example.com',
+      // Common test names
+      'john doe',
+      'test user',
+      'sample user',
+      'jane doe'
+    ];
+    
+    const isTestData = testDataPatterns.some(pattern => 
+      email.toLowerCase().includes(pattern) || 
+      fullName.toLowerCase().includes(pattern)
+    );
+    
+    if (isTestData) {
+      console.log('❌ Detected test/default data - will not use Fast Path:', {
+        email: email.substring(0, 20) + '...',
+        fullName: fullName.substring(0, 20) + '...'
+      });
+      return false;
+    }
+    
+    const isComplete = hasContact && hasEmail && hasVersion && (hasExperience || hasEducation || hasSkills);
+    
+    if (isComplete) {
+      console.log('RMS metadata is complete - contains contact info, version, and substantial content');
+    } else {
+      console.log('RMS metadata is incomplete:', {
+        hasContact,
+        hasEmail,
+        hasVersion,
+        hasExperience,
+        hasEducation,
+        hasSkills
+      });
+    }
+    
+    return isComplete;
+  }
+
+  /**
+   * Convert RMS metadata to our standard parsed format
+   */
+  private static convertRMSToParseFormat(rmsMetadata: any): any {
+    // Helper to get field value with case variations
+    const getField = (fieldName: string) => {
+      // Try lowercase first, then capitalized (Rms_), then original case
+      return rmsMetadata[fieldName] || 
+             rmsMetadata[fieldName.replace('rms_', 'Rms_')] || 
+             rmsMetadata[fieldName.charAt(0).toUpperCase() + fieldName.slice(1)] ||
+             '';
+    };
+
+    const parsedData: any = {
+      contactInfo: {
+        fullName: getField('rms_contact_fullName') || '',
+        firstName: getField('rms_contact_givenNames') || '',
+        lastName: getField('rms_contact_lastName') || '',
+        email: getField('rms_contact_email') || '',
+        phone: getField('rms_contact_phone') || '',
+        city: getField('rms_contact_city') || '',
+        state: getField('rms_contact_state') || '',
+        country: getField('rms_contact_country') || '',
+        linkedin: getField('rms_contact_linkedin') || '',
+        github: getField('rms_contact_github') || '',
+        website: getField('rms_contact_website') || ''
+      },
+      summary: getField('rms_summary') || '',
+      experiences: [],
+      education: [],
+      skillCategories: [],
+      projects: [],
+      involvements: [],
+      certifications: []
+    };
+
+    // Build location string
+    const locationParts = [
+      parsedData.contactInfo.city,
+      parsedData.contactInfo.state,
+      parsedData.contactInfo.country
+    ].filter(Boolean);
+    if (locationParts.length > 0) {
+      parsedData.contactInfo.location = locationParts.join(', ');
+    }
+
+    // Convert experiences
+    const expCount = getField('rms_experience_count') || 0;
+    for (let i = 0; i < expCount; i++) {
+      const prefix = `rms_experience_${i}`;
+      parsedData.experiences.push({
+        title: getField(`${prefix}_role`) || '',
+        company: getField(`${prefix}_company`) || '',
+        location: getField(`${prefix}_location`) || '',
+        startDate: getField(`${prefix}_dateBegin`) || '',
+        endDate: getField(`${prefix}_dateEnd`) || '',
+        current: getField(`${prefix}_isCurrent`) === 'true' || getField(`${prefix}_dateEnd`) === 'Present',
+        description: getField(`${prefix}_description`) || ''
+      });
+    }
+
+    // Convert education
+    const eduCount = getField('rms_education_count') || 0;
+    for (let i = 0; i < eduCount; i++) {
+      const prefix = `rms_education_${i}`;
+      const qualification = getField(`${prefix}_qualification`) || '';
+      
+      // Try to split qualification into degree and field
+      let degree = qualification;
+      let fieldOfStudy = '';
+      if (qualification.includes(' in ')) {
+        const parts = qualification.split(' in ');
+        degree = parts[0];
+        fieldOfStudy = parts[1];
+      }
+
+      parsedData.education.push({
+        school: getField(`${prefix}_institution`) || '',
+        degree,
+        fieldOfStudy,
+        location: getField(`${prefix}_location`) || '',
+        endDate: getField(`${prefix}_date`) || '',
+        gpa: getField(`${prefix}_score`) || '',
+        current: getField(`${prefix}_isGraduate`) !== 'true'
+      });
+    }
+
+    // Convert skills
+    const skillCount = getField('rms_skill_count') || 0;
+    for (let i = 0; i < skillCount; i++) {
+      const prefix = `rms_skill_${i}`;
+      const category = getField(`${prefix}_category`) || 'Skills';
+      const keywords = getField(`${prefix}_keywords`) || '';
+      
+      if (keywords) {
+        const skills = keywords.split(',').map((skill: string) => ({
+          name: skill.trim(),
+          level: undefined
+        }));
+        
+        parsedData.skillCategories.push({
+          name: category,
+          skills
+        });
+      }
+    }
+
+    // Convert projects
+    const projectCount = getField('rms_project_count') || 0;
+    for (let i = 0; i < projectCount; i++) {
+      const prefix = `rms_project_${i}`;
+      parsedData.projects.push({
+        title: getField(`${prefix}_title`) || '',
+        organization: getField(`${prefix}_organization`) || '',
+        description: getField(`${prefix}_description`) || '',
+        url: getField(`${prefix}_url`) || '',
+        startDate: getField(`${prefix}_dateBegin`) || '',
+        endDate: getField(`${prefix}_dateEnd`) || ''
+      });
+    }
+
+    // Convert involvements
+    const involvementCount = getField('rms_involvement_count') || 0;
+    for (let i = 0; i < involvementCount; i++) {
+      const prefix = `rms_involvement_${i}`;
+      parsedData.involvements.push({
+        organization: getField(`${prefix}_organization`) || '',
+        role: getField(`${prefix}_role`) || '',
+        location: getField(`${prefix}_location`) || '',
+        description: getField(`${prefix}_description`) || '',
+        startDate: getField(`${prefix}_dateBegin`) || '',
+        endDate: getField(`${prefix}_dateEnd`) || '',
+        isCurrent: getField(`${prefix}_dateEnd`) === 'Present'
+      });
+    }
+
+    // Convert certifications
+    const certCount = getField('rms_certification_count') || 0;
+    for (let i = 0; i < certCount; i++) {
+      const prefix = `rms_certification_${i}`;
+      parsedData.certifications.push({
+        name: getField(`${prefix}_name`) || '',
+        issuer: getField(`${prefix}_department`) || '',
+        date: getField(`${prefix}_date`) || '',
+        description: getField(`${prefix}_description`) || ''
+      });
+    }
+
+    return parsedData;
+  }
+
+  /**
+   * Merge RMS metadata from ExifTool with parsed data
+   */
+  private static mergeRMSMetadata(exifMetadata: any, parsedData: any): any {
+    const merged = { ...parsedData };
+    
+    // Override contact info if ExifTool has better data
+    if (exifMetadata.rms_contact_fullName && (!merged.rms_contact_fullName || merged.rms_contact_fullName === 'n/a')) {
+      merged.rms_contact_fullName = exifMetadata.rms_contact_fullName;
+    }
+    if (exifMetadata.rms_contact_email && (!merged.rms_contact_email || merged.rms_contact_email === 'n/a')) {
+      merged.rms_contact_email = exifMetadata.rms_contact_email;
+    }
+    
+    // Merge all RMS fields that aren't already in parsed data
+    Object.keys(exifMetadata).forEach(key => {
+      if (key.startsWith('rms_') && (!merged[key] || merged[key] === 'n/a')) {
+        merged[key] = exifMetadata[key];
+      }
+    });
+    
+    // Update producer info
+    if (exifMetadata.producer) {
+      merged.Producer = exifMetadata.producer;
+    }
+    
+    console.log('RMS metadata merged successfully');
+    return merged;
   }
 
   /**

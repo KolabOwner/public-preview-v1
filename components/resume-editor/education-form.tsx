@@ -192,14 +192,31 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
   const entryErrors = (errors[currentEntry.id] as Record<string, string>) || {};
   const navigationHeaderTitle = `${currentEntry.qualification || "New Qualification"} at ${currentEntry.institution || "Institution"}`;
 
-  const getFormattedDateString = (date: Date | null, dateFormat: string | undefined): string => {
+  const getFormattedDateString = (date: Date | string | null, dateFormat: string | undefined): string => {
     if (!date) return "Pick a date";
-    switch (dateFormat) {
-      case "YYYY": return format(date, "yyyy");
-      case "MM/YYYY": return format(date, "MM/yyyy");
-      case "MMMM YYYY":
-      default:
-        return format(date, "MMMM yyyy");
+    
+    // Convert string to Date if needed
+    let dateObj: Date;
+    if (typeof date === 'string') {
+      dateObj = new Date(date);
+    } else {
+      dateObj = date;
+    }
+    
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) return "Pick a date";
+    
+    try {
+      switch (dateFormat) {
+        case "YYYY": return format(dateObj, "yyyy");
+        case "MM/YYYY": return format(dateObj, "MM/yyyy");
+        case "MMMM YYYY":
+        default:
+          return format(dateObj, "MMMM yyyy");
+      }
+    } catch (error) {
+      console.warn('Date formatting error:', error);
+      return "Pick a date";
     }
   };
 
