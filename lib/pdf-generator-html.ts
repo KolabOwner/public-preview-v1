@@ -538,8 +538,17 @@ export async function generateResumePDFFromHtml(resumeData: ResumeData): Promise
   }
 }
 
+// Import the vector font generator
+import { generateResumePDFWithVectorFonts } from './pdf-generator-vector';
+
 // Alternative: Generate PDF with better text rendering (server-side approach)
 export function generateResumePDFWithStyling(resumeData: ResumeData): Blob {
+  // Use the new vector font generator for better font quality
+  return generateResumePDFWithVectorFonts(resumeData);
+}
+
+// Legacy function - kept for backward compatibility but uses vector fonts
+export function generateResumePDFWithStylingLegacy(resumeData: ResumeData): Blob {
   const { parsedData } = resumeData;
   const contactInfo = parsedData.contactInfo || {};
   

@@ -12,7 +12,7 @@ import ResumeHeaderBar, { DocumentSettings, ResumeHeaderBarRef } from '@/compone
 import KeywordTargetingPanel from "@/components/resume/panels/keyword-targeting-panel";
 import JobInfoPanel from "@/components/resume/panels/job-info-panel";
 import SharePanel from "@/components/resume/panels/share-panel";
-import { generateResumePDF } from '@/lib/pdf-generator';
+import { generateResumePDF, generateResumePDFAsync } from '@/lib/pdf-generator';
 import { useJobInfo } from '@/contexts/job-info-context';
 import { useResumeData } from '@/contexts/resume-data-context';
 
@@ -241,15 +241,23 @@ export default function ResumePreview({
 
   const handleDownload = async () => {
     try {
-      // Generate PDF using our styled generator
+      // Generate PDF using our styled generator with RMS metadata
       const resumeDataForPDF = {
         title: resumeData.title || 'Resume',
         template: 'professional',
         fontSize: 'medium',
-        parsedData: resumeData
+        parsedData: resumeData,
+        rmsRawData: resumeData.rmsRawData // Include RMS data if available
       };
 
-      const pdfBlob = generateResumePDF(resumeDataForPDF);
+      // Show loading state
+      toast({
+        title: "Generating PDF",
+        description: "Embedding metadata and creating your resume...",
+      });
+
+      // Use async version to embed RMS metadata
+      const pdfBlob = await generateResumePDFAsync(resumeDataForPDF);
 
       // Create download link
       const url = URL.createObjectURL(pdfBlob);
@@ -263,7 +271,7 @@ export default function ResumePreview({
 
       toast({
         title: "PDF Downloaded",
-        description: "Your resume has been downloaded successfully.",
+        description: "Your resume with RMS metadata has been downloaded successfully.",
       });
     } catch (error) {
       console.error('Error downloading PDF:', error);
@@ -377,6 +385,18 @@ export default function ResumePreview({
     // Decode HTML entities first
     const decodedText = decodeHTMLEntities(text);
 
+    // Check if text contains newlines with bullet points
+    if (decodedText.includes('\n')) {
+      const lines = decodedText
+        .split('\n')
+        .map(line => line.replace(/^[•·\-\*]\s*/, '').trim())
+        .filter(Boolean);
+      
+      if (lines.length > 1) {
+        return lines;
+      }
+    }
+
     // Check if there are actual bullet characters (• or ·)
     if (decodedText.includes('•') || decodedText.includes('·')) {
       return decodedText
@@ -385,6 +405,7 @@ export default function ResumePreview({
         .filter(Boolean);
     }
 
+    // Don't split on commas - they're often part of the content (numbers, lists, etc.)
     // If no bullet characters, return as single item
     return [decodedText];
   };

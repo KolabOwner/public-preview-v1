@@ -5,11 +5,15 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { typographyConfig } from './typography-config';
 import { generateResumePDFWithStyling } from './pdf-generator-html';
+import { generateResumePDFWithRMS } from './pdf-generator-with-rms';
+import { generateResumePDFWithCustomFonts } from './pdf-generator-custom';
+import { generateResumePDFWithVectorFonts } from './pdf-generator-vector';
 
 interface ResumeData {
   title: string;
   template?: string;
   fontSize?: 'small' | 'medium' | 'large';
+  fontStyle?: 'elegant' | 'modern' | 'classic' | 'professional';
   parsedData: {
     contactInfo?: {
       fullName?: string;
@@ -51,6 +55,31 @@ interface ResumeData {
 }
 
 export function generateResumePDF(resumeData: ResumeData): Blob {
-  // Always use the new styled PDF generator
-  return generateResumePDFWithStyling(resumeData);
+  // Use vector fonts for better quality
+  return generateResumePDFWithVectorFonts(resumeData);
+}
+
+// Export async version with RMS metadata embedding and custom fonts
+export async function generateResumePDFAsync(resumeData: ResumeData): Promise<Blob> {
+  // Check if we're in a browser environment (where API calls work)
+  if (typeof window !== 'undefined') {
+    try {
+      // Try to generate with RMS metadata and custom fonts
+      return await generateResumePDFWithRMS(resumeData);
+    } catch (error) {
+      console.warn('Failed to generate PDF with RMS metadata, falling back to custom fonts:', error);
+    }
+  }
+  
+  // Fall back to custom fonts if supported, otherwise vector fonts
+  if (resumeData.fontStyle && resumeData.fontStyle !== 'professional') {
+    try {
+      return await generateResumePDFWithCustomFonts(resumeData);
+    } catch (error) {
+      console.warn('Failed to load custom fonts, falling back to vector fonts:', error);
+    }
+  }
+  
+  // Final fallback to vector fonts
+  return generateResumePDFWithVectorFonts(resumeData);
 }

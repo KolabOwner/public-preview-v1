@@ -1,10 +1,17 @@
 import React from 'react'
+import { sanitizeThemeValue } from '@/lib/security-utils'
 
 interface ThemeScriptProps {
-  defaultTheme?: string
+  defaultTheme?: 'light' | 'dark' | 'system'
 }
 
 export function ThemeScript({ defaultTheme = 'system' }: ThemeScriptProps) {
+  // Sanitize the theme to prevent XSS injection
+  const safeTheme = sanitizeThemeValue(defaultTheme);
+  
+  // Use JSON.stringify to safely escape the theme value
+  const safeThemeString = JSON.stringify(safeTheme);
+  
   return (
     <script
       dangerouslySetInnerHTML={{
@@ -12,18 +19,26 @@ export function ThemeScript({ defaultTheme = 'system' }: ThemeScriptProps) {
           (function() {
             try {
               const storageKey = 'theme';
+              const validThemes = ['light', 'dark', 'system'];
+              const defaultTheme = ${safeThemeString};
               
-              // Get stored theme
+              // Validate theme from storage
+              function isValidTheme(theme) {
+                return validThemes.includes(theme);
+              }
+              
+              // Get stored theme with validation
               const storedTheme = localStorage.getItem(storageKey);
+              const validStoredTheme = storedTheme && isValidTheme(storedTheme) ? storedTheme : null;
               
               // Determine which theme to use
               let activeTheme;
-              if (storedTheme) {
-                activeTheme = storedTheme;
+              if (validStoredTheme) {
+                activeTheme = validStoredTheme;
               } else if (defaultTheme === 'system') {
                 activeTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
               } else {
-                activeTheme = '${defaultTheme}';
+                activeTheme = defaultTheme;
               }
               
               // Apply theme to document immediately to prevent flash
@@ -36,12 +51,14 @@ export function ThemeScript({ defaultTheme = 'system' }: ThemeScriptProps) {
                 document.documentElement.classList.add('light');
               }
               
-              // Store the theme
-              if (!storedTheme) {
+              // Store the theme (only if it's valid)
+              if (!validStoredTheme && isValidTheme(activeTheme)) {
                 localStorage.setItem(storageKey, activeTheme);
               }
             } catch (e) {
-              console.error('Error applying theme:', e);
+              // Fallback to light theme on any error
+              document.documentElement.classList.remove('light', 'dark');
+              document.documentElement.classList.add('light');
             }
           })();
         `,

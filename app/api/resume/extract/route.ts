@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pdf from 'pdf-parse';
-import { FILE_LIMITS, ERROR_MESSAGES } from '../../../lib/constants';
+import { FILE_LIMITS, ERROR_MESSAGES } from '@/lib/constants';
 
 // Increase timeout for this route to handle large PDFs
 export const maxDuration = 60; // 60 seconds
@@ -12,7 +12,6 @@ export const dynamic = 'force-dynamic'; // Ensure this route is not cached
  */
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
