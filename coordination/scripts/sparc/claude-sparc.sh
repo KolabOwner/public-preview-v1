@@ -8,7 +8,7 @@ set -e  # Exit on any error
 # Default configuration
 PROJECT_NAME="sparc-project"
 README_PATH="README.md"
-MCP_CONFIG=".roo/mcp.json"
+MCP_CONFIG=".claude/mcp-servers.json"
 VERBOSE=false
 DRY_RUN=false
 SKIP_RESEARCH=false
