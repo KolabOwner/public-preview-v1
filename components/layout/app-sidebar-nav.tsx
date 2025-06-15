@@ -80,8 +80,24 @@ const AppSidebarNav = () => {
   const handleUpgrade = async (planId: string) => {
     console.log(`Processing upgrade to ${planId} plan`);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log('Upgrade successful!');
+      // Redirect to Stripe checkout
+      const response = await fetch('/api/payments/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: planId,
+          successUrl: `${window.location.origin}/dashboard/payment-success`,
+          cancelUrl: `${window.location.origin}/dashboard`,
+        }),
+      });
+      
+      const { sessionUrl } = await response.json();
+      
+      if (sessionUrl) {
+        window.location.href = sessionUrl;
+      }
     } catch (error) {
       console.error('Upgrade failed:', error);
     }
@@ -93,15 +109,61 @@ const AppSidebarNav = () => {
         className={`app-sidebar ${isResumeEditorRoute ? 'w-[72px]' : 'w-[280px]'} h-screen min-h-screen bg-[#1a2332] relative overflow-hidden flex flex-col transition-all duration-300 ease-in-out border-r border-[#374151]/30`}
         data-route={pathname}
       >
-        {/* Enhanced gradient background with blue accents */}
+        {/* Enhanced gradient background with moving gradients */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a2332] via-[#1e2936] to-[#1a2332]" />
 
-          {/* Animated blue gradient orbs */}
-          <div className="absolute inset-0">
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#5b7cfd]/[0.08] rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#4a6bec]/[0.06] rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-            <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-[#5b7cfd]/[0.04] rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
+          {/* Professional animated gradients like the example */}
+          <div className="absolute inset-0" style={{ '--size': '400px' } as React.CSSProperties}>
+            {/* Blue gradient */}
+            <div 
+              style={{
+                animationDuration: '40s',
+                background: 'radial-gradient(circle, rgb(18, 113, 255) 0px, rgba(18, 113, 255, 0) 50%) no-repeat',
+                filter: 'blur(64px)'
+              }}
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-first opacity-100 mix-blend-normal !blur-3xl origin-[center_center]"
+            />
+            
+            {/* Purple gradient */}
+            <div 
+              style={{
+                animationDuration: '30s',
+                background: 'radial-gradient(circle, rgb(140, 100, 255) 0px, rgba(140, 100, 255, 0) 50%) no-repeat',
+                filter: 'blur(64px)'
+              }}
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-second opacity-100 mix-blend-normal !blur-3xl origin-[calc(26%)]"
+            />
+            
+            {/* Cyan gradient */}
+            <div 
+              style={{
+                animationDuration: '60s',
+                background: 'radial-gradient(circle, rgb(100, 220, 255) 0px, rgba(100, 220, 255, 0) 50%) no-repeat',
+                filter: 'blur(64px)'
+              }}
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-third opacity-100 mix-blend-normal !blur-3xl origin-[calc(100%)]"
+            />
+            
+            {/* Red gradient */}
+            <div 
+              style={{
+                animationDuration: '60s',
+                background: 'radial-gradient(circle, rgb(200, 50, 50) 0px, rgba(200, 50, 50, 0) 50%) no-repeat',
+                filter: 'blur(64px)'
+              }}
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fourth opacity-70 mix-blend-normal !blur-3xl origin-[calc(10%-200px)]"
+            />
+            
+            {/* Deep blue gradient */}
+            <div 
+              style={{
+                animationDuration: '30s',
+                background: 'radial-gradient(circle, rgb(50, 97, 180) 0px, rgba(50, 97, 180, 0) 50%) no-repeat',
+                filter: 'blur(64px)'
+              }}
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fifth opacity-100 mix-blend-normal !blur-3xl origin-[calc(30%)_calc(30%)]"
+            />
           </div>
 
           {/* Subtle grid pattern */}

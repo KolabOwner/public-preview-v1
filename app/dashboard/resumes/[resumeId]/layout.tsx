@@ -331,13 +331,15 @@ export default function ResumeEditorLayout({
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  className={`rounded inline-flex items-center gap-0.5 group relative text-[11px] lg:text-xs leading-3 lg:leading-4 h-6 lg:h-7 xl:h-8 px-2 lg:px-3 xl:px-4 transition-all ${
+                  className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 transition-all ${
                     isActive 
-                      ? 'bg-rezi-blue-600 text-white shadow-sm' 
-                      : 'text-gray-400 hover:text-gray-200 hover:bg-surface-2/50'
-                  }`}
+                      ? 'bg-rezi-blue-600 text-neutral-0' 
+                      : 'focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                  } cursor-pointer`}
                 >
-                  <span className="font-semibold uppercase tracking-wide text-[10px] lg:text-[11px]">{tab.label}</span>
+                  <div className="w-full overflow-hidden">
+                    <p className="font-semibold uppercase truncate">{tab.label}</p>
+                  </div>
                 </Link>
               );
             })}
@@ -347,7 +349,7 @@ export default function ResumeEditorLayout({
               <div className="relative" ref={moreMenuRef}>
                 <button
                   onClick={() => setShowMoreMenu(!showMoreMenu)}
-                  className="rounded inline-flex items-center gap-0.5 group relative text-[11px] lg:text-xs leading-3 lg:leading-4 h-6 lg:h-7 xl:h-8 px-2 lg:px-3 xl:px-4 transition-all text-gray-400 hover:text-gray-200 hover:bg-surface-2/50"
+                  className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
                   title="More sections"
                 >
                   <i className="fas fa-ellipsis-h"></i>
@@ -414,15 +416,17 @@ export default function ResumeEditorLayout({
                   <Link
                     key={tab.href}
                     href={tab.href}
-                    className={`rounded inline-flex items-center gap-0.5 group relative text-[11px] lg:text-xs leading-3 lg:leading-4 h-6 lg:h-7 px-2 lg:px-3 transition-all ${
+                    className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
-                        ? 'bg-rezi-blue-600 text-white shadow-sm' 
-                        : 'text-gray-400 hover:text-gray-200 hover:bg-surface-2/50'
-                    }`}
+                        ? 'bg-rezi-blue-600 text-neutral-0' 
+                        : 'focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                    } cursor-pointer`}
                   >
-                    <span className="font-semibold uppercase tracking-wide text-[10px] lg:text-[11px]">
-                      {tab.label === 'Preview' ? 'Finish up & Preview' : tab.label}
-                    </span>
+                    <div className="w-full overflow-hidden">
+                      <p className="font-semibold uppercase truncate">
+                        {tab.label === 'Preview' ? 'Finish up & Preview' : tab.label}
+                      </p>
+                    </div>
                   </Link>
                 );
               })}
@@ -482,13 +486,15 @@ export default function ResumeEditorLayout({
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  className={`rounded inline-flex items-center whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all ${
+                  className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
                     isActive 
-                      ? 'bg-rezi-blue-600 text-white' 
-                      : 'text-gray-400 hover:text-gray-200'
-                  }`}
+                      ? 'bg-rezi-blue-600 text-neutral-0' 
+                      : 'focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                  } cursor-pointer`}
                 >
-                  <span className="font-semibold uppercase text-[9px]">{tab.label}</span>
+                  <div className="w-full overflow-hidden">
+                    <p className="font-semibold uppercase truncate">{tab.label}</p>
+                  </div>
                 </Link>
               );
             })}
@@ -497,7 +503,7 @@ export default function ResumeEditorLayout({
             {hiddenTabs.length > 0 && (
               <button
                 onClick={() => setShowMoreMenu(true)}
-                className="rounded inline-flex items-center whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all text-gray-400 hover:text-gray-200"
+                className="rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
               >
                 <i className="fas fa-ellipsis-h text-[11px]"></i>
               </button>
@@ -512,15 +518,17 @@ export default function ResumeEditorLayout({
                   <Link
                     key={tab.href}
                     href={tab.href}
-                    className={`rounded inline-flex items-center whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all ${
+                    className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
-                        ? 'bg-rezi-blue-600 text-white' 
-                        : 'text-gray-400 hover:text-gray-200'
-                    }`}
+                        ? 'bg-rezi-blue-600 text-neutral-0' 
+                        : 'focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                    } cursor-pointer`}
                   >
-                    <span className="font-semibold uppercase text-[9px]">
-                      {tab.label === 'Preview' ? 'Preview' : tab.label}
-                    </span>
+                    <div className="w-full overflow-hidden">
+                      <p className="font-semibold uppercase truncate">
+                        {tab.label === 'Preview' ? 'Preview' : tab.label}
+                      </p>
+                    </div>
                   </Link>
                 );
               })}

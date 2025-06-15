@@ -5,7 +5,6 @@ import { collection, doc, addDoc, updateDoc, serverTimestamp, getDoc, query, whe
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase/config';
 import { z } from 'zod';
-import * as pdfjsLib from 'pdfjs-dist';
 
 // Configure PDF.js worker
 if (typeof window !== 'undefined' && 'pdfjsLib' in window) {

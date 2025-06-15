@@ -300,7 +300,7 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
   return (
     <div className="relative">
       <div className="relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60">
-        <div className="bg-gray-800 dark:bg-gray-900 rounded-lg border border-gray-700 dark:border-gray-800 relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60 hover:border-gray-600 transition-all duration-200 hover:shadow-lg hover:shadow-black/20">
+        <div className="bg-surface-2 rounded-lg border border-surface-2-stroke relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60">
           {/* Resume Preview Section */}
           <div
             className="relative h-[calc(100%-60px)] cursor-pointer overflow-hidden"
@@ -333,21 +333,21 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                             transform: 'scale(0.4)',
                             transformOrigin: 'left top',
                             fontFamily: 'Merriweather, serif',
-                            padding: '1.3cm 0cm',
+                            padding: '1cm 0cm',
                             borderColor: 'rgb(46, 61, 80)'
                           }}
                         >
                           {/* Resume Header / Contact Information */}
-                          <div className="relative z-50 mb-[10px] transition-all">
+                          <div className="relative z-50 mb-[8px] transition-all">
                             <div className="">
-                              <div className="flex flex-row items-end gap-4 pb-2 false false" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm' }}>
+                              <div className="flex flex-row items-end gap-4 pb-1 false false" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm' }}>
                                 <div className="grow">
-                                  <h1 className="font-bold text-center !text-gray-900" style={{ color: 'rgb(0, 0, 0)', fontSize: '1.65em', fontFamily: 'Merriweather, serif', lineHeight: 'inherit' }}>
+                                  <h1 className="font-bold text-center !text-gray-900" style={{ color: 'rgb(0, 0, 0)', fontSize: '1.5em', fontFamily: 'Merriweather, serif', lineHeight: '1.2' }}>
                                     <span className="false" style={{ color: 'rgb(0, 0, 0)', backgroundColor: 'transparent' }}>
-                                      {resumeData?.contactInfo?.fullName || resume.title}
+                                      {resumeData?.contactInfo?.fullName || resume.title || 'JOHN SMITH'}
                                     </span>
                                   </h1>
-                                  <div className="flex flex-row items-center gap-1 flex-wrap !text-gray-900" style={{ color: 'rgb(0, 0, 0)', fontWeight: 300, fontSize: '0.75em', justifyContent: 'center' }}>
+                                  <div className="flex flex-row items-center gap-1 flex-wrap !text-gray-900" style={{ color: 'rgb(0, 0, 0)', fontWeight: 300, fontSize: '0.7em', justifyContent: 'center' }}>
                                     {(resumeData?.contactInfo?.city || resumeData?.contactInfo?.state) && (
                                       <div className="flex flex-row items-center gap-1 !text-black">
                                         <svg xmlns="https://www.w3.org/2000/svg" xmlSpace="preserve" viewBox="0 0 24 24" className="!fill-black" width="0.9em" height="0.9em" style={{ fill: 'rgb(0, 0, 0)', marginTop: '-2px' }}>
@@ -400,39 +400,64 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                           </div>
 
                           {/* Separator */}
-                          <div style={{ padding: '0cm 1.4cm', margin: '1em 0px 10px' }}><hr /></div>
+                          <div style={{ padding: '0cm 1.4cm', margin: '0.5em 0px 0.5em' }}><hr style={{ borderTop: '1px solid #000' }} /></div>
+
+                          {/* Summary Section if available */}
+                          {resumeData?.summary && (
+                            <>
+                              <div className="summary group relative leading-snug" style={{ marginBottom: '6px', marginTop: '0.5em' }}>
+                                <div>
+                                  <div className="uppercase mb-[2px]" style={{ fontWeight: 600, padding: '0cm 1.4cm', lineHeight: '1.2em' }}>
+                                    <span style={{ color: 'rgb(0, 0, 0)', backgroundColor: 'transparent' }}>
+                                      <p style={{ fontSize: '1em', display: 'flex', minWidth: '1em', color: 'rgb(0, 0, 0)', backgroundColor: 'transparent', width: 'fit-content' }}>SUMMARY</p>
+                                    </span>
+                                    <hr className="mt-px border-0 border-b-[1px] border-black" />
+                                  </div>
+                                  <div style={{ padding: '0cm 1.4cm', fontSize: '0.8em', lineHeight: '1.4em', color: 'rgb(0, 0, 0)' }}>
+                                    <p>{resumeData.summary.slice(0, 150)}...</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{ padding: '0cm 1.4cm', margin: '0.5em 0px' }}><hr style={{ borderTop: '1px solid #000' }} /></div>
+                            </>
+                          )}
 
                           {/* Experience Section */}
                           <ul className="classNames.sortable_container">
-                            <li className="experience group relative leading-snug" style={{ marginBottom: '8px', marginTop: '1em' }}>
+                            <li className="experience group relative leading-snug" style={{ marginBottom: '6px', marginTop: '0.5em' }}>
                               <div>
-                                <div className="uppercase mb-[4px]" data-test-id="resume__section-title" style={{ fontWeight: 600, padding: '0cm 1.4cm', lineHeight: '1.35em' }}>
+                                <div className="uppercase mb-[2px]" data-test-id="resume__section-title" style={{ fontWeight: 600, padding: '0cm 1.4cm', lineHeight: '1.2em' }}>
                                   <span className="false" style={{ color: 'rgb(0, 0, 0)', backgroundColor: 'transparent' }}>
-                                    <p id="experience-heading" className="editableContent cursor-text designStudio" style={{ fontSize: '1.15em', display: 'flex', minWidth: '1em', color: 'rgb(0, 0, 0)', backgroundColor: 'transparent', width: 'fit-content' }}>Experience</p>
+                                    <p id="experience-heading" className="editableContent cursor-text designStudio" style={{ fontSize: '1em', display: 'flex', minWidth: '1em', color: 'rgb(0, 0, 0)', backgroundColor: 'transparent', width: 'fit-content' }}>EXPERIENCE</p>
                                   </span>
                                   <hr className="mt-px border-0 border-b-[1px] border-black border-gray-900" />
                                 </div>
-                                <div className="flex flex-col" style={{ lineHeight: '1.6em' }}>
+                                <div className="flex flex-col" style={{ lineHeight: '1.4em' }}>
                                   <ul className="sortable-container">
                                     {resumeData?.experiences && resumeData.experiences.length > 0 ? (
                                       resumeData.experiences.map((exp, index) => (
-                                        <li key={index} className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: index < resumeData.experiences!.length - 1 ? '11px' : '0' }}>
-                                          <div style={{ lineHeight: '1em' }}>
+                                        <li key={index} className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '6px' }}>
+                                          <div style={{ lineHeight: '1.1em' }}>
                                             <div className="flex gap-2">
                                               <span>
-                                                <div className="flex flex-row text-[1em] font-semibold before:absolute before:content-[',_'] before:first:hidden" style={{ color: 'rgb(0, 0, 0)' }}>
-                                                  <span className="text-[1em] leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)' }}>{exp.title}</span>
+                                                <div className="flex flex-row text-[0.9em] font-semibold before:absolute before:content-[',_'] before:first:hidden" style={{ color: 'rgb(0, 0, 0)' }}>
+                                                  <span className="text-[0.9em] leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)', fontWeight: 700 }}>{exp.title || 'Software Engineer'}</span>
                                                 </div>
                                               </span>
                                             </div>
                                             <div className="flex justify-between gap-2 font-semibold">
                                               <div className="flex flex-wrap" style={{ color: 'rgb(0, 0, 0)' }}>
-                                                <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-semibold" style={{ fontSize: '0.85em', lineHeight: '1.5' }}>
-                                                  <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>{exp.company}</span>
+                                                <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-semibold" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
+                                                  <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>{exp.company || 'Tech Company'}</span>
                                                 </span>
+                                                {exp.location && (
+                                                  <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
+                                                    <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>{exp.location}</span>
+                                                  </span>
+                                                )}
                                               </div>
                                               <div className="flex flex-wrap" style={{ color: 'rgb(0, 0, 0)' }}>
-                                                <span className="inline-block before:absolute before:first:hidden" style={{ fontSize: '0.85em' }}>
+                                                <span className="inline-block before:absolute before:first:hidden" style={{ fontSize: '0.8em' }}>
                                                   <span className="leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)' }}>
                                                     {formatDateRange(exp.startDate, exp.endDate, exp.current)}
                                                   </span>
@@ -440,11 +465,11 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                                               </div>
                                             </div>
                                           </div>
-                                          <div className="text-[0.85em] relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', lineHeight: '1.6em', fontSize: '0.85em', fontWeight: 100 }}>
+                                          <div className="text-[0.75em] relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', lineHeight: '1.3em', fontSize: '0.75em', fontWeight: 300 }}>
                                             <span className="editableContent cursor-text designStudio">
                                               <ul className="line-inline m-0 list-none p-0 pl-1.5">
                                                 {getExperienceDescriptionItems(exp).map((desc, i) => (
-                                                  <li key={i} className="relative before:absolute before:left-[-7px] before:content-['•']">{desc}</li>
+                                                  <li key={i} className="relative before:absolute before:left-[-7px] before:content-['•']" style={{ marginBottom: '1px' }}>{desc}</li>
                                                 ))}
                                               </ul>
                                             </span>
@@ -452,37 +477,50 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                                         </li>
                                       ))
                                     ) : (
-                                      <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '11px' }}>
-                                        <div style={{ lineHeight: '1em' }}>
-                                          <div className="flex gap-2">
-                                            <span>
-                                              <div className="flex flex-row text-[1em] font-semibold before:absolute before:content-[',_'] before:first:hidden" style={{ color: 'rgb(0, 0, 0)' }}>
-                                                <span className="text-[1em] leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)' }}>Software Engineer</span>
+                                      // Default experiences
+                                      [
+                                        { title: 'Senior Software Engineer', company: 'Tech Corp', location: 'New York, NY', startDate: '2022', endDate: 'Present', description: 'Led development of microservices architecture, Mentored junior developers' },
+                                        { title: 'Software Engineer', company: 'StartupXYZ', location: 'San Francisco, CA', startDate: '2020', endDate: '2022', description: 'Built RESTful APIs, Implemented CI/CD pipelines' },
+                                        { title: 'Junior Developer', company: 'Digital Agency', location: 'Remote', startDate: '2019', endDate: '2020', description: 'Developed responsive web applications, Collaborated with design team' }
+                                      ].map((exp, index) => (
+                                        <li key={index} className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '6px' }}>
+                                          <div style={{ lineHeight: '1.1em' }}>
+                                            <div className="flex gap-2">
+                                              <span>
+                                                <div className="flex flex-row text-[0.9em] font-semibold before:absolute before:content-[',_'] before:first:hidden" style={{ color: 'rgb(0, 0, 0)' }}>
+                                                  <span className="text-[0.9em] leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)', fontWeight: 700 }}>{exp.title}</span>
+                                                </div>
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between gap-2 font-semibold">
+                                              <div className="flex flex-wrap" style={{ color: 'rgb(0, 0, 0)' }}>
+                                                <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-semibold" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
+                                                  <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>{exp.company}</span>
+                                                </span>
+                                                <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
+                                                  <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>{exp.location}</span>
+                                                </span>
                                               </div>
+                                              <div className="flex flex-wrap" style={{ color: 'rgb(0, 0, 0)' }}>
+                                                <span className="inline-block before:absolute before:first:hidden" style={{ fontSize: '0.8em' }}>
+                                                  <span className="leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)' }}>
+                                                    {exp.startDate} – {exp.endDate}
+                                                  </span>
+                                                </span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="text-[0.75em] relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', lineHeight: '1.3em', fontSize: '0.75em', fontWeight: 300 }}>
+                                            <span className="editableContent cursor-text designStudio">
+                                              <ul className="line-inline m-0 list-none p-0 pl-1.5">
+                                                {exp.description.split(',').map((desc, i) => (
+                                                  <li key={i} className="relative before:absolute before:left-[-7px] before:content-['•']" style={{ marginBottom: '1px' }}>{desc.trim()}</li>
+                                                ))}
+                                              </ul>
                                             </span>
                                           </div>
-                                          <div className="flex justify-between gap-2 font-semibold">
-                                            <div className="flex flex-wrap" style={{ color: 'rgb(0, 0, 0)' }}>
-                                              <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-semibold" style={{ fontSize: '0.85em', lineHeight: '1.5' }}>
-                                                <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>Tech Company Inc.</span>
-                                              </span>
-                                            </div>
-                                            <div className="flex flex-wrap" style={{ color: 'rgb(0, 0, 0)' }}>
-                                              <span className="inline-block before:absolute before:first:hidden" style={{ fontSize: '0.85em' }}>
-                                                <span className="leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)' }}>2021 – Present</span>
-                                              </span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="text-[0.85em] relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', lineHeight: '1.6em', fontSize: '0.85em', fontWeight: 100 }}>
-                                          <span className="editableContent cursor-text designStudio">
-                                            <ul className="line-inline m-0 list-none p-0 pl-1.5">
-                                              <li className="relative before:absolute before:left-[-7px] before:content-['•']">Developed and maintained web applications using React and Node.js</li>
-                                              <li className="relative before:absolute before:left-[-7px] before:content-['•']">Collaborated with design team to implement responsive user interfaces</li>
-                                            </ul>
-                                          </span>
-                                        </div>
-                                      </li>
+                                        </li>
+                                      ))
                                     )}
                                   </ul>
                                 </div>
@@ -491,14 +529,47 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                           </ul>
 
                           {/* Separator */}
-                          <div style={{ padding: '0cm 1.4cm', margin: '1em 0px 10px' }}><hr /></div>
+                          <div style={{ padding: '0cm 1.4cm', margin: '0.5em 0px 0.5em' }}><hr style={{ borderTop: '1px solid #000' }} /></div>
+
+                          {/* Projects Section */}
+                          <li className="projects group relative leading-snug" style={{ marginBottom: '6px', marginTop: '0.5em' }}>
+                            <div className="">
+                              <div className="uppercase mb-[2px]" style={{ fontWeight: 600, padding: '0cm 1.4cm', lineHeight: '1.2em' }}>
+                                <span style={{ color: 'rgb(0, 0, 0)', backgroundColor: 'transparent' }}>
+                                  <p style={{ fontSize: '1em', display: 'flex', minWidth: '1em', color: 'rgb(0, 0, 0)', backgroundColor: 'transparent', width: 'fit-content' }}>PROJECTS</p>
+                                </span>
+                                <hr className="mt-px border-0 border-b-[1px] border-black" />
+                              </div>
+                              <div className="flex flex-col" style={{ lineHeight: '1.4em' }}>
+                                <ul className="sortable-container">
+                                  <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '4px' }}>
+                                    <div style={{ lineHeight: '1.1em' }}>
+                                      <div className="flex justify-between">
+                                        <span className="text-[0.85em] font-semibold" style={{ color: 'rgb(0, 0, 0)' }}>E-commerce Platform</span>
+                                        <span className="text-[0.8em]" style={{ color: 'rgb(0, 0, 0)' }}>2023</span>
+                                      </div>
+                                      <div className="text-[0.75em]" style={{ color: 'rgb(0, 0, 0)', lineHeight: '1.3em', fontWeight: 300 }}>
+                                        <ul className="line-inline m-0 list-none p-0 pl-1.5">
+                                          <li className="relative before:absolute before:left-[-7px] before:content-['•']" style={{ marginBottom: '1px' }}>Built scalable microservices architecture using Node.js and Docker</li>
+                                          <li className="relative before:absolute before:left-[-7px] before:content-['•']">Implemented real-time inventory tracking with Redis</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          </li>
+
+                          {/* Separator */}
+                          <div style={{ padding: '0cm 1.4cm', margin: '0.5em 0px' }}><hr style={{ borderTop: '1px solid #000' }} /></div>
 
                           {/* Education Section */}
-                          <li className="education group relative leading-snug" style={{ marginBottom: '8px', marginTop: '1em' }}>
+                          <li className="education group relative leading-snug" style={{ marginBottom: '6px', marginTop: '0.5em' }}>
                             <div className="">
-                              <div className="uppercase mb-[4px]" data-test-id="resume__section-title" style={{ fontWeight: 600, padding: '0cm 1.4cm', lineHeight: '1.35em' }}>
+                              <div className="uppercase mb-[2px]" data-test-id="resume__section-title" style={{ fontWeight: 600, padding: '0cm 1.4cm', lineHeight: '1.2em' }}>
                                 <span className="false" style={{ color: 'rgb(0, 0, 0)', backgroundColor: 'transparent' }}>
-                                  <p id="education-heading" className="editableContent cursor-text designStudio" style={{ fontSize: '1.15em', display: 'flex', minWidth: '1em', color: 'rgb(0, 0, 0)', backgroundColor: 'transparent', width: 'fit-content' }}>Education</p>
+                                  <p id="education-heading" className="editableContent cursor-text designStudio" style={{ fontSize: '1em', display: 'flex', minWidth: '1em', color: 'rgb(0, 0, 0)', backgroundColor: 'transparent', width: 'fit-content' }}>EDUCATION</p>
                                 </span>
                                 <hr className="mt-px border-0 border-b-[1px] border-black border-gray-900" />
                               </div>
@@ -506,24 +577,29 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                                 <div className="flex flex-col">
                                   {resumeData?.education && resumeData.education.length > 0 ? (
                                     resumeData.education.map((edu, index) => (
-                                      <li key={index} className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: index < resumeData.education!.length - 1 ? '11px' : '0' }}>
+                                      <li key={index} className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '4px' }}>
                                         <div className="">
                                           <div className="flex gap-2">
                                             <span>
-                                              <div className="flex flex-row text-[1em] font-semibold before:absolute before:content-[',_'] before:first:hidden" style={{ color: 'rgb(0, 0, 0)' }}>
-                                                <span className="text-[1em] leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)' }}>
-                                                  {edu.degree} {edu.fieldOfStudy && `in ${edu.fieldOfStudy}`}
+                                              <div className="flex flex-row text-[0.9em] font-semibold before:absolute before:content-[',_'] before:first:hidden" style={{ color: 'rgb(0, 0, 0)' }}>
+                                                <span className="text-[0.9em] leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)', fontWeight: 700 }}>
+                                                  {edu.degree || 'Bachelor of Science'} {edu.fieldOfStudy && `in ${edu.fieldOfStudy}`}
                                                 </span>
                                               </div>
                                             </span>
                                           </div>
                                           <div className="flex justify-between gap-2 font-semibold">
                                             <div className="flex flex-wrap" style={{ color: 'rgb(0, 0, 0)' }}>
-                                              <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.85em', lineHeight: '1.5' }}>
-                                                <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>{edu.school}</span>
+                                              <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
+                                                <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>{edu.school || 'University Name'}</span>
                                               </span>
+                                              {edu.location && (
+                                                <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
+                                                  <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>{edu.location}</span>
+                                                </span>
+                                              )}
                                               {(edu.startDate || edu.endDate) && (
-                                                <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.85em', lineHeight: '1.5' }}>
+                                                <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
                                                   <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>
                                                     {formatDateRange(edu.startDate, edu.endDate, edu.current)}
                                                   </span>
@@ -531,25 +607,36 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                                               )}
                                             </div>
                                           </div>
+                                          {edu.gpa && (
+                                            <div className="text-[0.75em]" style={{ color: 'rgb(0, 0, 0)', fontWeight: 300 }}>
+                                              GPA: {edu.gpa}
+                                            </div>
+                                          )}
                                         </div>
                                       </li>
                                     ))
                                   ) : (
-                                    <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm' }}>
+                                    <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '4px' }}>
                                       <div className="">
                                         <div className="flex gap-2">
                                           <span>
-                                            <div className="flex flex-row text-[1em] font-semibold before:absolute before:content-[',_'] before:first:hidden" style={{ color: 'rgb(0, 0, 0)' }}>
-                                              <span className="text-[1em] leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)' }}>BS, Computer Science</span>
+                                            <div className="flex flex-row text-[0.9em] font-semibold before:absolute before:content-[',_'] before:first:hidden" style={{ color: 'rgb(0, 0, 0)' }}>
+                                              <span className="text-[0.9em] leading-snug ml-0 designStudio" style={{ color: 'rgb(0, 0, 0)', fontWeight: 700 }}>Bachelor of Science in Computer Science</span>
                                             </div>
                                           </span>
                                         </div>
                                         <div className="flex justify-between gap-2 font-semibold">
                                           <div className="flex flex-wrap" style={{ color: 'rgb(0, 0, 0)' }}>
-                                            <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.85em', lineHeight: '1.5' }}>
-                                              <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>University Name</span>
+                                            <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
+                                              <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>Massachusetts Institute of Technology</span>
+                                            </span>
+                                            <span className="flex before:mr-1 before:content-['•_'] before:first:hidden font-normal" style={{ fontSize: '0.8em', lineHeight: '1.3' }}>
+                                              <span className="mr-1 whitespace-pre-wrap designStudio" style={{ display: 'inline', verticalAlign: 'initial', color: 'rgb(0, 0, 0)' }}>2019</span>
                                             </span>
                                           </div>
+                                        </div>
+                                        <div className="text-[0.75em]" style={{ color: 'rgb(0, 0, 0)', fontWeight: 300 }}>
+                                          GPA: 3.8/4.0 • Dean's List
                                         </div>
                                       </div>
                                     </li>
@@ -560,31 +647,45 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
                           </li>
 
                           {/* Separator */}
-                          <div style={{ padding: '0cm 1.4cm', margin: '1em 0px 10px' }}><hr /></div>
+                          <div style={{ padding: '0cm 1.4cm', margin: '0.5em 0px 0.5em' }}><hr style={{ borderTop: '1px solid #000' }} /></div>
 
                           {/* Skills Section */}
-                          <li className="skills group relative leading-snug" style={{ marginBottom: '8px', marginTop: '1em' }}>
+                          <li className="skills group relative leading-snug" style={{ marginBottom: '8px', marginTop: '0.5em' }}>
                             <div className="">
-                              <div className="uppercase mb-[4px]" data-test-id="resume__section-title" style={{ fontWeight: 600, padding: '0cm 1.4cm', lineHeight: '1.35em' }}>
+                              <div className="uppercase mb-[2px]" data-test-id="resume__section-title" style={{ fontWeight: 600, padding: '0cm 1.4cm', lineHeight: '1.2em' }}>
                                 <span className="false" style={{ color: 'rgb(0, 0, 0)', backgroundColor: 'transparent' }}>
-                                  <p id="skills-heading" className="editableContent cursor-text designStudio" style={{ fontSize: '1.15em', display: 'flex', minWidth: '1em', color: 'rgb(0, 0, 0)', backgroundColor: 'transparent', width: 'fit-content' }}>Skills</p>
+                                  <p id="skills-heading" className="editableContent cursor-text designStudio" style={{ fontSize: '1em', display: 'flex', minWidth: '1em', color: 'rgb(0, 0, 0)', backgroundColor: 'transparent', width: 'fit-content' }}>SKILLS</p>
                                 </span>
                                 <hr className="mt-px border-0 border-b-[1px] border-black border-gray-900" />
                               </div>
-                              <div className="flex flex-col" style={{ lineHeight: '2em' }}>
+                              <div className="flex flex-col" style={{ lineHeight: '1.4em' }}>
                                 <ul className="sortable-container">
-                                  {getAllSkills().length > 0 ? (
-                                    <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '6.75px' }}>
-                                      <div className="relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', fontWeight: 400, fontSize: '0.85em' }}>
-                                        <p className="editableContent cursor-text designStudio">{getAllSkills().join(', ')}</p>
-                                      </div>
-                                    </li>
+                                  {resumeData?.skillCategories && resumeData.skillCategories.length > 0 ? (
+                                    resumeData.skillCategories.map((category, index) => (
+                                      <li key={index} className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '2px' }}>
+                                        <div className="relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', fontWeight: 300, fontSize: '0.8em' }}>
+                                          <span style={{ fontWeight: 700 }}>{category.name || 'Technical'}:</span> {category.skills?.map(s => s.name).join(', ') || 'JavaScript, React, Node.js'}
+                                        </div>
+                                      </li>
+                                    ))
                                   ) : (
-                                    <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '6.75px' }}>
-                                      <div className="relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', fontWeight: 400, fontSize: '0.85em' }}>
-                                        <p className="editableContent cursor-text designStudio">JavaScript, React, Node.js, HTML, CSS</p>
-                                      </div>
-                                    </li>
+                                    <>
+                                      <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '2px' }}>
+                                        <div className="relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', fontWeight: 300, fontSize: '0.8em' }}>
+                                          <span style={{ fontWeight: 700 }}>Languages:</span> JavaScript, TypeScript, Python, Java, SQL, HTML/CSS
+                                        </div>
+                                      </li>
+                                      <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '2px' }}>
+                                        <div className="relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', fontWeight: 300, fontSize: '0.8em' }}>
+                                          <span style={{ fontWeight: 700 }}>Frameworks:</span> React, Node.js, Express, Django, Spring Boot, Next.js
+                                        </div>
+                                      </li>
+                                      <li className="group relative leading-snug" style={{ paddingLeft: '1.4cm', paddingRight: '1.4cm', marginBottom: '2px' }}>
+                                        <div className="relative whitespace-pre-line !text-black" style={{ color: 'rgb(0, 0, 0)', fontWeight: 300, fontSize: '0.8em' }}>
+                                          <span style={{ fontWeight: 700 }}>Tools:</span> Git, Docker, AWS, Jenkins, Kubernetes, MongoDB, PostgreSQL
+                                        </div>
+                                      </li>
+                                    </>
                                   )}
                                 </ul>
                               </div>
@@ -598,159 +699,165 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
               </div>
             </div>
 
-            {/* Targeted Badge - Updated with modern style */}
+            {/* Targeted Badge */}
             {resume.isTargeted && (
-              <div className="absolute right-2 top-2 bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] text-white text-xs font-semibold px-2 py-1 rounded-full shadow-lg">
+              <div className="absolute right-2 top-2 bg-rezi-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
                 TARGETED
               </div>
             )}
           </div>
 
-          {/* Card Footer - Updated with lighter text colors for dark theme */}
-          <div className="relative flex h-[60px] flex-row items-center justify-between rounded-lg rounded-t-none bg-gray-800 dark:bg-gray-900 py-2 border-t border-gray-700 dark:border-gray-800">
+          {/* Card Footer */}
+          <div className="relative flex h-[60px] flex-row items-center justify-between rounded-lg rounded-t-none bg-surface-2 py-2">
             <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
               <div className="w-full">
-                <p className="overflow-hidden overflow-ellipsis whitespace-nowrap pr-2 text-base font-semibold leading-6 text-gray-100 dark:text-white">
+                <p className="overflow-hidden overflow-ellipsis whitespace-nowrap pr-2 text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
                   {resume.title}
                 </p>
                 <div className="group relative inline-block">
-                  <p className="text-400 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm leading-5 text-gray-400 dark:text-gray-500">
+                  <p className="text-400 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm leading-5 text-gray-500 dark:text-gray-400">
                     {getLastUpdatedText()}
                   </p>
-                  <div className="normal-case pointer-events-none h-fit z-50 bg-gray-700 dark:bg-gray-800 px-2 py-1 text-sm font-normal leading-5 text-gray-200 transition-opacity rounded before:border-gray-700 dark:before:border-gray-800 before:absolute before:border-[6px] before:border-l-transparent before:border-r-transparent before:border-t-transparent before:left-1/2 before:-translate-x-1/2 before:-top-[12px] w-fit min-w-fit whitespace-pre opacity-0 invisible group-hover:visible fixed">
+                  <div className="normal-case pointer-events-none h-fit z-50 bg-surface-3 dark:bg-gray-700 px-2 py-1 text-sm font-normal leading-5 text-surface-3-label dark:text-gray-200 transition-opacity rounded before:border-surface-3 dark:before:border-gray-700 before:absolute before:border-[6px] before:border-l-transparent before:border-r-transparent before:border-t-transparent before:left-1/2 before:-translate-x-1/2 before:-top-[12px] w-fit min-w-fit whitespace-pre opacity-100 fixed invisible group-hover:visible">
                     {getFormattedDate()}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Menu Button - Updated colors */}
-            <div className="h-12 min-w-12 relative flex cursor-pointer items-center justify-center text-xl">
-              <div className="h-6 w-6 cursor-pointer group relative flex items-center justify-center" id="icon">
-                <i
-                  className="!flex items-center justify-center fas fa-ellipsis-vertical text-gray-400 hover:text-gray-200 text-xl w-6 h-6 transition-colors duration-200"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowMenu(!showMenu);
-                  }}
-                ></i>
+            {/* Menu Button or Lock Icon */}
+            {resume.isTargeted ? (
+              <div className="flex h-12 w-12 items-center justify-center">
+                <i className="fad fa-lock text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
               </div>
-
-              {/* Dropdown Menu - Updated for dark theme */}
-              {showMenu && (
-                <div className="bg-gray-800 dark:bg-gray-900 rounded-lg border border-gray-700 dark:border-gray-800 absolute flex-col items-start py-2 shadow-lg z-50 min-w-28 max-w-72 right-0 top-10">
-                  <div
-                    className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-gray-700 dark:sm:hover:bg-gray-800"
+            ) : (
+              <div className="h-12 min-w-12 relative flex cursor-pointer items-center justify-center text-xl hover:text-rezi-blue-500">
+                <div className="h-6 w-6 cursor-pointer group relative flex items-center justify-center" id="icon">
+                  <i
+                    className="!flex items-center justify-center fas fa-ellipsis-vertical text-gray-900 dark:text-gray-100 text-xl w-6 h-6 hover:text-rezi-blue-500 dark:hover:text-rezi-blue-400"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleEdit();
-                      setShowMenu(false);
+                      setShowMenu(!showMenu);
                     }}
-                  >
-                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                      <div className="flex flex-row items-start gap-2">
-                        <div>
-                          <div className="flex h-6 min-w-6 items-center justify-center">
-                            <i className="fad fa-pen-to-square text-left text-base text-gray-300"></i>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-200">
-                            Edit
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-gray-700 dark:sm:hover:bg-gray-800"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/dashboard/resumes/preview/${resume.id}`);
-                      setShowMenu(false);
-                    }}
-                  >
-                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                      <div className="flex flex-row items-start gap-2">
-                        <div>
-                          <div className="flex h-6 min-w-6 items-center justify-center">
-                            <i className="fad fa-eye text-left text-base text-gray-300"></i>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-200">
-                            Preview
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-gray-700 dark:sm:hover:bg-gray-800"
-                    onClick={handleDownload}
-                  >
-                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                      <div className="flex flex-row items-start gap-2">
-                        <div>
-                          <div className="flex h-6 min-w-6 items-center justify-center">
-                            <i className="fad fa-download text-left text-base text-gray-300"></i>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-200">
-                            Download PDF
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-gray-700 dark:sm:hover:bg-gray-800"
-                    onClick={handleDuplicate}
-                  >
-                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                      <div className="flex flex-row items-start gap-2">
-                        <div>
-                          <div className="flex h-6 min-w-6 items-center justify-center">
-                            <i className="fad fa-copy text-left text-base text-gray-300"></i>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-200">
-                            Duplicate
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="w-full border-t border-gray-700 dark:border-gray-800 mt-2 mb-2"></div>
-
-                  <div
-                    className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-gray-700 dark:sm:hover:bg-gray-800"
-                    onClick={handleDelete}
-                  >
-                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                      <div className="flex flex-row items-start gap-2">
-                        <div>
-                          <div className="flex h-6 min-w-6 items-center justify-center">
-                            <i className="fad fa-trash text-left text-base text-red-400"></i>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-red-400">
-                            {isDeleting ? 'Deleting...' : 'Delete'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  ></i>
                 </div>
-              )}
-            </div>
+
+                {/* Dropdown Menu */}
+                {showMenu && (
+                  <div className="bg-surface-2 rounded-lg border border-surface-2-stroke absolute flex-col items-start py-2 shadow-lg z-50 min-w-28 max-w-72 right-0 top-10">
+                    <div
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit();
+                        setShowMenu(false);
+                      }}
+                    >
+                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                        <div className="flex flex-row items-start gap-2">
+                          <div>
+                            <div className="flex h-6 min-w-6 items-center justify-center">
+                              <i className="fad fa-pen-to-square text-left text-base text-gray-900 dark:text-gray-100"></i>
+                            </div>
+                          </div>
+                          <div className="flex flex-col">
+                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100">
+                              Edit
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/dashboard/resumes/preview/${resume.id}`);
+                        setShowMenu(false);
+                      }}
+                    >
+                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                        <div className="flex flex-row items-start gap-2">
+                          <div>
+                            <div className="flex h-6 min-w-6 items-center justify-center">
+                              <i className="fad fa-eye text-left text-base text-gray-900 dark:text-gray-100"></i>
+                            </div>
+                          </div>
+                          <div className="flex flex-col">
+                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100">
+                              Preview
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      onClick={handleDownload}
+                    >
+                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                        <div className="flex flex-row items-start gap-2">
+                          <div>
+                            <div className="flex h-6 min-w-6 items-center justify-center">
+                              <i className="fad fa-download text-left text-base text-gray-900 dark:text-gray-100"></i>
+                            </div>
+                          </div>
+                          <div className="flex flex-col">
+                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100">
+                              Download PDF
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      onClick={handleDuplicate}
+                    >
+                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                        <div className="flex flex-row items-start gap-2">
+                          <div>
+                            <div className="flex h-6 min-w-6 items-center justify-center">
+                              <i className="fad fa-copy text-left text-base text-gray-900 dark:text-gray-100"></i>
+                            </div>
+                          </div>
+                          <div className="flex flex-col">
+                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100">
+                              Duplicate
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
+
+                    <div
+                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                      onClick={handleDelete}
+                    >
+                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                        <div className="flex flex-row items-start gap-2">
+                          <div>
+                            <div className="flex h-6 min-w-6 items-center justify-center">
+                              <i className="fad fa-trash text-left text-base text-red-500"></i>
+                            </div>
+                          </div>
+                          <div className="flex flex-col">
+                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-red-500">
+                              {isDeleting ? 'Deleting...' : 'Delete'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

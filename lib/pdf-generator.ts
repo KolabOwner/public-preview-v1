@@ -1,10 +1,8 @@
 // This is a simplified PDF generator that will be expanded later
 // with more advanced features like custom templates and styling
 
-import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import { typographyConfig } from './typography-config';
-import { generateResumePDFWithStyling } from './pdf-generator-html';
+
 import { generateResumePDFWithRMS } from './pdf-generator-with-rms';
 import { generateResumePDFWithCustomFonts } from './pdf-generator-custom';
 import { generateResumePDFWithVectorFonts } from './pdf-generator-vector';

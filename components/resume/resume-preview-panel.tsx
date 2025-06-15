@@ -783,7 +783,7 @@ export default function ResumePreview({
               </section>
             )}
 
-            {/* Activities & Involvement */}
+            {/* Involvement */}
             {resumeData.involvements && resumeData.involvements.length > 0 && (
               <section>
                 <h2
@@ -799,7 +799,7 @@ export default function ResumePreview({
                     textTransform: 'uppercase'
                   }}
                 >
-                  Activities & Involvement
+                  Involvement
                 </h2>
                 {resumeData.involvements.map((inv: any, idx: number) => (
                   <div key={inv.id || idx} className="mb-2 page-break-avoid">

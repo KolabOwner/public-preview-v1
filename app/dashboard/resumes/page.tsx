@@ -23,15 +23,20 @@ export default function ResumesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'created' | 'updated'>('created');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const themeMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close user menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
+      }
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
+        setShowThemeMenu(false);
       }
     }
 
@@ -98,52 +103,15 @@ export default function ResumesPage() {
     }
   };
 
-  // Create resume card component with enhanced styling
+  // Create resume card component
   const CreateResumeCard = () => (
-    <div className="relative group">
-      <div className="relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60">
-        {/* Subtle glow effect on hover */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] rounded-lg opacity-0 group-hover:opacity-30 blur transition-all duration-300"></div>
-
-        <div
-          className="relative bg-gradient-to-br from-[#1e2936] to-[#1a2332] rounded-lg border border-dashed border-[#374151]/50 w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60 cursor-pointer hover:border-[#5b7cfd]/50 transition-all duration-300 group overflow-hidden"
-          onClick={() => setShowCreateModal(true)}
-        >
-          {/* Background gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#5b7cfd]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-          <div className="relative h-[calc(100%-60px)] flex items-center justify-center overflow-hidden">
-            <div className="flex flex-col items-center justify-center p-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#5b7cfd]/20 to-[#4a6bec]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[#5b7cfd]/10">
-                <i className="fad fa-plus text-2xl text-[#5b7cfd]"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Create New Resume</h3>
-              <p className="text-sm text-gray-400">Start from scratch or upload an existing resume</p>
-            </div>
-          </div>
-
-          {/* Card Footer with gradient */}
-          <div className="relative flex h-[60px] flex-row items-center justify-between rounded-b-lg bg-gradient-to-r from-[#1a2332] to-[#1e2936] py-2 border-t border-[#374151]/30">
-            <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
-              <div className="w-full">
-                <p className="overflow-hidden overflow-ellipsis whitespace-nowrap pr-2 text-base font-semibold leading-6 text-white">
-                  Create New Resume
-                </p>
-                <div className="group relative inline-block">
-                  <p className="text-400 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm leading-5 text-gray-400">
-                    Start a new project
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Icon with glow */}
-            <div className="h-12 min-w-12 flex items-center justify-center text-xl">
-              <div className="h-6 w-6 flex items-center justify-center">
-                <i className="!flex items-center justify-center fad fa-file-plus text-[#5b7cfd] text-xl w-6 h-6 drop-shadow-[0_0_8px_rgba(91,124,253,0.3)]"></i>
-              </div>
-            </div>
-          </div>
+    <div className="">
+      <div
+        className="flex w-[calc(50vw_-_25px)] cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-400 p-4 xs:h-48 sm:h-[290px] md:w-60"
+        onClick={() => setShowCreateModal(true)}
+      >
+        <div className="relative flex w-[calc(50vw_-_25px)] items-center justify-center xs:h-48 sm:h-[290px] md:w-60">
+          <div className="line-clamp-3 text-center text-base font-semibold text-gray-500 dark:text-gray-400">Create new resume</div>
         </div>
       </div>
     </div>
@@ -161,175 +129,334 @@ export default function ResumesPage() {
   }
 
   return (
-    <main className="sm:h-full lg:h-auto px-6 py-4 bg-gradient-to-br from-[#1a2332] via-[#1e2936] to-[#1a2332] min-h-screen">
-      {/* Tab navigation with enhanced styling */}
-      <div className="hidden w-full flex-row items-center justify-between self-stretch sm:flex">
-        <div className="relative inline-flex items-center whitespace-nowrap rounded-lg bg-gradient-to-r from-[#1e2936] to-[#2a3f5f] p-1 gap-1 my-6 shadow-lg shadow-black/20 border border-[#374151]/30">
-          <div
-            className="relative rounded-md inline-flex items-center gap-1 group text-xs leading-4 h-8 px-4 bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] text-white cursor-pointer shadow-md transition-all duration-200 font-semibold"
-            role="tab"
-          >
-            <div className="absolute inset-0 bg-white/20 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-            <div className="w-full overflow-hidden relative z-10">
-              <p className="font-semibold uppercase truncate">Resumes</p>
-            </div>
-          </div>
-          <div
-            className="rounded-md inline-flex items-center gap-1 group relative text-xs leading-4 h-8 px-4 text-gray-400 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200 font-semibold"
-            role="tab"
-          >
-            <div className="w-full overflow-hidden">
-              <p className="font-semibold uppercase truncate">Cover Letters</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action buttons with enhanced styling */}
-        <div className="hidden flex-row items-center justify-end gap-4 lg:flex">
-          {/* Sort dropdown */}
-          <div className="relative flex flex-row items-center justify-start">
-            <button
-              type="button"
-              className="relative flex items-center justify-center font-bold uppercase transition-all duration-200 bg-gradient-to-r from-[#2a3f5f] to-[#324966] text-white hover:from-[#324966] hover:to-[#3a5576] px-4 py-2 rounded-lg text-xs shadow-md border border-[#374151]/30"
-              onClick={toggleSortBy}
-            >
-              <span className="px-1">{sortBy === 'created' ? 'Created' : 'Updated'}</span>
-              <i className="fad fa-angle-down text-sm ml-2"></i>
-            </button>
-          </div>
-
-          {/* View toggle buttons with blue accents */}
-          <div className="flex gap-2 bg-[#1e2936] p-1 rounded-lg border border-[#374151]/30">
-            <button
-              className={`p-2 rounded-md transition-all duration-200 ${
-                viewMode === 'grid' 
-                  ? 'bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] text-white shadow-md' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-              }`}
-              onClick={() => setViewMode('grid')}
-            >
-              <i className="fad fa-grid-2 text-lg w-5 h-5"></i>
-            </button>
-            <button
-              className={`p-2 rounded-md transition-all duration-200 ${
-                viewMode === 'list' 
-                  ? 'bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] text-white shadow-md' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-              }`}
-              onClick={() => setViewMode('list')}
-            >
-              <i className="fad fa-list text-lg w-5 h-5"></i>
-            </button>
-          </div>
-
-          {/* User Menu with gradient */}
-          {user && (
-            <div className="relative" ref={userMenuRef}>
-              <button
-                type="button"
-                className="relative flex items-center justify-center h-10 w-10 bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] hover:from-[#4a6bec] hover:to-[#3a5bdc] text-white rounded-full transition-all duration-200 shadow-lg shadow-[#5b7cfd]/20 font-bold"
-                onClick={() => setShowUserMenu(!showUserMenu)}
+    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16">
+      <div className="relative w-full max-w-full gap-4 flex min-h-[calc(100dvh_-_64px)] w-full flex-col justify-start gap-4 px-4 md:px-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8" id="layout_full_screen">
+        <main className="sm:h-full lg:h-auto">
+          {/* Tab navigation */}
+          <div className="hidden w-full flex-row items-center justify-between self-stretch sm:flex">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-1 py-1 gap-1 my-6">
+              <div
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 bg-rezi-blue-600 text-neutral-0 cursor-pointer"
+                role="tab"
               >
-                <span>{user.displayName?.[0] || user.email?.[0] || 'U'}</span>
-              </button>
+                <div className="w-full overflow-hidden">
+                  <p className="font-semibold uppercase truncate">Resumes</p>
+                </div>
+              </div>
+              <div
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+                role="tab"
+              >
+                <div className="w-full overflow-hidden">
+                  <p className="font-semibold uppercase truncate">Cover Letters</p>
+                </div>
+              </div>
+              <div
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+                role="tab"
+              >
+                <div className="w-full overflow-hidden">
+                  <p className="font-semibold uppercase truncate">Resignation Letters</p>
+                </div>
+              </div>
+            </div>
 
-              {showUserMenu && (
-                <div className="absolute top-12 right-0 bg-gradient-to-br from-[#2a3f5f] to-[#1e2936] rounded-lg shadow-xl border border-[#374151]/30 min-w-[200px] py-2 z-50 backdrop-blur-sm">
-                  <div className="px-4 py-2 border-b border-[#374151]/30">
-                    <p className="text-sm text-gray-400">{user.email}</p>
-                  </div>
+            {/* Action buttons */}
+            <div className="hidden flex-row items-center justify-between gap-4 lg:flex">
+              {/* Notification bell */}
+              <div className="relative flex cursor-pointer items-center justify-center text-center font-extrabold hover:text-rezi-blue-500 transition-all duration-200 ease-in-out text-gray-900 dark:text-gray-100">
+                <i className="fad fa-bell fa-lg" aria-hidden="true"></i>
+                <div className="absolute -right-3 -top-4 flex h-4 w-4 select-none items-center justify-center rounded-full border-2 border-surface-1 bg-red-600 p-2 text-xs font-normal leading-4 text-neutral-0">1</div>
+              </div>
 
-                  <button className="w-full px-4 py-2 text-left hover:bg-[#5b7cfd]/10 transition-colors flex items-center gap-3 text-white">
-                    <i className="fad fa-user w-4"></i>
-                    <span>Account</span>
-                  </button>
-
-                  <button
-                    className="w-full px-4 py-2 text-left hover:bg-[#5b7cfd]/10 transition-colors flex items-center gap-3 text-white"
-                    onClick={toggleTheme}
-                  >
-                    <i className="fad fa-palette w-4"></i>
-                    <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                  </button>
-
-                  <div className="border-t border-[#374151]/30 mt-2 pt-2">
+              {/* User Menu */}
+              {user && (
+                <div className="hidden lg:!block relative p-3 lg:p-0" ref={userMenuRef}>
+                  <div className="flex cursor-pointer flex-row items-center justify-end gap-1 px-0">
                     <button
-                      className="w-full px-4 py-2 text-left hover:bg-red-500/10 transition-colors flex items-center gap-3 text-red-400"
-                      onClick={handleLogout}
+                      type="button"
+                      className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition transition-200 lg-h-8 flex h-6 !min-h-6 w-6 items-center justify-center !text-xs !font-semibold leading-4 lg:!min-h-8 lg:w-8 lg:!text-base lg:!leading-6 disabled:bg-input-bg-disabled disabled:text-input-disabled disabled:cursor-not-allowed border-0 bg-rezi-blue-600 active:bg-rezi-blue-700 focus:bg-rezi-blue-500 text-white hover:bg-rezi-blue-500 px-2 py-1 min-h-8 leading-4 rounded-md text-xs !rounded-full"
+                      onClick={() => setShowUserMenu(!showUserMenu)}
                     >
-                      <i className="fad fa-right-from-bracket w-4"></i>
-                      <span>Log out</span>
+                      <span className="px-1">{user.displayName?.[0] || user.email?.[0] || 'K'}</span>
                     </button>
+                    <div className="hidden h-5 w-5 items-center justify-center lg:flex">
+                      <i className="fas fa-caret-down text-base" aria-hidden="true"></i>
+                    </div>
                   </div>
+
+                  {showUserMenu && (
+                    <div className="bg-surface-2 rounded-lg border border-surface-2-stroke absolute flex-col items-start bg-surface-2 py-2 shadow-lg z-50 min-w-28 max-w-72 left-0" style={{ width: 'fit-content', top: '34px' }}>
+                      <div className="relative pointer-events-none flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-default">
+                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                          <div className="flex flex-row items-start gap-2">
+                            <div></div>
+                            <div className="flex flex-col">
+                              <div className="select-none !text-gray-500 dark:!text-gray-400 w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title={user.email}>
+                                {user.email}
+                              </div>
+                            </div>
+                          </div>
+                          <div></div>
+                        </div>
+                      </div>
+                      <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
+                      
+                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
+                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                          <div className="flex flex-row items-start gap-2">
+                            <div>
+                              <div className="flex h-6 min-w-6 items-center justify-center">
+                                <i className="fad fa-user text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Account">Account</div>
+                            </div>
+                          </div>
+                          <div></div>
+                        </div>
+                      </div>
+
+                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
+                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                          <div className="flex flex-row items-start gap-2">
+                            <div>
+                              <div className="flex h-6 min-w-6 items-center justify-center">
+                                <i className="fad fa-lightbulb text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="frill-container btn w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Suggest Feature">Suggest Feature</div>
+                            </div>
+                          </div>
+                          <div></div>
+                        </div>
+                      </div>
+
+                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
+                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                          <div className="flex flex-row items-start gap-2">
+                            <div>
+                              <div className="flex h-6 min-w-6 items-center justify-center">
+                                <i className="fad fa-file-lines text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="User Guides">User Guides</div>
+                            </div>
+                          </div>
+                          <div></div>
+                        </div>
+                      </div>
+
+                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover" ref={themeMenuRef}>
+                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full" onClick={() => setShowThemeMenu(!showThemeMenu)}>
+                          <div className="flex flex-row items-start gap-2">
+                            <div>
+                              <div className="flex h-6 min-w-6 items-center justify-center">
+                                <i className="fad fa-palette text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Theme">Theme</div>
+                              
+                              {showThemeMenu && (
+                                <div className="bg-surface-2 rounded-lg border border-surface-2-stroke absolute flex-col items-start bg-surface-2 py-2 shadow-lg z-50 min-w-28 max-w-72 flex-col items-start right-0 left-auto right-0 left-full top-[-1px] -mt-2" style={{ width: 'fit-content' }}>
+                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'light' ? '!bg-rezi-blue-600 dark:!bg-rezi-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('light'); setShowThemeMenu(false); }}>
+                                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                                      <div className="flex flex-row items-start gap-2">
+                                        <div>
+                                          <div className="flex h-6 min-w-6 items-center justify-center">
+                                            <i className={`fad fa-sun text-left text-base ${theme === 'light' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <div className={`w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 ${theme === 'light' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} title="Light">Light</div>
+                                        </div>
+                                      </div>
+                                      <div></div>
+                                    </div>
+                                  </div>
+                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'dark' ? '!bg-rezi-blue-600 dark:!bg-rezi-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('dark'); setShowThemeMenu(false); }}>
+                                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                                      <div className="flex flex-row items-start gap-2">
+                                        <div>
+                                          <div className="flex h-6 min-w-6 items-center justify-center">
+                                            <i className={`fad fa-moon-stars text-left text-base ${theme === 'dark' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <div className={`w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 ${theme === 'dark' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} title="Dark">Dark</div>
+                                        </div>
+                                      </div>
+                                      <div></div>
+                                    </div>
+                                  </div>
+                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'system' ? '!bg-rezi-blue-600 dark:!bg-rezi-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('system'); setShowThemeMenu(false); }}>
+                                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                                      <div className="flex flex-row items-start gap-2">
+                                        <div>
+                                          <div className="flex h-6 min-w-6 items-center justify-center">
+                                            <i className={`fad fa-moon-over-sun text-left text-base ${theme === 'system' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <div className={`w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 ${theme === 'system' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} title="System">System</div>
+                                        </div>
+                                      </div>
+                                      <div></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex h-6 min-w-6 items-center justify-center">
+                              <i className="fas fa-angle-right text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
+                      
+                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover" onClick={handleLogout}>
+                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                          <div className="flex flex-row items-start gap-2">
+                            <div>
+                              <div className="flex h-6 min-w-6 items-center justify-center">
+                                <i className="fad fa-right-from-bracket text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Log out">Log out</div>
+                            </div>
+                          </div>
+                          <div></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile tab navigation */}
-      <div className="flex overflow-scroll py-4 xs:flex sm:hidden">
-        <div className="relative inline-flex items-center whitespace-nowrap rounded-lg bg-gradient-to-r from-[#1e2936] to-[#2a3f5f] p-1 gap-1 shadow-lg shadow-black/20 border border-[#374151]/30">
-          <div className="rounded-md inline-flex items-center gap-1 text-xs leading-4 h-8 px-4 bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] text-white cursor-pointer shadow-md font-semibold">
-            <p className="font-semibold uppercase truncate">Resumes</p>
           </div>
-          <div className="rounded-md inline-flex items-center gap-1 text-xs leading-4 h-8 px-4 text-gray-400 hover:text-white hover:bg-white/10 cursor-pointer font-semibold">
-            <p className="font-semibold uppercase truncate">Cover Letters</p>
-          </div>
-        </div>
-      </div>
 
-      {/* Main content */}
-      <div className="flex-start flex self-stretch">
-        <div className="w-full px-1">
-          {/* Resume Grid */}
-          <div className="flex flex-col gap-4">
-            {resumes.length > 0 ? (
-              <div>
-                <div className="mb-4 flex flex-row flex-wrap gap-6 md:gap-8 justify-center sm:justify-start">
-                  <CreateResumeCard />
-
-                  {resumes.map((resume) => (
-                    <ResumeGridCard key={resume.id} resume={resume} onRefresh={() => {
-                      setIsLoading(true);
-                      fetchResumes();
-                    }} />
-                  ))}
+          {/* Mobile tab navigation */}
+          <div className="flex overflow-scroll py-4 xs:flex sm:hidden">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-md border border-surface-2-stroke w-fit h-fit bg-surface-1 px-1 py-1 gap-1">
+              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 bg-rezi-blue-600 text-neutral-0 cursor-pointer" role="tab">
+                <div className="w-full overflow-hidden">
+                  <p className="font-semibold uppercase truncate">Resumes</p>
                 </div>
               </div>
-            ) : (
-              <div className="bg-gradient-to-br from-[#2a3f5f] to-[#1e2936] rounded-lg border border-[#374151]/30 p-8 text-center shadow-xl">
-                <h4 className="font-medium text-xl mb-3 text-white">No resumes yet</h4>
-                <p className="text-gray-300 mb-6">
-                  Create your first resume to start your job application journey.
-                </p>
-                <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover hover:text-gray-900 cursor-pointer" role="tab">
+                <div className="w-full overflow-hidden">
+                  <p className="font-semibold uppercase truncate">Cover Letters</p>
+                </div>
+              </div>
+              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover hover:text-gray-900 cursor-pointer" role="tab">
+                <div className="w-full overflow-hidden">
+                  <p className="font-semibold uppercase truncate">Resignation Letters</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div className="flex-start flex self-stretch">
+            <div className="w-full">
+              <div className="py-4 flex items-center justify-end gap-4">
+                {/* Sort dropdown */}
+                <div className="relative flex flex-row items-center justify-start">
                   <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] hover:from-[#4a6bec] hover:to-[#3a5bdc] text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg shadow-[#5b7cfd]/20"
+                    type="button"
+                    className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition transition-200 latin border-none !px-2 text-xs font-bold uppercase leading-4 text-gray-900 dark:text-gray-100 focus:bg-button-text-focus dark:focus:bg-gray-700 active:bg-button-text-active dark:active:bg-gray-600 hover:bg-button-text-hover dark:hover:bg-gray-700 bg-transparent border-solid border border-button-secondary-stroke dark:border-gray-600 focus:bg-button-secondary-hover dark:focus:bg-gray-700 active:bg-button-secondary-active dark:active:bg-gray-600 hover:bg-button-secondary-hover dark:hover:bg-gray-700 px-2 py-1 min-h-8 leading-4 rounded-md text-xs"
+                    onClick={toggleSortBy}
                   >
-                    Create Resume
+                    <span className="px-1">{sortBy === 'created' ? 'Created' : 'Updated'}</span>
+                    <i className="fad fa-angle-down !flex items-center justify-center !leading-[0] flex-none text-sm w-[18px] h-[18px] mr-1" aria-hidden="true"></i>
                   </button>
-                  <a
-                    href="/resumes/upload"
-                    className="border border-[#374151]/50 hover:border-[#5b7cfd]/50 bg-[#1a2332] hover:bg-[#1e2936] text-gray-200 hover:text-white font-bold py-3 px-6 rounded-lg transition-all duration-200"
+                </div>
+
+                {/* View mode toggles */}
+                <div className="group relative flex h-6 w-6 items-center justify-center">
+                  <div 
+                    className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative" 
+                    onClick={() => setViewMode('grid')}
                   >
-                    Upload Existing Resume
-                  </a>
+                    <i className={`!flex items-center justify-center fad fa-grid-2 text-xl w-6 h-6 ${viewMode === 'grid' ? 'text-rezi-blue-700 dark:text-rezi-blue-400' : 'text-gray-900 dark:text-gray-100'} hover:text-rezi-blue-500`} aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div className="group relative flex h-6 w-6 items-center justify-center">
+                  <div 
+                    className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative" 
+                    onClick={() => setViewMode('list')}
+                  >
+                    <i className={`!flex items-center justify-center fad fa-list text-xl w-6 h-6 ${viewMode === 'list' ? 'text-rezi-blue-700 dark:text-rezi-blue-400' : 'text-gray-900 dark:text-gray-100'} hover:text-rezi-blue-500`} aria-hidden="true"></i>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* Create Resume Modal */}
-      {showCreateModal && (
-        <CreateResumeModal
-          onClose={() => setShowCreateModal(false)}
-        />
-      )}
-    </main>
+              {/* Resume Grid */}
+              <div className="flex flex-col gap-4">
+                {resumes.length > 0 ? (
+                  <div>
+                    <div className="mb-4 flex flex-row flex-wrap gap-4 md:gap-6">
+                      <CreateResumeCard />
+
+                      {resumes.map((resume) => (
+                        <ResumeGridCard key={resume.id} resume={resume} onRefresh={() => {
+                          setIsLoading(true);
+                          fetchResumes();
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white dark:bg-surface-2 rounded-lg border border-gray-200 dark:border-surface-2-stroke p-8 text-center shadow-sm">
+                    <h4 className="font-medium text-xl mb-3 text-gray-900 dark:text-gray-100">No resumes yet</h4>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                      Create your first resume to start your job application journey.
+                    </p>
+                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                      <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-rezi-blue-600 hover:bg-rezi-blue-500 text-white font-bold py-3 px-6 rounded-md transition-all duration-200"
+                      >
+                        Create Resume
+                      </button>
+                      <a
+                        href="/resumes/upload"
+                        className="border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-surface-2 hover:bg-gray-50 dark:hover:bg-surface-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-bold py-3 px-6 rounded-md transition-all duration-200"
+                      >
+                        Upload Existing Resume
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Add section button */}
+          <div className="flex flex-row items-center justify-start py-4">
+            <button type="button" className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition transition-200 latin border-none text-xs font-bold uppercase leading-4 text-gray-900 dark:text-gray-100 focus:bg-button-text-focus dark:focus:bg-gray-700 active:bg-button-text-active dark:active:bg-gray-600 hover:bg-button-text-hover dark:hover:bg-gray-700 bg-transparent border-solid border border-button-secondary-stroke dark:border-gray-600 focus:bg-button-secondary-hover dark:focus:bg-gray-700 active:bg-button-secondary-active dark:active:bg-gray-600 hover:bg-button-secondary-hover dark:hover:bg-gray-700 px-2 py-1 min-h-8 leading-4 rounded-md text-xs">
+              <i className="fad fa-folder-plus !flex items-center justify-center !leading-[0] flex-none text-sm w-[18px] h-[18px] mr-1" aria-hidden="true"></i>
+              <span className="px-1">Add section</span>
+            </button>
+          </div>
+
+          {/* Create Resume Modal */}
+          {showCreateModal && (
+            <CreateResumeModal
+              onClose={() => setShowCreateModal(false)}
+            />
+          )}
+        </main>
+      </div>
+    </div>
   );
 }

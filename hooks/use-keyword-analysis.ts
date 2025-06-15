@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import KeywordPersistenceService from "@/lib/services/keyword-persistence-service";
-import { AnalysisResponse, JobInfo, ResumeData } from '@/src/types';
+import { AnalysisResponse, JobInfo, ResumeData } from "@/src/types";
 
 interface UseKeywordAnalysisOptions {
   jobInfo: Partial<JobInfo>;
