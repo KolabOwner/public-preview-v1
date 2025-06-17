@@ -3,7 +3,7 @@
  * Validates file types using MIME types, extensions, and magic numbers
  */
 
-import { Validator, ValidationResult } from './index';
+import { Validator, ValidationResult } from './base';
 
 interface FileTypeValidatorConfig {
   allowed: string[];  // Allowed extensions
@@ -75,13 +75,16 @@ export class FileTypeValidator extends Validator {
         if (!pdfChecks.valid) {
           errors.push(...pdfChecks.errors);
         }
+        if (pdfChecks.warnings) {
+          warnings.push(...pdfChecks.warnings);
+        }
         metadata.pdfStructure = pdfChecks.metadata;
       }
 
     } catch (error) {
       errors.push({
         code: 'FILE_TYPE_VALIDATION_ERROR',
-        message: `File type validation failed: ${error.message}`,
+        message: `File type validation failed: ${error instanceof Error ? error.message : String(error)}`,
         severity: 'critical' as const
       });
     }
@@ -128,8 +131,9 @@ export class FileTypeValidator extends Validator {
     return false;
   }
 
-  private validatePDFStructure(buffer: Buffer): { valid: boolean; errors: any[]; metadata: any } {
+  private validatePDFStructure(buffer: Buffer): { valid: boolean; errors: any[]; warnings: any[]; metadata: any } {
     const errors = [];
+    const warnings = [];
     const metadata: any = {};
 
     // Check PDF header
@@ -172,6 +176,7 @@ export class FileTypeValidator extends Validator {
     return {
       valid: errors.filter(e => e.severity === 'critical').length === 0,
       errors,
+      warnings,
       metadata
     };
   }

@@ -2,7 +2,7 @@
  * Firebase Real-time Updates System
  * Provides real-time communication using Firebase Firestore listeners
  */
-import React from "react";
+import * as React from "react";
 import { 
   doc, 
   collection, 
@@ -18,7 +18,8 @@ import {
   DocumentData,
   FirestoreError
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getFirestore } from 'firebase/firestore';
+const db = getFirestore();
 import { logger } from '../../monitoring/logging';
 import { metrics } from '../../monitoring/metrics';
 
@@ -578,3 +579,5 @@ export function useResourceUpdates(
 
   return update;
 }
+// Export alias for compatibility
+export { FirebaseRealtimeService as RealtimeService };

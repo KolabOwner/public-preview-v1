@@ -15,7 +15,8 @@ import {
   serverTimestamp,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getFirestore } from 'firebase/firestore';
+const db = getFirestore();
 import { createHash, createHmac } from 'crypto';
 import { logger } from '../../monitoring/logging';
 
@@ -104,7 +105,7 @@ export class AuditService {
         ...event,
         id: this.generateEventId(),
         timestamp: serverTimestamp(),
-        previousHash: this.lastHash
+        previousHash: this.lastHash || undefined
       };
 
       // Calculate hash for immutability
@@ -500,3 +501,5 @@ export class AuditService {
 
 // Export singleton instance
 export const auditService = AuditService.getInstance();
+// Export alias for compatibility
+export { AuditService as AuditLogger };

@@ -324,32 +324,338 @@ export class ConsoleTransport implements LogTransport {
 }
 
 /**
- * File transport for structured logging
+ * Browser-compatible file transport for structured logging
+ * Uses IndexedDB for persistence in browser environments
  */
-export class FileTransport implements LogTransport {
+export class BrowserFileTransport implements LogTransport {
   name = 'file';
+  private db: IDBDatabase | null = null;
+  private dbName = 'EnterpriseLogsDB';
+  private storeName = 'logs';
+  private maxEntries = 10000;
   
   constructor(
-    private filePath: string,
-    private options?: {
-      maxSize?: number;
-      maxFiles?: number;
-      compress?: boolean;
+    private options: {
+      maxEntries?: number;
+    } = {}
+  ) {
+    this.maxEntries = options.maxEntries || 10000;
+    this.initializeStorage();
+  }
+
+  private initializeStorage(): void {
+    if (typeof window === 'undefined' || !('indexedDB' in window)) {
+      console.warn('IndexedDB not available');
+      return;
     }
-  ) {}
+    
+    const dbRequest = indexedDB.open(this.dbName, 1);
+    
+    dbRequest.onupgradeneeded = (event: any) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(this.storeName)) {
+        const store = db.createObjectStore(this.storeName, { 
+          keyPath: 'id', 
+          autoIncrement: true 
+        });
+        store.createIndex('timestamp', 'timestamp');
+        store.createIndex('level', 'level');
+        store.createIndex('component', 'context.component');
+      }
+    };
+    
+    dbRequest.onsuccess = (event: any) => {
+      this.db = event.target.result;
+      // Clean old logs on initialization
+      this.cleanOldLogs();
+    };
+    
+    dbRequest.onerror = (event: any) => {
+      console.error('Failed to open IndexedDB:', event.target.error);
+    };
+  }
 
   async log(entry: LogEntry): Promise<void> {
-    // In a real implementation, this would write to a file
-    // with rotation, compression, etc.
-    const line = JSON.stringify(entry) + '\n';
-    // await fs.appendFile(this.filePath, line);
+    if (!this.db) {
+      console.warn('IndexedDB not initialized');
+      return;
+    }
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([this.storeName], 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      
+      // Add entry with additional metadata
+      const entryWithId = {
+        ...entry,
+        id: Date.now() + Math.random(),
+        browserTimestamp: new Date().toISOString()
+      };
+      
+      const request = store.add(entryWithId);
+      
+      request.onsuccess = () => {
+        // Periodically clean old entries
+        if (Math.random() < 0.1) { // 10% chance
+          this.cleanOldLogs();
+        }
+        resolve();
+      };
+      
+      request.onerror = () => {
+        console.error('Failed to write log to IndexedDB');
+        resolve(); // Don't fail logging
+      };
+    });
+  }
+
+  private async cleanOldLogs(): Promise<void> {
+    if (!this.db) return;
+    
+    const transaction = this.db.transaction([this.storeName], 'readwrite');
+    const store = transaction.objectStore(this.storeName);
+    const countRequest = store.count();
+    
+    countRequest.onsuccess = () => {
+      const count = countRequest.result;
+      
+      if (count > this.maxEntries) {
+        // Delete oldest entries
+        const deleteCount = count - this.maxEntries;
+        const index = store.index('timestamp');
+        const request = index.openCursor();
+        let deleted = 0;
+        
+        request.onsuccess = (event: any) => {
+          const cursor = event.target.result;
+          if (cursor && deleted < deleteCount) {
+            cursor.delete();
+            deleted++;
+            cursor.continue();
+          }
+        };
+      }
+    };
+  }
+
+  async flush(): Promise<void> {
+    // IndexedDB writes are already flushed
+    return Promise.resolve();
+  }
+  
+  /**
+   * Export logs from IndexedDB
+   */
+  async exportLogs(options?: {
+    startDate?: Date;
+    endDate?: Date;
+    level?: LogLevel;
+    component?: string;
+  }): Promise<LogEntry[]> {
+    if (!this.db) {
+      return [];
+    }
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([this.storeName], 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      const logs: LogEntry[] = [];
+      
+      const request = store.openCursor();
+      
+      request.onsuccess = (event: any) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          const entry = cursor.value;
+          
+          // Apply filters
+          let include = true;
+          
+          if (options?.startDate && new Date(entry.timestamp) < options.startDate) {
+            include = false;
+          }
+          if (options?.endDate && new Date(entry.timestamp) > options.endDate) {
+            include = false;
+          }
+          if (options?.level !== undefined && entry.level < options.level) {
+            include = false;
+          }
+          if (options?.component && entry.context?.component !== options.component) {
+            include = false;
+          }
+          
+          if (include) {
+            logs.push(entry);
+          }
+          
+          cursor.continue();
+        } else {
+          resolve(logs);
+        }
+      };
+      
+      request.onerror = () => {
+        reject(new Error('Failed to export logs'));
+      };
+    });
+  }
+}
+
+/**
+ * Firestore transport for structured logging
+ */
+export class FirestoreTransport implements LogTransport {
+  name = 'firestore';
+  private batchSize = 50;
+  private batch: LogEntry[] = [];
+  private batchTimeout?: NodeJS.Timeout;
+  private batchInterval = 1000; // 1 second
+  
+  constructor(
+    private collectionName: string = 'enterprise_logs',
+    private options: {
+      batchSize?: number;
+      batchInterval?: number;
+      ttlDays?: number; // Time to live for logs
+    } = {}
+  ) {
+    this.batchSize = options.batchSize || 50;
+    this.batchInterval = options.batchInterval || 1000;
+  }
+
+  async log(entry: LogEntry): Promise<void> {
+    this.batch.push(entry);
+    
+    if (this.batch.length >= this.batchSize) {
+      await this.flushBatch();
+    } else {
+      this.scheduleBatchFlush();
+    }
+  }
+
+  private scheduleBatchFlush(): void {
+    if (this.batchTimeout) return;
+    
+    this.batchTimeout = setTimeout(() => {
+      this.flushBatch();
+    }, this.batchInterval);
+  }
+
+  private async flushBatch(): Promise<void> {
+    if (this.batch.length === 0) return;
+    
+    const entriesToFlush = [...this.batch];
+    this.batch = [];
+    
+    if (this.batchTimeout) {
+      clearTimeout(this.batchTimeout);
+      this.batchTimeout = undefined;
+    }
+    
+    try {
+      // Dynamic import to avoid issues in non-Firebase environments
+      const { getFirestore, collection, doc, writeBatch, serverTimestamp } = await import('firebase/firestore');
+      const db = getFirestore();
+      const logsCollection = collection(db, this.collectionName);
+      const batch = writeBatch(db);
+      
+      for (const entry of entriesToFlush) {
+        const docRef = doc(logsCollection);
+        const data = {
+          ...entry,
+          serverTimestamp: serverTimestamp(),
+          ttl: this.options.ttlDays 
+            ? new Date(Date.now() + this.options.ttlDays * 24 * 60 * 60 * 1000)
+            : null
+        };
+        batch.set(docRef, data);
+      }
+      
+      await batch.commit();
+    } catch (error) {
+      console.error('Failed to write logs to Firestore:', error);
+      // Fallback to console
+      for (const entry of entriesToFlush) {
+        console.log(JSON.stringify(entry));
+      }
+    }
+  }
+
+  async flush(): Promise<void> {
+    await this.flushBatch();
   }
 }
 
 // Export singleton logger instance
 export const logger = StructuredLogger.getInstance();
 
-// Add default console transport in development
-if (process.env.NODE_ENV !== 'production') {
+// Export browser file transport as FileTransport for compatibility
+export { BrowserFileTransport as FileTransport };
+
+// Configure transports based on environment
+if (typeof window !== 'undefined') {
+  // Browser environment
   logger.addTransport(new ConsoleTransport());
+  
+  if (process.env.NODE_ENV === 'production') {
+    // Add browser file transport (IndexedDB)
+    logger.addTransport(new BrowserFileTransport({
+      maxEntries: 50000
+    }));
+    
+    // Add Firestore transport for cloud logging
+    logger.addTransport(new FirestoreTransport());
+  }
+} else {
+  // Server environment
+  if (process.env.NODE_ENV === 'production') {
+    // Production: Console + Firestore (server file transport loaded separately if needed)
+    logger.addTransport(new ConsoleTransport());
+    logger.addTransport(new FirestoreTransport('enterprise_logs', {
+      batchSize: 100,
+      batchInterval: 5000,
+      ttlDays: 30
+    }));
+    
+    // Server-side file logging can be added via a separate server-only module
+  } else {
+    // Development: Console only
+    logger.addTransport(new ConsoleTransport());
+  }
+}
+
+/**
+ * Component-specific logger wrapper
+ * Provides a familiar interface while using the singleton logger with context
+ */
+export class ComponentLogger {
+  private contextLogger: ContextualLogger;
+  
+  constructor(component: string) {
+    this.contextLogger = logger.child({ component });
+  }
+  
+  async trace(message: string, metadata?: Record<string, any>): Promise<void> {
+    this.contextLogger.trace(message, metadata);
+  }
+  
+  async debug(message: string, metadata?: Record<string, any>): Promise<void> {
+    this.contextLogger.debug(message, metadata);
+  }
+  
+  async info(message: string, metadata?: Record<string, any>): Promise<void> {
+    this.contextLogger.info(message, metadata);
+  }
+  
+  async warn(message: string, metadata?: Record<string, any>): Promise<void> {
+    this.contextLogger.warn(message, metadata);
+  }
+  
+  async error(message: string, metadata?: Record<string, any>): Promise<void> {
+    this.contextLogger.error(message, metadata?.error, metadata);
+  }
+  
+  async fatal(message: string, metadata?: Record<string, any>): Promise<void> {
+    this.contextLogger.fatal(message, metadata?.error, metadata);
+  }
 }

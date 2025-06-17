@@ -19,7 +19,11 @@ import {
   validateRMSMetadata,
   validateRMSCompliance
 } from './schemas';
-import { ExifToolConfig, FileStatus, Priority } from './types';
+import { 
+  ExifToolConfig, 
+  FileStatus, 
+  Priority
+} from './types';
 
 // ============================================================================
 // RMS v2.0.1 Metadata Interfaces (with Zod inference)
@@ -78,7 +82,7 @@ export interface IRMSProcessor {
   /**
    * Format resume data to RMS v2.0.1 metadata format
    */
-  formatToRMS(resumeData: any): RMSMetadata;
+  formatToRMS(resumeData: any): Promise<RMSMetadata>;
   
   /**
    * Convert indexed RMS fields to structured data
@@ -261,6 +265,9 @@ export interface FontConfiguration {
 
 export type FontStyle = 'elegant' | 'modern' | 'classic' | 'professional';
 
+// Re-export commonly used types
+export type { ExifToolConfig, FileStatus, Priority, ProcessingResult, ProcessingMetrics } from './types';
+
 // ============================================================================
 // Resume Parsing Interfaces
 // ============================================================================
@@ -426,4 +433,77 @@ export interface IEnterpriseWrapper {
     pdfBlob: Blob,
     options: IEnterpriseOptions
   ): Promise<RMSMetadata | null>;
+}
+
+// ============================================================================
+// Storage Integration
+// ============================================================================
+
+/**
+ * Storage upload result
+ */
+export interface StorageUploadResult {
+  url: string;
+  path: string;
+  size: number;
+  contentType: string;
+  metadata?: Record<string, string>;
+}
+
+/**
+ * Storage download result
+ */
+export interface StorageDownloadResult {
+  data: ArrayBuffer | Blob;
+  contentType: string;
+  size: number;
+  metadata?: Record<string, string>;
+}
+
+/**
+ * Storage adapter interface for cloud storage providers
+ */
+export interface IStorageAdapter {
+  // Core operations
+  upload(file: File | Blob | ArrayBuffer, path: string, options?: {
+    contentType?: string;
+    metadata?: Record<string, string>;
+  }): Promise<StorageUploadResult>;
+  
+  download(path: string): Promise<StorageDownloadResult>;
+  
+  delete(path: string): Promise<void>;
+  
+  exists(path: string): Promise<boolean>;
+  
+  // URL operations
+  getDownloadUrl(path: string): Promise<string>;
+  
+  getSignedUrl(path: string, expiresIn: number): Promise<string>;
+  
+  // Metadata operations
+  updateMetadata(path: string, metadata: Record<string, string>): Promise<void>;
+  
+  getMetadata(path: string): Promise<Record<string, string>>;
+}
+
+/**
+ * Storage service for managing multiple adapters
+ */
+export interface IStorageService {
+  // Adapter management
+  registerAdapter(name: string, adapter: IStorageAdapter): void;
+  
+  getAdapter(name?: string): IStorageAdapter;
+  
+  // High-level operations
+  uploadFile(file: File, options?: {
+    adapter?: string;
+    path?: string;
+    metadata?: Record<string, string>;
+  }): Promise<StorageUploadResult>;
+  
+  downloadFile(path: string, adapter?: string): Promise<StorageDownloadResult>;
+  
+  deleteFile(path: string, adapter?: string): Promise<void>;
 }

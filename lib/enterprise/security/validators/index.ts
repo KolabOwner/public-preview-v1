@@ -4,32 +4,10 @@
  */
 
 import { z } from 'zod';
+import { Validator, type ValidationResult, type ValidationError, type ValidationWarning } from './base';
 
-export interface ValidationResult {
-  valid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationWarning[];
-  metadata?: Record<string, any>;
-  severity?: 'low' | 'medium' | 'high' | 'critical';
-}
-
-export interface ValidationError {
-  code: string;
-  message: string;
-  field?: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-}
-
-export interface ValidationWarning {
-  code: string;
-  message: string;
-  field?: string;
-}
-
-export abstract class Validator {
-  abstract name: string;
-  abstract validate(file: File | Buffer | ArrayBuffer, context?: any): Promise<ValidationResult>;
-}
+// Re-export base types
+export { Validator, type ValidationResult, type ValidationError, type ValidationWarning } from './base';
 
 /**
  * Orchestrates multiple validators in a pipeline
@@ -72,7 +50,7 @@ export class ValidationPipeline {
         console.error(`Validator ${validator.name} failed:`, error);
         errors.push({
           code: 'VALIDATOR_ERROR',
-          message: `${validator.name} validation failed: ${error.message}`,
+          message: `${validator.name} validation failed: ${error instanceof Error ? error.message : String(error)}`,
           severity: 'critical'
         });
         break; // Fail closed on validator errors

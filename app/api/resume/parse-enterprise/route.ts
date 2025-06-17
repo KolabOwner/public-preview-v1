@@ -6,9 +6,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withCORS } from "@/lib/core/api/middleware/cors";
-import { FileStatus, PDFProcessor } from "@/lib/features/pdf/processor";
+import { FileStatus, enterpriseWrapper, withEnterpriseFeatures } from "@/lib/features/pdf/processor";
 import { parseResumeText } from "@/lib/features/pdf/parsing/parser";
-import { enterpriseWrapper, withEnterpriseFeatures } from "@/lib/features/pdf/processor/enterprise-wrapper";
 import { logger } from "@/lib/enterprise/monitoring/logging";
 import { performanceAnalytics } from "@/lib/enterprise/monitoring/analytics";
 

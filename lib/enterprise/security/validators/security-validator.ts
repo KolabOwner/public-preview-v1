@@ -14,6 +14,14 @@ interface SecurityValidatorConfig {
 }
 
 export class SecurityValidator extends Validator {
+  async validateFile(buffer: ArrayBuffer, mimeType: string): Promise<{ isValid: boolean; errors: string[] }> {
+    const result = await this.validate(buffer, { mimeType });
+    return {
+      isValid: result.valid,
+      errors: result.errors.map(e => e.message)
+    };
+  }
+  
   name = 'SecurityValidator';
   
   private dlpPatterns = {
@@ -117,7 +125,7 @@ export class SecurityValidator extends Validator {
     } catch (error) {
       errors.push({
         code: 'SECURITY_VALIDATION_ERROR',
-        message: `Security validation failed: ${error.message}`,
+        message: `Security validation failed: ${error instanceof Error ? error.message : String(error)}`,
         severity: 'critical' as const
       });
     }
@@ -347,3 +355,6 @@ export class SecurityValidator extends Validator {
     return typeCount > 1;
   }
 }
+
+// Export a default instance for convenience
+export const securityValidator = new SecurityValidator();

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/lib/core/auth/firebase-config";
-import { FileStatus, PDFProcessor, ProcessingResult } from "@/lib/features/pdf/processor";
+import { FileStatus, enterpriseWrapper } from "@/lib/features/pdf/processor";
 import { ResumeProcessingStatus } from '../ResumeProcessingStatus';
 import {
   X,
@@ -162,47 +162,56 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
         return;
       }
 
-      // For file uploads, create a resume and process it with PDFProcessor
+      // For file uploads, create a resume and process it with enterprise features
       console.log(`Processing PDF file: ${file.name} (${file.size} bytes)`);
 
       // Create a new resume record in Firestore
-      const newResumeId = await PDFProcessor.createResume({
+      const resumeData = {
         userId: user.uid,
         title: title || file.name.replace(/\.pdf$/i, ''),
-        initialStatus: FileStatus.UPLOADED
-      });
-
+        status: FileStatus.UPLOADED,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+      
+      const docRef = await addDoc(collection(db, 'resumes'), resumeData);
+      const newResumeId = docRef.id;
       setResumeId(newResumeId);
 
-      // Process the PDF
-      const result = await PDFProcessor.processPDF(file, newResumeId, {
-        userId: user.uid,
-        saveToFirebase: true,
-        title: title || file.name.replace(/\.pdf$/i, '')
+      // Process the PDF using enterprise wrapper
+      // This returns a job ID since processing is queued
+      const jobResult = await enterpriseWrapper.parseResumeWithEnterprise(
+        file,
+        user.uid,
+        {
+          enableValidation: true,
+          enableDLP: true,
+          enableRealTimeUpdates: true,
+          enableAuditLogging: true
+        }
+      );
+
+      console.log('PDF processing job queued:', jobResult);
+
+      // Update the resume with job information
+      const resumeRef = doc(db, 'resumes', newResumeId);
+      await updateDoc(resumeRef, {
+        experience,
+        isTargeted,
+        jobId: jobResult.jobId,
+        updatedAt: serverTimestamp()
       });
 
-      setProcessingResult(result);
+      // The ResumeProcessingStatus component will monitor the job progress
+      // For now, we'll consider the job creation as success
+      setProcessingResult({ 
+        success: true, 
+        jobId: jobResult.jobId,
+        message: jobResult.message 
+      });
 
-      if (result.success) {
-        console.log('PDF processing completed successfully:', result);
-
-        // Update the resume with additional metadata
-        const resumeRef = doc(db, 'resumes', newResumeId);
-        await updateDoc(resumeRef, {
-          experience,
-          isTargeted,
-          updatedAt: serverTimestamp()
-        });
-
-        // Redirect to the resume edit page after successful processing
-        setTimeout(() => {
-          router.push(`/dashboard/resumes/${newResumeId}`);
-          onClose();
-        }, 1500); // Short delay to show success state
-      } else {
-        console.error('Processing failed:', result.error);
-        setError(result.error || 'Failed to process PDF');
-      }
+      // Don't redirect immediately since processing is async
+      // Let the ResumeProcessingStatus component handle the completion
     } catch (err: any) {
       console.error('Error creating resume:', err);
       setError(err.message || 'Failed to create resume');

@@ -83,7 +83,7 @@ export class RetryPolicy {
           
           console.log(
             `Retry attempt ${attempt}/${this.config.maxAttempts} after ${delay}ms delay. ` +
-            `Error: ${error.message}`
+            `Error: ${error instanceof Error ? error.message : String(error)}`
           );
           
           await this.sleep(delay);
@@ -307,3 +307,5 @@ export class BulkRetry {
     return results;
   }
 }
+// Export alias for compatibility
+export { RetryPolicy as RetryManager };

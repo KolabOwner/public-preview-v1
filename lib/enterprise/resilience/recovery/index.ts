@@ -6,7 +6,8 @@
 import { CircuitBreaker, circuitBreakerManager } from '../circuit-breaker';
 import { RetryPolicy, BackoffStrategy } from '../retry';
 import { collection, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getFirestore } from 'firebase/firestore';
+const db = getFirestore();
 import { performanceAnalytics } from '../../monitoring/analytics';
 
 export interface RecoveryStrategy {
@@ -507,7 +508,7 @@ export class RecoveryOrchestrator {
       ]
     };
     
-    const services = serviceRegistry[operation] || serviceRegistry.default;
+    const services = serviceRegistry[operation as keyof typeof serviceRegistry] || serviceRegistry.default;
     
     // Check service health and find available alternative
     for (const service of services) {
@@ -697,7 +698,7 @@ export class RecoveryOrchestrator {
         result
       };
     } catch (error) {
-      throw new Error(`Alternative API failed: ${error.message}`);
+      throw new Error(`Alternative API failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

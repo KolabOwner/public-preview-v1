@@ -102,7 +102,7 @@ export class ContentValidator extends Validator {
     } catch (error) {
       errors.push({
         code: 'CONTENT_VALIDATION_ERROR',
-        message: `Content validation failed: ${error.message}`,
+        message: `Content validation failed: ${error instanceof Error ? error.message : String(error)}`,
         severity: 'critical' as const
       });
     }

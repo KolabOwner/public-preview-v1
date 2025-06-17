@@ -12,10 +12,14 @@ import {
   deleteDoc,
   updateDoc,
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  setDoc
 } from 'firebase/firestore';
 import { ref, deleteObject, listAll } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase/config';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+const db = getFirestore();
+const storage = getStorage();
 import { EncryptionService } from '../../security/encryption';
 import { logger } from '../../monitoring/logging';
 import { metrics } from '../../monitoring/metrics';
@@ -309,7 +313,7 @@ export class PrivacyComplianceService {
       };
 
       // Calculate checksum for integrity
-      const checksum = this.encryptionService.hash(
+      const checksum = await this.encryptionService.hash(
         JSON.stringify(portableData),
         'sha256'
       );

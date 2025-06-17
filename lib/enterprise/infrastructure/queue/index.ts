@@ -19,7 +19,8 @@ import {
   Timestamp,
   runTransaction
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getFirestore } from 'firebase/firestore';
+const db = getFirestore();
 import { logger } from '../../monitoring/logging';
 import { metrics } from '../../monitoring/metrics';
 
@@ -184,6 +185,22 @@ export class JobQueue {
   }
 
   /**
+   * Public method to complete a job by ID
+   */
+  async completeJob(jobId: string, result?: any): Promise<void> {
+    const job = { id: jobId } as Job;
+    await this.completeJobInternal(job, result || {});
+  }
+
+  /**
+   * Public method to fail a job by ID
+   */
+  async failJob(jobId: string, error: string): Promise<void> {
+    const job = { id: jobId } as Job;
+    await this.failJobInternal(job, new Error(error));
+  }
+
+  /**
    * Starts processing jobs
    */
   startProcessing(): void {
@@ -263,7 +280,7 @@ export class JobQueue {
   /**
    * Gets available jobs to process
    */
-  private async getAvailableJobs(limit: number): Promise<Job[]> {
+  private async getAvailableJobs(maxJobs: number): Promise<Job[]> {
     const now = Timestamp.now();
     
     // Query for available jobs
@@ -274,7 +291,7 @@ export class JobQueue {
       orderBy('scheduledFor'),
       orderBy('priority', 'desc'),
       orderBy('createdAt', 'asc'),
-      limit(limit)
+      limit(maxJobs)
     );
 
     const snapshot = await getDocs(q);
@@ -316,7 +333,7 @@ export class JobQueue {
     const processor = this.processors.get(job.type);
     if (!processor) {
       logger.error(`No processor registered for job type: ${job.type}`);
-      await this.failJob(job, new Error(`No processor for type: ${job.type}`));
+      await this.failJobInternal(job, new Error(`No processor for type: ${job.type}`));
       return;
     }
 
@@ -337,7 +354,7 @@ export class JobQueue {
       const result = await processor.process(job);
 
       // Mark as completed
-      await this.completeJob(job, result);
+      await this.completeJobInternal(job, result);
       
       timer();
       metrics.increment('firebase.job.completed', 1, { type: job.type });
@@ -349,7 +366,7 @@ export class JobQueue {
         await this.retryJob(job, error);
         metrics.increment('firebase.job.retry', 1, { type: job.type });
       } else {
-        await this.failJob(job, error);
+        await this.failJobInternal(job, error);
         metrics.increment('firebase.job.failed', 1, { type: job.type });
       }
     } finally {
@@ -360,7 +377,7 @@ export class JobQueue {
   /**
    * Marks job as completed
    */
-  private async completeJob(job: Job, result: any): Promise<void> {
+  private async completeJobInternal(job: Job, result: any): Promise<void> {
     const q = query(
       collection(db, this.COLLECTION_NAME),
       where('id', '==', job.id),
@@ -415,7 +432,7 @@ export class JobQueue {
   /**
    * Marks job as failed
    */
-  private async failJob(job: Job, error: any): Promise<void> {
+  private async failJobInternal(job: Job, error: any): Promise<void> {
     const q = query(
       collection(db, this.COLLECTION_NAME),
       where('id', '==', job.id),

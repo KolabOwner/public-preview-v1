@@ -330,3 +330,6 @@ export class DataLeakProtectionService {
     return report.join('\n');
   }
 }
+
+// Export alias for compatibility
+export { DataLeakProtectionService as DLPScanner };

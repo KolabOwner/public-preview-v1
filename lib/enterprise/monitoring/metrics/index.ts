@@ -388,3 +388,31 @@ export const metrics = MetricsCollector.getInstance();
 if (process.env.NODE_ENV !== 'production') {
   metrics.addExporter(new ConsoleMetricsExporter());
 }
+
+/**
+ * Component-specific metrics wrapper
+ * Provides a familiar interface while using the singleton collector with namespacing
+ */
+export class ComponentMetricsCollector {
+  constructor(private namespace: string) {}
+  
+  async recordMetric(name: string, value: number, tags?: Record<string, string>): Promise<void> {
+    const fullName = `${this.namespace}.${name}`;
+    metrics.gauge(fullName, value, tags);
+  }
+  
+  async increment(name: string, value: number = 1, tags?: Record<string, string>): Promise<void> {
+    const fullName = `${this.namespace}.${name}`;
+    metrics.increment(fullName, value, tags);
+  }
+  
+  async histogram(name: string, value: number, tags?: Record<string, string>): Promise<void> {
+    const fullName = `${this.namespace}.${name}`;
+    metrics.histogram(fullName, value, { tags });
+  }
+  
+  startTimer(name: string, tags?: Record<string, string>): () => void {
+    const fullName = `${this.namespace}.${name}`;
+    return metrics.startTimer(fullName, tags);
+  }
+}

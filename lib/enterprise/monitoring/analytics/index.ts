@@ -16,7 +16,8 @@ import {
   Timestamp,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getFirestore } from 'firebase/firestore';
+const db = getFirestore();
 import { metrics, Metric, MetricType } from '../metrics';
 
 export interface PerformanceMetric {
@@ -93,7 +94,7 @@ export class PerformanceAnalytics {
       metadata: {
         sessionId: this.sessionId,
         environment: process.env.NODE_ENV || 'development',
-        version: process.env.npm_package_version
+        version: process.env.npm_package_version || '1.0.0'
       }
     };
 
@@ -227,10 +228,19 @@ export class PerformanceAnalytics {
       // Write to Firestore
       for (const metric of aggregatedMetrics) {
         const docRef = doc(collection(db, this.COLLECTION_NAME));
-        batch.set(docRef, {
+        // Filter out undefined values from metadata
+        const cleanMetric = {
           ...metric,
           timestamp: metric.timestamp || serverTimestamp()
-        });
+        };
+        
+        if (cleanMetric.metadata) {
+          cleanMetric.metadata = Object.fromEntries(
+            Object.entries(cleanMetric.metadata).filter(([_, v]) => v !== undefined)
+          );
+        }
+        
+        batch.set(docRef, cleanMetric);
       }
 
       await batch.commit();

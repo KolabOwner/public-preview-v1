@@ -63,7 +63,7 @@ export class SizeValidator extends Validator {
     } catch (error) {
       errors.push({
         code: 'SIZE_VALIDATION_ERROR',
-        message: `Size validation failed: ${error.message}`,
+        message: `Size validation failed: ${error instanceof Error ? error.message : String(error)}`,
         severity: 'critical' as const
       });
     }

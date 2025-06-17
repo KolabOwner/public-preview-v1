@@ -3,7 +3,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {withCORS} from "@/lib/core/api/middleware/cors";
-import { FileStatus, PDFProcessor } from "@/lib/features/pdf/processor";
+import { FileStatus, enterpriseWrapper } from "@/lib/features/pdf/processor";
+import { collection, addDoc, doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from "@/lib/core/auth/firebase-config";
 import { parseResumeText } from "@/lib/features/pdf/parsing/parser";
 
 
@@ -72,17 +74,30 @@ async function handleFileUpload(request: NextRequest, startTime: number) {
     console.log(`Processing uploaded PDF: ${file.name} (${file.size} bytes) for user: ${userId}`);
     
     // Create a new resume document
-    const resumeId = await PDFProcessor.createResume({
+    const resumeData = {
       userId,
       title: title || file.name,
-      initialStatus: FileStatus.PROCESSING
-    });
+      status: FileStatus.PROCESSING,
+      fileName: file.name,
+      fileSize: file.size,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
     
-    // Start processing in the background
-    // For production, you'd use a queue system like Cloud Tasks or Pub/Sub
-    // This is a simplified implementation
-    PDFProcessor.processPDF(file, resumeId, { userId, title })
-      .catch(error => console.error('Background processing error:', error));
+    const docRef = await addDoc(collection(db, 'resumes'), resumeData);
+    const resumeId = docRef.id;
+    
+    // Queue the PDF processing job using enterprise wrapper
+    const jobResult = await enterpriseWrapper.parseResumeWithEnterprise(
+      file,
+      userId,
+      {
+        enableValidation: true,
+        enableDLP: true,
+        enableRealTimeUpdates: true,
+        enableAuditLogging: true
+      }
+    );
     
     // Return immediately with the resumeId
     return NextResponse.json({
@@ -160,7 +175,21 @@ export const GET = withCORS(async (request: NextRequest) => {
       );
     }
     
-    const resume = await PDFProcessor.getResume(resumeId);
+    // Get resume from Firestore
+    const resumeRef = doc(db, 'resumes', resumeId);
+    const resumeDoc = await getDoc(resumeRef);
+    
+    if (!resumeDoc.exists()) {
+      return NextResponse.json(
+        { success: false, error: 'Resume not found' },
+        { status: 404 }
+      );
+    }
+    
+    const resume = {
+      id: resumeDoc.id,
+      ...resumeDoc.data()
+    };
     
     if (!resume) {
       return NextResponse.json(

@@ -175,7 +175,7 @@ function createIndexedFieldSchema<T extends z.ZodTypeAny>(
   const fields: Record<string, z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodNumber, z.ZodBoolean]>>> = {};
   
   // Add count field
-  fields[`rms_${section}_count`] = z.union([z.string(), z.number()]).optional();
+  fields[`rms_${section}_count`] = z.union([z.string(), z.number(), z.boolean()]).optional();
   
   // Add fields for each possible index (0-15)
   for (let i = 0; i < RMS_LIMITS.MAX_ITEMS_PER_SECTION; i++) {
