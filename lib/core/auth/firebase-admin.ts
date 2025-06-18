@@ -4,25 +4,71 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
-// Initialize Firebase Admin
+// Initialize Firebase Admin with enhanced error handling using JSON credentials
 const initAdmin = () => {
   if (getApps().length === 0) {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    console.log('Firebase Admin SDK Initialization...');
+    console.log('- System Time:', new Date().toISOString());
 
-    if (!projectId || !clientEmail || !privateKey) {
-      throw new Error('Missing Firebase Admin SDK environment variables');
-    }
+    try {
+      let credential;
+      let projectId;
 
-    initializeApp({
-      credential: cert({
+      // Method 1: Try to use the credentials JSON file directly
+      try {
+        const serviceAccount = require('./creds-file.json');
+        projectId = serviceAccount.project_id;
+        
+        console.log('✓ Using service account JSON file');
+        console.log('- Project ID:', projectId);
+        console.log('- Client Email:', serviceAccount.client_email);
+        console.log('- Private Key ID:', serviceAccount.private_key_id);
+        
+        credential = cert(serviceAccount);
+      } catch (jsonError) {
+        console.log('⚠️  JSON credentials file not found, trying environment variables...');
+        
+        // Method 2: Fall back to environment variables
+        projectId = process.env.FIREBASE_PROJECT_ID;
+        const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+        const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+        console.log('- Project ID:', projectId ? '✓ Set' : '✗ Missing');
+        console.log('- Client Email:', clientEmail ? '✓ Set' : '✗ Missing');
+        console.log('- Private Key:', privateKey ? '✓ Set' : '✗ Missing');
+
+        if (!projectId || !clientEmail || !privateKey) {
+          const missingVars = [];
+          if (!projectId) missingVars.push('FIREBASE_PROJECT_ID');
+          if (!clientEmail) missingVars.push('FIREBASE_CLIENT_EMAIL');
+          if (!privateKey) missingVars.push('FIREBASE_PRIVATE_KEY');
+          
+          throw new Error(`Missing Firebase Admin SDK environment variables: ${missingVars.join(', ')}`);
+        }
+
+        credential = cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        });
+      }
+
+      initializeApp({
+        credential,
         projectId,
-        clientEmail,
-        privateKey,
-      }),
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    });
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      });
+      
+      console.log('✓ Firebase Admin SDK initialized successfully');
+    } catch (error) {
+      console.error('✗ Firebase Admin SDK initialization failed:', error);
+      console.error('');
+      console.error('Troubleshooting steps:');
+      console.error('1. Verify the service account JSON file exists at ./creds-file.json');
+      console.error('2. Check that the service account has proper permissions in Firebase Console');
+      console.error('3. Ensure system time is synchronized');
+      throw error;
+    }
   }
 };
 
@@ -210,5 +256,63 @@ export async function verifySessionCookie(sessionCookie: string, checkRevoked = 
   } catch (error) {
     console.error('Error verifying session cookie:', error);
     return null;
+  }
+}
+
+// Test Firestore connection
+export async function testFirestoreConnection(): Promise<{ success: boolean; error?: string; details?: any }> {
+  try {
+    console.log('Testing Firestore connection...');
+    
+    // Try to get a reference to a test collection
+    const testCollection = adminDb.collection('connection_test');
+    const testDoc = testCollection.doc('test');
+    
+    // Try to write a test document
+    await testDoc.set({
+      timestamp: new Date(),
+      test: true,
+      message: 'Connection test successful'
+    });
+    
+    console.log('✓ Firestore write test successful');
+    
+    // Try to read the document back
+    const snapshot = await testDoc.get();
+    
+    if (snapshot.exists) {
+      console.log('✓ Firestore read test successful');
+      
+      // Clean up test document
+      await testDoc.delete();
+      console.log('✓ Firestore delete test successful');
+      
+      return { 
+        success: true, 
+        details: {
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          canWrite: true,
+          canRead: true,
+          canDelete: true
+        }
+      };
+    } else {
+      return { 
+        success: false, 
+        error: 'Document was written but could not be read back',
+        details: { projectId: process.env.FIREBASE_PROJECT_ID }
+      };
+    }
+  } catch (error) {
+    console.error('✗ Firestore connection test failed:', error);
+    return { 
+      success: false, 
+      error: error.message,
+      details: {
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        errorCode: error.code,
+        errorDetails: error.details
+      }
+    };
   }
 }

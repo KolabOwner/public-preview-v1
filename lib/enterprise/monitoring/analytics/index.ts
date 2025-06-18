@@ -16,7 +16,7 @@ import {
   Timestamp,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from '@/lib/core/auth/firebase-config';
 import { metrics, Metric, MetricType } from '../metrics';
 
 export interface PerformanceMetric {
@@ -93,7 +93,7 @@ export class PerformanceAnalytics {
       metadata: {
         sessionId: this.sessionId,
         environment: process.env.NODE_ENV || 'development',
-        version: process.env.npm_package_version
+        version: process.env.npm_package_version || '1.0.0'
       }
     };
 

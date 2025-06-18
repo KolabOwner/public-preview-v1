@@ -15,7 +15,7 @@ import {
   serverTimestamp,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from '@/lib/core/auth/firebase-config';
 import { createHash, createHmac } from 'crypto';
 import { logger } from '../../monitoring/logging';
 
@@ -500,3 +500,6 @@ export class AuditService {
 
 // Export singleton instance
 export const auditService = AuditService.getInstance();
+
+// Export auditLogger as an alias for compatibility
+export const auditLogger = auditService;

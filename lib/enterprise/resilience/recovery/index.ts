@@ -6,7 +6,7 @@
 import { CircuitBreaker, circuitBreakerManager } from '../circuit-breaker';
 import { RetryPolicy, BackoffStrategy } from '../retry';
 import { collection, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from '@/lib/core/auth/firebase-config';
 import { performanceAnalytics } from '../../monitoring/analytics';
 
 export interface RecoveryStrategy {

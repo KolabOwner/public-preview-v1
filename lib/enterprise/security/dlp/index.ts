@@ -330,3 +330,15 @@ export class DataLeakProtectionService {
     return report.join('\n');
   }
 }
+
+// Export DLPScanner as an alias for compatibility
+export class DLPScanner extends DataLeakProtectionService {
+  async scan(content: string, context?: any): Promise<any> {
+    const result = await super.scan(content);
+    return {
+      hasViolations: !result.clean,
+      violations: result.violations,
+      ...result
+    };
+  }
+}

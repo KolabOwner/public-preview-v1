@@ -18,6 +18,12 @@ dist/
 
 # Misc
 .DS_Store
+
+# Credentials and secrets
+lib/core/auth/creds-file.json
+*.json.secret
+*-credentials.json
+service-account*.json
 *.pem
 
 # Debug
