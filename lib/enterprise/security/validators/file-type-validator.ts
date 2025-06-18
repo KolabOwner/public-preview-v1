@@ -3,7 +3,7 @@
  * Validates file types using MIME types, extensions, and magic numbers
  */
 
-import { Validator, ValidationResult } from './index';
+import { Validator, ValidationResult } from './base';
 
 interface FileTypeValidatorConfig {
   allowed: string[];  // Allowed extensions

@@ -3,7 +3,7 @@
  * Validates file content for security threats and compliance
  */
 
-import { Validator, ValidationResult } from './index';
+import { Validator, ValidationResult } from './base';
 
 interface ContentValidatorConfig {
   maxPages?: number;

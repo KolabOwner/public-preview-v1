@@ -351,6 +351,51 @@ export interface Resume {
 }
 
 // ============================================================================
+// RMS Processing Interfaces
+// ============================================================================
+
+/**
+ * Interface for RMS processing results
+ */
+export interface RMSProcessingResult {
+  status: 'success' | 'already_compliant' | 'error';
+  inputPath: string;
+  outputPath?: string;
+  metadata?: RMSMetadata;
+  stats: {
+    processingTime: number;
+    sectionsFound: number;
+    fieldsGenerated: number;
+    fileSize: number;
+  };
+  verification?: {
+    isValid: boolean;
+    hasProducer: boolean;
+    hasRMS: boolean;
+    hasSchema: boolean;
+    fieldCount: number;
+  };
+  error?: string;
+  stack?: string;
+}
+
+/**
+ * Interface for batch RMS processing
+ */
+export interface RMSBatchResult {
+  total: number;
+  successful: number;
+  failed: number;
+  skipped: number;
+  files: Array<{
+    file: string;
+    status: 'success' | 'already_compliant' | 'error';
+    metadata?: RMSMetadata;
+    error?: string;
+  }>;
+}
+
+// ============================================================================
 // Enterprise Enhancement Interfaces
 // ============================================================================
 

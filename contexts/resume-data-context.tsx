@@ -1,5 +1,5 @@
 // src/contexts/ResumeDataContext.tsx
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from "@/lib/core/auth/firebase-config";
 
@@ -27,6 +27,8 @@ interface ResumeDataContextType {
   updateResumeData: (updates: Partial<ResumeData>) => void;
   saveResumeData: () => Promise<void>;
   getPopulatedSections: () => FormSection[];
+  getExtractedTextForKeywords: () => string;
+  isKeywordAnalysisReady: boolean;
 }
 
 const defaultProcessedData: ProcessedResumeData = {
@@ -62,6 +64,19 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
   const [populatedSections, setPopulatedSections] = useState<FormSection[]>(['contact', 'summary', 'experience', 'education', 'skills']);
 
   const { user } = useAuth();
+
+  // Check if resume data is ready for keyword analysis
+  const isKeywordAnalysisReady = useMemo(() => {
+    if (!resumeData) return false;
+    
+    const hasContent = resumeData.extracted_text || 
+                      processedData.summary || 
+                      processedData.experience.length > 0 ||
+                      processedData.education.length > 0 ||
+                      processedData.skills.length > 0;
+    
+    return !!hasContent;
+  }, [resumeData, processedData]);
 
   // Transform nested data to flattened format
   const transformNestedToFlattened = (nestedData: any): Partial<ResumeData> => {
@@ -464,6 +479,74 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
     });
   };
 
+  // Get optimized extracted text for keyword analysis
+  const getExtractedTextForKeywords = useCallback((): string => {
+    // Prefer cached extracted_text if available
+    if (resumeData?.extracted_text) {
+      return resumeData.extracted_text;
+    }
+
+    // Generate from processed data
+    if (processedData) {
+      return generateExtractedTextFromProcessed(processedData);
+    }
+
+    console.warn('No content available for keyword analysis');
+    return '';
+  }, [resumeData, processedData]);
+
+  // Helper function to generate extracted text from processed resume data
+  const generateExtractedTextFromProcessed = (data: ProcessedResumeData): string => {
+    const sections: string[] = [];
+    
+    // Contact info
+    if (data.contact) {
+      sections.push(Object.values(data.contact).filter(Boolean).join(' '));
+    }
+    
+    // Summary
+    if (data.summary) {
+      sections.push(data.summary);
+    }
+    
+    // Experience
+    if (data.experience?.length > 0) {
+      data.experience.forEach(exp => {
+        sections.push([exp.position, exp.company, exp.location, exp.description].filter(Boolean).join(' '));
+      });
+    }
+    
+    // Education
+    if (data.education?.length > 0) {
+      data.education.forEach(edu => {
+        sections.push([edu.institution, edu.qualification, edu.fieldOfStudy, edu.location].filter(Boolean).join(' '));
+      });
+    }
+    
+    // Skills
+    if (data.skills?.length > 0) {
+      data.skills.forEach(skill => {
+        sections.push([skill.category, skill.keywords].filter(Boolean).join(' '));
+      });
+    }
+    
+    // Projects
+    if (data.projects?.length > 0) {
+      data.projects.forEach(proj => {
+        sections.push([proj.name || proj.title, proj.description].filter(Boolean).join(' '));
+      });
+    }
+    
+    // Involvement
+    if (data.involvement?.length > 0) {
+      data.involvement.forEach(inv => {
+        sections.push([inv.organization, inv.role, inv.description].filter(Boolean).join(' '));
+      });
+    }
+    
+    return sections.join(' ').trim();
+  };
+
   // Save resume data
   const saveResumeData = async () => {
     if (!resumeData || !user?.uid) return;
@@ -500,7 +583,9 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
     fetchResumeData,
     updateResumeData,
     saveResumeData,
-    getPopulatedSections
+    getPopulatedSections,
+    getExtractedTextForKeywords,
+    isKeywordAnalysisReady
   };
 
   return (

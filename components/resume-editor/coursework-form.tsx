@@ -8,8 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { FileBadge, Building, CalendarIcon, Lightbulb, PlusCircle, Trash2, Save, Loader2, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { format, parseISO } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { useToast } from '@/components/hooks/use-toast';
+import { cn } from '../utils';
 
 export interface CourseworkEntry {
   id: string;

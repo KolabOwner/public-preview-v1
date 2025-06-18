@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Lightbulb, Save, Loader2, Info } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/hooks/use-toast';
 
 interface SummaryFormProps {
   initialData: string;

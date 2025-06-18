@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { usePathname, useParams } from 'next/navigation';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/lib/core/auth/firebase-config";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/hooks/use-toast';
 import ContactForm, { ContactFormData } from '../resume-editor/contact-form';
 import ExperienceForm, { ExperienceEntry } from '../resume-editor/experience-form';
 import EducationForm, { EducationEntry } from '../resume-editor/education-form';

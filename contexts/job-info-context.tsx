@@ -1,6 +1,7 @@
 // src/contexts/JobInfoContext.tsx
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { JobInfo } from '@/types';
+import axios from 'axios';
 
 interface JobInfoContextType {
   jobInfo: JobInfo;
@@ -8,6 +9,8 @@ interface JobInfoContextType {
   resetJobInfo: () => void;
   setCurrentResumeId: (resumeId: string | null) => void;
   currentResumeId: string | null;
+  loadJobInfoFromEnterprise: (resumeId: string) => Promise<void>;
+  isEnterpriseMode: boolean;
 }
 
 const defaultJobInfo: JobInfo = {
@@ -23,7 +26,9 @@ const JobInfoContext = createContext<JobInfoContextType>({
   updateJobInfo: () => {},
   resetJobInfo: () => {},
   setCurrentResumeId: () => {},
-  currentResumeId: null
+  currentResumeId: null,
+  loadJobInfoFromEnterprise: async () => {},
+  isEnterpriseMode: false
 });
 
 interface JobInfoProviderProps {
@@ -33,6 +38,7 @@ interface JobInfoProviderProps {
 export const JobInfoProvider: React.FC<JobInfoProviderProps> = ({ children }) => {
   const [jobInfoByResume, setJobInfoByResume] = useState<Record<string, JobInfo>>({});
   const [currentResumeId, setCurrentResumeIdState] = useState<string | null>(null);
+  const [isEnterpriseMode, setIsEnterpriseMode] = useState(false);
   
   const setCurrentResumeId = (resumeId: string | null) => {
     console.log('setCurrentResumeId called:', { from: currentResumeId, to: resumeId });
@@ -74,12 +80,55 @@ export const JobInfoProvider: React.FC<JobInfoProviderProps> = ({ children }) =>
     });
   };
 
+  // Load job info from enterprise service
+  const loadJobInfoFromEnterprise = async (resumeId: string): Promise<void> => {
+    try {
+      console.log('Loading job info from enterprise service for resume:', resumeId);
+      
+      const response = await axios.get(`/api/enterprise/job-context/${resumeId}`);
+      
+      if (response.data.success && response.data.jobInfo) {
+        const enterpriseJobInfo = response.data.jobInfo;
+        
+        // Transform enterprise format to our JobInfo format
+        const transformedJobInfo: JobInfo = {
+          title: enterpriseJobInfo.title || '',
+          company: enterpriseJobInfo.company || '',
+          description: enterpriseJobInfo.description || '',
+          keywords: enterpriseJobInfo.keywords || [],
+          isActive: true
+        };
+
+        setJobInfoByResume(prev => ({
+          ...prev,
+          [resumeId]: transformedJobInfo
+        }));
+
+        setIsEnterpriseMode(true);
+        console.log('Job info loaded from enterprise service:', transformedJobInfo);
+      }
+    } catch (error) {
+      console.warn('Failed to load job info from enterprise service:', error);
+      setIsEnterpriseMode(false);
+      // Don't throw error - fallback to local storage or default
+    }
+  };
+
+  // Auto-load job info when resumeId changes
+  useEffect(() => {
+    if (currentResumeId && !jobInfoByResume[currentResumeId]) {
+      loadJobInfoFromEnterprise(currentResumeId);
+    }
+  }, [currentResumeId]);
+
   const value: JobInfoContextType = {
     jobInfo,
     updateJobInfo,
     resetJobInfo,
     setCurrentResumeId,
-    currentResumeId
+    currentResumeId,
+    loadJobInfoFromEnterprise,
+    isEnterpriseMode
   };
 
   return (

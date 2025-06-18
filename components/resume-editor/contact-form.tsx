@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, Loader2, AlertCircle } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { useToast } from '@/components/hooks/use-toast';
+import { cn } from '../utils';
 
 // Extended interface with location fields
 export interface ContactFormData {

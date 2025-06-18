@@ -6,6 +6,7 @@ import { useJobInfo } from "@/contexts/job-info-context";
 import { useAuth } from "@/contexts/auth-context";
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/lib/core/auth/firebase-config";
+import axios from 'axios';
 
 export interface JobInfoPanelProps {
   onComplete?: () => void;
@@ -189,10 +190,11 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
   className = '',
   disabled = false
 }) => {
-  const { jobInfo, updateJobInfo } = useJobInfo();
+  const { jobInfo, updateJobInfo, currentResumeId } = useJobInfo();
   const { getIdToken } = useAuth();
   const { formState, updateFormState } = useFormState();
   const validation = useFormValidation(jobInfo.title, jobInfo.description);
+  const [isEnterpriseMode, setIsEnterpriseMode] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -249,7 +251,7 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
     updateFormState({ isSubmitting: true, submitError: null });
 
     try {
-      const documentId = localStorage.getItem('current_document_id');
+      const documentId = currentResumeId || localStorage.getItem('current_document_id');
       const userId = localStorage.getItem('current_user_id');
 
       if (documentId && userId) {
@@ -261,21 +263,45 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
             throw new Error('Authentication required');
           }
 
-          // Save directly to Firestore
-          const resumeDocRef = doc(db, 'resumes', documentId);
-          await updateDoc(resumeDocRef, {
-            job_info: {
-              title: jobInfo.title.trim(),
-              description: jobInfo.description.trim(),
-              company: jobInfo.company?.trim() || '',
-              keywords: jobInfo.keywords || [],
-              updated_at: serverTimestamp()
-            }
-          });
+          // Try to use enterprise job context service first
+          try {
+            await axios.post('/api/enterprise/job-context', {
+              resumeId: documentId,
+              jobInfo: {
+                id: `job_${documentId}_${Date.now()}`,
+                title: jobInfo.title.trim(),
+                description: jobInfo.description.trim(),
+                company: jobInfo.company?.trim() || '',
+                keywords: jobInfo.keywords || []
+              }
+            }, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
 
-          console.log('Job info saved successfully to Firestore');
+            setIsEnterpriseMode(true);
+            console.log('Job info saved using enterprise context service');
+          } catch (enterpriseError) {
+            console.warn('Enterprise service failed, falling back to Firestore:', enterpriseError);
+            
+            // Fallback to direct Firestore save
+            const resumeDocRef = doc(db, 'resumes', documentId);
+            await updateDoc(resumeDocRef, {
+              job_info: {
+                title: jobInfo.title.trim(),
+                description: jobInfo.description.trim(),
+                company: jobInfo.company?.trim() || '',
+                keywords: jobInfo.keywords || [],
+                updated_at: serverTimestamp()
+              }
+            });
+
+            console.log('Job info saved successfully to Firestore (fallback)');
+          }
         } catch (saveError) {
-          console.error('Failed to save job info to Firestore:', saveError);
+          console.error('Failed to save job info:', saveError);
           throw saveError;
         }
       }
@@ -296,7 +322,7 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
       });
       onError?.(errorMessage);
     }
-  }, [isFormValid, formState.isSubmitting, disabled, updateFormState, updateJobInfo, onComplete, onError, jobInfo, getIdToken]);
+  }, [isFormValid, formState.isSubmitting, disabled, updateFormState, updateJobInfo, onComplete, onError, jobInfo, getIdToken, currentResumeId]);
 
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -339,8 +365,13 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            AI Keyword Targeting
+            {isEnterpriseMode ? 'Enterprise AI Keyword Targeting' : 'AI Keyword Targeting'}
           </h2>
+          {isEnterpriseMode && (
+            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+              Enterprise
+            </span>
+          )}
         </div>
 
         <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">

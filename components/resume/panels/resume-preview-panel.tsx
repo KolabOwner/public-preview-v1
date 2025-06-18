@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AlertCircle } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from "@/lib/core/auth/firebase-config";

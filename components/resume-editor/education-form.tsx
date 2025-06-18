@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GraduationCap, CalendarIcon, PlusCircle, Trash2, Save, Loader2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, parseISO } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/hooks/use-toast';
 
 
 export interface EducationEntry {

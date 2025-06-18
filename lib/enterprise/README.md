@@ -27,6 +27,13 @@ enterprise/
 │   ├── interfaces.ts      # Contracts for existing functionality
 │   ├── integrations/      # Integration logic for existing services
 │   └── types.ts           # Shared type definitions
+├── contexts/              # Enterprise context management
+│   ├── job/              # Job information management
+│   │   ├── index.ts      # Job context service
+│   │   ├── store.ts      # Firestore persistence
+│   │   ├── types.ts      # Job data types
+│   │   └── validator.ts  # Job data validation
+│   └── index.ts          # Context exports
 ├── security/              # Security validation and protection
 │   ├── validators/        # Browser-compatible validators
 │   │   ├── index.ts       # Validation pipeline orchestrator
@@ -58,6 +65,17 @@ enterprise/
 │   │   └── index.ts      # Firestore job processing
 │   └── realtime/        # Firebase real-time updates
 │       └── index.ts      # Firestore listeners
+├── processors/           # Enterprise-grade processors
+│   ├── rms/             # RMS metadata processor
+│   │   ├── index.ts     # Enterprise RMS processor
+│   │   └── service.ts   # High-level RMS service
+│   ├── keywords/        # Keyword analysis & targeting
+│   │   ├── index.ts     # Enterprise keyword processor
+│   │   ├── service.ts   # Keyword analysis service
+│   │   ├── extractor.ts # Multi-layer keyword extraction
+│   │   ├── matcher.ts   # ATS-optimized matching engine
+│   │   └── scorer.ts    # Keyword quality scoring
+│   └── index.ts         # Processor exports
 └── compliance/          # Privacy and compliance
     ├── privacy/         # GDPR and data privacy
     │   └── index.ts      # Data anonymization, consent
@@ -66,6 +84,56 @@ enterprise/
     └── retention/       # Data retention policies
         └── index.ts      # Automated cleanup
 ```
+
+## Processor Components
+
+### Keywords Analysis Processor
+
+The keywords processor provides enterprise-grade ATS optimization and keyword analysis with multi-layer extraction, real-time matching, and quality scoring.
+
+#### Architecture
+```
+processors/keywords/
+├── index.ts        # Enterprise keyword processor with monitoring
+├── service.ts      # High-level keyword analysis operations
+├── extractor.ts    # Multi-layer keyword extraction (TF-IDF, NLP, rule-based)
+├── matcher.ts      # ATS-optimized matching engine
+└── scorer.ts       # Keyword quality and relevance scoring
+```
+
+#### Features
+- **Multi-layer Extraction**: Combines TF-IDF, NLP, and rule-based approaches
+- **ATS Optimization**: Ensures compatibility with applicant tracking systems
+- **Real-time Analysis**: Instant feedback on keyword matches
+- **Quality Scoring**: Rates keyword relevance and importance
+- **Fallback Support**: Local analysis when API is unavailable
+- **Job Context Integration**: Analyzes resumes against specific job descriptions
+
+#### Integration with Job Context
+The keyword processor works seamlessly with the Job Context Management system (see below) to provide targeted analysis.
+
+### Job Context Management
+
+Job information is managed through a dedicated context service that sits outside the keywords directory, allowing multiple processors to leverage job data.
+
+#### Architecture
+```
+enterprise/
+├── contexts/              # Enterprise context management
+│   ├── job/              # Job information management
+│   │   ├── index.ts      # Job context service
+│   │   ├── store.ts      # Firestore persistence
+│   │   ├── types.ts      # Job data types
+│   │   └── validator.ts  # Job data validation
+│   └── index.ts          # Context exports
+```
+
+#### Features
+- **Resume Association**: Links job information to specific resumes
+- **Multi-processor Access**: Available to keywords, RMS, and other processors
+- **Persistent Storage**: Firestore-backed with local caching
+- **Real-time Updates**: Synchronized across all active sessions
+- **Validation**: Ensures job data integrity
 
 ## Implementation Status
 
@@ -84,14 +152,17 @@ enterprise/
 - [x] Compliance features (GDPR, audit logging)
 - [x] Performance analytics system
 - [x] Recovery system (browser-compatible)
+- [x] Enterprise RMS processor integration
+- [x] Keyword analysis processor architecture
+- [x] Job context management design
 
 ### 🚧 Integration Tasks
 
-- [ ] Create abstraction interfaces for existing services
-- [ ] Implement adapters for RMS pipeline
-- [ ] Create wrapper for PDF generation
+- [ ] Implement enterprise keyword processor
+- [ ] Create job context service
+- [ ] Integrate with existing keyword service
+- [ ] Add monitoring for keyword analysis
 - [ ] Document integration patterns
-- [ ] Add example implementations
 
 ## Integration with Existing System
 
@@ -164,6 +235,37 @@ const pdfBlob = await enterpriseWrapper.generatePDFWithEnterprise(
 );
 ```
 
+### Enterprise RMS Processor
+```typescript
+import { rmsProcessorService } from '@/lib/enterprise/processors/rms/service';
+
+// Process PDF with enterprise RMS processor
+const result = await rmsProcessorService.processPDF(
+  '/path/to/resume.pdf',
+  userId,
+  {
+    enableValidation: true,
+    enableAuditLog: true,
+    enableRealTimeUpdates: true,
+    force: false // Use cache if available
+  }
+);
+
+// Batch processing
+const batchResult = await rmsProcessorService.processBatch(
+  ['/path/to/resume1.pdf', '/path/to/resume2.pdf'],
+  userId,
+  {
+    concurrency: 3,
+    enableMetrics: true
+  }
+);
+
+// Extract and validate RMS metadata
+const metadata = await rmsProcessorService.extractMetadata('/path/to/resume.pdf', userId);
+const validation = await rmsProcessorService.validateMetadata(metadata, userId);
+```
+
 ### Job Queue Integration
 ```typescript
 import { jobQueue } from '@/lib/enterprise/infrastructure/queue';
@@ -184,6 +286,71 @@ import { realtimeService } from '@/lib/enterprise/infrastructure/realtime';
 realtimeService.subscribeToUserUpdates(userId, (updates) => {
   console.log('Processing status:', updates);
 });
+```
+
+### Keyword Analysis Integration
+```typescript
+import { keywordProcessorService } from '@/lib/enterprise/processors/keywords/service';
+import { jobContextService } from '@/lib/enterprise/contexts/job';
+
+// Set job context for a resume
+await jobContextService.setJobInfo(userId, resumeId, {
+  title: 'Senior Software Engineer',
+  company: 'Tech Corp',
+  description: 'Looking for experienced engineer with React and TypeScript...',
+  keywords: ['React', 'TypeScript', 'Node.js']
+});
+
+// Analyze resume against job description
+const analysis = await keywordProcessorService.analyzeResume(
+  resumeContent,
+  userId,
+  resumeId,
+  {
+    enableATS: true,
+    includeScoring: true,
+    extractionLayers: ['tfidf', 'nlp', 'rules']
+  }
+);
+
+// Get keyword recommendations
+const recommendations = await keywordProcessorService.getRecommendations(
+  analysis,
+  {
+    maxSuggestions: 10,
+    priorityThreshold: 0.7
+  }
+);
+
+// Real-time keyword tracking
+keywordProcessorService.subscribeToAnalysis(resumeId, (update) => {
+  console.log('Keyword match rate:', update.matchRate);
+  console.log('Missing keywords:', update.missingKeywords);
+});
+```
+
+### Job Context Service Usage
+```typescript
+import { jobContextService } from '@/lib/enterprise/contexts/job';
+
+// Get job info for a resume
+const jobInfo = await jobContextService.getJobInfo(userId, resumeId);
+
+// Update job information
+await jobContextService.updateJobInfo(userId, resumeId, {
+  description: 'Updated job description...'
+});
+
+// Subscribe to job context changes
+jobContextService.subscribeToJobInfo(resumeId, (jobInfo) => {
+  console.log('Job context updated:', jobInfo);
+});
+
+// Bulk operations for multiple resumes
+const jobs = await jobContextService.getJobsForUser(userId);
+
+// Clear job info when no longer needed
+await jobContextService.clearJobInfo(userId, resumeId);
 ```
 
 ## Configuration
@@ -215,6 +382,86 @@ const config = {
 };
 ```
 
+## Keyword Analysis System Details
+
+### How It Works
+
+1. **Resume Processing Flow**
+   ```
+   Resume Upload → Text Extraction → Keyword Analysis → ATS Scoring → Recommendations
+        ↓                ↓                  ↓                ↓              ↓
+   Job Context → Keyword Extraction → Match Analysis → Quality Score → User Feedback
+   ```
+
+2. **Multi-Layer Extraction**
+   - **TF-IDF Layer**: Statistical importance of terms
+   - **NLP Layer**: Context-aware keyword identification
+   - **Rule-Based Layer**: Industry-specific keyword patterns
+
+3. **Integration Points**
+   - **With RMS Processor**: Keywords embedded in PDF metadata
+   - **With Job Context**: Dynamic analysis based on job requirements
+   - **With Storage Service**: Persistent keyword tracking
+   - **With Real-time Updates**: Live keyword match feedback
+
+### Keyword Categories
+
+The system recognizes and categorizes keywords:
+- **Technical Skills**: Programming languages, frameworks, tools
+- **Soft Skills**: Leadership, communication, teamwork
+- **Business Keywords**: Industry terms, methodologies
+- **ATS Keywords**: Terms optimized for applicant tracking systems
+- **Action Verbs**: Achievement-oriented language
+
+### Fallback Analysis
+
+When the API is unavailable, the system uses local analysis:
+```typescript
+// Automatic fallback to local analysis
+const analysis = await keywordService.analyzeKeywords(resumeText, jobDescription);
+// System automatically uses localStorage and predefined keyword banks
+```
+
+## Job Context Architecture
+
+### Design Rationale
+
+Job information is managed separately from the keywords directory to:
+1. **Enable Multi-Processor Access**: RMS, keywords, and future processors can all use job data
+2. **Maintain Separation of Concerns**: Job data is application-level, not processor-specific
+3. **Support Complex Workflows**: Multiple resumes can be analyzed against the same job
+4. **Enable Caching**: Job descriptions are cached to reduce API calls
+
+### Data Flow
+```
+User Input → Job Context Service → Firestore
+     ↓              ↓                  ↓
+Resume ID → Context Association → Real-time Sync
+     ↓              ↓                  ↓
+Processors → Keyword Analysis → RMS Metadata
+```
+
+### Storage Schema
+```typescript
+// Firestore structure
+users/{userId}/
+  jobs/{jobId}/
+    - title: string
+    - company: string
+    - description: string
+    - keywords: string[]
+    - created_at: timestamp
+    - updated_at: timestamp
+  
+  resumes/{resumeId}/
+    - job_associations: {
+        [jobId]: {
+          associated_at: timestamp
+          match_score: number
+        }
+      }
+```
+
 ## Best Practices
 
 1. **Never modify core functions** - Always wrap or extend
@@ -223,6 +470,8 @@ const config = {
 4. **Preserve metadata** - Ensure RMS fields are processed
 5. **Test thoroughly** - Verify PDFs render with custom fonts
 6. **Monitor performance** - Track impact of enterprise features
+7. **Use Job Context** - Always associate job info before keyword analysis
+8. **Cache Strategically** - Job descriptions change infrequently
 
 ## Next Steps
 

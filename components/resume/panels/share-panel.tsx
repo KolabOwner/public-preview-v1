@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Lock, ChevronDown, Link2, ChevronRight } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/hooks/use-toast';
 
 interface SharePanelProps {
   resumeId: string;

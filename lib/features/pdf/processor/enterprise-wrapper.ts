@@ -17,12 +17,15 @@ import { auditLogger } from '@/lib/enterprise/compliance/audit';
 // Import existing RMS and font functionality
 import { generateResumePDFWithRMS } from '../generator/with-rms';
 import { formatResumeDataToRMS } from '../metadata/rms-formatter';
+// Import enterprise RMS processor
+import { rmsProcessorService } from '@/lib/enterprise/processors/rms/service';
 
 export interface EnterpriseOptions {
   enableValidation?: boolean;
   enableDLP?: boolean;
   enableRealTimeUpdates?: boolean;
   enableAuditLogging?: boolean;
+  enableRMSProcessor?: boolean;
   priority?: JobPriority;
 }
 
@@ -164,6 +167,79 @@ export class EnterpriseWrapper {
         error: error.message,
         fontStyle: resumeData.fontStyle
       });
+
+      throw error;
+
+    } finally {
+      await timer();
+    }
+  }
+
+  /**
+   * Process PDF with enterprise RMS processor
+   * Uses the new enterprise-grade RMS processor for enhanced metadata extraction and embedding
+   */
+  async processPDFWithRMSProcessor(
+    pdfPath: string,
+    userId: string,
+    options: EnterpriseOptions & { outputPath?: string; force?: boolean } = {}
+  ): Promise<any> {
+    const timer = performanceAnalytics.startTimer('enterprise.rms.processor', {
+      userId,
+      enableValidation: options.enableValidation
+    });
+
+    try {
+      logger.info('Processing PDF with enterprise RMS processor', {
+        userId,
+        pdfPath,
+        options
+      });
+
+      // Use the enterprise RMS processor service
+      const result = await rmsProcessorService.processPDF(
+        pdfPath,
+        userId,
+        {
+          ...options,
+          enableValidation: options.enableValidation,
+          enableDLP: options.enableDLP,
+          enableAuditLog: options.enableAuditLogging,
+          enableRealTimeUpdates: options.enableRealTimeUpdates,
+          priority: options.priority,
+          outputPath: options.outputPath,
+          force: options.force
+        }
+      );
+
+      // Record success metrics
+      if ('status' in result && result.status === 'success') {
+        await performanceAnalytics.recordMetric(
+          'rms.processor.success',
+          1,
+          'counter' as any,
+          { 
+            userId,
+            fieldsGenerated: result.stats.fieldsGenerated 
+          }
+        );
+      }
+
+      return result;
+
+    } catch (error) {
+      logger.error('Enterprise RMS processor failed', {
+        userId,
+        pdfPath,
+        error: error.message
+      });
+
+      await performanceAnalytics.recordMetric(
+        'rms.processor.error',
+        1,
+        'counter' as any,
+        { error: error.message }
+      );
 
       throw error;
 

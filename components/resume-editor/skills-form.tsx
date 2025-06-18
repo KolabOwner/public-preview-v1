@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Palette, Save, Loader2, Info, PlusCircle, Trash2, ListChecks, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { useToast } from '@/components/hooks/use-toast';
+import { cn } from '../utils';
 
 export interface SkillEntry {
   id: string;

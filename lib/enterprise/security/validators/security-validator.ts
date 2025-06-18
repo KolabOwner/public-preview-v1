@@ -3,7 +3,7 @@
  * Comprehensive security checks including DLP, sanitization, and threat detection
  */
 
-import { Validator, ValidationResult } from './index';
+import { Validator, ValidationResult } from './base';
 
 interface SecurityValidatorConfig {
   virusScan?: boolean;

@@ -1,7 +1,7 @@
 // src/components/resume/panels/KeywordTargetingPanel.tsx
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Check, RefreshCw, AlertCircle, Loader, Target } from 'lucide-react';
-import { useKeywordAnalysis } from "@/hooks/use-keyword-analysis";
+import { useKeywordAnalysis } from "@/components/hooks/use-keyword-analysis";
 import { useJobInfo } from "@/contexts/job-info-context";
 import { useResumeData } from "@/contexts/resume-data-context";
 
@@ -199,7 +199,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
     };
   }, [contextResumeData, documentId, userId]);
 
-  const { analysis, loading, error, isCached, refetch } = useKeywordAnalysis({
+  const { analysis, loading, error, isCached, refetch, isEnterpriseMode } = useKeywordAnalysis({
     jobInfo,
     resumeData
   });
@@ -340,8 +340,13 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
       <div className="flex items-center gap-2 mb-6">
         <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          AI Keyword Targeting
+          {isEnterpriseMode ? 'Enterprise AI Keyword Targeting' : 'AI Keyword Targeting'}
         </h2>
+        {isEnterpriseMode && (
+          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+            Enterprise
+          </span>
+        )}
       </div>
 
       {analysis && (

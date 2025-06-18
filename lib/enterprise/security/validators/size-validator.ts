@@ -3,7 +3,7 @@
  * Validates file size constraints
  */
 
-import { Validator, ValidationResult } from './index';
+import { Validator, ValidationResult } from './base';
 
 interface SizeValidatorConfig {
   maxSize: number;  // Maximum size in bytes
