@@ -3,10 +3,10 @@
 // components/resume/ResumeProcessingStatus.tsx
 import React, { useEffect, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
+import { db } from "@/lib/features/auth/firebase-config";
 import { XCircleIcon, CheckCircleIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { ArrowPathIcon as ArrowPathSolidIcon } from '@heroicons/react/24/solid';
-import { FileStatus } from '@/lib/features/pdf/processor';
+import { FileStatus } from '@/lib/features/pdf/pdf-generator';
 
 interface ResumeProcessingStatusProps {
   resumeId: string;

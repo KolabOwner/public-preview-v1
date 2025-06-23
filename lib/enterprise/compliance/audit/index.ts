@@ -15,7 +15,7 @@ import {
   serverTimestamp,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '@/lib/core/auth/firebase-config';
+import { db } from '@/lib/features/auth/firebase-config';
 import { createHash, createHmac } from 'crypto';
 import { logger } from '../../monitoring/logging';
 

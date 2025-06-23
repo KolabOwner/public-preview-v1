@@ -16,7 +16,7 @@ import {
   Timestamp,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '@/lib/core/auth/firebase-config';
+import { db } from '@/lib/features/auth/firebase-config';
 import { metrics, Metric, MetricType } from '../metrics';
 
 export interface PerformanceMetric {

@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { usePathname, useParams } from 'next/navigation';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
+import { db } from "@/lib/features/auth/firebase-config";
 import { useToast } from '@/components/hooks/use-toast';
 import ContactForm, { ContactFormData } from '../resume-editor/contact-form';
 import ExperienceForm, { ExperienceEntry } from '../resume-editor/experience-form';
@@ -12,7 +12,8 @@ import EducationForm, { EducationEntry } from '../resume-editor/education-form';
 import SkillsForm, { SkillEntry } from '../resume-editor/skills-form';
 import ProjectsForm, { ProjectEntry } from '../resume-editor/projects-form';
 import InvolvementForm, { InvolvementEntry } from '../resume-editor/involvement-form';
-import { CourseworkEntry, CourseworkForm } from '../resume-editor/coursework-form';
+import CourseworkForm, { CourseworkEntry } from '../resume-editor/coursework-form';
+import CertificationsForm, { CertificationEntry } from '../resume-editor/certifications-form';
 import SummaryForm from '../resume-editor/summary-form';
 
 // Unified Resume Data Structure
@@ -29,16 +30,6 @@ interface UnifiedResumeData {
   awards: AwardEntry[];
   languages: LanguageEntry[];
   publications: PublicationEntry[];
-}
-
-interface CertificationEntry {
-  id: string;
-  name: string;
-  issuer: string;
-  date: string;
-  expiryDate?: string;
-  credentialId?: string;
-  url?: string;
 }
 
 interface AwardEntry {
@@ -293,7 +284,15 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
 
   // Parse certifications
   if (data.certifications && Array.isArray(data.certifications)) {
-    unified.certifications = data.certifications;
+    unified.certifications = data.certifications.map((cert: any) => ({
+      id: cert.id || `cert_${Date.now()}`,
+      name: cert.name || cert.certificateName || '',
+      issuer: cert.issuer || cert.issuingOrganization || cert.department || '',
+      date: cert.date || cert.issueDate || '',
+      expiryDate: cert.expiryDate || '',
+      credentialId: cert.credentialId || '',
+      url: cert.url || ''
+    }));
   } else if (data.Rms_certification_count) {
     // Handle RMS format
     unified.certifications = [];
@@ -301,8 +300,11 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
       unified.certifications.push({
         id: `cert_${i}`,
         name: data[`Rms_certification_${i}_name`] || '',
-        issuer: data[`Rms_certification_${i}_department`] || '',
-        date: data[`Rms_certification_${i}_date`] || ''
+        issuer: data[`Rms_certification_${i}_department`] || data[`Rms_certification_${i}_issuer`] || '',
+        date: data[`Rms_certification_${i}_date`] || '',
+        expiryDate: '',
+        credentialId: '',
+        url: ''
       });
     }
   }
@@ -419,6 +421,12 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
     await saveToFirebase(updatedData);
   };
 
+  const handleCertificationsChange = async (certifications: CertificationEntry[]) => {
+    const updatedData = { ...resumeData, certifications };
+    setResumeData(updatedData);
+    await saveToFirebase(updatedData);
+  };
+
   // Render the appropriate form based on the current section
   const renderSection = () => {
     switch (section) {
@@ -484,6 +492,14 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
           <CourseworkForm
             initialData={resumeData.coursework}
             onSave={handleCourseworkChange}
+          />
+        );
+
+      case 'certifications':
+        return (
+          <CertificationsForm
+            initialData={resumeData.certifications}
+            onSave={handleCertificationsChange}
           />
         );
 

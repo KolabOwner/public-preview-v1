@@ -4,6 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpgradeModal from '../resume/modals/upgrade-modal';
+import dynamic from 'next/dynamic';
+
+// Dynamic import with no SSR to fix serialization error
+const CreateResumeModal = dynamic(
+  () => import('../resume/modals/create-resume-modal'),
+  { ssr: false }
+);
 
 const AppSidebarNav = () => {
   const pathname = usePathname();
@@ -11,6 +18,7 @@ const AppSidebarNav = () => {
   const [aiGenerations, setAiGenerations] = useState(9);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Check if we're in a resume editor route that should show collapsed sidebar
   const isResumeEditorRoute = pathname.includes('/dashboard/resumes/') &&
@@ -18,7 +26,7 @@ const AppSidebarNav = () => {
      pathname.includes('/experience') || pathname.includes('/education') ||
      pathname.includes('/skills') || pathname.includes('/projects') ||
      pathname.includes('/involvement') || pathname.includes('/coursework') ||
-     pathname.includes('/preview'));
+     pathname.includes('/certifications') || pathname.includes('/preview'));
 
   const navItems = [
     {
@@ -273,7 +281,7 @@ const AppSidebarNav = () => {
           {/* Create Resume Button with blue gradient */}
           {!isResumeEditorRoute && (
             <button
-              onClick={() => router.push('/dashboard/resumes/new')}
+              onClick={() => setShowCreateModal(true)}
               className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-4 rounded-xl mb-6 w-full shadow-lg shadow-blue-500/30"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -439,6 +447,12 @@ const AppSidebarNav = () => {
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         onUpgrade={handleUpgrade}
+      />
+
+      {/* Create Resume Modal */}
+      <CreateResumeModal
+        isOpen={showCreateModal}
+        onOpenChange={setShowCreateModal}
       />
     </>
   );

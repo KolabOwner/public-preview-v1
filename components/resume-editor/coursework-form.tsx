@@ -1,366 +1,401 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { FileBadge, Building, CalendarIcon, Lightbulb, PlusCircle, Trash2, Save, Loader2, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
-import { format, parseISO } from 'date-fns';
-import { useToast } from '@/components/hooks/use-toast';
-import { cn } from '../utils';
+import { BookOpen, Save, Loader2, PlusCircle, ChevronLeft, ChevronRight, AlertCircle, Plus, X, Calendar, GraduationCap, Lightbulb, PenTool } from "lucide-react";
 
 export interface CourseworkEntry {
   id: string;
-  name: string;
-  department: string;
-  date: Date | null;
-  description?: string;
-  skill?: string;
+  courseName: string;
+  institution: string;
+  date: string;
+  skill: string;
+  application: string;
 }
 
 interface CourseworkFormProps {
-  initialData: CourseworkEntry[];
-  onSave: (data: CourseworkEntry[]) => void;
+  initialData: any[]; // Accept any format from database
+  onSave: (data: CourseworkEntry[]) => Promise<void>;
+  autoSave?: boolean;
 }
 
-export function CourseworkForm({ initialData, onSave }: CourseworkFormProps) {
+const cleanValue = (value: string | undefined | null): string => {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  const emptyValues = ['n/a', 'N/A', 'none', 'None', 'NONE', 'null', 'NULL', '-', '--', 'NA', 'na', 'undefined'];
+  return emptyValues.includes(trimmed) ? '' : trimmed;
+};
+
+export default function CourseworkForm({ initialData, onSave, autoSave = false }: CourseworkFormProps) {
   const [courseworkEntries, setCourseworkEntries] = useState<CourseworkEntry[]>([]);
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
-  const { toast } = useToast();
+  const [errors, setErrors] = useState<Record<string, Set<string>>>({});
+  const [toast, setToast] = useState({ show: false, message: '', error: false });
 
   useEffect(() => {
-     const processedData = initialData.map(cw => ({
-      ...cw,
-      date: cw.date ? (typeof cw.date === 'string' ? parseISO(cw.date) : cw.date) : null,
+    const processedData = initialData.map((course: any) => ({
+      id: course.id || `course-${Date.now()}-${Math.random()}`,
+      courseName: cleanValue(course.courseName || course.name || course.title) || "",
+      institution: cleanValue(course.institution || course.school || course.university) || "",
+      date: cleanValue(course.date || course.year || course.when) || "",
+      skill: cleanValue(course.skill || course.skillLearned || course.keySkill) || "",
+      application: cleanValue(course.application || course.howApplied || course.description) || ""
     }));
+
     setCourseworkEntries(processedData.length > 0 ? processedData : [{
-      id: `cw-${Date.now()}`, name: "", department: "", date: null, description: "", skill: ""
+      id: `course-${Date.now()}`,
+      courseName: '',
+      institution: '',
+      date: '',
+      skill: '',
+      application: ''
     }]);
     setCurrentEntryIndex(0);
   }, [initialData]);
 
-  const validateEntry = (entry: CourseworkEntry): Record<string, string> => {
-    const entryErrors: Record<string, string> = {};
-    if (!entry.name.trim()) entryErrors.name = "Course name is required.";
-    if (!entry.department.trim()) entryErrors.department = "Department/Institution is required.";
-    if (!entry.date) entryErrors.date = "Completion date is required.";
-    return entryErrors;
+  const current = courseworkEntries[currentEntryIndex];
+  if (!current) return null;
+
+  const validate = (entry: CourseworkEntry): Set<string> => {
+    const errs = new Set<string>();
+    if (!entry.courseName.trim()) errs.add('courseName');
+    if (!entry.institution.trim()) errs.add('institution');
+    if (!entry.date.trim()) errs.add('date');
+    if (!entry.skill.trim()) errs.add('skill');
+    return errs;
   };
 
-  const validateAllEntries = () => {
-    const newErrors: Record<string, Record<string, string>> = {};
-    let formIsValid = true;
-    courseworkEntries.forEach((exp, idx) => {
-      const entryErrors = validateEntry(exp);
-      if (Object.keys(entryErrors).length > 0) {
-        newErrors[exp.id] = entryErrors;
-        if (idx === currentEntryIndex) formIsValid = false; 
+  const update = (field: keyof CourseworkEntry, value: string) => {
+    setCourseworkEntries(prev => prev.map((e, i) => i === currentEntryIndex ? { ...e, [field]: value } : e));
+
+    // Clear field error
+    setErrors(prev => {
+      const next = { ...prev };
+      if (next[current.id]) {
+        next[current.id].delete(field);
+        if (next[current.id].size === 0) delete next[current.id];
       }
+      return next;
     });
-    setErrors(newErrors);
-    const allEntriesValid = courseworkEntries.every(exp => Object.keys(validateEntry(exp)).length === 0);
-    return { currentFormValid: formIsValid, allFormsValid: allEntriesValid };
   };
 
-  const handleInputChange = (field: keyof CourseworkEntry, value: any) => {
-    setCourseworkEntries(prev => prev.map((entry, idx) => {
-      if (idx === currentEntryIndex) {
-        return { ...entry, [field]: value };
-      }
-      return entry;
-    }));
-  };
+  const handleSave = async () => {
+    const allErrors: Record<string, Set<string>> = {};
+    courseworkEntries.forEach(e => {
+      const errs = validate(e);
+      if (errs.size > 0) allErrors[e.id] = errs;
+    });
 
-  const addDescriptionPoint = (newPoint: string = "") => {
-    setCourseworkEntries(prev => prev.map((entry, idx) => {
-      if (idx === currentEntryIndex) {
-        const currentDescription = entry.description ? entry.description.split('\n• ').filter(p => p.trim() !== '') : [];
-        currentDescription.push(newPoint);
-        const newDescription = currentDescription.length > 0 ? "• " + currentDescription.join("\n• ") : "";
-        return { ...entry, description: newDescription };
-      }
-      return entry;
-    }));
-  };
+    if (Object.keys(allErrors).length) {
+      setErrors(allErrors);
+      setToast({ show: true, message: 'Please fill required fields', error: true });
+      setTimeout(() => setToast({ show: false, message: '', error: false }), 2000);
+      return;
+    }
 
-  const handleDescriptionPointChange = (index: number, value: string) => {
-    setCourseworkEntries(prev => prev.map((entry, idx) => {
-      if (idx === currentEntryIndex) {
-        let points = entry.description ? entry.description.split('\n• ').map(p => p.startsWith("• ") ? p.substring(2) : p ) : [];
-        if(points.length > 0 && points[0].startsWith("• ")) points[0] = points[0].substring(2);
-        else if (points.length > 0 && points[0] === "") points.shift();
-
-        points = points.filter(p => p.trim() !== '' || p === points[index]);
-
-        if(index < points.length) {
-            points[index] = value;
-        } else {
-            points.push(value);
-        }
-        const newDescription = points.filter(p=>p.trim() !== '').length > 0 ? "• " + points.filter(p => p.trim() !== '').join("\n• ") : "";
-        return { ...entry, description: newDescription };
-      }
-      return entry;
-    }));
-  };
-
-  const removeDescriptionPoint = (index: number) => {
-     setCourseworkEntries(prev => prev.map((entry, idx) => {
-      if (idx === currentEntryIndex) {
-        let points = entry.description ? entry.description.split('\n• ').map(p => p.startsWith("• ") ? p.substring(2) : p ) : [];
-         if(points.length > 0 && points[0].startsWith("• ")) points[0] = points[0].substring(2);
-         else if (points.length > 0 && points[0] === "") points.shift();
-
-        points = points.filter(p => p.trim() !== '');
-        points.splice(index, 1);
-        const newDescription = points.length > 0 ? "• " + points.join("\n• ") : "";
-        return { ...entry, description: newDescription };
-      }
-      return entry;
-    }));
+    setIsSaving(true);
+    try {
+      const validEntries = courseworkEntries.filter(e => e.courseName.trim() && e.institution.trim());
+      await onSave(validEntries);
+      setToast({ show: true, message: 'Coursework saved successfully', error: false });
+    } catch {
+      setToast({ show: true, message: 'Failed to save', error: true });
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setToast({ show: false, message: '', error: false }), 2000);
+    }
   };
 
   const addCourseworkEntry = () => {
-    const newId = `cw-${Date.now()}`;
-    const newEntry: CourseworkEntry = {
-      id: newId, name: "", department: "", date: null, description: "", skill: ""
-    };
-    setCourseworkEntries(prev => [...prev, newEntry]);
+    setCourseworkEntries([...courseworkEntries, {
+      id: `course-${Date.now()}`,
+      courseName: '',
+      institution: '',
+      date: '',
+      skill: '',
+      application: ''
+    }]);
     setCurrentEntryIndex(courseworkEntries.length);
   };
 
-  const removeCurrentCourseworkEntry = () => {
-    if (courseworkEntries.length <= 1) {
-        setCourseworkEntries([{
-            id: `cw-${Date.now()}`, name: "", department: "", date: null, description: "", skill: ""
-        }]);
-        setCurrentEntryIndex(0);
-        setErrors({});
-        return;
-    }
-    const entryIdToRemove = courseworkEntries[currentEntryIndex].id;
-    setCourseworkEntries(prev => prev.filter(exp => exp.id !== entryIdToRemove));
-    setCurrentEntryIndex(prev => Math.max(0, prev - 1));
-    setErrors(prev => {
-        const newErrors = {...prev};
-        delete newErrors[entryIdToRemove];
-        return newErrors;
-    });
+  const removeCurrentEntry = () => {
+    if (courseworkEntries.length <= 1) return;
+    setCourseworkEntries(prev => prev.filter((_, i) => i !== currentEntryIndex));
+    setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1));
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if(e) e.preventDefault();
-    const { allFormsValid } = validateAllEntries();
-    if (!allFormsValid) {
-      toast({
-        title: "Validation Error",
-        description: "Please correct the errors in all coursework entries before saving.",
-        variant: "destructive",
-      });
-      const firstErrorEntryIndex = courseworkEntries.findIndex(exp => Object.keys(validateEntry(exp)).length > 0);
-      if (firstErrorEntryIndex !== -1) {
-        setCurrentEntryIndex(firstErrorEntryIndex);
-      }
-      return;
-    }
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    onSave(courseworkEntries);
-    setIsSaving(false);
-    toast({
-      title: "Coursework Saved",
-      description: "Your coursework details have been updated.",
-    });
-  };
-
-  const currentEntry = courseworkEntries[currentEntryIndex];
-
-  if (!currentEntry) {
-    return (
-      <div className="w-full mx-auto max-w-[1400px] border-2 border-border rounded-xl overflow-hidden bg-card shadow-sm dark:shadow-md">
-        <div className="p-4 text-center text-muted-foreground">
-          Loading coursework data...
-          <Button onClick={addCourseworkEntry} variant="outline" className="mt-4">Add First Course</Button>
-        </div>
-      </div>
-    );
-  }
-  
-  const entryErrors = (errors[currentEntry.id] as Record<string, string>) || {};
-  const navigationHeaderTitle = currentEntry.name || "New Course";
-  
-  const descriptionPoints = currentEntry.description ? currentEntry.description.split('\n• ').map(p => p.startsWith("• ") ? p.substring(2) : p).filter(p => p.trim() !== "" || p === "") : [];
-  if (descriptionPoints.length > 0 && descriptionPoints[0].startsWith("• ")) {
-      descriptionPoints[0] = descriptionPoints[0].substring(2);
-  } else if (descriptionPoints.length > 0 && descriptionPoints[0] === "") {
-      descriptionPoints.shift();
-  }
-
-  const inputContainerClasses = "h-12 flex items-center bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 font-semibold text-base leading-6 w-full rounded border-2 px-4";
+  const err = errors[current.id] || new Set();
+  const headerTitle = current.courseName || `Coursework ${currentEntryIndex + 1}`;
 
   return (
-    <div className="w-full mx-auto max-w-[1400px] border-2 border-border rounded-xl overflow-hidden bg-card shadow-sm dark:shadow-md">
-      <div className="flex flex-row items-center justify-between p-3 border-b border-border/40 bg-muted/30 dark:bg-muted/10">
-        <div className="flex items-center gap-2 flex-grow min-w-0">
-          <FileBadge className="h-5 w-5 text-primary flex-shrink-0" />
-          <h3 className="text-base font-semibold truncate" title={navigationHeaderTitle}>
-            {navigationHeaderTitle}
-          </h3>
-        </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <span className="text-xs text-muted-foreground mr-1">{currentEntryIndex + 1} of {courseworkEntries.length}</span>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))} disabled={currentEntryIndex === 0}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentEntryIndex(Math.min(courseworkEntries.length - 1, currentEntryIndex + 1))} disabled={currentEntryIndex === courseworkEntries.length - 1}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={removeCurrentCourseworkEntry}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+    <div className="bg-white dark:bg-[#2c3442] rounded-lg overflow-hidden border border-gray-200 dark:border-transparent shadow-sm">
+      {/* Header */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-[#252d3a] border-b border-gray-200 dark:border-[#1e252f]">
+        <div className="flex items-center justify-between">
+          <h2 className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            {headerTitle}
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))}
+              disabled={currentEntryIndex === 0}
+              className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-400 px-2">
+              {currentEntryIndex + 1} / {courseworkEntries.length}
+            </span>
+            <button
+              onClick={() => setCurrentEntryIndex(Math.min(courseworkEntries.length - 1, currentEntryIndex + 1))}
+              disabled={currentEntryIndex === courseworkEntries.length - 1}
+              className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            {courseworkEntries.length > 1 && (
+              <>
+                <div className="w-px h-5 bg-gray-300 dark:bg-[#3a4452] mx-1" />
+                <button
+                  onClick={removeCurrentEntry}
+                  className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
-      <div className="p-4 sm:p-6">
-        <form onSubmit={handleSubmit} id="courseworkForm" className="space-y-4 sm:space-y-6">
-          <div className="space-y-1.5">
-            <Label htmlFor={`name-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHAT <span className="font-bold">COURSE</span> DID YOU TAKE? <span className="text-red-500">*</span></Label>
-            <div className={cn(inputContainerClasses, entryErrors.name ? "border-destructive" : "border-input")}>
-              <input 
-                id={`name-${currentEntry.id}`} 
-                value={currentEntry.name} 
-                onChange={(e) => handleInputChange('name', e.target.value)} 
-                placeholder="e.g., Data Structures and Algorithms, Machine Learning" 
-                className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 p-0"
-              />
-            </div>
-            {entryErrors.name && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.name}</p>}
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor={`department-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold"><span className="font-bold">DEPARTMENT</span> / INSTITUTION <span className="text-red-500">*</span></Label>
-              <div className={cn(inputContainerClasses, entryErrors.department ? "border-destructive" : "border-input")}>
-                <div className="flex w-full items-center">
-                  <Building className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <input 
-                    id={`department-${currentEntry.id}`} 
-                    value={currentEntry.department} 
-                    onChange={(e) => handleInputChange('department', e.target.value)} 
-                    placeholder="e.g., Computer Science, Coursera, Udemy" 
-                    className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 p-0"
-                  />
-                </div>
-              </div>
-              {entryErrors.department && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.department}</p>}
-            </div>
+      {/* Form */}
+      <div className="p-6 space-y-6">
+        {/* Course Name */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            WHAT WAS THE COURSE <span className="font-bold">NAME</span>? <span className="text-red-500">*</span>
+          </label>
+          <input
+            value={current.courseName}
+            onChange={(e) => update('courseName', e.target.value)}
+            placeholder="Introduction to Computer Systems"
+            className={`
+              w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+              text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+              focus:outline-none focus:ring-2 
+              transition-all duration-200
+              ${err.has('courseName') 
+                ? 'border-red-500 focus:ring-red-500/30' 
+                : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+            `}
+          />
+          {err.has('courseName') && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              This field is required
+            </p>
+          )}
+        </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor={`date-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">COMPLETION <span className="font-bold">DATE</span> <span className="text-red-500">*</span></Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <div className={cn(
-                    inputContainerClasses,
-                    !currentEntry.date && "text-muted-foreground",
-                    entryErrors.date ? "border-destructive" : "border-input")}>
-                    <div className="text-left w-full flex items-center">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {currentEntry.date ? format(currentEntry.date, "MMMM yyyy") : "Select date"}
-                    </div>
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar 
-                    mode="single" 
-                    selected={currentEntry.date} 
-                    onSelect={(dateVal) => handleInputChange('date', dateVal)}
-                    captionLayout="dropdown-buttons" 
-                    fromYear={1980} 
-                    toYear={new Date().getFullYear()}
-                  />
-                </PopoverContent>
-              </Popover>
-              {entryErrors.date && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.date}</p>}
-            </div>
+        {/* Institution */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            <span className="font-bold">WHERE</span> DID YOU TAKE THE COURSE? <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+            <input
+              value={current.institution}
+              onChange={(e) => update('institution', e.target.value)}
+              placeholder="University of Wisconsin, Madison"
+              className={`
+                w-full pl-10 pr-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 
+                transition-all duration-200
+                ${err.has('institution') 
+                  ? 'border-red-500 focus:ring-red-500/30' 
+                  : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+              `}
+            />
           </div>
-          
-          <div className="space-y-1.5">
-            <Label htmlFor={`skill-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">RELATED <span className="font-bold">SKILLS</span> (OPTIONAL)</Label>
-            <div className={cn(inputContainerClasses, "border-input")}>
-              <div className="flex w-full items-center">
-                <Lightbulb className="mr-2 h-4 w-4 text-muted-foreground" />
-                <input 
-                  id={`skill-${currentEntry.id}`} 
-                  value={currentEntry.skill || ""} 
-                  onChange={(e) => handleInputChange('skill', e.target.value)} 
-                  placeholder="e.g., Python, Data Analysis, Public Speaking" 
-                  className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 p-0"
-                />
+          {err.has('institution') && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              This field is required
+            </p>
+          )}
+        </div>
+
+        {/* Date */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            <span className="font-bold">WHEN</span> DID YOU TAKE THE COURSE? <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+            <input
+              value={current.date}
+              onChange={(e) => update('date', e.target.value)}
+              placeholder="2025"
+              className={`
+                w-full pl-10 pr-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 
+                transition-all duration-200
+                ${err.has('date') 
+                  ? 'border-red-500 focus:ring-red-500/30' 
+                  : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+              `}
+            />
+          </div>
+          {err.has('date') && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              This field is required
+            </p>
+          )}
+        </div>
+
+        {/* Key Skill */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            WHAT <span className="font-bold">SKILL</span> DID YOU USE? <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <Lightbulb className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+            <input
+              value={current.skill}
+              onChange={(e) => update('skill', e.target.value)}
+              placeholder="Teamwork"
+              className={`
+                w-full pl-10 pr-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 
+                transition-all duration-200
+                ${err.has('skill') 
+                  ? 'border-red-500 focus:ring-red-500/30' 
+                  : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+              `}
+            />
+          </div>
+          {err.has('skill') && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              This field is required
+            </p>
+          )}
+        </div>
+
+        {/* Skill Application */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            HOW WAS THAT SKILL <span className="font-bold">APPLIED</span>?
+          </label>
+          <div className="relative">
+            <PenTool className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
+            <textarea
+              value={current.application}
+              onChange={(e) => update('application', e.target.value)}
+              placeholder="• Coordinating on code with a small group of people&#10;• Weekly team meetings to discuss progress and challenges&#10;• Collaborative problem-solving on complex algorithms&#10;• Peer code reviews and constructive feedback"
+              rows={5}
+              className="
+                w-full pl-10 pr-4 py-3 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none
+                transition-colors
+              "
+            />
+          </div>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            Describe specific examples of how you applied this skill during the course.
+          </p>
+        </div>
+
+        {/* Course Preview Card */}
+        {(current.courseName || current.skill) && (
+          <div className="bg-gray-50 dark:bg-[#1e252f] rounded-lg p-4 border border-gray-200 dark:border-[#3a4452]">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-white dark:bg-[#2c3442] rounded-lg">
+                <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-gray-900 dark:text-white">
+                  {current.courseName || "Course Name"}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {current.institution && <span>{current.institution}</span>}
+                  {current.institution && current.date && <span className="mx-2">•</span>}
+                  {current.date && <span>{current.date}</span>}
+                </p>
+                {current.skill && (
+                  <div className="mt-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                      {current.skill}
+                    </span>
+                  </div>
+                )}
+                {current.application && (
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-line">
+                    {current.application}
+                  </p>
+                )}
               </div>
             </div>
           </div>
-            
-          <div className="space-y-1.5">
-            <Label htmlFor="description-points" className="text-xs uppercase tracking-wider font-semibold"><span className="font-bold">DESCRIPTION</span> (OPTIONAL)</Label>
-            <div className="p-2 border border-border/60 rounded-md bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus-within:bg-background/70 dark:focus-within:bg-background/30 focus-within:ring-0 focus-within:outline-none space-y-0.5">
-              {descriptionPoints.length === 0 ? (
-                <div className="flex items-start space-x-2 group focus-within:bg-transparent hover:bg-transparent">
-                  <span className="text-primary font-semibold text-lg flex items-center justify-center mt-1 h-5 w-5 flex-shrink-0">&bull;</span>
-                  <Textarea
-                    value=""
-                    onChange={(e) => handleDescriptionPointChange(0, e.target.value)}
-                    placeholder="Describe what you learned or accomplished in this course..."
-                    rows={1}
-                    className="flex-grow resize-none py-1 px-0 min-h-[30px] bg-transparent !border-0 !border-none focus-visible:!ring-0 focus-visible:!ring-offset-0 focus:!ring-0 focus:!ring-offset-0 !shadow-none !outline-none focus:!outline-none focus-visible:!outline-none"
-                  />
-                </div>
-              ) : (
-                descriptionPoints.map((point, pointIndex) => (
-                  <div key={pointIndex} className="flex items-start space-x-2 group focus-within:bg-transparent hover:bg-transparent">
-                    <span className="text-primary font-semibold text-lg flex items-center justify-center mt-1 h-5 w-5 flex-shrink-0">&bull;</span>
-                    <Textarea
-                      value={point}
-                      onChange={(e) => handleDescriptionPointChange(pointIndex, e.target.value)}
-                      placeholder="Describe what you learned or accomplished in this course..."
-                      rows={1}
-                      className="flex-grow resize-none py-1 px-0 min-h-[30px] bg-transparent !border-0 !border-none focus-visible:!ring-0 focus-visible:!ring-offset-0 focus:!ring-0 focus:!ring-offset-0 !shadow-none !outline-none focus:!outline-none focus-visible:!outline-none"
-                    />
-                    {descriptionPoints.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeDescriptionPoint(pointIndex)}
-                        className="text-muted-foreground hover:text-destructive shrink-0 h-7 w-7 mt-0 opacity-50 group-hover:opacity-100"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-            
-          <div className="flex flex-col sm:flex-row items-center justify-between pt-4 sm:pt-6 border-t dark:border-border/40 gap-3">
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-              <Button type="button" variant="ghost" onClick={addCourseworkEntry} className="w-full sm:w-auto hover:bg-background/50 dark:hover:bg-background/20">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Course
-              </Button>
-              <Button type="button" variant="ghost" onClick={() => addDescriptionPoint('')} className="w-full sm:w-auto hover:bg-background/50 dark:hover:bg-background/20">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Bullet
-              </Button>
-            </div>
-            <Button type="submit" form="courseworkForm" disabled={isSaving} size="lg" className="w-full sm:w-auto">
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Save Coursework
-            </Button>
-          </div>
-        </form>
+        )}
       </div>
+
+      {/* Footer */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-[#252d3a] border-t border-gray-200 dark:border-[#1e252f] flex justify-between items-center">
+        <button
+          onClick={addCourseworkEntry}
+          className="
+            text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white
+            flex items-center gap-2
+            transition-colors
+          "
+        >
+          <Plus className="h-4 w-4" />
+          Add Another Course
+        </button>
+
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`
+            flex items-center gap-2 px-6 py-2.5
+            bg-blue-600 hover:bg-blue-700 text-white
+            rounded-md font-medium text-sm uppercase tracking-wide
+            transition-all
+            ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+          `}
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              SAVING...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              SAVE TO COURSEWORK LIST
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Toast */}
+      {toast.show && (
+        <div className={`
+          fixed bottom-4 right-4 px-3 py-2 rounded-md shadow-lg text-white text-sm
+          transform transition-all duration-300 z-50
+          ${toast.error ? 'bg-red-600' : 'bg-green-600'}
+        `}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

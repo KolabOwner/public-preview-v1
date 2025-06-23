@@ -4,8 +4,8 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
-import { FileStatus, PDFProcessor, ProcessingResult } from "@/lib/features/pdf/processor";
+import { db } from "@/lib/features/auth/firebase-config";
+import { FileStatus, PDFProcessor, ProcessingResult } from "@/lib/features/pdf/pdf-generator";
 import { ResumeProcessingStatus } from '../ResumeProcessingStatus';
 import {
   X,
@@ -33,6 +33,10 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
   const [isDragging, setIsDragging] = useState(false);
   const [resumeId, setResumeId] = useState<string | null>(null);
   const [processingResult, setProcessingResult] = useState<ProcessingResult | null>(null);
+  
+  // Job targeting fields
+  const [jobTitle, setJobTitle] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
@@ -143,7 +147,7 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
     try {
       // If no file is uploaded, create a blank resume
       if (!file) {
-        const resumeData = {
+        const resumeData: any = {
           title,
           userId: user.uid,
           experience,
@@ -152,6 +156,17 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
           updatedAt: serverTimestamp(),
           status: FileStatus.UPLOADED
         };
+        
+        // If targeted and job info provided, save it
+        if (isTargeted && jobTitle && jobDescription) {
+          resumeData.job_info = {
+            title: jobTitle,
+            description: jobDescription,
+            company: '',
+            saved_during_upload: true,
+            created_at: new Date().toISOString()
+          };
+        }
 
         // Create resume document in Firestore
         const docRef = await addDoc(collection(db, 'resumes'), resumeData);
@@ -186,13 +201,26 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
       if (result.success) {
         console.log('PDF processing completed successfully:', result);
 
-        // Update the resume with additional metadata
+        // Update the resume with additional metadata and job info if targeted
         const resumeRef = doc(db, 'resumes', newResumeId);
-        await updateDoc(resumeRef, {
+        const updateData: any = {
           experience,
           isTargeted,
           updatedAt: serverTimestamp()
-        });
+        };
+        
+        // If targeted and job info provided, save it
+        if (isTargeted && jobTitle && jobDescription) {
+          updateData.job_info = {
+            title: jobTitle,
+            description: jobDescription,
+            company: '',
+            saved_during_upload: true,
+            created_at: new Date().toISOString()
+          };
+        }
+        
+        await updateDoc(resumeRef, updateData);
 
         // Redirect to the resume edit page after successful processing
         setTimeout(() => {
@@ -401,6 +429,41 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                 you make it clear you have the experience required for the job.
               </p>
             </div>
+            
+            {/* Job Details when targeted is enabled */}
+            {isTargeted && (
+              <div className="mt-4 space-y-3 p-4 bg-[#161922] rounded-md border border-gray-700">
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    JOB TITLE (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="e.g., Senior Software Engineer"
+                    className="w-full px-3 py-2 bg-[#2a3142] border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    JOB DESCRIPTION (Optional)
+                  </label>
+                  <textarea
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    placeholder="Paste the job description here for keyword optimization..."
+                    rows={4}
+                    className="w-full px-3 py-2 bg-[#2a3142] border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm resize-none"
+                  />
+                </div>
+                
+                <p className="text-xs text-gray-500 italic">
+                  Adding job details now will allow immediate keyword analysis after upload
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

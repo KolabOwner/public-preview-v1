@@ -1,14 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Users, Save, Loader2, Info, PlusCircle, Trash2, ChevronLeft, ChevronRight, AlertCircle, MapPin, Building2 } from "lucide-react";
-import { useToast } from '@/components/hooks/use-toast';
-import { cn } from '../utils';
+import { Users, Save, Loader2, Info, PlusCircle, Trash2, ChevronLeft, ChevronRight, AlertCircle, MapPin, Building2, Plus, X, Sparkles } from "lucide-react";
 
 export interface InvolvementEntry {
   id: string;
@@ -19,33 +12,82 @@ export interface InvolvementEntry {
   endDate: string;
   current: boolean;
   description: string;
+  bulletPoints: string[];
 }
 
 interface InvolvementFormProps {
-  initialData: InvolvementEntry[];
-  onSave: (data: InvolvementEntry[]) => void;
+  initialData: any[]; // Accept any format from database
+  onSave: (data: InvolvementEntry[]) => Promise<void>;
+  autoSave?: boolean;
 }
 
-export default function InvolvementForm({ initialData, onSave }: InvolvementFormProps) {
+const cleanValue = (value: string | undefined | null): string => {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  const emptyValues = ['n/a', 'N/A', 'none', 'None', 'NONE', 'null', 'NULL', '-', '--', 'NA', 'na', 'undefined'];
+  return emptyValues.includes(trimmed) ? '' : trimmed;
+};
+
+export default function InvolvementForm({ initialData, onSave, autoSave = false }: InvolvementFormProps) {
   const [involvementEntries, setInvolvementEntries] = useState<InvolvementEntry[]>([]);
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
-  const { toast } = useToast();
+  const [errors, setErrors] = useState<Record<string, Set<string>>>({});
+  const [toast, setToast] = useState({ show: false, message: '', error: false });
+
+  // Add custom scrollbar styles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #9ca3af;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+      }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #4a5568;
+      }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #5a6578;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
 
   useEffect(() => {
-    const processedData = initialData.map(inv => {
-      // Handle different data structures (from Firestore vs form)
+    const processedData = initialData.map((inv: any) => {
+      // Parse bullet points from description if bulletPoints array is empty
+      let bulletPoints = inv.bulletPoints?.filter(Boolean) || [];
+
+      if (bulletPoints.length === 0 && inv.description) {
+        // Split by various bullet point formats: •, -, *, or newline followed by these
+        const points = inv.description
+          .split(/(?:^|\n)\s*[•\-\*]\s*|(?<=[.!?])\s*•\s*/)
+          .map((point: string) => point.trim())
+          .filter((point: string) => point.length > 0);
+
+        bulletPoints = points;
+      }
+
       return {
-        id: inv.id || `inv-${Date.now()}`,
-        // Map fields, with fallbacks for different field names
-        organization: inv.organization || "",
-        role: inv.role || inv.position || "",
-        location: inv.location || "",
-        startDate: inv.startDate || "",
-        endDate: inv.endDate || "",
+        id: inv.id || `inv-${Date.now()}-${Math.random()}`,
+        organization: cleanValue(inv.organization) || "",
+        role: cleanValue(inv.role || inv.position) || "",
+        location: cleanValue(inv.location) || "",
+        startDate: cleanValue(inv.startDate) || "",
+        endDate: cleanValue(inv.endDate) || "",
         current: inv.current || false,
-        description: inv.description || inv.activities || ""
+        description: cleanValue(inv.description || inv.activities) || "",
+        bulletPoints
       };
     });
 
@@ -57,307 +99,446 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
       startDate: '',
       endDate: '',
       current: false,
-      description: ''
+      description: '',
+      bulletPoints: []
     }]);
     setCurrentEntryIndex(0);
   }, [initialData]);
 
-  const validateEntry = (entry: InvolvementEntry): Record<string, string> => {
-    const entryErrors: Record<string, string> = {};
-    if (!entry.organization.trim()) entryErrors.organization = "Organization name is required.";
-    if (!entry.role.trim()) entryErrors.role = "Role/position is required.";
-    if (!entry.startDate.trim()) entryErrors.startDate = "Start date is required.";
-    if (!entry.current && !entry.endDate.trim()) entryErrors.endDate = "End date is required when not current.";
-    return entryErrors;
+  const current = involvementEntries[currentEntryIndex];
+  if (!current) return null;
+
+  const validate = (entry: InvolvementEntry): Set<string> => {
+    const errs = new Set<string>();
+    if (!entry.organization.trim()) errs.add('organization');
+    if (!entry.role.trim()) errs.add('role');
+    if (!entry.startDate.trim()) errs.add('startDate');
+    if (!entry.current && !entry.endDate.trim()) errs.add('endDate');
+    return errs;
   };
 
-  const validateAllEntries = () => {
-    const newErrors: Record<string, Record<string, string>> = {};
-    let formIsValid = true;
-    
-    // Filter out entries that are completely empty before validation
-    const filledEntries = involvementEntries.filter(entry => 
-      entry.organization.trim() || entry.role.trim() || entry.location.trim() || 
-      entry.startDate.trim() || entry.endDate.trim() || entry.description.trim()
-    );
+  const update = (field: keyof InvolvementEntry, value: any) => {
+    setInvolvementEntries(prev => prev.map((e, i) => i === currentEntryIndex ? { ...e, [field]: value } : e));
 
-    filledEntries.forEach((entry) => {
-      const entryErrors = validateEntry(entry);
-      if (Object.keys(entryErrors).length > 0) {
-        newErrors[entry.id] = entryErrors;
-        // Find original index to correctly highlight error if current view matches
-        const originalIndex = involvementEntries.findIndex(inv => inv.id === entry.id);
-        if (originalIndex === currentEntryIndex) formIsValid = false;
+    // Clear field error
+    setErrors(prev => {
+      const next = { ...prev };
+      if (next[current.id]) {
+        next[current.id].delete(field);
+        if (next[current.id].size === 0) delete next[current.id];
       }
+      return next;
     });
-    
-    setErrors(newErrors);
-    const allEntriesValid = filledEntries.every(entry => Object.keys(validateEntry(entry)).length === 0);
-    return { currentFormValid: formIsValid, allFormsValid: allEntriesValid };
   };
 
-  const handleInputChange = (field: keyof InvolvementEntry, value: any) => {
-    setInvolvementEntries(prev => prev.map((entry, idx) => {
-      if (idx === currentEntryIndex) {
-        return { ...entry, [field]: value };
-      }
-      return entry;
-    }));
+  const handleSave = async () => {
+    const allErrors: Record<string, Set<string>> = {};
+    involvementEntries.forEach(e => {
+      const errs = validate(e);
+      if (errs.size > 0) allErrors[e.id] = errs;
+    });
 
-    // Clear error when field is corrected
-    if (errors[involvementEntries[currentEntryIndex]?.id]?.[field]) {
-      const updatedErrors = { ...errors };
-      delete updatedErrors[involvementEntries[currentEntryIndex].id][field];
-      if (Object.keys(updatedErrors[involvementEntries[currentEntryIndex].id]).length === 0) {
-        delete updatedErrors[involvementEntries[currentEntryIndex].id];
-      }
-      setErrors(updatedErrors);
+    if (Object.keys(allErrors).length) {
+      setErrors(allErrors);
+      setToast({ show: true, message: 'Please fill required fields', error: true });
+      setTimeout(() => setToast({ show: false, message: '', error: false }), 2000);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Format entries with description field for backward compatibility
+      const formattedEntries = involvementEntries
+        .filter(e => e.organization && e.role)
+        .map(entry => ({
+          ...entry,
+          description: entry.bulletPoints.length > 0
+            ? entry.bulletPoints
+                .filter(point => point.trim().length > 0)
+                .map(point => `• ${point.trim()}`)
+                .join(' ')
+            : ''
+        }));
+
+      await onSave(formattedEntries);
+      setToast({ show: true, message: 'Involvement saved successfully', error: false });
+    } catch {
+      setToast({ show: true, message: 'Failed to save', error: true });
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setToast({ show: false, message: '', error: false }), 2000);
     }
   };
 
+  const addBulletPoint = () => {
+    update('bulletPoints', [...current.bulletPoints, '']);
+    // Scroll to bottom of bullet points after adding
+    setTimeout(() => {
+      const container = document.querySelector('.custom-scrollbar');
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 100);
+  };
+
+  const updateBulletPoint = (index: number, value: string) => {
+    const updated = [...current.bulletPoints];
+    updated[index] = value;
+    update('bulletPoints', updated);
+  };
+
+  const removeBulletPoint = (index: number) => {
+    update('bulletPoints', current.bulletPoints.filter((_, i) => i !== index));
+  };
+
   const addInvolvementEntry = () => {
-    const newId = `inv-${Date.now()}`;
-    const newEntry: InvolvementEntry = {
-      id: newId,
+    setInvolvementEntries([...involvementEntries, {
+      id: `inv-${Date.now()}`,
       organization: '',
       role: '',
       location: '',
       startDate: '',
       endDate: '',
       current: false,
-      description: ''
-    };
-    setInvolvementEntries(prev => [...prev, newEntry]);
+      description: '',
+      bulletPoints: []
+    }]);
     setCurrentEntryIndex(involvementEntries.length);
   };
 
-  const removeCurrentInvolvementEntry = () => {
-    if (involvementEntries.length <= 1) {
-      setInvolvementEntries([{
-        id: `inv-${Date.now()}`,
-        organization: '',
-        role: '',
-        location: '',
-        startDate: '',
-        endDate: '',
-        current: false,
-        description: ''
-      }]);
-      setCurrentEntryIndex(0);
-      setErrors({});
-      return;
-    }
-    
-    const entryIdToRemove = involvementEntries[currentEntryIndex].id;
-    setInvolvementEntries(prev => prev.filter(inv => inv.id !== entryIdToRemove));
-    setCurrentEntryIndex(prev => Math.max(0, prev - 1));
-    setErrors(prev => {
-      const newErrors = { ...prev };
-      delete newErrors[entryIdToRemove];
-      return newErrors;
-    });
+  const removeCurrentEntry = () => {
+    if (involvementEntries.length <= 1) return;
+    setInvolvementEntries(prev => prev.filter((_, i) => i !== currentEntryIndex));
+    setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1));
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const { allFormsValid } = validateAllEntries();
+  const err = errors[current.id] || new Set();
 
-    if (!allFormsValid) {
-      const firstErrorEntryIndex = involvementEntries.findIndex(entry => {
-        // Skip completely empty entries
-        if (!entry.organization.trim() && !entry.role.trim() && !entry.location.trim() &&
-          !entry.startDate.trim() && !entry.endDate.trim() && !entry.description.trim()) {
-          return false;
-        }
-        return Object.keys(validateEntry(entry)).length > 0;
-      });
-      
-      if (firstErrorEntryIndex !== -1) {
-        setCurrentEntryIndex(firstErrorEntryIndex);
-        toast({
-          title: "Validation Error",
-          description: "Please correct the errors in the involvement entries.",
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const validEntries = involvementEntries.filter(entry => 
-      entry.organization.trim() && entry.role.trim()
-    );
-    onSave(validEntries);
-    setIsSaving(false);
-    toast({
-      title: "Involvement Section Saved",
-      description: "Your activities and involvement information has been updated.",
-    });
-  };
-
-  const currentEntry = involvementEntries[currentEntryIndex];
-
-  if (!currentEntry) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        Loading involvement data or no entries available.
-        <Button onClick={addInvolvementEntry} variant="outline" className="mt-4">Add First Involvement</Button>
-      </div>
-    );
-  }
-  
-  const entryErrors = errors[currentEntry.id] || {};
-  const navigationHeaderTitle = currentEntry.role 
-    ? `${currentEntry.role} at ${currentEntry.organization}` 
-    : currentEntry.organization || "New Involvement";
+  const headerTitle = current.role && current.organization
+    ? `${current.role} at ${current.organization}`
+    : current.organization || "New Involvement";
 
   return (
-    <div className="w-full mx-auto max-w-[1400px] border-2 border-border rounded-xl overflow-hidden bg-card shadow-sm dark:shadow-md">
-      <div className="flex flex-row items-center justify-between p-3 border-b border-border/40 bg-muted/30 dark:bg-muted/10">
-        <div className="flex items-center gap-2 flex-grow min-w-0">
-          <Users className="h-5 w-5 text-primary flex-shrink-0" />
-          <h3 className="text-base font-semibold truncate" title={navigationHeaderTitle}>
-            {navigationHeaderTitle}
-          </h3>
-        </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <span className="text-xs text-muted-foreground mr-1">{currentEntryIndex + 1} of {involvementEntries.length}</span>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))} disabled={currentEntryIndex === 0}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentEntryIndex(Math.min(involvementEntries.length - 1, currentEntryIndex + 1))} disabled={currentEntryIndex === involvementEntries.length - 1}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={removeCurrentInvolvementEntry}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+    <div className="bg-white dark:bg-[#2c3442] rounded-lg overflow-hidden border border-gray-200 dark:border-transparent shadow-sm">
+      {/* Header */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-[#252d3a] border-b border-gray-200 dark:border-[#1e252f]">
+        <div className="flex items-center justify-between">
+          <h2 className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            {headerTitle}
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))}
+              disabled={currentEntryIndex === 0}
+              className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-400 px-2">
+              {currentEntryIndex + 1} / {involvementEntries.length}
+            </span>
+            <button
+              onClick={() => setCurrentEntryIndex(Math.min(involvementEntries.length - 1, currentEntryIndex + 1))}
+              disabled={currentEntryIndex === involvementEntries.length - 1}
+              className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            {involvementEntries.length > 1 && (
+              <>
+                <div className="w-px h-5 bg-gray-300 dark:bg-[#3a4452] mx-1" />
+                <button
+                  onClick={removeCurrentEntry}
+                  className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
-      <div className="p-4 sm:p-6">
-        <form onSubmit={handleSubmit} id="involvementForm" className="space-y-4 sm:space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor={`organization-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">ORGANIZATION <span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <Input
-                  id={`organization-${currentEntry.id}`}
-                  value={currentEntry.organization}
-                  onChange={(e) => handleInputChange('organization', e.target.value)}
-                  placeholder="e.g., Student Government Association"
-                  className={cn(
-                    "bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background pl-9",
-                    entryErrors.organization ? "border-destructive" : ""
-                  )}
-                />
-              </div>
-              {entryErrors.organization && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.organization}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor={`role-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">ROLE / POSITION <span className="text-red-500">*</span></Label>
-              <Input
-                id={`role-${currentEntry.id}`}
-                value={currentEntry.role}
-                onChange={(e) => handleInputChange('role', e.target.value)}
-                placeholder="e.g., Treasurer, Volunteer, Team Captain"
-                className={cn("bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background", entryErrors.role ? "border-destructive" : "")}
+
+      {/* Form */}
+      <div className="p-6 space-y-6">
+        {/* Organization & Role */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              ORGANIZATION <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+              <input
+                value={current.organization}
+                onChange={(e) => update('organization', e.target.value)}
+                placeholder="e.g., Student Government Association"
+                className={`
+                  w-full pl-10 pr-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                  text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                  focus:outline-none focus:ring-2 
+                  transition-all duration-200
+                  ${err.has('organization') 
+                    ? 'border-red-500 focus:ring-red-500/30' 
+                    : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+                `}
               />
-              {entryErrors.role && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.role}</p>}
             </div>
+            {err.has('organization') && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                This field is required
+              </p>
+            )}
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor={`location-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">LOCATION</Label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <Input
-                  id={`location-${currentEntry.id}`}
-                  value={currentEntry.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  placeholder="e.g., Boston, MA"
-                  className="bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background pl-9"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor={`startDate-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">START DATE <span className="text-red-500">*</span></Label>
-                <Input
-                  id={`startDate-${currentEntry.id}`}
-                  value={currentEntry.startDate}
-                  onChange={(e) => handleInputChange('startDate', e.target.value)}
-                  placeholder="e.g., Sept 2022"
-                  className={cn("bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background", entryErrors.startDate ? "border-destructive" : "")}
-                />
-                {entryErrors.startDate && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.startDate}</p>}
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor={`endDate-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">END DATE {!currentEntry.current && <span className="text-red-500">*</span>}</Label>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id={`current-${currentEntry.id}`}
-                      checked={currentEntry.current}
-                      onCheckedChange={(checked) => {
-                        handleInputChange('current', checked);
-                        if (checked) {
-                          handleInputChange('endDate', 'Present');
-                        } else if (currentEntry.endDate === 'Present') {
-                          handleInputChange('endDate', '');
-                        }
-                      }}
-                    />
-                    <Label htmlFor={`current-${currentEntry.id}`} className="text-xs">Current</Label>
-                  </div>
-                </div>
-                <Input
-                  id={`endDate-${currentEntry.id}`}
-                  value={currentEntry.endDate}
-                  onChange={(e) => handleInputChange('endDate', e.target.value)}
-                  placeholder={currentEntry.current ? "Present" : "e.g., May 2023"}
-                  disabled={currentEntry.current}
-                  className={cn("bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background", 
-                    entryErrors.endDate ? "border-destructive" : "",
-                    currentEntry.current ? "opacity-50" : ""
-                  )}
-                />
-                {entryErrors.endDate && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.endDate}</p>}
-              </div>
-            </div>
-          </div>
-          
-          <div className="space-y-1.5">
-            <Label htmlFor={`description-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">DESCRIPTION OF ACTIVITIES</Label>
-            <Textarea
-              id={`description-${currentEntry.id}`}
-              value={currentEntry.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Describe your responsibilities, achievements, and impact..."
-              rows={5}
-              className="bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background"
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              ROLE / POSITION <span className="text-red-500">*</span>
+            </label>
+            <input
+              value={current.role}
+              onChange={(e) => update('role', e.target.value)}
+              placeholder="e.g., Treasurer, Volunteer, Team Captain"
+              className={`
+                w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 
+                transition-all duration-200
+                ${err.has('role') 
+                  ? 'border-red-500 focus:ring-red-500/30' 
+                  : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+              `}
             />
-            <p className="text-xs text-muted-foreground flex items-center pt-1">
-              <Info size={14} className="mr-1.5 shrink-0"/>
-              Use bullet points (• or -) to highlight specific achievements or responsibilities.
-            </p>
+            {err.has('role') && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                This field is required
+              </p>
+            )}
           </div>
-        </form>
+        </div>
+
+        {/* Location & Dates */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              LOCATION
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+              <input
+                value={current.location}
+                onChange={(e) => update('location', e.target.value)}
+                placeholder="e.g., Boston, MA"
+                className="
+                  w-full pl-10 pr-4 py-3 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md
+                  text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                  transition-colors
+                "
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              TIME PERIOD
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <input
+                  value={current.startDate}
+                  onChange={(e) => update('startDate', e.target.value)}
+                  placeholder="Sept 2022"
+                  className={`
+                    w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                    text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                    focus:outline-none focus:ring-2 
+                    transition-all duration-200
+                    ${err.has('startDate') 
+                      ? 'border-red-500 focus:ring-red-500/30' 
+                      : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+                  `}
+                />
+                {err.has('startDate') && (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">Required</p>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  value={current.current ? 'Present' : current.endDate}
+                  onChange={(e) => update('endDate', e.target.value)}
+                  placeholder={current.current ? "Present" : "May 2023"}
+                  disabled={current.current}
+                  className={`
+                    w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                    text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                    focus:outline-none focus:ring-2 
+                    transition-all duration-200
+                    ${current.current ? 'opacity-60' : ''}
+                    ${err.has('endDate') && !current.current 
+                      ? 'border-red-500 focus:ring-red-500/30' 
+                      : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+                  `}
+                />
+                {err.has('endDate') && !current.current && (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">Required</p>
+                )}
+                <label className="absolute -top-5 right-0 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <input
+                    type="checkbox"
+                    checked={current.current}
+                    onChange={(e) => {
+                      update('current', e.target.checked);
+                      if (e.target.checked) update('endDate', 'Present');
+                    }}
+                    className="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1e252f] text-blue-600 dark:text-blue-500 focus:ring-blue-500/50"
+                  />
+                  Current
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Activities Description */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              DESCRIPTION OF ACTIVITIES
+              {current.bulletPoints.length > 0 && (
+                <span className="ml-2 text-gray-500 dark:text-gray-500 normal-case">
+                  ({current.bulletPoints.length} activit{current.bulletPoints.length !== 1 ? 'ies' : 'y'})
+                </span>
+              )}
+            </label>
+          </div>
+
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+            {current.bulletPoints.map((point, index) => (
+              <div key={index} className="flex gap-3 group">
+                <span className="text-gray-600 dark:text-gray-400 mt-1 select-none">•</span>
+                <textarea
+                  value={point}
+                  onChange={(e) => updateBulletPoint(index, e.target.value)}
+                  placeholder="Describe your responsibilities, achievements, and impact..."
+                  rows={Math.min(3, Math.ceil(point.length / 80) || 2)}
+                  autoFocus={index === current.bulletPoints.length - 1 && point === ''}
+                  className="
+                    flex-1 px-3 py-2 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md
+                    text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                    transition-colors
+                  "
+                />
+                <button
+                  onClick={() => removeBulletPoint(index)}
+                  className="
+                    opacity-0 group-hover:opacity-100 mt-2
+                    text-gray-500 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400
+                    transition-all
+                  "
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+
+            {current.bulletPoints.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-500 text-sm italic mb-4">
+                  No activities added yet. Add your involvement details below.
+                </p>
+                <button
+                  onClick={addBulletPoint}
+                  className="
+                    inline-flex items-center gap-2 px-4 py-2
+                    bg-gray-50 dark:bg-[#1e252f] hover:bg-gray-100 dark:hover:bg-[#252d3a]
+                    border border-gray-300 dark:border-[#3a4452] rounded-md
+                    text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white
+                    transition-colors
+                  "
+                >
+                  <Plus className="h-4 w-4" />
+                  Add your first activity
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
+            <Info className="h-4 w-4" />
+            <span>Use bullet points to highlight specific achievements or responsibilities.</span>
+          </div>
+
+          <div className="mt-6 flex gap-3 justify-end">
+            <button
+              onClick={addBulletPoint}
+              className="
+                flex items-center gap-2 px-5 py-2.5
+                bg-blue-600 hover:bg-blue-700 text-white
+                rounded-md font-medium text-sm
+                transition-colors
+              "
+            >
+              <Sparkles className="h-4 w-4" />
+              GENERATE BULLET
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-6 pt-4 sm:pt-6 border-t dark:border-border/40 gap-3">
-        <Button type="button" variant="ghost" onClick={addInvolvementEntry} className="w-full sm:w-auto hover:bg-background/50 dark:hover:bg-background/20">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add New Involvement
-        </Button>
-        <Button type="submit" form="involvementForm" disabled={isSaving} size="lg" className="w-full sm:w-auto">
-          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save Involvement Section
-        </Button>
+
+      {/* Footer */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-[#252d3a] border-t border-gray-200 dark:border-[#1e252f] flex justify-between items-center">
+        <button
+          onClick={addInvolvementEntry}
+          className="
+            text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white
+            flex items-center gap-2
+            transition-colors
+          "
+        >
+          <Plus className="h-4 w-4" />
+          Add Another Involvement
+        </button>
+
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`
+            flex items-center gap-2 px-6 py-2.5
+            bg-blue-600 hover:bg-blue-700 text-white
+            rounded-md font-medium text-sm uppercase tracking-wide
+            transition-all
+            ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+          `}
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              SAVING...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              SAVE INVOLVEMENT
+            </>
+          )}
+        </button>
       </div>
+
+      {/* Toast */}
+      {toast.show && (
+        <div className={`
+          fixed bottom-4 right-4 px-3 py-2 rounded-md shadow-lg text-white text-sm
+          transform transition-all duration-300 z-50
+          ${toast.error ? 'bg-red-600' : 'bg-green-600'}
+        `}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

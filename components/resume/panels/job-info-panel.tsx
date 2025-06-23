@@ -1,10 +1,11 @@
+// components/resume/panels/job-info-panel.tsx
+
 import React, { useCallback, useMemo, useEffect } from 'react';
 import { useJobInfo } from "@/contexts/job-info-context";
 import { useAuth } from "@/contexts/auth-context";
 import { logger } from '@/lib/enterprise/monitoring/logging';
 
 // Components
-import { JobPanelHeader } from './components/job-panel-header';
 import { StatusMessage } from './components/status-message';
 import { JobForm } from './components/job-form';
 
@@ -43,7 +44,6 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
     updateJobInfo,
     currentResumeId,
     associateJob,
-    isEnterpriseMode,
     isLoading,
     error: contextError
   } = useJobInfo();
@@ -175,10 +175,6 @@ const JobInfoPanel: React.FC<JobInfoPanelProps> = ({
 
   return (
     <div className={containerClasses}>
-      <JobPanelHeader 
-        isEnterpriseMode={isEnterpriseMode}
-        enterpriseOptions={enterpriseOptions}
-      />
 
       <StatusMessage
         type="success"

@@ -25,7 +25,7 @@ import {
   deleteAccount as firebaseDeleteAccount,
   setPersistenceLevel,
   getAuthErrorMessage,
-} from '@/lib/core/auth/firebase-auth';
+} from '@/lib/features/auth/firebase-auth';
 
 interface AuthContextType {
   user: User | null;

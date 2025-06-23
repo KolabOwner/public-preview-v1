@@ -12,8 +12,8 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { onAuthStateChange } from "@/lib/core/auth/firebase-auth";
-import { userService } from "@/lib/core/database/services/user-service";
+import { onAuthStateChange } from "@/lib/features/auth/firebase-auth";
+import { userService } from "@/lib/features/auth/services/user-service";
 import { useAuth } from "@/contexts/auth-context";
 
 
@@ -70,7 +70,7 @@ export default function SignUpPage() {
           // Create session cookie
           const idToken = await currentUser.getIdToken();
           if (idToken) {
-            await fetch('/api/auth/session', {
+            await fetch('/api/auth-endpoints/session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ idToken }),
@@ -112,7 +112,7 @@ export default function SignUpPage() {
           // Create session cookie
           const idToken = await currentUser.getIdToken();
           if (idToken) {
-            await fetch('/api/auth/session', {
+            await fetch('/api/auth-endpoints/session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ idToken }),

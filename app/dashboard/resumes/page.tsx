@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/ui/theme-provider';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
+import { db } from "@/lib/features/auth/firebase-config";
 import ResumeGridCard from '@/components/resume/resume-grid-card';
 import ResumeListView from '@/components/resume/resume-list-view';
 import NotificationsSidebar from '@/components/ui/notifications-sidebar';

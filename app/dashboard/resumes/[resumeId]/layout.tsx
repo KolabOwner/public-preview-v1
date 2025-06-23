@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/ui/theme-provider';
 import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
+import { db } from "@/lib/features/auth/firebase-config";
 
 interface Resume {
   id: string;
@@ -35,9 +35,9 @@ export default function ResumeEditorLayout({
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const [resumeData, setResumeData] = useState<any>(null);
   const [tabVisibility, setTabVisibility] = useState<Record<string, boolean>>(() => {
-    // Load saved preferences from localStorage
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('resumeTabVisibility');
+    // Load saved preferences from localStorage - scoped to this resume
+    if (typeof window !== 'undefined' && resumeId) {
+      const saved = localStorage.getItem(`resumeTabVisibility_${resumeId}`);
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -47,17 +47,17 @@ export default function ResumeEditorLayout({
       }
     }
     
-    // Default visibility
+    // Default visibility - only show sections with content
     return {
-      contact: true,
-      experience: true,
+      contact: true, // Always show contact
+      experience: true, // Core sections default to true
       education: true,
       skills: true,
-      projects: true,
-      involvement: true,
-      coursework: true,
-      certifications: true,
-      summary: true,
+      projects: false, // Additional sections default to false
+      involvement: false,
+      coursework: false,
+      certifications: false,
+      summary: false,
       'cover-letter': true,
       preview: true,
     };
@@ -82,6 +82,27 @@ export default function ResumeEditorLayout({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Update tab visibility based on content when resume data loads
+  useEffect(() => {
+    if (resumeData && resumeId) {
+      // Only update visibility for sections that don't have saved preferences
+      const saved = localStorage.getItem(`resumeTabVisibility_${resumeId}`);
+      const hasSavedPreferences = saved && saved !== '{}';
+      
+      if (!hasSavedPreferences) {
+        // Auto-hide sections without content
+        setTabVisibility(prev => ({
+          ...prev,
+          projects: sectionHasContent('projects'),
+          involvement: sectionHasContent('involvement'),
+          coursework: sectionHasContent('coursework'),
+          certifications: sectionHasContent('certifications'),
+          summary: sectionHasContent('summary'),
+        }));
+      }
+    }
+  }, [resumeData, resumeId]);
 
   // Fetch resumes for dropdown
   useEffect(() => {
@@ -207,9 +228,9 @@ export default function ResumeEditorLayout({
         [tab]: !prev[tab]
       };
       
-      // Save to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('resumeTabVisibility', JSON.stringify(newVisibility));
+      // Save to localStorage - scoped to this resume
+      if (typeof window !== 'undefined' && resumeId) {
+        localStorage.setItem(`resumeTabVisibility_${resumeId}`, JSON.stringify(newVisibility));
       }
       
       return newVisibility;
@@ -239,31 +260,31 @@ export default function ResumeEditorLayout({
     // Always show contact
     if (tab.key === 'contact') return true;
     
-    // Show tab if it's enabled AND has content
-    return tabVisibility[tab.key] && sectionHasContent(tab.key);
+    // Show tab if it's enabled (checked in dropdown)
+    return tabVisibility[tab.key];
   });
 
   const hiddenTabs = editorTabs.filter(tab => {
     // Never hide contact
     if (tab.key === 'contact') return false;
     
-    // Tab is hidden if disabled OR has no content
-    return !tabVisibility[tab.key] || !sectionHasContent(tab.key);
+    // Tab is hidden if disabled (unchecked in dropdown)
+    return !tabVisibility[tab.key];
   });
 
   // Find if we're on the main resume page
   const isMainPage = pathname === `/dashboard/resumes/${resumeId}`;
 
   return (
-    <main className="sm:h-full lg:h-auto px-6 lg:px-8 xl:px-10 pt-2 pb-4 lg:pb-6">
+    <main className="sm:h-full lg:h-auto px-6 lg:px-8 xl:px-10 pt-8 pb-4 lg:pb-6">
       {/* Desktop Navigation */}
       <div className="hidden sm:block">
 
         {/* Centered Tab Navigation */}
-        <div className="flex justify-center mb-6">
-          <div className="flex flex-row flex-wrap gap-1 justify-center">
+        <div className="flex justify-center mb-8 mt-4 relative" style={{ zIndex: 10 }}>
+          <div className="flex flex-row flex-wrap gap-3 justify-center items-center">
             {/* Resume Selector Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50" style={{ zIndex: 1 }}>
               <div className="relative" ref={resumeDropdownRef}>
                 <button
                   onClick={() => setShowResumeDropdown(!showResumeDropdown)}
@@ -282,44 +303,45 @@ export default function ResumeEditorLayout({
                 <i className={`fas fa-chevron-${showResumeDropdown ? 'up' : 'down'} text-[10px] transition-transform`}></i>
               </button>
 
-              {/* Resume Dropdown Menu */}
-              {showResumeDropdown && (
-                <div className="absolute top-full left-0 mt-2 min-w-[280px] max-w-sm bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50">
-                  <div className="py-2 max-h-96 overflow-y-auto">
-                    {resumes.map((resume) => (
-                      <button
-                        key={resume.id}
-                        onClick={() => handleResumeSwitch(resume.id)}
-                        className={`w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 ${
-                          resume.id === resumeId ? 'bg-surface-3/30' : ''
-                        }`}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-200 truncate">
-                            {resume.isTargeted && (
-                              <span className="text-xs uppercase text-rezi-blue-400 mr-1">[TARGETED]</span>
-                            )}
-                            {resume.title}
+                {/* Resume Dropdown Menu */}
+                {showResumeDropdown && (
+                  <div className="absolute top-full left-0 mt-2 min-w-[280px] max-w-sm bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm"
+                       style={{ zIndex: 9999999 }}>
+                    <div className="py-2 max-h-96 overflow-y-auto">
+                      {resumes.map((resume) => (
+                        <button
+                          key={resume.id}
+                          onClick={() => handleResumeSwitch(resume.id)}
+                          className={`w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 ${
+                            resume.id === resumeId ? 'bg-surface-3/30' : ''
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-200 truncate">
+                              {resume.isTargeted && (
+                                <span className="text-xs uppercase text-rezi-blue-400 mr-1">[TARGETED]</span>
+                              )}
+                              {resume.title}
+                            </div>
                           </div>
-                        </div>
-                        {resume.id === resumeId && (
-                          <i className="fas fa-check text-rezi-blue-500 text-sm"></i>
-                        )}
-                      </button>
-                    ))}
-                  </div>
+                          {resume.id === resumeId && (
+                            <i className="fas fa-check text-rezi-blue-500 text-sm"></i>
+                          )}
+                        </button>
+                      ))}
+                    </div>
 
-                  <div className="border-t border-surface-2-stroke py-2">
-                    <Link
-                      href="/dashboard/resumes"
-                      className="w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200"
-                    >
-                      <i className="fas fa-arrow-left text-xs"></i>
-                      <span>Back to All Resumes</span>
-                    </Link>
+                    <div className="border-t border-surface-2-stroke py-2">
+                      <Link
+                        href="/dashboard/resumes"
+                        className="w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200"
+                      >
+                        <i className="fas fa-arrow-left text-xs"></i>
+                        <span>Back to All Resumes</span>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
               </div>
             </div>
 
@@ -357,10 +379,43 @@ export default function ResumeEditorLayout({
 
                 {/* More Menu Dropdown */}
                 {showMoreMenu && (
-                  <div className="absolute top-full right-0 mt-2 min-w-[280px] bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50">
+                  <>
+                    {/* Invisible backdrop */}
+                    <div className="fixed inset-0" style={{ zIndex: 999998 }} onClick={() => setShowMoreMenu(false)} />
+                    <div className="absolute top-full right-0 mt-2 min-w-[280px] bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm"
+                         style={{ zIndex: 999999 }}>
                     <div className="p-3 border-b border-surface-2-stroke">
-                      <h3 className="text-sm font-semibold text-gray-300">Additional Sections</h3>
-                      <p className="text-xs text-gray-500 mt-1">Click to navigate or toggle visibility</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-300">Additional Sections</h3>
+                          <p className="text-xs text-gray-500 mt-1">Click to navigate or toggle visibility</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            // Reset visibility to match content
+                            setTabVisibility({
+                              contact: true,
+                              experience: true,
+                              education: true,
+                              skills: true,
+                              projects: sectionHasContent('projects'),
+                              involvement: sectionHasContent('involvement'),
+                              coursework: sectionHasContent('coursework'),
+                              certifications: sectionHasContent('certifications'),
+                              summary: sectionHasContent('summary'),
+                              'cover-letter': true,
+                              preview: true,
+                            });
+                            // Clear localStorage - scoped to this resume
+                            if (resumeId) {
+                              localStorage.removeItem(`resumeTabVisibility_${resumeId}`);
+                            }
+                          }}
+                          className="text-xs text-blue-500 hover:text-blue-400 underline"
+                        >
+                          Reset
+                        </button>
+                      </div>
                     </div>
                     
                     <div className="py-2 max-h-96 overflow-y-auto">
@@ -403,6 +458,7 @@ export default function ResumeEditorLayout({
                       })}
                     </div>
                   </div>
+                  </>
                 )}
               </div>
             )}

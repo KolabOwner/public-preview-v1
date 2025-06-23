@@ -1,17 +1,6 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GraduationCap, CalendarIcon, PlusCircle, Trash2, Save, Loader2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { GraduationCap, CalendarIcon, Save, Loader2, AlertCircle, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { format, parseISO } from 'date-fns';
-import { useToast } from '@/components/hooks/use-toast';
-
 
 export interface EducationEntry {
   id: string;
@@ -20,65 +9,134 @@ export interface EducationEntry {
   location?: string;
   date: Date | null;
   dateFormat?: string;
+  dateTS?: number;
   isGraduate?: boolean;
   minor?: string;
   score?: string;
   scoreType?: string;
-  details?: string;
+  description?: string;
+  details?: string; // Keep for backward compatibility
 }
 
 interface EducationFormProps {
-  initialData: EducationEntry[];
-  onSave: (data: EducationEntry[]) => void;
+  initialData: any[]; // Accept any format from database
+  onSave: (data: EducationEntry[]) => Promise<void>;
+  autoSave?: boolean;
 }
 
-const DATE_FORMAT_OPTIONS = ["YYYY", "MMMM YYYY", "MM/YYYY"];
+const DATE_FORMAT_OPTIONS = [
+  { value: "YYYY", label: "Year only (2024)" },
+  { value: "MMMM YYYY", label: "Month Year (December 2024)" },
+  { value: "MM/YYYY", label: "MM/YYYY (12/2024)" }
+];
 
-export default function EducationForm({ initialData, onSave }: EducationFormProps) {
+const cleanValue = (value: string | undefined | null): string => {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  return ['n/a', 'N/A', 'none', 'null', '-', 'NA'].includes(trimmed) ? '' : trimmed;
+};
+
+export default function EducationForm({ initialData, onSave, autoSave = false }: EducationFormProps) {
+  // Component handles multiple data formats:
+  // 1. Standard EducationEntry format
+  // 2. Firestore format with different field names (school, degree, etc.)
+  // 3. RMS format with prefixed fields (rms_education_0_institution, etc.)
+  // 4. Date as number (year only), Date object, or timestamp
+
   const [educationEntries, setEducationEntries] = useState<EducationEntry[]>([]);
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
-  const { toast } = useToast();
+  const [errors, setErrors] = useState<Record<string, Set<string>>>({});
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', error: false });
+
+  // Add custom scrollbar styles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #9ca3af;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+      }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #4a5568;
+      }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #5a6578;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showCalendar && !target.closest('.date-picker-container')) {
+        setShowCalendar(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCalendar]);
 
   useEffect(() => {
-     const processedData = initialData.map(edu => {
-      // Handle different data structures (from Firestore vs form)
+    const processedData = initialData.map((edu: any) => {
       const parsedEntry: EducationEntry = {
-        id: edu.id || `edu-${Date.now()}`,
-        // Map from Firestore format first, then use form format as fallback
-        institution: edu.institution || edu.school || "",
-        qualification: edu.qualification || edu.degree || edu.rms_education_0_qualification || "",
-        location: edu.location || "",
-        minor: edu.minor || edu.fieldOfStudy || "",
-        score: edu.score || edu.gpa || "",
-        scoreType: edu.scoreType || edu.gpaScale || "",
-        details: edu.details || edu.description || "",
-        isGraduate: edu.isGraduate !== undefined ? edu.isGraduate : true,
-        dateFormat: edu.dateFormat || "MMMM YYYY",
-        date: null // Will be set below
+        id: edu.id || `edu-${Date.now()}-${Math.random()}`,
+        institution: cleanValue(edu.institution || edu.rms_education_0_institution || edu.school) || "",
+        qualification: cleanValue(edu.qualification || edu.rms_education_0_qualification || edu.degree) || "",
+        location: cleanValue(edu.location || edu.rms_education_0_location) || "",
+        minor: cleanValue(edu.minor || edu.rms_education_0_minor || edu.fieldOfStudy) || "",
+        score: cleanValue(edu.score || edu.rms_education_0_score || edu.gpa) || "",
+        scoreType: cleanValue(edu.scoreType || edu.rms_education_0_scoreType || edu.gpaScale || "") || "",
+        description: cleanValue(edu.description || edu.rms_education_0_description || edu.details) || "",
+        isGraduate: edu.isGraduate !== undefined ? edu.isGraduate : (edu.rms_education_0_isGraduate !== undefined ? edu.rms_education_0_isGraduate : true),
+        dateFormat: edu.dateFormat || edu.rms_education_0_dateFormat || "YYYY",
+        dateTS: edu.dateTS || edu.rms_education_0_dateTS,
+        date: null
       };
 
-      // Handle date parsing based on the source data
-      if (edu.date) {
-        // If it's already a Date object, use it
-        if (edu.date instanceof Date) {
-          parsedEntry.date = edu.date;
-        } else if (typeof edu.date === 'string') {
+      // Handle date parsing - multiple formats
+      const dateValue = edu.date || edu.rms_education_0_date;
+      const tsValue = edu.dateTS || edu.rms_education_0_dateTS;
+
+      if (tsValue && typeof tsValue === 'number') {
+        // Use timestamp if available (it's in milliseconds)
+        parsedEntry.date = new Date(tsValue);
+      } else if (dateValue) {
+        if (typeof dateValue === 'number') {
+          // If date is just a year number (e.g., 2021)
+          parsedEntry.date = new Date(dateValue, 0, 1); // January 1st of that year
+        } else if (dateValue instanceof Date) {
+          parsedEntry.date = dateValue;
+        } else if (typeof dateValue === 'string') {
           try {
-            parsedEntry.date = parseISO(edu.date);
+            parsedEntry.date = parseISO(dateValue);
           } catch (error) {
-            console.error('Error parsing date string:', error);
+            // Try parsing as year
+            const yearNum = parseInt(dateValue);
+            if (!isNaN(yearNum) && yearNum > 1900 && yearNum < 2100) {
+              parsedEntry.date = new Date(yearNum, 0, 1);
+            }
           }
         }
       } else if (edu.endDate) {
-        // If there's no date field but there is an endDate (Firestore format)
         try {
           parsedEntry.date = typeof edu.endDate === 'string' ? parseISO(edu.endDate) : null;
         } catch (error) {
-          console.error('Error parsing endDate string:', error);
-          // If we can't parse it as a date, at least store the string value
-          parsedEntry.date = typeof edu.endDate === 'string' ? new Date() : null;
+          console.error('Error parsing endDate:', error);
         }
       }
 
@@ -87,294 +145,496 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
 
     setEducationEntries(processedData.length > 0 ? processedData : [{
       id: `edu-${Date.now()}`,
-      institution: "", qualification: "", date: null, dateFormat: "MMMM YYYY", isGraduate: true,
+      institution: "",
+      qualification: "",
+      date: null,
+      dateFormat: "YYYY",
+      isGraduate: true,
+      description: "",
+      location: "",
+      minor: "",
+      score: "",
+      scoreType: "",
     }]);
     setCurrentEntryIndex(0);
   }, [initialData]);
 
+  const current = educationEntries[currentEntryIndex];
+  if (!current) return null;
 
-  const validateEntry = (entry: EducationEntry): Record<string, string> => {
-    const entryErrors: Record<string, string> = {};
-    if (!entry.institution.trim()) entryErrors.institution = "School/Institution name is required.";
-    if (!entry.qualification.trim()) entryErrors.qualification = "Degree/Qualification is required.";
-    if (!entry.date) entryErrors.date = "Graduation/Completion date is required.";
-    return entryErrors;
+  const validate = (entry: EducationEntry): Set<string> => {
+    const errs = new Set<string>();
+    if (!entry.institution.trim()) errs.add('institution');
+    if (!entry.qualification.trim()) errs.add('qualification');
+    if (!entry.date) errs.add('date');
+    // Only require scoreType if score is provided
+    if (entry.score && !entry.scoreType) errs.add('scoreType');
+    return errs;
   };
 
-  const validateAllEntries = () => {
-    const newErrors: Record<string, Record<string, string>> = {};
-    let formIsValid = true;
-    educationEntries.forEach((exp, idx) => {
-      const entryErrors = validateEntry(exp);
-      if (Object.keys(entryErrors).length > 0) {
-        newErrors[exp.id] = entryErrors;
-        if (idx === currentEntryIndex) formIsValid = false; 
+  const update = (field: keyof EducationEntry, value: any) => {
+    setEducationEntries(prev => prev.map((e, i) => i === currentEntryIndex ? { ...e, [field]: value } : e));
+
+    // Clear field error
+    setErrors(prev => {
+      const next = { ...prev };
+      if (next[current.id]) {
+        next[current.id].delete(field);
+        if (next[current.id].size === 0) delete next[current.id];
       }
+      return next;
     });
-    setErrors(newErrors);
-    const allEntriesValid = educationEntries.every(exp => Object.keys(validateEntry(exp)).length === 0);
-    return { currentFormValid: formIsValid, allFormsValid: allEntriesValid };
   };
 
-  const handleInputChange = (field: keyof EducationEntry, value: any) => {
-    setEducationEntries(prev => prev.map((entry, idx) => {
-      if (idx === currentEntryIndex) {
-        return { ...entry, [field]: value };
-      }
-      return entry;
-    }));
+  const handleSave = async () => {
+    const allErrors: Record<string, Set<string>> = {};
+    educationEntries.forEach(e => {
+      const errs = validate(e);
+      if (errs.size > 0) allErrors[e.id] = errs;
+    });
+
+    if (Object.keys(allErrors).length) {
+      setErrors(allErrors);
+      setToast({ show: true, message: 'Please fill required fields', error: true });
+      setTimeout(() => setToast({ show: false, message: '', error: false }), 2000);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Format entries for saving
+      // Output format matches the RMS data structure:
+      // - date: number (year only) when dateFormat is "YYYY"
+      // - dateTS: timestamp in milliseconds
+      // - All empty values are removed
+      const formattedEntries = educationEntries
+        .filter(e => e.institution && e.qualification)
+        .map(entry => {
+          const formatted: any = {
+            ...entry,
+            // Add timestamp
+            dateTS: entry.date ? entry.date.getTime() : undefined,
+          };
+
+          // Store year as number if format is YYYY
+          if (entry.dateFormat === 'YYYY' && entry.date) {
+            formatted.date = entry.date.getFullYear();
+          } else {
+            formatted.date = entry.date;
+          }
+
+          // Clean empty values before saving
+          const cleanedEntry: any = {};
+          Object.entries(formatted).forEach(([key, value]) => {
+            if (value !== '' && value !== null && value !== undefined) {
+              cleanedEntry[key] = value;
+            }
+          });
+
+          return cleanedEntry;
+        });
+
+      await onSave(formattedEntries);
+      setToast({ show: true, message: 'Education saved successfully', error: false });
+    } catch {
+      setToast({ show: true, message: 'Failed to save', error: true });
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setToast({ show: false, message: '', error: false }), 2000);
+    }
   };
 
   const addEducationEntry = () => {
-    const newId = `edu-${Date.now()}`;
-    const newEntry: EducationEntry = {
-      id: newId,
-      institution: "", qualification: "", date: null, dateFormat: "MMMM YYYY", isGraduate: true,
-    };
-    setEducationEntries(prev => [...prev, newEntry]);
-    setCurrentEntryIndex(educationEntries.length); 
+    setEducationEntries([...educationEntries, {
+      id: `edu-${Date.now()}`,
+      institution: "",
+      qualification: "",
+      date: null,
+      dateFormat: "YYYY",
+      isGraduate: true,
+      description: "",
+      location: "",
+      minor: "",
+      score: "",
+      scoreType: "",
+    }]);
+    setCurrentEntryIndex(educationEntries.length);
   };
 
-  const removeCurrentEducationEntry = () => {
-    if (educationEntries.length <= 1) {
-        setEducationEntries([{
-            id: `edu-${Date.now()}`, institution: "", qualification: "", date: null, dateFormat: "MMMM YYYY", isGraduate: true,
-        }]);
-        setCurrentEntryIndex(0);
-        setErrors({});
-        return;
-    }
-    const entryIdToRemove = educationEntries[currentEntryIndex].id;
-    setEducationEntries(prev => prev.filter(exp => exp.id !== entryIdToRemove));
-    setCurrentEntryIndex(prev => Math.max(0, prev - 1));
-    setErrors(prev => {
-        const newErrors = {...prev};
-        delete newErrors[entryIdToRemove];
-        return newErrors;
-    });
+  const removeCurrentEntry = () => {
+    if (educationEntries.length <= 1) return;
+    setEducationEntries(prev => prev.filter((_, i) => i !== currentEntryIndex));
+    setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1));
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if(e) e.preventDefault();
-    const { allFormsValid } = validateAllEntries();
-    if (!allFormsValid) {
-      toast({
-        title: "Validation Error",
-        description: "Please correct the errors in all education entries before saving.",
-        variant: "destructive",
-      });
-      const firstErrorEntryIndex = educationEntries.findIndex(exp => Object.keys(validateEntry(exp)).length > 0);
-      if (firstErrorEntryIndex !== -1) {
-        setCurrentEntryIndex(firstErrorEntryIndex);
-      }
-      return;
-    }
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    onSave(educationEntries);
-    setIsSaving(false);
-    toast({
-      title: "Education Section Saved",
-      description: "Your education details have been updated.",
-    });
-  };
-  
-  const currentEntry = educationEntries[currentEntryIndex];
+  const err = errors[current.id] || new Set();
 
-  if (!currentEntry) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        Loading education data or no entries available.
-        <Button onClick={addEducationEntry} variant="outline" className="mt-4">Add First Education Entry</Button>
-      </div>
-    );
-  }
-  const entryErrors = (errors[currentEntry.id] as Record<string, string>) || {};
-  const navigationHeaderTitle = `${currentEntry.qualification || "New Qualification"} at ${currentEntry.institution || "Institution"}`;
-
-  const getFormattedDateString = (date: Date | string | null, dateFormat: string | undefined): string => {
-    if (!date) return "Pick a date";
-    
-    // Convert string to Date if needed
-    let dateObj: Date;
-    if (typeof date === 'string') {
-      dateObj = new Date(date);
-    } else {
-      dateObj = date;
+  const getFormattedDateString = (date: Date | null, dateFormat: string | undefined): string => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return "Pick a date";
     }
-    
-    // Check if date is valid
-    if (isNaN(dateObj.getTime())) return "Pick a date";
-    
+
     try {
       switch (dateFormat) {
-        case "YYYY": return format(dateObj, "yyyy");
-        case "MM/YYYY": return format(dateObj, "MM/yyyy");
+        case "YYYY":
+          return date.getFullYear().toString();
+        case "MM/YYYY":
+          return format(date, "MM/yyyy");
         case "MMMM YYYY":
         default:
-          return format(dateObj, "MMMM yyyy");
+          return format(date, "MMMM yyyy");
       }
     } catch (error) {
-      console.warn('Date formatting error:', error);
       return "Pick a date";
     }
   };
 
+  const headerTitle = current.qualification && current.institution
+    ? `${current.qualification} at ${current.institution}`
+    : "New Education Entry";
+
   return (
-      <div className="w-full mx-auto max-w-[1400px] border-2 border-border rounded-xl overflow-hidden bg-card shadow-sm dark:shadow-md">
-        <div className="flex flex-row items-center justify-between p-3 border-b border-border/40 bg-muted/30 dark:bg-muted/10">
-          <div className="flex items-center gap-2 flex-grow min-w-0">
-            <GraduationCap className="h-5 w-5 text-primary flex-shrink-0" />
-            <h3 className="text-base font-semibold truncate" title={navigationHeaderTitle}>
-              {navigationHeaderTitle}
-            </h3>
+    <div className="bg-white dark:bg-[#2c3442] rounded-lg overflow-hidden border border-gray-200 dark:border-transparent shadow-sm">
+      {/* Header */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-[#252d3a] border-b border-gray-200 dark:border-[#1e252f]">
+        <div className="flex items-center justify-between">
+          <h2 className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
+            <GraduationCap className="h-4 w-4" />
+            {headerTitle}
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))}
+              disabled={currentEntryIndex === 0}
+              className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-400 px-2">
+              {currentEntryIndex + 1} / {educationEntries.length}
+            </span>
+            <button
+              onClick={() => setCurrentEntryIndex(Math.min(educationEntries.length - 1, currentEntryIndex + 1))}
+              disabled={currentEntryIndex === educationEntries.length - 1}
+              className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            {educationEntries.length > 1 && (
+              <>
+                <div className="w-px h-5 bg-gray-300 dark:bg-[#3a4452] mx-1" />
+                <button
+                  onClick={removeCurrentEntry}
+                  className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </>
+            )}
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <span className="text-xs text-muted-foreground mr-1">{currentEntryIndex + 1} of {educationEntries.length}</span>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))} disabled={currentEntryIndex === 0}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentEntryIndex(Math.min(educationEntries.length - 1, currentEntryIndex + 1))} disabled={currentEntryIndex === educationEntries.length - 1}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={removeCurrentEducationEntry}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        <div className="p-4 sm:p-6">
-          <form onSubmit={handleSubmit} id="educationForm" className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor={`institution-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHICH <span className="font-bold">INSTITUTION</span> DID YOU ATTEND? <span className="text-red-500">*</span></Label>
-                <Input 
-                  id={`institution-${currentEntry.id}`} 
-                  value={currentEntry.institution} 
-                  onChange={(e) => handleInputChange('institution', e.target.value)} 
-                  placeholder="e.g., State University" 
-                  className={`bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background ${entryErrors.institution ? "border-destructive": ""}`}
-                />
-                {entryErrors.institution && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.institution}</p>}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor={`qualification-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHAT <span className="font-bold">DEGREE</span> DID YOU EARN? <span className="text-red-500">*</span></Label>
-                <Input 
-                  id={`qualification-${currentEntry.id}`} 
-                  value={currentEntry.qualification} 
-                  onChange={(e) => handleInputChange('qualification', e.target.value)} 
-                  placeholder="e.g., B.S. in Computer Science" 
-                  className={`bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background ${entryErrors.qualification ? "border-destructive": ""}`}
-                />
-                {entryErrors.qualification && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.qualification}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor={`date-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHEN DID YOU <span className="font-bold">GRADUATE</span>? <span className="text-red-500">*</span></Label>
-                <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className={`w-full justify-start font-normal bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background ${!currentEntry.date && "text-muted-foreground"} ${entryErrors.date ? "border-destructive": ""}`}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {getFormattedDateString(currentEntry.date, currentEntry.dateFormat)}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={currentEntry.date} onSelect={(dateVal) => handleInputChange('date', dateVal)} captionLayout="dropdown-buttons" fromYear={1980} toYear={new Date().getFullYear()}/>
-                </PopoverContent>
-              </Popover>
-              {entryErrors.date && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.date}</p>}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor={`dateFormat-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">HOW SHOULD THE <span className="font-bold">DATE</span> BE DISPLAYED?</Label>
-                <Select value={currentEntry.dateFormat} onValueChange={(value) => handleInputChange('dateFormat', value)}>
-                  <SelectTrigger 
-                    id={`dateFormat-${currentEntry.id}`}
-                    className="bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background"
-                  >
-                    <SelectValue placeholder="Select date format" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DATE_FORMAT_OPTIONS.map(format => (
-                      <SelectItem key={format} value={format}>{format}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor={`location-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHERE IS THE <span className="font-bold">INSTITUTION</span> LOCATED?</Label>
-                <Input 
-                  id={`location-${currentEntry.id}`} 
-                  value={currentEntry.location || ""} 
-                  onChange={(e) => handleInputChange('location', e.target.value)} 
-                  placeholder="e.g., City, State" 
-                  className="bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor={`minor-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHAT WAS YOUR <span className="font-bold">MINOR</span>?</Label>
-                <Input 
-                  id={`minor-${currentEntry.id}`} 
-                  value={currentEntry.minor || ""} 
-                  onChange={(e) => handleInputChange('minor', e.target.value)} 
-                  placeholder="e.g., Mathematics" 
-                  className="bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor={`score-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHAT <span className="font-bold">SCORE</span> DID YOU ACHIEVE?</Label>
-                <Input 
-                  id={`score-${currentEntry.id}`} 
-                  value={currentEntry.score || ""} 
-                  onChange={(e) => handleInputChange('score', e.target.value)} 
-                  placeholder="e.g., 3.8" 
-                  className="bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor={`scoreType-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHAT <span className="font-bold">TYPE</span> OF SCORE IS IT?</Label>
-                <Input 
-                  id={`scoreType-${currentEntry.id}`} 
-                  value={currentEntry.scoreType || ""} 
-                  onChange={(e) => handleInputChange('scoreType', e.target.value)} 
-                  placeholder="e.g., GPA, Percentage" 
-                  className="bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background"
-                />
-              </div>
-            </div>
-
-
-            <div className="space-y-1.5">
-              <Label htmlFor={`details-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">ADDITIONAL <span className="font-bold">DETAILS</span></Label>
-              <Textarea 
-                id={`details-${currentEntry.id}`} 
-                value={currentEntry.details || ""} 
-                onChange={(e) => handleInputChange('details', e.target.value)} 
-                placeholder="e.g., Thesis title, Relevant Coursework, Honors..." 
-                rows={3}
-                className="bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background"
-              />
-            </div>
-          </form>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-6 pt-4 sm:pt-6 border-t dark:border-border/40 gap-3">
-          <Button type="button" variant="ghost" onClick={addEducationEntry} className="w-full sm:w-auto hover:bg-background/50 dark:hover:bg-background/20">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Education Entry
-          </Button>
-          <Button type="submit" form="educationForm" disabled={isSaving} size="lg" className="w-full sm:w-auto">
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save Education Section
-          </Button>
         </div>
       </div>
+
+      {/* Form */}
+      <div className="p-6 space-y-6">
+        {/* Institution & Qualification */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              WHICH <span className="font-bold">INSTITUTION</span> DID YOU ATTEND? *
+            </label>
+            <input
+              value={current.institution}
+              onChange={(e) => update('institution', e.target.value)}
+              placeholder="e.g., State University"
+              className={`
+                w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 
+                transition-all duration-200
+                ${err.has('institution') 
+                  ? 'border-red-500 focus:ring-red-500/30' 
+                  : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+              `}
+            />
+            {err.has('institution') && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                This field is required
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              WHAT <span className="font-bold">DEGREE</span> DID YOU EARN? *
+            </label>
+            <input
+              value={current.qualification}
+              onChange={(e) => update('qualification', e.target.value)}
+              placeholder="e.g., B.S. in Computer Science"
+              className={`
+                w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 
+                transition-all duration-200
+                ${err.has('qualification') 
+                  ? 'border-red-500 focus:ring-red-500/30' 
+                  : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+              `}
+            />
+            {err.has('qualification') && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                This field is required
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Date & Date Format */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              WHEN DID YOU <span className="font-bold">GRADUATE</span>? *
+            </label>
+            <div className="relative date-picker-container">
+              <button
+                type="button"
+                onClick={() => setShowCalendar(!showCalendar)}
+                className={`
+                  w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                  text-left flex items-center justify-between
+                  focus:outline-none focus:ring-2 
+                  transition-all duration-200
+                  ${err.has('date') 
+                    ? 'border-red-500 focus:ring-red-500/30' 
+                    : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+                  ${!current.date ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'}
+                `}
+              >
+                <span className="flex items-center">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {getFormattedDateString(current.date, current.dateFormat)}
+                </span>
+              </button>
+              {showCalendar && (
+                <div className="absolute z-50 mt-1 bg-white dark:bg-[#2c3442] border border-gray-200 dark:border-[#3a4452] rounded-md shadow-lg p-4">
+                  {current.dateFormat === 'YYYY' ? (
+                    <input
+                      type="number"
+                      min="1900"
+                      max="2100"
+                      value={current.date ? current.date.getFullYear().toString() : ''}
+                      onChange={(e) => {
+                        const year = parseInt(e.target.value);
+                        if (!isNaN(year) && year >= 1900 && year <= 2100) {
+                          update('date', new Date(year, 0, 1));
+                        }
+                        setShowCalendar(false);
+                      }}
+                      placeholder="Year"
+                      autoFocus
+                      className="px-3 py-2 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md text-gray-900 dark:text-white w-32"
+                    />
+                  ) : (
+                    <input
+                      type="date"
+                      value={current.date ? format(current.date, 'yyyy-MM-dd') : ''}
+                      onChange={(e) => {
+                        const newDate = e.target.value ? new Date(e.target.value) : null;
+                        update('date', newDate);
+                        setShowCalendar(false);
+                      }}
+                      autoFocus
+                      className="px-3 py-2 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md text-gray-900 dark:text-white"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+            {err.has('date') && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                This field is required
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              HOW SHOULD THE <span className="font-bold">DATE</span> BE DISPLAYED?
+            </label>
+            <select
+              value={current.dateFormat}
+              onChange={(e) => update('dateFormat', e.target.value)}
+              className="
+                w-full px-4 py-3 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md
+                text-gray-900 dark:text-white
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                transition-colors
+              "
+            >
+              {DATE_FORMAT_OPTIONS.map(format => (
+                <option key={format.value} value={format.value}>{format.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Location & Minor */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              WHERE IS THE <span className="font-bold">INSTITUTION</span> LOCATED?
+            </label>
+            <input
+              value={current.location || ""}
+              onChange={(e) => update('location', e.target.value)}
+              placeholder="e.g., City, State"
+              className="
+                w-full px-4 py-3 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                transition-colors
+              "
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              WHAT WAS YOUR <span className="font-bold">MINOR</span>?
+            </label>
+            <input
+              value={current.minor || ""}
+              onChange={(e) => update('minor', e.target.value)}
+              placeholder="e.g., Mathematics"
+              className="
+                w-full px-4 py-3 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                transition-colors
+              "
+            />
+          </div>
+        </div>
+
+        {/* Score & Score Type */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              WHAT <span className="font-bold">SCORE</span> DID YOU ACHIEVE?
+            </label>
+            <input
+              value={current.score || ""}
+              onChange={(e) => update('score', e.target.value)}
+              placeholder="e.g., 3.8"
+              className="
+                w-full px-4 py-3 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                transition-colors
+              "
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              WHAT <span className="font-bold">TYPE</span> OF SCORE IS IT?
+              {current.score && <span className="text-red-500 ml-1">*</span>}
+            </label>
+            <input
+              value={current.scoreType || ""}
+              onChange={(e) => update('scoreType', e.target.value)}
+              placeholder="e.g., GPA, Percentage, out of 4.0"
+              className={`
+                w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+                text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+                focus:outline-none focus:ring-2 
+                transition-colors
+                ${err.has('scoreType') 
+                  ? 'border-red-500 focus:ring-red-500/30' 
+                  : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+              `}
+            />
+            {err.has('scoreType') && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                Required when score is provided
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Additional Details */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            ADDITIONAL <span className="font-bold">DETAILS</span>
+          </label>
+          <textarea
+            value={current.description || ""}
+            onChange={(e) => update('description', e.target.value)}
+            placeholder="e.g., Thesis title, Relevant Coursework, Honors..."
+            rows={3}
+            className="
+              w-full px-4 py-3 bg-white dark:bg-[#1e252f] border border-gray-300 dark:border-[#3a4452] rounded-md
+              text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+              focus:outline-none focus:ring-2 focus:ring-blue-500/50
+              transition-colors resize-none
+            "
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-[#252d3a] border-t border-gray-200 dark:border-[#1e252f] flex justify-between items-center">
+        <button
+          onClick={addEducationEntry}
+          className="
+            text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white
+            flex items-center gap-2
+            transition-colors
+          "
+        >
+          <Plus className="h-4 w-4" />
+          Add Another Education
+        </button>
+
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`
+            flex items-center gap-2 px-6 py-2.5
+            bg-blue-600 hover:bg-blue-700 text-white
+            rounded-md font-medium text-sm uppercase tracking-wide
+            transition-all
+            ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+          `}
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              SAVING...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              SAVE EDUCATION
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Toast */}
+      {toast.show && (
+        <div className={`
+          fixed bottom-4 right-4 px-3 py-2 rounded-md shadow-lg text-white text-sm
+          transform transition-all duration-300 z-50
+          ${toast.error ? 'bg-red-600' : 'bg-green-600'}
+        `}>
+          {toast.message}
+        </div>
+      )}
+    </div>
   );
 }

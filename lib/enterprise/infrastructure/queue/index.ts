@@ -19,7 +19,7 @@ import {
   Timestamp,
   runTransaction
 } from 'firebase/firestore';
-import { db } from '@/lib/core/auth/firebase-config';
+import { db } from '@/lib/features/auth/firebase-config';
 import { logger } from '../../monitoring/logging';
 import { metrics } from '../../monitoring/metrics';
 

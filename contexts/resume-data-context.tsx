@@ -1,22 +1,220 @@
-// src/contexts/ResumeDataContext.tsx
+// Consolidated Resume Data Context
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
-
-import {
-  FormSection,
-  ResumeData,
-  ProcessedResumeData,
-  Experience,
-  Education,
-  Skill,
-  Project,
-  Certification,
-  Involvement
-} from '@/types/resume';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from "@/lib/features/auth/firebase-config";
 import { useAuth } from "@/contexts/firebase-auth-context";
-import { StorageService } from "@/lib/core/database/services/storage-service";
 
+// Form sections enum
+export type FormSection =
+  | 'contact'
+  | 'summary'
+  | 'experience'
+  | 'education'
+  | 'skills'
+  | 'projects'
+  | 'certifications'
+  | 'coursework'
+  | 'involvement';
+
+// Experience/Work History
+export interface Experience {
+  company: string;
+  position: string;
+  location?: string;
+  dateBegin: string;
+  dateEnd: string;
+  isCurrent?: boolean;
+  description: string;
+}
+
+// Education
+export interface Education {
+  institution: string;
+  qualification: string; // degree type
+  fieldOfStudy?: string;
+  date: string;
+  isGraduate?: boolean;
+  gpa?: string;
+  location?: string;
+  minor?: string;
+  activities?: string;
+  description?: string;
+}
+
+// Skills
+export interface Skill {
+  category: string;
+  keywords: string;
+}
+
+// Projects
+export interface Project {
+  name: string;
+  title: string;
+  role?: string;
+  organization?: string;
+  description: string;
+  dateBegin?: string;
+  dateEnd?: string;
+  url?: string;
+  repository?: string;
+}
+
+// Certifications
+export interface Certification {
+  name: string;
+  date: string;
+  issuer: string;
+  description?: string;
+}
+
+// Involvement/Activities
+export interface Involvement {
+  organization: string;
+  role: string;
+  location?: string;
+  dateBegin: string;
+  dateEnd: string;
+  description?: string;
+}
+
+// Section completion status
+export interface SectionStatus {
+  isComplete: boolean;
+}
+
+// Contact Information
+export interface ContactInfo {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  linkedin?: string;
+  github?: string;
+  website?: string;
+}
+
+// Processed/Structured Resume Data
+export interface ProcessedResumeData {
+  contact: ContactInfo;
+  contactInfo?: ContactInfo; // alias for compatibility
+  title?: string;
+  summary: string;
+  experience: Experience[];
+  education: Education[];
+  skills: Skill[];
+  projects: Project[];
+  certifications: Certification[];
+  coursework: Coursework[];
+  involvement: Involvement[];
+  languages?: Language[];
+  awards?: Award[];
+  publications?: Publication[];
+  volunteer?: Volunteer[];
+  references?: Reference[];
+  rmsRawData?: any;
+}
+
+// Coursework
+export interface Coursework {
+  course: string;
+  institution: string;
+  date?: string;
+  description?: string;
+}
+
+// Language
+export interface Language {
+  name: string;
+  proficiency?: string;
+}
+
+// Award
+export interface Award {
+  title: string;
+  issuer?: string;
+  date?: string;
+  description?: string;
+}
+
+// Publication
+export interface Publication {
+  title: string;
+  authors?: string;
+  journal?: string;
+  date?: string;
+  url?: string;
+  description?: string;
+}
+
+// Volunteer
+export interface Volunteer {
+  organization: string;
+  role: string;
+  location?: string;
+  dateBegin?: string;
+  dateEnd?: string;
+  description?: string;
+}
+
+// Reference
+export interface Reference {
+  name: string;
+  title?: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  relationship?: string;
+}
+
+// Raw/Flattened Resume Data (as stored in database)
+export interface ResumeData {
+  // Core fields
+  id: string;
+  title: string;
+  document_id?: string;
+  user_id?: string;
+  extracted_text?: string;
+
+  // Section completion tracking
+  sections?: Record<FormSection, SectionStatus>;
+
+  // Summary
+  rms_summary?: string;
+
+  // Contact fields (flattened)
+  rms_contact_fullName?: string;
+  rms_contact_email?: string;
+  rms_contact_phone?: string;
+  rms_contact_location?: string;
+  rms_contact_city?: string;
+  rms_contact_state?: string;
+  rms_contact_linkedin?: string;
+  rms_contact_github?: string;
+  rms_contact_website?: string;
+
+  // Array counts
+  experience_count?: string;
+  education_count?: string;
+  skill_count?: string;
+  project_count?: string;
+  certification_count?: string;
+  coursework_count?: string;
+  involvement_count?: string;
+
+  // Dynamic flattened fields for arrays
+  // Experience fields: rms_experience_0_company, rms_experience_0_position, etc.
+  // Education fields: rms_education_0_institution, rms_education_0_qualification, etc.
+  // Skills fields: rms_skill_0_category, rms_skill_0_keywords, etc.
+  // Projects fields: rms_project_0_name, rms_project_0_title, etc.
+  // Certifications fields: rms_certification_0_name, rms_certification_0_date, etc.
+  // Involvement fields: rms_involvement_0_organization, rms_involvement_0_role, etc.
+  [key: string]: any; // Allow dynamic fields
+}
 
 interface ResumeDataContextType {
   resumeData: ResumeData | null;
@@ -65,6 +263,208 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
 
   const { user } = useAuth();
 
+  // Helper to get RMS field with both capitalizations (Rms_ and rms_)
+  const getRmsField = useCallback((data: any, fieldName: string): any => {
+    if (!data) return undefined;
+    // Try with capital R first (primary format from ExifTool)
+    if (data[fieldName] !== undefined) return data[fieldName];
+    // Try with lowercase r (from Gemini parsing)
+    const lowerField = fieldName.replace('Rms_', 'rms_');
+    if (data[lowerField] !== undefined) return data[lowerField];
+    // Return undefined if neither exists
+    return undefined;
+  }, []);
+
+  // Convert RMS data to processed format
+  const processRmsData = useCallback((rmsData: any): ProcessedResumeData => {
+    if (!rmsData) return defaultProcessedData;
+
+    const processed: ProcessedResumeData = { ...defaultProcessedData };
+
+    // Contact info - handle "n/a" values
+    const getContactField = (fieldName: string) => {
+      const value = getRmsField(rmsData, fieldName);
+      return (value && value !== 'n/a') ? value : '';
+    };
+
+    processed.contact = {
+      fullName: getContactField('Rms_contact_fullName') || 
+                getContactField('Rms_contact_givenNames') || 
+                getContactField('Rms_contact_firstName') || '',
+      email: getContactField('Rms_contact_email') || '',
+      phone: getContactField('Rms_contact_phone') || '',
+      location: getRmsField(rmsData, 'Rms_contact_city') && getRmsField(rmsData, 'Rms_contact_state')
+        ? `${getRmsField(rmsData, 'Rms_contact_city')}, ${getRmsField(rmsData, 'Rms_contact_state')}`
+        : getContactField('Rms_contact_location') || '',
+      linkedin: getContactField('Rms_contact_linkedin') || '',
+      github: getContactField('Rms_contact_github') || '',
+      website: getContactField('Rms_contact_website') || ''
+    };
+
+    // Summary
+    const summaryValue = getRmsField(rmsData, 'Rms_summary');
+    processed.summary = (summaryValue && summaryValue !== 'n/a') ? summaryValue : '';
+
+    // Experience
+    const expCount = parseInt(getRmsField(rmsData, 'Rms_experience_count') || '0');
+    processed.experience = [];
+    for (let i = 0; i < expCount; i++) {
+      const exp: Experience = {
+        company: getRmsField(rmsData, `Rms_experience_${i}_company`) || '',
+        position: getRmsField(rmsData, `Rms_experience_${i}_role`) || 
+                 getRmsField(rmsData, `Rms_experience_${i}_title`) || 
+                 getRmsField(rmsData, `Rms_experience_${i}_position`) || '',
+        location: getRmsField(rmsData, `Rms_experience_${i}_location`) || '',
+        dateBegin: getRmsField(rmsData, `Rms_experience_${i}_dateBegin`) || 
+                  getRmsField(rmsData, `Rms_experience_${i}_dates`) || '',
+        dateEnd: getRmsField(rmsData, `Rms_experience_${i}_dateEnd`) || '',
+        isCurrent: getRmsField(rmsData, `Rms_experience_${i}_isCurrent`) === true || 
+                  getRmsField(rmsData, `Rms_experience_${i}_isCurrent`) === 'true',
+        description: getRmsField(rmsData, `Rms_experience_${i}_description`) || ''
+      };
+      // Only add if has meaningful content
+      if (Object.values(exp).some(v => v && v !== 'n/a')) {
+        processed.experience.push(exp);
+      }
+    }
+
+    // Education
+    const eduCount = parseInt(getRmsField(rmsData, 'Rms_education_count') || '0');
+    processed.education = [];
+    for (let i = 0; i < eduCount; i++) {
+      const edu: Education = {
+        institution: getRmsField(rmsData, `Rms_education_${i}_institution`) || '',
+        qualification: getRmsField(rmsData, `Rms_education_${i}_qualification`) || 
+                      getRmsField(rmsData, `Rms_education_${i}_degree`) || '',
+        fieldOfStudy: getRmsField(rmsData, `Rms_education_${i}_fieldOfStudy`) || '',
+        date: getRmsField(rmsData, `Rms_education_${i}_date`) || 
+              getRmsField(rmsData, `Rms_education_${i}_dates`) || '',
+        isGraduate: getRmsField(rmsData, `Rms_education_${i}_isGraduate`) === true || 
+                   getRmsField(rmsData, `Rms_education_${i}_isGraduate`) === 'true',
+        gpa: getRmsField(rmsData, `Rms_education_${i}_gpa`) || 
+             getRmsField(rmsData, `Rms_education_${i}_score`) || '',
+        location: getRmsField(rmsData, `Rms_education_${i}_location`) || '',
+        minor: getRmsField(rmsData, `Rms_education_${i}_minor`) || '',
+        activities: getRmsField(rmsData, `Rms_education_${i}_activities`) || '',
+        description: getRmsField(rmsData, `Rms_education_${i}_description`) || ''
+      };
+      if (Object.values(edu).some(v => v && v !== 'n/a')) {
+        processed.education.push(edu);
+      }
+    }
+
+    // Skills
+    const skillCount = parseInt(getRmsField(rmsData, 'Rms_skill_count') || '0');
+    processed.skills = [];
+    for (let i = 0; i < skillCount; i++) {
+      const skill: Skill = {
+        category: getRmsField(rmsData, `Rms_skill_${i}_category`) || '',
+        keywords: getRmsField(rmsData, `Rms_skill_${i}_keywords`) || ''
+      };
+      if (skill.category !== 'n/a' && skill.keywords !== 'n/a' && (skill.category || skill.keywords)) {
+        processed.skills.push(skill);
+      }
+    }
+
+    // Projects
+    const projCount = parseInt(getRmsField(rmsData, 'Rms_project_count') || '0');
+    processed.projects = [];
+    for (let i = 0; i < projCount; i++) {
+      const proj: Project = {
+        name: getRmsField(rmsData, `Rms_project_${i}_name`) || getRmsField(rmsData, `Rms_project_${i}_title`) || '',
+        title: getRmsField(rmsData, `Rms_project_${i}_title`) || getRmsField(rmsData, `Rms_project_${i}_name`) || '',
+        role: getRmsField(rmsData, `Rms_project_${i}_role`) || '',
+        organization: getRmsField(rmsData, `Rms_project_${i}_organization`) || '',
+        description: getRmsField(rmsData, `Rms_project_${i}_description`) || '',
+        dateBegin: getRmsField(rmsData, `Rms_project_${i}_dateBegin`) || '',
+        dateEnd: getRmsField(rmsData, `Rms_project_${i}_dateEnd`) || '',
+        url: getRmsField(rmsData, `Rms_project_${i}_url`) || '',
+        repository: getRmsField(rmsData, `Rms_project_${i}_repository`) || ''
+      };
+      if (Object.values(proj).some(v => v && v !== 'n/a')) {
+        processed.projects.push(proj);
+      }
+    }
+
+    // Certifications
+    const certCount = parseInt(getRmsField(rmsData, 'Rms_certification_count') || '0');
+    processed.certifications = [];
+    for (let i = 0; i < certCount; i++) {
+      const cert: Certification = {
+        name: getRmsField(rmsData, `Rms_certification_${i}_name`) || '',
+        date: getRmsField(rmsData, `Rms_certification_${i}_date`) || '',
+        issuer: getRmsField(rmsData, `Rms_certification_${i}_issuer`) || getRmsField(rmsData, `Rms_certification_${i}_department`) || '',
+        description: getRmsField(rmsData, `Rms_certification_${i}_description`) || ''
+      };
+      if (Object.values(cert).some(v => v && v !== 'n/a')) {
+        processed.certifications.push(cert);
+      }
+    }
+
+    // Involvement
+    const invCount = parseInt(getRmsField(rmsData, 'Rms_involvement_count') || '0');
+    processed.involvement = [];
+    for (let i = 0; i < invCount; i++) {
+      const inv: Involvement = {
+        organization: getRmsField(rmsData, `Rms_involvement_${i}_organization`) || '',
+        role: getRmsField(rmsData, `Rms_involvement_${i}_role`) || '',
+        location: getRmsField(rmsData, `Rms_involvement_${i}_location`) || '',
+        dateBegin: getRmsField(rmsData, `Rms_involvement_${i}_dateBegin`) || 
+                  getRmsField(rmsData, `Rms_involvement_${i}_dates`) || '',
+        dateEnd: getRmsField(rmsData, `Rms_involvement_${i}_dateEnd`) || '',
+        description: getRmsField(rmsData, `Rms_involvement_${i}_description`) || ''
+      };
+      // Include if has organization, role, or description (don't require all fields)
+      if (inv.organization || inv.role || inv.description) {
+        processed.involvement.push(inv);
+      }
+    }
+
+    return processed;
+  }, [getRmsField]);
+
+  // Generate extracted text for keyword analysis
+  const generateExtractedText = useCallback((data: ProcessedResumeData): string => {
+    const sections: string[] = [];
+    
+    // Contact info
+    if (data.contact) {
+      sections.push(Object.values(data.contact).filter(Boolean).join(' '));
+    }
+    
+    // Summary
+    if (data.summary) {
+      sections.push(data.summary);
+    }
+    
+    // Experience
+    data.experience?.forEach(exp => {
+      sections.push([exp.position, exp.company, exp.location, exp.description].filter(Boolean).join(' '));
+    });
+    
+    // Education
+    data.education?.forEach(edu => {
+      sections.push([edu.institution, edu.qualification, edu.fieldOfStudy, edu.location].filter(Boolean).join(' '));
+    });
+    
+    // Skills
+    data.skills?.forEach(skill => {
+      sections.push([skill.category, skill.keywords].filter(Boolean).join(' '));
+    });
+    
+    // Projects
+    data.projects?.forEach(proj => {
+      sections.push([proj.name || proj.title, proj.description].filter(Boolean).join(' '));
+    });
+    
+    // Involvement
+    data.involvement?.forEach(inv => {
+      sections.push([inv.organization, inv.role, inv.description].filter(Boolean).join(' '));
+    });
+    
+    return sections.join(' ').trim();
+  }, []);
+
   // Check if resume data is ready for keyword analysis
   const isKeywordAnalysisReady = useMemo(() => {
     if (!resumeData) return false;
@@ -78,186 +478,85 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
     return !!hasContent;
   }, [resumeData, processedData]);
 
-  // Transform nested data to flattened format
-  const transformNestedToFlattened = (nestedData: any): Partial<ResumeData> => {
-    if (!nestedData) return {};
+  // Fetch resume data from Firebase
+  const fetchResumeData = async (id: string) => {
+    setLoading(true);
+    try {
+      const userId = user?.uid;
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
 
-    const flattenedData: any = {
-      title: nestedData.title || '',
-      rms_summary: nestedData.summary || '',
-      experience_count: (nestedData.experience?.length || 0).toString(),
-      education_count: (nestedData.education?.length || 0).toString(),
-      skill_count: (nestedData.skills?.length || 0).toString(),
-      project_count: (nestedData.projects?.length || 0).toString(),
-      certification_count: (nestedData.certifications?.length || 0).toString()
-    };
+      const resumeRef = doc(db, 'resumes', id);
+      const resumeSnap = await getDoc(resumeRef);
 
-    // Contact details
-    if (nestedData.contact) {
-      Object.entries(nestedData.contact).forEach(([key, value]) => {
-        flattenedData[`rms_contact_${key}`] = value || '';
-      });
+      if (resumeSnap.exists()) {
+        const firestoreData = resumeSnap.data();
+        
+        // Extract RMS data (the new primary format)
+        const rmsData = firestoreData.rmsRawData || {};
+        
+        // Process RMS data to get structured format
+        const processed = processRmsData(rmsData);
+        
+        // Generate extracted text
+        const extractedText = generateExtractedText(processed);
+        
+        const resumeDataWithId: ResumeData = {
+          ...rmsData,
+          id,
+          title: firestoreData.title || 'Untitled Resume',
+          document_id: id,
+          user_id: userId,
+          extracted_text: extractedText,
+          sections: createDefaultSections(rmsData)
+        };
+        
+        setResumeData(resumeDataWithId);
+      } else {
+        setResumeData(createEmptyResume(id));
+      }
+    } catch (error) {
+      console.error('Error fetching resume:', error);
+      setResumeData(createEmptyResume(id));
+    } finally {
+      setLoading(false);
     }
-
-    // Array fields
-    const arrayFields = ['experience', 'education', 'skills', 'projects', 'certifications'];
-    arrayFields.forEach(field => {
-      if (Array.isArray(nestedData[field])) {
-        nestedData[field].forEach((item: any, index: number) => {
-          Object.entries(item).forEach(([key, value]) => {
-            const prefix = `rms_${field}_${index}_`;
-            flattenedData[`${prefix}${key}`] = value || '';
-          });
-        });
-      }
-    });
-
-    return flattenedData;
   };
 
-  // Process resume data into structured format
-  const processResumeData = (data: ResumeData): ProcessedResumeData => {
-    const processed: ProcessedResumeData = { ...defaultProcessedData };
+  // Helper functions
+  const createDefaultSections = useCallback((data: any): Record<FormSection, { isComplete: boolean }> => ({
+    contact: { isComplete: Boolean(getRmsField(data, 'Rms_contact_fullName') || 
+                                  getRmsField(data, 'Rms_contact_email') ||
+                                  getRmsField(data, 'Rms_contact_phone')) },
+    experience: { isComplete: parseInt(getRmsField(data, 'Rms_experience_count') || '0') > 0 },
+    education: { isComplete: parseInt(getRmsField(data, 'Rms_education_count') || '0') > 0 },
+    skills: { isComplete: parseInt(getRmsField(data, 'Rms_skill_count') || '0') > 0 },
+    projects: { isComplete: parseInt(getRmsField(data, 'Rms_project_count') || getRmsField(data, 'Rms_projects_count') || '0') > 0 },
+    certifications: { isComplete: parseInt(getRmsField(data, 'Rms_certification_count') || getRmsField(data, 'Rms_certifications_count') || '0') > 0 },
+    coursework: { isComplete: false },
+    involvement: { isComplete: parseInt(getRmsField(data, 'Rms_involvement_count') || '0') > 0 },
+    summary: { isComplete: Boolean(getRmsField(data, 'Rms_summary')) }
+  }), [getRmsField]);
 
-    // Contact info
-    processed.contact = {
-      fullName: data.rms_contact_fullName || '',
-      email: data.rms_contact_email || '',
-      phone: data.rms_contact_phone || '',
-      location: data.rms_contact_location ||
-        (data.rms_contact_city && data.rms_contact_state
-          ? `${data.rms_contact_city}, ${data.rms_contact_state}`
-          : ''),
-      linkedin: data.rms_contact_linkedin || '',
-      github: data.rms_contact_github || '',
-      website: data.rms_contact_website || ''
-    };
-
-    processed.summary = data.rms_summary || '';
-
-    // Process array fields
-    const processArrayField = <T extends Record<string, any>>(
-      fieldName: string,
-      countKey: string,
-      transformer: (data: any, index: number) => T
-    ): T[] => {
-      const count = parseInt(data[countKey] || '0');
-      const items: T[] = [];
-
-      for (let i = 0; i < count; i++) {
-        try {
-          items.push(transformer(data, i));
-        } catch (error) {
-          console.error(`Error processing ${fieldName} item ${i}:`, error);
-        }
-      }
-
-      return items;
-    };
-
-    processed.experience = processArrayField<Experience>(
-      'experience',
-      'experience_count',
-      (data, i) => {
-        const prefix = `rms_experience_${i}_`;
-        return {
-          company: data[`${prefix}company`] || '',
-          position: data[`${prefix}position`] || data[`${prefix}role`] || '',
-          location: data[`${prefix}location`] || '',
-          dateBegin: data[`${prefix}dateBegin`] || '',
-          dateEnd: data[`${prefix}dateEnd`] || '',
-          isCurrent: data[`${prefix}isCurrent`] === 'true',
-          description: data[`${prefix}description`] || ''
-        };
-      }
-    );
-
-    processed.education = processArrayField<Education>(
-      'education',
-      'education_count',
-      (data, i) => {
-        const prefix = `rms_education_${i}_`;
-        return {
-          institution: data[`${prefix}institution`] || '',
-          qualification: data[`${prefix}qualification`] || '',
-          fieldOfStudy: data[`${prefix}fieldOfStudy`] || '',
-          date: data[`${prefix}date`] || '',
-          isGraduate: data[`${prefix}isGraduate`] === 'true',
-          gpa: data[`${prefix}gpa`] || data[`${prefix}score`] || '',
-          location: data[`${prefix}location`] || '',
-          minor: data[`${prefix}minor`] || '',
-          activities: data[`${prefix}activities`] || '',
-          description: data[`${prefix}description`] || ''
-        };
-      }
-    );
-
-    processed.skills = processArrayField<Skill>(
-      'skills',
-      'skill_count',
-      (data, i) => {
-        const prefix = `rms_skill_${i}_`;
-        return {
-          category: data[`${prefix}category`] || '',
-          keywords: data[`${prefix}keywords`] || ''
-        };
-      }
-    );
-
-    processed.projects = processArrayField<Project>(
-      'projects',
-      'project_count',
-      (data, i) => {
-        const prefix = `rms_project_${i}_`;
-        return {
-          name: data[`${prefix}name`] || data[`${prefix}title`] || '',
-          title: data[`${prefix}title`] || data[`${prefix}name`] || '',
-          role: data[`${prefix}role`] || '',
-          organization: data[`${prefix}organization`] || '',
-          description: data[`${prefix}description`] || '',
-          dateBegin: data[`${prefix}dateBegin`] || '',
-          dateEnd: data[`${prefix}dateEnd`] || '',
-          url: data[`${prefix}url`] || '',
-          repository: data[`${prefix}repository`] || ''
-        };
-      }
-    );
-
-    processed.certifications = processArrayField<Certification>(
-      'certifications',
-      'certification_count',
-      (data, i) => {
-        const prefix = `rms_certification_${i}_`;
-        return {
-          name: data[`${prefix}name`] || '',
-          date: data[`${prefix}date`] || '',
-          issuer: data[`${prefix}issuer`] || data[`${prefix}department`] || '',
-          description: data[`${prefix}description`] || ''
-        };
-      }
-    );
-
-    processed.involvement = processArrayField<Involvement>(
-      'involvement',
-      'involvement_count',
-      (data, i) => {
-        const prefix = `rms_involvement_${i}_`;
-        return {
-          organization: data[`${prefix}organization`] || '',
-          role: data[`${prefix}role`] || '',
-          location: data[`${prefix}location`] || '',
-          dateBegin: data[`${prefix}dateBegin`] || '',
-          dateEnd: data[`${prefix}dateEnd`] || '',
-          description: data[`${prefix}description`] || ''
-        };
-      }
-    );
-
-    return processed;
-  };
+  const createEmptyResume = (id: string): ResumeData => ({
+    id,
+    title: "New Resume",
+    sections: {
+      contact: { isComplete: false },
+      experience: { isComplete: false },
+      education: { isComplete: false },
+      skills: { isComplete: false },
+      projects: { isComplete: false },
+      certifications: { isComplete: false },
+      coursework: { isComplete: false },
+      involvement: { isComplete: false },
+      summary: { isComplete: false }
+    }
+  });
 
   // Determine populated sections
-  const getPopulatedSections = (): FormSection[] => {
+  const getPopulatedSections = useCallback((): FormSection[] => {
     if (!processedData) return ['contact'];
 
     const sections: FormSection[] = ['contact']; // Always include contact
@@ -286,190 +585,7 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
     }
 
     return sections;
-  };
-
-  // Helper function to generate extracted text from parsed data
-  const generateExtractedText = (parsedData: any): string => {
-    if (!parsedData) return '';
-    
-    const sections: string[] = [];
-    
-    // Contact info
-    if (parsedData.contactInfo) {
-      const contact = parsedData.contactInfo;
-      sections.push([contact.fullName, contact.email, contact.phone, contact.location].filter(Boolean).join(' '));
-    }
-    
-    // Summary/Objective
-    if (parsedData.summary || parsedData.objective) {
-      sections.push(parsedData.summary || parsedData.objective);
-    }
-    
-    // Experience
-    const experienceArray = parsedData.experiences || parsedData.experience || [];
-    if (experienceArray.length > 0) {
-      experienceArray.forEach((exp: any) => {
-        sections.push([exp.position || exp.role, exp.company, exp.location, exp.description].filter(Boolean).join(' '));
-      });
-    }
-    
-    // Education
-    if (parsedData.education?.length > 0) {
-      parsedData.education.forEach((edu: any) => {
-        sections.push([edu.institution, edu.degree || edu.qualification, edu.fieldOfStudy, edu.description].filter(Boolean).join(' '));
-      });
-    }
-    
-    // Skills
-    const skillsArray = parsedData.skillCategories || parsedData.skills || [];
-    if (skillsArray.length > 0) {
-      skillsArray.forEach((category: any) => {
-        sections.push([category.category, category.keywords].filter(Boolean).join(' '));
-      });
-    }
-    
-    // Projects
-    if (parsedData.projects?.length > 0) {
-      parsedData.projects.forEach((proj: any) => {
-        sections.push([proj.name || proj.title, proj.description].filter(Boolean).join(' '));
-      });
-    }
-    
-    // Involvements
-    if (parsedData.involvements?.length > 0) {
-      parsedData.involvements.forEach((inv: any) => {
-        sections.push([inv.organization, inv.role, inv.description].filter(Boolean).join(' '));
-      });
-    }
-    
-    return sections.join(' ').trim();
-  };
-
-  // Fetch resume data
-  const fetchResumeData = async (id: string) => {
-    setLoading(true);
-    try {
-      const userId = user?.uid;
-      if (!userId) {
-        throw new Error('User not authenticated');
-      }
-
-      // Fetch directly from Firestore
-      const resumeRef = doc(db, 'resumes', id);
-      const resumeSnap = await getDoc(resumeRef);
-
-      if (resumeSnap.exists()) {
-        const firestoreData = resumeSnap.data();
-        
-        // Check if this is the expected format with parsedData and rmsRawData
-        if (firestoreData.parsedData || firestoreData.rmsRawData) {
-          // Use rmsRawData for the flattened format
-          const rawData = firestoreData.rmsRawData || {};
-          
-          // Generate extracted text from parsedData
-          const extractedText = generateExtractedText(firestoreData.parsedData);
-          
-          const resumeDataWithId: ResumeData = {
-            ...rawData,
-            id,
-            title: firestoreData.title || 'Untitled Resume',
-            document_id: id,
-            user_id: userId,
-            extracted_text: extractedText,
-            sections: createDefaultSections(rawData)
-          };
-          
-          setResumeData(resumeDataWithId);
-        } else {
-          // Fallback to old format handling
-          const data = await StorageService.getDocumentData(userId, id);
-          
-          if (data) {
-            const isNestedFormat = Array.isArray(data.experience) ||
-                                  Array.isArray(data.education) ||
-                                  Array.isArray(data.skills);
-
-            let resumeDataWithId: ResumeData;
-
-            if (isNestedFormat) {
-              const flattenedData = transformNestedToFlattened(data);
-              const extractedText = generateExtractedText(data);
-              resumeDataWithId = {
-                ...flattenedData,
-                id,
-                title: data.title || 'Untitled Resume',
-                document_id: id,
-                user_id: userId,
-                extracted_text: extractedText,
-                sections: data.sections || createDefaultSections(data)
-              } as ResumeData;
-            } else {
-              // For old flattened format, reconstruct parsed data for text extraction
-              const processedForText = processResumeData(data);
-              const extractedText = generateExtractedText({
-                contactInfo: processedForText.contact,
-                summary: processedForText.summary,
-                experiences: processedForText.experience,
-                education: processedForText.education,
-                skillCategories: processedForText.skills,
-                projects: processedForText.projects,
-                involvements: processedForText.involvement
-              });
-              resumeDataWithId = {
-                ...data,
-                id,
-                title: data.title || 'Untitled Resume',
-                document_id: id,
-                user_id: userId,
-                extracted_text: extractedText,
-                sections: data.sections || createDefaultSections(data)
-              } as ResumeData;
-            }
-
-            setResumeData(resumeDataWithId);
-          } else {
-            setResumeData(createEmptyResume(id));
-          }
-        }
-      } else {
-        setResumeData(createEmptyResume(id));
-      }
-    } catch (error) {
-      console.error('Error fetching resume:', error);
-      setResumeData(createEmptyResume(id));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Helper functions
-  const createDefaultSections = (data: any): Record<FormSection, { isComplete: boolean }> => ({
-    contact: { isComplete: Boolean(data.contact || data.rms_contact_fullName) },
-    experience: { isComplete: Boolean(data.experience?.length || parseInt(data.experience_count || '0')) },
-    education: { isComplete: Boolean(data.education?.length || parseInt(data.education_count || '0')) },
-    skills: { isComplete: Boolean(data.skills?.length || parseInt(data.skill_count || '0')) },
-    projects: { isComplete: Boolean(data.projects?.length || parseInt(data.project_count || '0')) },
-    certifications: { isComplete: Boolean(data.certifications?.length || parseInt(data.certification_count || '0')) },
-    coursework: { isComplete: false },
-    involvement: { isComplete: false },
-    summary: { isComplete: Boolean(data.summary || data.rms_summary) }
-  });
-
-  const createEmptyResume = (id: string): ResumeData => ({
-    id,
-    title: "New Resume",
-    sections: {
-      contact: { isComplete: false },
-      experience: { isComplete: false },
-      education: { isComplete: false },
-      skills: { isComplete: false },
-      projects: { isComplete: false },
-      certifications: { isComplete: false },
-      coursework: { isComplete: false },
-      involvement: { isComplete: false },
-      summary: { isComplete: false }
-    }
-  });
+  }, [processedData]);
 
   // Update resume data
   const updateResumeData = (updates: Partial<ResumeData>) => {
@@ -479,7 +595,7 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
     });
   };
 
-  // Get optimized extracted text for keyword analysis
+  // Get extracted text for keyword analysis
   const getExtractedTextForKeywords = useCallback((): string => {
     // Prefer cached extracted_text if available
     if (resumeData?.extracted_text) {
@@ -488,64 +604,12 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
 
     // Generate from processed data
     if (processedData) {
-      return generateExtractedTextFromProcessed(processedData);
+      return generateExtractedText(processedData);
     }
 
     console.warn('No content available for keyword analysis');
     return '';
-  }, [resumeData, processedData]);
-
-  // Helper function to generate extracted text from processed resume data
-  const generateExtractedTextFromProcessed = (data: ProcessedResumeData): string => {
-    const sections: string[] = [];
-    
-    // Contact info
-    if (data.contact) {
-      sections.push(Object.values(data.contact).filter(Boolean).join(' '));
-    }
-    
-    // Summary
-    if (data.summary) {
-      sections.push(data.summary);
-    }
-    
-    // Experience
-    if (data.experience?.length > 0) {
-      data.experience.forEach(exp => {
-        sections.push([exp.position, exp.company, exp.location, exp.description].filter(Boolean).join(' '));
-      });
-    }
-    
-    // Education
-    if (data.education?.length > 0) {
-      data.education.forEach(edu => {
-        sections.push([edu.institution, edu.qualification, edu.fieldOfStudy, edu.location].filter(Boolean).join(' '));
-      });
-    }
-    
-    // Skills
-    if (data.skills?.length > 0) {
-      data.skills.forEach(skill => {
-        sections.push([skill.category, skill.keywords].filter(Boolean).join(' '));
-      });
-    }
-    
-    // Projects
-    if (data.projects?.length > 0) {
-      data.projects.forEach(proj => {
-        sections.push([proj.name || proj.title, proj.description].filter(Boolean).join(' '));
-      });
-    }
-    
-    // Involvement
-    if (data.involvement?.length > 0) {
-      data.involvement.forEach(inv => {
-        sections.push([inv.organization, inv.role, inv.description].filter(Boolean).join(' '));
-      });
-    }
-    
-    return sections.join(' ').trim();
-  };
+  }, [resumeData, processedData, generateExtractedText]);
 
   // Save resume data
   const saveResumeData = async () => {
@@ -553,7 +617,12 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
 
     setLoading(true);
     try {
-      await StorageService.updateDocument(user.uid, resumeData.id, resumeData);
+      const resumeRef = doc(db, 'resumes', resumeData.id);
+      await updateDoc(resumeRef, {
+        ...resumeData,
+        rmsRawData: resumeData, // Store the flattened data as rmsRawData
+        updatedAt: new Date()
+      });
     } catch (error) {
       console.error('Error saving resume:', error);
       throw error;
@@ -565,15 +634,15 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
   // Effects
   useEffect(() => {
     if (resumeData) {
-      const processed = processResumeData(resumeData);
+      const processed = processRmsData(resumeData);
       setProcessedData(processed);
     }
-  }, [resumeData]);
+  }, [resumeData, processRmsData]);
 
   useEffect(() => {
     const sections = getPopulatedSections();
     setPopulatedSections(sections);
-  }, [processedData]);
+  }, [getPopulatedSections]);
 
   const value: ResumeDataContextType = {
     resumeData,

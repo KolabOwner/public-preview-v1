@@ -1,77 +1,134 @@
-// components/resume/resume-preview.tsx
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { AlertCircle } from "lucide-react";
-import { useToast } from '@/components/hooks/use-toast';
+import { useToast } from "@/components/hooks/use-toast";
 import { useAuth } from '@/contexts/auth-context';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
-import ResumeHeaderBar, { DocumentSettings, ResumeHeaderBarRef } from '@/components/layout/resume-header-bar';
+import { db } from "@/lib/features/auth/firebase-config";
+import ResumeHeaderBar, { ResumeHeaderBarRef } from '@/components/layout/resume-header-bar';
 import KeywordTargetingPanel from "@/components/resume/panels/keyword-targeting-panel";
 import JobInfoPanel from "@/components/resume/panels/job-info-panel";
 import SharePanel from "@/components/resume/panels/share-panel";
-import { generateResumePDF, generateResumePDFAsync } from "@/lib/features/pdf/generator";
+
 import { useJobInfo } from '@/contexts/job-info-context';
 import { useResumeData } from '@/contexts/resume-data-context';
+import { getDefaultSectionOrder, getSectionTitle, sectionHasContent } from '../sections/resume-sections';
+import {useResumeFont, useResumeStyles, useResumeTheme } from '@/components/hooks/use-resume-styles';
+import {generateResumePDFAsync} from "@/lib/features/pdf/pdf-generator";
 
+// Type definitions
 interface ResumePreviewProps {
   resumeData: any;
   resumeId: string;
   showJobPanels?: boolean;
   className?: string;
+  initialTemplate?: string;
 }
+
+// Memoized components for performance
+const ResumeSection = memo(({
+  title,
+  children,
+  styles
+}: {
+  title: string;
+  children: React.ReactNode;
+  styles: any;
+}) => (
+  <section>
+    <h2 className="resume-section-header" style={styles.sectionHeader}>
+      {title}
+    </h2>
+    {children}
+  </section>
+));
+
+ResumeSection.displayName = 'ResumeSection';
+
+const BulletList = memo(({
+  items,
+  styles
+}: {
+  items: string[];
+  styles: any;
+}) => (
+  <ul className="resume-bullet-list" style={styles.bulletList}>
+    {items.map((item, index) => (
+      <li key={index} style={styles.bulletItem}>{item}</li>
+    ))}
+  </ul>
+));
+
+BulletList.displayName = 'BulletList';
 
 export default function ResumePreview({
   resumeData,
   resumeId,
   showJobPanels = true,
-  className = ""
+  className = "",
+  initialTemplate = 'professional'
 }: ResumePreviewProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const { setCurrentResumeId, updateJobInfo } = useJobInfo();
-  const { updateResumeData, fetchResumeData } = useResumeData();
+  const { fetchResumeData, processedData, loading: contextLoading } = useResumeData();
   const headerBarRef = useRef<ResumeHeaderBarRef>(null);
+
+  // State
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [hasJobInfo, setHasJobInfo] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
-  // IMPROVEMENT: Add font loading state
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+  // Refs to prevent race conditions
+  const initializationRef = useRef(false);
+  const currentResumeIdRef = useRef<string | null>(null);
 
-  // IMPROVEMENT: Font loading detection
+  // Section ordering state with template-based defaults
+  const [sectionOrder, setSectionOrder] = useState<string[]>(() =>
+    getDefaultSectionOrder(initialTemplate)
+  );
+
+  // Use the resume styles hook
+  const {
+    documentSettings,
+    currentTemplate,
+    styles: resumeStyles,
+    css: resumeCSS,
+    inlineStyles,
+    paperDimensions,
+    scaledDimensions,
+    updateSetting,
+    changeTemplate,
+    templates,
+  } = useResumeStyles({
+    initialTemplate,
+    persistSettings: true,
+    storageKey: `resume-settings-${resumeId}`,
+  });
+
+  // Load custom fonts
+  useResumeFont(documentSettings.fontFamily);
+
+  // Get theme colors based on dark mode
+  const theme = useResumeTheme(isDarkMode);
+
+  // Update section order when template changes
   useEffect(() => {
-    // Check if fonts are already loaded
-    const checkFonts = async () => {
-      if ('fonts' in document) {
-        try {
-          // Load specific weights matching PDF
-          await Promise.all([
-            document.fonts.load('300 1em Merriweather'),
-            document.fonts.load('400 1em Merriweather'),
-            document.fonts.load('700 1em Merriweather'),
-          ]);
-          setFontsLoaded(true);
-        } catch (err) {
-          console.warn('Font loading failed:', err);
-          setFontsLoaded(true); // Continue anyway
-        }
-      } else {
-        setFontsLoaded(true); // Fallback for older browsers
-      }
-    };
+    const defaultOrder = getDefaultSectionOrder(currentTemplate);
+    setSectionOrder(defaultOrder);
+    // Also save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`resume-section-order-${resumeId}`, JSON.stringify(defaultOrder));
+    }
+  }, [currentTemplate, resumeId]);
 
-    checkFonts();
-  }, []);
-
-  // Check for dark mode using CSS media query
+  // Check for dark mode
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
     const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark') ||
-                    mediaQuery.matches;
+      const isDark = document.documentElement.classList.contains('dark') || mediaQuery.matches;
       setIsDarkMode(isDark);
     };
 
@@ -96,224 +153,182 @@ export default function ResumePreview({
     };
   }, []);
 
-  // Check if job info exists in Firestore
+  // Check job info - Fixed dependency array and simplified logic
   const checkJobInfo = useCallback(async () => {
-    console.log('checkJobInfo called with:', { user: !!user, resumeId, showJobPanels });
-    if (!user || !resumeId || !showJobPanels) {
-      setLoading(false);
-      return;
+    if (!user?.uid || !resumeId || !showJobPanels) {
+      console.log(`[ResumePreview] Skipping job info check - user: ${!!user?.uid}, resumeId: ${!!resumeId}, showJobPanels: ${showJobPanels}`);
+      setHasJobInfo(false);
+      return false;
     }
 
     try {
-      setLoading(true);
+      console.log(`[ResumePreview] Checking job info for resume: ${resumeId}`);
       const resumeRef = doc(db, 'resumes', resumeId);
       const resumeSnap = await getDoc(resumeRef);
 
       if (resumeSnap.exists()) {
         const data = resumeSnap.data();
-        console.log('Resume data from Firestore:', {
-          hasJobInfo: !!data.job_info,
-          jobInfo: data.job_info
-        });
-
         const hasJob = !!(data.job_info?.title && data.job_info?.description);
+        console.log(`[ResumePreview] Job info found: ${hasJob}`);
         setHasJobInfo(hasJob);
 
-        // Load job info into context if it exists
         if (hasJob && data.job_info) {
-          console.log('Updating job info in context with:', {
+          // Update job info context
+          updateJobInfo({
             title: data.job_info.title || '',
-            description: data.job_info.description || ''
+            description: data.job_info.description || '',
+            company: data.job_info.company || '',
+            keywords: data.job_info.keywords || [],
+            isActive: true
           });
-
-          // Ensure resume ID is set before updating job info
-          setCurrentResumeId(resumeId);
-
-          // Use setTimeout to ensure the resume ID is set in the context
-          setTimeout(() => {
-            updateJobInfo({
-              title: data.job_info.title || '',
-              description: data.job_info.description || '',
-              company: data.job_info.company || '',
-              keywords: data.job_info.keywords || [],
-              isActive: true
-            });
-          }, 0);
-        } else {
-          console.log('No job info found or incomplete:', { hasJob, jobInfo: data.job_info });
         }
 
-        // Store document ID and user ID for the panels to use
+        // Set localStorage only once per session
         localStorage.setItem('current_document_id', resumeId);
-        if (user?.uid) {
-          localStorage.setItem('current_user_id', user.uid);
-        }
+        localStorage.setItem('current_user_id', user.uid);
+
+        return hasJob;
       } else {
+        console.log(`[ResumePreview] Resume document not found: ${resumeId}`);
         setHasJobInfo(false);
+        return false;
       }
     } catch (error) {
       console.error('Error checking job info:', error);
       setHasJobInfo(false);
-    } finally {
-      setLoading(false);
+      return false;
     }
-  }, [user, resumeId, showJobPanels, updateJobInfo, setCurrentResumeId]);
+  }, [user?.uid, resumeId, showJobPanels, updateJobInfo]);
 
-  // Job info is now checked in the effect below after resume ID is set
-
-  // Set current resume ID for job info context
+  // Centralized initialization - Fixed to prevent race conditions
   useEffect(() => {
-    if (resumeId) {
-      setCurrentResumeId(resumeId);
-    }
+    let isMounted = true;
 
-    // Cleanup on unmount
-    return () => {
-      if (resumeId) {
-        setCurrentResumeId(null);
-      }
-    };
-  }, [resumeId, setCurrentResumeId]);
-
-  // Fetch resume data and check job info after resume ID is set
-  useEffect(() => {
     const initializeData = async () => {
-      if (resumeId && user) {
-        // Fetch resume data for the ResumeDataContext
-        await fetchResumeData(resumeId);
+      // Prevent multiple simultaneous initializations
+      if (!resumeId || initializationRef.current || currentResumeIdRef.current === resumeId) {
+        return;
+      }
 
-        // Check job info after resume data is loaded
-        await checkJobInfo();
+      // Mark as initializing
+      initializationRef.current = true;
+      currentResumeIdRef.current = resumeId;
+
+      try {
+        setLoading(true);
+        console.log(`[ResumePreview] Initializing for resume: ${resumeId}`);
+
+        // Set current resume ID immediately
+        setCurrentResumeId(resumeId);
+
+        // If we need job panels and have a user, fetch data and check job info
+        if (showJobPanels && user?.uid) {
+          console.log(`[ResumePreview] Fetching data for user: ${user.uid}`);
+
+          // Fetch resume data first
+          await fetchResumeData(resumeId);
+
+          // Then check job info
+          if (isMounted) {
+            await checkJobInfo();
+          }
+        } else if (!showJobPanels) {
+          console.log('[ResumePreview] No job panels needed, fetching resume data only');
+          // If we don't need job panels, just fetch resume data
+          await fetchResumeData(resumeId);
+          setHasJobInfo(false);
+        } else {
+          console.log('[ResumePreview] User not loaded yet, setting defaults');
+          // User not loaded yet, set defaults
+          setHasJobInfo(false);
+        }
+      } catch (error) {
+        console.error('Error initializing data:', error);
+        if (isMounted) {
+          setHasJobInfo(false);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          setInitialized(true);
+          initializationRef.current = false;
+          console.log(`[ResumePreview] Initialization complete for: ${resumeId}`);
+        }
       }
     };
 
     initializeData();
-  }, [resumeId, user]); // Separate effect to avoid race conditions
 
-  // Resume data is now fetched directly by the ResumeDataContext
+    return () => {
+      isMounted = false;
+    };
+  }, [resumeId, user?.uid, showJobPanels, setCurrentResumeId, fetchResumeData, checkJobInfo]);
 
-  // Enhanced document settings - now using CSS for styling
-  const [documentSettings, setDocumentSettings] = useState<DocumentSettings>({
-    zoom: 119,
-    fontFamily: 'Times New Roman',
-    primaryColor: '#000000',
-    textColor: '#333333',
-    fontSize: 9.5,
-    lineHeight: 1.3,
-    sectionSpacing: 0.75,
-    paperSize: 'Letter',
-    showIcons: false,
-    showDividers: true,
-    useIndent: false,
-    viewAsPages: true
-  });
-
-  // Effect to update color scheme based on theme for the header bar only
+  // Reset state when resumeId changes
   useEffect(() => {
-    if (isDarkMode) {
-      setDocumentSettings(prev => ({
-        ...prev,
-        primaryColor: '#60a5fa',
-      }));
-    } else {
-      setDocumentSettings(prev => ({
-        ...prev,
-        primaryColor: '#3b82f6',
-      }));
+    if (currentResumeIdRef.current !== resumeId) {
+      console.log(`[ResumePreview] Resume ID changed from ${currentResumeIdRef.current} to ${resumeId}`);
+      setInitialized(false);
+      setLoading(true);
+      setHasJobInfo(null);
+      initializationRef.current = false;
+      currentResumeIdRef.current = null;
     }
-  }, [isDarkMode]);
+  }, [resumeId]);
 
-  // Handle job info completion
+  // Cleanup on unmount - only clear if this component set it
+  useEffect(() => {
+    return () => {
+      // Only clear if this component was responsible for setting it
+      if (currentResumeIdRef.current === resumeId) {
+        console.log(`[ResumePreview] Cleaning up resume ID: ${resumeId}`);
+        setCurrentResumeId(null);
+        currentResumeIdRef.current = null;
+      }
+    };
+  }, [resumeId, setCurrentResumeId]);
+
+  // Handlers
   const handleJobInfoComplete = useCallback(async () => {
-    // Re-check job info from Firestore to get the updated data
-    await checkJobInfo();
-  }, []);
-
-  // Handle request to update job info
-  const handleJobUpdate = useCallback(() => {
-    setHasJobInfo(false);
-  }, []);
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleDownload = async () => {
+    setLoading(true);
     try {
-      // Generate PDF using our styled generator with RMS metadata
-      const resumeDataForPDF = {
-        title: resumeData.title || 'Resume',
-        template: 'professional',
-        fontSize: 'medium',
-        parsedData: resumeData,
-        rmsRawData: resumeData.rmsRawData // Include RMS data if available
-      };
-
-      // Show loading state
-      toast({
-        title: "Generating PDF",
-        description: "Embedding metadata and creating your resume...",
-      });
-
-      // Use async version to embed RMS metadata
-      const pdfBlob = await generateResumePDFAsync(resumeDataForPDF);
-
-      // Create download link
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${fullName.replace(/\s+/g, '_')}_Resume.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "PDF Downloaded",
-        description: "Your resume with RMS metadata has been downloaded successfully.",
-      });
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-      toast({
-        title: "Download Failed",
-        description: "Unable to download resume. Please try again.",
-        variant: "destructive",
-      });
+      await checkJobInfo();
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [checkJobInfo]);
 
-  const handleShare = async () => {
-    toast({
-      title: "Share Feature",
-      description: "Share functionality coming soon!",
-    });
-  };
+  const handleJobUpdate = useCallback(() => {
+    console.log('[ResumePreview] Job updated, resetting hasJobInfo to false');
+    setHasJobInfo(false);
+    // Optionally recheck job info after a brief delay to prevent rapid toggling
+    const timeoutId = setTimeout(() => {
+      if (currentResumeIdRef.current === resumeId) {
+        console.log('[ResumePreview] Rechecking job info after update');
+        checkJobInfo();
+      }
+    }, 1000); // Increased delay to prevent rapid toggling
 
-  // Handler for document settings changes
-  const handleDocumentSettingChange = (
-    setting: keyof DocumentSettings,
-    value: DocumentSettings[keyof DocumentSettings]
-  ) => {
-    setDocumentSettings(prev => ({
-      ...prev,
-      [setting]: value
-    }));
-  };
+    return () => clearTimeout(timeoutId);
+  }, [checkJobInfo, resumeId]);
 
-  // PDF download handler for ResumeHeaderBar
   const handleDownloadPDF = async () => {
     try {
-      // Generate PDF using our styled generator
+      const contact = currentResumeData.contactInfo || {};
+      const fullName = contact.fullName || `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'Resume';
+
       const resumeDataForPDF = {
-        title: resumeData.title || 'Resume',
-        template: 'professional',
-        fontSize: 'medium',
-        parsedData: resumeData
+        title: currentResumeData.title || 'Resume',
+        template: currentTemplate,
+        fontStyle: documentSettings.fontFamily === 'Times New Roman' ? 'professional' : 'elegant',
+        fontSize: documentSettings.fontSize < 9 ? 'small' :
+                  documentSettings.fontSize > 12 ? 'large' : 'medium',
+        documentSettings,
+        parsedData: currentResumeData,
+        rmsRawData: currentResumeData.rmsRawData
       };
 
-      const pdfBlob = generateResumePDF(resumeDataForPDF);
-
-      // Create download link
+      const pdfBlob = await generateResumePDFAsync(resumeDataForPDF);
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
@@ -337,7 +352,6 @@ export default function ResumePreview({
     }
   };
 
-  // Auto-adjust handler
   const handleAutoAdjust = async () => {
     try {
       toast({
@@ -349,19 +363,19 @@ export default function ResumePreview({
     }
   };
 
-  // Template change handler
-  const handleTemplateChange = async (template: string) => {
+  const handleTemplateChange = async (templateId: string) => {
     try {
+      changeTemplate(templateId);
+      const templateName = templateId.charAt(0).toUpperCase() + templateId.slice(1).toLowerCase();
       toast({
         title: "Template Changed",
-        description: `Resume template changed to ${template}.`,
+        description: `Resume template changed to ${templateName}.`,
       });
     } catch (error) {
       console.error('Error changing template:', error);
     }
   };
 
-  // Score exploration handler
   const handleExploreScore = () => {
     toast({
       title: "Score Analysis",
@@ -369,7 +383,7 @@ export default function ResumePreview({
     });
   };
 
-  // Helper function to decode HTML entities
+  // Utility functions
   const decodeHTMLEntities = (text: string): string => {
     if (!text) return '';
     const textArea = document.createElement('textarea');
@@ -377,26 +391,20 @@ export default function ResumePreview({
     return textArea.value;
   };
 
-  // Helper function to parse bullet points
   const parseBulletPoints = (text: string): string[] => {
     if (!text) return [];
-
-    // Decode HTML entities first
     const decodedText = decodeHTMLEntities(text);
 
-    // Check if text contains newlines with bullet points
     if (decodedText.includes('\n')) {
       const lines = decodedText
         .split('\n')
         .map(line => line.replace(/^[•·\-\*]\s*/, '').trim())
         .filter(Boolean);
-
       if (lines.length > 1) {
         return lines;
       }
     }
 
-    // Check if there are actual bullet characters (• or ·)
     if (decodedText.includes('•') || decodedText.includes('·')) {
       return decodedText
         .split(/[•·]/)
@@ -404,51 +412,74 @@ export default function ResumePreview({
         .filter(Boolean);
     }
 
-    // Don't split on commas - they're often part of the content (numbers, lists, etc.)
-    // If no bullet characters, return as single item
     return [decodedText];
   };
 
-  // Format date helper
   const formatDate = (date: string | Date | null | undefined, format?: string) => {
     if (!date) return '';
 
     if (typeof date === 'string') {
       if (date.toLowerCase() === 'present') return 'Present';
-      if (date.trim() === '') return '';
-      return date;
-    }
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) return date;
 
-    try {
-      if (date instanceof Date) {
-        if (format === 'YYYY') {
-          return date.getFullYear().toString();
-        } else if (format === 'MM/YYYY') {
-          return `${date.getMonth() + 1}/${date.getFullYear()}`;
-        } else {
-          return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long'
-          });
-        }
+      if (format === 'MMM YYYY') {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+      } else if (format === 'YYYY') {
+        return dateObj.getFullYear().toString();
+      } else {
+        return dateObj.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long'
+        });
       }
-    } catch (error) {
-      console.error('Error formatting date:', error);
     }
 
     return String(date);
   };
 
+  // Handle section order change
+  const handleSectionOrderChange = useCallback((newOrder: string[]) => {
+    setSectionOrder(newOrder);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`resume-section-order-${resumeId}`, JSON.stringify(newOrder));
+    }
+  }, [resumeId]);
+
+  // Load section order on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedOrder = localStorage.getItem(`resume-section-order-${resumeId}`);
+      if (savedOrder) {
+        try {
+          setSectionOrder(JSON.parse(savedOrder));
+        } catch (error) {
+          console.warn('Failed to load section order:', error);
+        }
+      }
+    }
+  }, [resumeId]);
+
+  // Use processedData from context instead of prop
+  const currentResumeData = processedData;
+
   // Early return if no data
-  if (!resumeData) {
+  if (!currentResumeData || contextLoading) {
     return (
       <div className={`w-full max-w-4xl mx-auto p-8 ${className}`}>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-yellow-800">No Resume Data</h3>
+            <h3 className="font-semibold text-yellow-800">
+              {contextLoading ? 'Loading Resume...' : 'No Resume Data'}
+            </h3>
             <p className="text-yellow-700 mt-1">
-              No resume data is available to preview. Please add some information in the other sections first.
+              {contextLoading 
+                ? 'Please wait while we load your resume data.' 
+                : 'No resume data is available to preview. Please add some information in the other sections first.'
+              }
             </p>
           </div>
         </div>
@@ -456,603 +487,496 @@ export default function ResumePreview({
     );
   }
 
-  // Extract contact info
-  const contact = resumeData.contactInfo || {};
-  const fullName = contact.fullName || `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'Your Name';
+  // Extract data from processedData
+  const contact = currentResumeData.contact || {};
+  const fullName = contact.fullName || 'Your Name';
 
-  // Main layout with conditional job panels
+  // Resume content component
+  const ResumeContent = memo(() => {
+    // Section components map with dynamic titles
+    const sectionComponents: Record<string, React.ReactNode> = {
+      summary: sectionHasContent('summary', currentResumeData) && (
+        <ResumeSection key="summary" title={getSectionTitle('summary', currentTemplate)} styles={inlineStyles}>
+          <p className="resume-summary" style={inlineStyles.bodyText}>
+            {currentResumeData.summary}
+          </p>
+        </ResumeSection>
+      ),
+
+      experience: sectionHasContent('experience', currentResumeData) && (
+        <ResumeSection key="experience" title={getSectionTitle('experience', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.experience.map((exp: any, idx: number) => (
+            <div key={exp.id || idx} className="resume-experience-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+              <div style={{ marginBottom: '0.05rem' }}>
+                <h3 className="resume-job-title" style={inlineStyles.jobTitle}>
+                  {decodeHTMLEntities(exp.position || 'Position')}
+                </h3>
+              </div>
+              <div className="resume-company" style={inlineStyles.bodyText}>
+                <span>{decodeHTMLEntities(exp.company || 'Company')}</span>
+                <span className="resume-date" style={inlineStyles.date}>
+                  {formatDate(exp.dateBegin)} - {formatDate(exp.dateEnd)}
+                  {exp.location && `, ${decodeHTMLEntities(exp.location)}`}
+                </span>
+              </div>
+              {exp.description && (
+                <BulletList
+                  items={parseBulletPoints(exp.description)}
+                  styles={inlineStyles}
+                />
+              )}
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      education: sectionHasContent('education', currentResumeData) && (
+        <ResumeSection key="education" title={getSectionTitle('education', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.education.map((edu: any, idx: number) => (
+            <div key={edu.id || idx} className="resume-education-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+              <div className="resume-degree-title" style={inlineStyles.jobTitle}>
+                {edu.qualification && edu.fieldOfStudy ?
+                  `${edu.qualification} in ${edu.fieldOfStudy}` :
+                  edu.qualification || 'Degree'}
+              </div>
+              <div className="resume-school-info" style={inlineStyles.bodyText}>
+                {edu.institution || 'Institution'}
+                {edu.location && ` • ${edu.location}`}
+                {edu.date && ` • ${formatDate(edu.date, edu.dateFormat)}`}
+              </div>
+              {edu.gpa && (
+                <div className="resume-detail-text" style={inlineStyles.detailText}>
+                  GPA: {edu.gpa}
+                </div>
+              )}
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      projects: sectionHasContent('projects', currentResumeData) && (
+        <ResumeSection key="projects" title={getSectionTitle('projects', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.projects.map((project: any, idx: number) => (
+            <div key={project.id || idx} className="resume-project-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+              <div style={{ marginBottom: '0.05rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <h3 className="resume-project-title" style={inlineStyles.jobTitle}>
+                    {project.title || project.name || 'Project'}
+                  </h3>
+                  {(project.dateBegin || project.dateEnd) && (
+                    <span className="resume-date" style={inlineStyles.date}>
+                      {formatDate(project.dateBegin)} {project.dateBegin && project.dateEnd && '—'} {formatDate(project.dateEnd)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {project.organization && (
+                <div className="resume-company" style={{ ...inlineStyles.bodyText, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
+                  {decodeHTMLEntities(project.organization)}
+                </div>
+              )}
+              {project.description && (
+                <BulletList
+                  items={parseBulletPoints(project.description)}
+                  styles={inlineStyles}
+                />
+              )}
+              {project.repository && (
+                <div className="resume-skills-category" style={{ ...inlineStyles.detailText, marginTop: `${resumeStyles.spacing.bulletGap}rem` }}>
+                  <span style={{ fontWeight: 700 }}>Repository:</span>{' '}
+                  {project.repository}
+                </div>
+              )}
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      skills: sectionHasContent('skills', currentResumeData) && (
+        <ResumeSection key="skills" title={getSectionTitle('skills', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.skills.map((category: any, idx: number) => (
+            <div key={category.id || idx} className="resume-skills-category" style={{ ...inlineStyles.bodyText, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
+              <span className="resume-skills-title" style={{ fontWeight: 700 }}>
+                {category.category}:
+              </span>
+              <span>
+                {' '}
+                {category.keywords || ''}
+              </span>
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      involvement: sectionHasContent('involvement', currentResumeData) && (
+        <ResumeSection key="involvement" title={getSectionTitle('involvement', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.involvement.map((inv: any, idx: number) => (
+            <div key={inv.id || idx} className="resume-involvement-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h3 className="resume-involvement-title" style={inlineStyles.jobTitle}>
+                    {inv.role || 'Role'}
+                  </h3>
+                  <p className="resume-detail-text" style={inlineStyles.detailText}>
+                    {inv.organization || 'Organization'}
+                  </p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  {inv.location && (
+                    <p className="resume-detail-text" style={{ ...inlineStyles.detailText, fontStyle: 'italic' }}>
+                      {inv.location}
+                    </p>
+                  )}
+                  {(inv.dateBegin || inv.dateEnd) && (
+                    <p className="resume-detail-text" style={{ ...inlineStyles.detailText, fontStyle: 'italic' }}>
+                      {formatDate(inv.dateBegin)} {inv.dateBegin && inv.dateEnd && ' - '} {formatDate(inv.dateEnd)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {inv.description && (
+                <BulletList
+                  items={parseBulletPoints(inv.description)}
+                  styles={inlineStyles}
+                />
+              )}
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      coursework: sectionHasContent('coursework', currentResumeData) && (
+        <ResumeSection key="coursework" title={getSectionTitle('coursework', currentTemplate)} styles={inlineStyles}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: `${resumeStyles.spacing.bulletGap}rem`,
+            marginTop: `-${resumeStyles.spacing.bulletGap}rem`
+          }}>
+            {currentResumeData.coursework.map((course: any, idx: number) => (
+              <div key={course.id || idx} style={inlineStyles.detailText}>
+                <span style={{ fontWeight: 700 }}>
+                  {course.name}
+                </span>
+                {course.department && (
+                  <span style={{ fontWeight: 400 }}> - {course.department}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </ResumeSection>
+      ),
+
+      certifications: sectionHasContent('certifications', currentResumeData) && (
+        <ResumeSection key="certifications" title={getSectionTitle('certifications', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.certifications.map((cert: any, idx: number) => (
+            <div key={cert.id || idx} style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h3 style={inlineStyles.jobTitle}>
+                    {cert.name || 'Certification'}
+                  </h3>
+                  <p style={inlineStyles.detailText}>
+                    {cert.issuer || 'Issuing Organization'}
+                  </p>
+                </div>
+                <p style={{ ...inlineStyles.detailText, fontStyle: 'italic' }}>
+                  {formatDate(cert.date)}
+                </p>
+              </div>
+              {cert.description && (
+                <p style={{ ...inlineStyles.detailText, marginTop: `${resumeStyles.spacing.bulletGap}rem` }}>
+                  {cert.description}
+                </p>
+              )}
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      languages: sectionHasContent('languages', currentResumeData) && (
+        <ResumeSection key="languages" title={getSectionTitle('languages', currentTemplate)} styles={inlineStyles}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: `${resumeStyles.spacing.sectionGap}rem` }}>
+            {currentResumeData.languages?.map((lang: any, idx: number) => (
+              <div key={lang.id || idx} style={inlineStyles.bodyText}>
+                <span style={{ fontWeight: 700 }}>
+                  {lang.name}
+                </span>
+                {lang.proficiency && (
+                  <span style={{ fontWeight: 400 }}> - {lang.proficiency}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </ResumeSection>
+      ),
+
+      awards: sectionHasContent('awards', currentResumeData) && (
+        <ResumeSection key="awards" title={getSectionTitle('awards', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.awards.map((award: any, idx: number) => (
+            <div key={award.id || idx} style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                  <h3 style={inlineStyles.jobTitle}>
+                    {award.title || award.name || 'Award'}
+                  </h3>
+                  <p style={inlineStyles.detailText}>
+                    {award.issuer || award.organization || 'Issuing Organization'}
+                  </p>
+                  {award.description && (
+                    <p style={{ ...inlineStyles.bodyText, marginTop: `${resumeStyles.spacing.bulletGap}rem` }}>
+                      {award.description}
+                    </p>
+                  )}
+                </div>
+                {award.date && (
+                  <p style={{ ...inlineStyles.detailText, fontStyle: 'italic', marginLeft: '1rem' }}>
+                    {formatDate(award.date)}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      publications: sectionHasContent('publications', currentResumeData) && (
+        <ResumeSection key="publications" title={getSectionTitle('publications', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.publications.map((pub: any, idx: number) => (
+            <div key={pub.id || idx} style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+              <div style={inlineStyles.bodyText}>
+                <span style={{ fontWeight: 700 }}>{pub.title}</span>
+                {pub.authors && <span> - {pub.authors}</span>}
+                {pub.journal && <span>, {pub.journal}</span>}
+                {pub.date && <span>, {formatDate(pub.date)}</span>}
+              </div>
+              {pub.description && (
+                <p style={{ ...inlineStyles.detailText, marginTop: `${resumeStyles.spacing.bulletGap}rem` }}>
+                  {pub.description}
+                </p>
+              )}
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      volunteer: sectionHasContent('volunteer', currentResumeData) && (
+        <ResumeSection key="volunteer" title={getSectionTitle('volunteer', currentTemplate)} styles={inlineStyles}>
+          {currentResumeData.volunteer.map((vol: any, idx: number) => (
+            <div key={vol.id || idx} className="resume-experience-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+              <div style={{ marginBottom: '0.05rem' }}>
+                <h3 className="resume-job-title" style={inlineStyles.jobTitle}>
+                  {decodeHTMLEntities(vol.role || vol.title || 'Volunteer Position')}
+                </h3>
+              </div>
+              <div className="resume-company" style={inlineStyles.bodyText}>
+                <span>{decodeHTMLEntities(vol.organization || 'Organization')}</span>
+                <span className="resume-date" style={inlineStyles.date}>
+                  {formatDate(vol.startDate)} - {formatDate(vol.endDate || (vol.current ? 'Present' : ''))}
+                  {vol.location && `, ${decodeHTMLEntities(vol.location)}`}
+                </span>
+              </div>
+              {vol.description && (
+                <BulletList
+                  items={parseBulletPoints(vol.description)}
+                  styles={inlineStyles}
+                />
+              )}
+            </div>
+          ))}
+        </ResumeSection>
+      ),
+
+      references: sectionHasContent('references', currentResumeData) && (
+        <ResumeSection key="references" title={getSectionTitle('references', currentTemplate)} styles={inlineStyles}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: documentSettings.paperSize === 'Letter' ? 'repeat(2, 1fr)' : '1fr',
+            gap: `${resumeStyles.spacing.sectionGap}rem`
+          }}>
+            {currentResumeData.references.map((ref: any, idx: number) => (
+              <div key={ref.id || idx}>
+                <div style={{ ...inlineStyles.bodyText, fontWeight: 700 }}>
+                  {ref.name}
+                </div>
+                {ref.title && (
+                  <div style={inlineStyles.detailText}>{ref.title}</div>
+                )}
+                {ref.company && (
+                  <div style={inlineStyles.detailText}>{ref.company}</div>
+                )}
+                {ref.email && (
+                  <div style={inlineStyles.detailText}>{ref.email}</div>
+                )}
+                {ref.phone && (
+                  <div style={inlineStyles.detailText}>{ref.phone}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </ResumeSection>
+      ),
+    };
+
+    return (
+      <div className="resume-container" style={inlineStyles.container}>
+        <div style={{
+          padding: resumeStyles.spacing.documentPadding,
+          minHeight: '11in',
+          boxSizing: 'border-box'
+        }}>
+          {/* Contact Information - Always First */}
+          <header>
+            <h1 className="resume-name" style={inlineStyles.name}>
+              {fullName}
+            </h1>
+            <div className="resume-contact" style={inlineStyles.contact}>
+              {contact.city && contact.state && (
+                <>
+                  <span>{contact.city}, {contact.state}</span>
+                  {contact.country && contact.country !== 'United States' && <span>, {contact.country}</span>}
+                  {(contact.email || contact.phone || contact.linkedin) && <span> • </span>}
+                </>
+              )}
+              {contact.email && (
+                <>
+                  <span>{contact.email}</span>
+                  {(contact.phone || contact.linkedin) && <span> • </span>}
+                </>
+              )}
+              {contact.phone && (
+                <>
+                  <span>{contact.phone}</span>
+                  {contact.linkedin && <span> • </span>}
+                </>
+              )}
+              {contact.linkedin && (
+                <span>in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+              )}
+            </div>
+          </header>
+
+          {/* Render sections in custom order, only showing sections with content */}
+          {sectionOrder
+            .filter(sectionId => sectionComponents[sectionId])
+            .map(sectionId => sectionComponents[sectionId])
+          }
+        </div>
+      </div>
+    );
+  });
+
+  ResumeContent.displayName = 'ResumeContent';
+
+  // Main resume preview content
   const resumePreviewContent = (
     <div className="w-full">
-      {/* Resume Header Bar with formatting controls */}
+      {/* Inject dynamic CSS */}
+      <style>{resumeCSS}</style>
+
+      {/* Resume Header Bar */}
       <ResumeHeaderBar
         ref={headerBarRef}
         resumeScore={90}
         documentSettings={documentSettings}
-        onDocumentSettingChange={handleDocumentSettingChange}
+        onDocumentSettingChange={updateSetting}
         onDownloadPDF={handleDownloadPDF}
         onAutoAdjust={handleAutoAdjust}
         onTemplateChange={handleTemplateChange}
         onExploreScore={handleExploreScore}
+        sectionOrder={sectionOrder}
+        onSectionOrderChange={handleSectionOrderChange}
         isDarkMode={isDarkMode}
         className="no-print"
       />
 
-      {/* Resume Preview with frame-like padding - simulating paper view */}
-      <div className="p-8 bg-gray-100 dark:bg-gray-800 rounded-xl" style={{ minHeight: 'calc(1056px * 0.75 + 4rem)' }}>
-        {/* Inline styles for resume preview */}
-        <style jsx>{`
-          .resume-preview-container {
-            font-family: 'Times New Roman', Times, serif !important;
-            color: #333333 !important;
-            line-height: 1.3 !important;
-            font-size: 9.5pt !important;
-          }
-          
-          .resume-content {
-            padding: 0.4in !important;
-            background: white;
-            font-family: 'Times New Roman', Times, serif !important;
-            min-height: 100%;
-            box-sizing: border-box;
-          }
-          
-          .resume-name {
-            font-size: 16pt !important;
-            font-weight: bold !important;
-            text-transform: uppercase !important;
-            color: #000000 !important;
-            margin-bottom: 4px !important;
-            text-align: center !important;
-            font-family: 'Times New Roman', Times, serif !important;
-          }
-          
-          .resume-contact {
-            font-size: 9.5pt !important;
-            color: #333333 !important;
-            text-align: center !important;
-            font-family: 'Times New Roman', Times, serif !important;
-            margin-bottom: 8px !important;
-          }
-          
-          .contact-separator {
-            margin: 0 8px !important;
-            color: #333333 !important;
-          }
-          
-          .resume-section-header {
-            font-weight: bold !important;
-            font-size: 10pt !important;
-            text-transform: uppercase !important;
-            margin-top: 10px !important;
-            margin-bottom: 4px !important;
-            border-bottom: 1px solid #000000 !important;
-            padding-bottom: 2px !important;
-            color: #000000 !important;
-            font-family: 'Times New Roman', Times, serif !important;
-          }
-          
-          .resume-job-header {
-            margin-bottom: 0px !important;
-          }
-          
-          .resume-job-title,
-          .resume-degree-title {
-            font-weight: bold !important;
-            font-size: 10pt !important;
-            color: #000000 !important;
-            font-family: 'Times New Roman', Times, serif !important;
-            margin-bottom: 0px !important;
-          }
-          
-          .resume-company,
-          .resume-school {
-            font-size: 9.5pt !important;
-            margin-bottom: 2px !important;
-            color: #333333 !important;
-            font-family: 'Times New Roman', Times, serif !important;
-            display: block !important;
-            overflow: hidden !important;
-          }
-          
-          .resume-date {
-            font-size: 9.5pt !important;
-            text-align: right !important;
-            color: #333333 !important;
-            font-family: 'Times New Roman', Times, serif !important;
-          }
-          
-          .resume-bullet-list {
-            padding-left: 12px !important;
-            margin-top: 1px !important;
-            list-style: none !important;
-          }
-          
-          .resume-bullet-list li {
-            position: relative !important;
-            margin-bottom: 3px !important;
-            line-height: 1.3 !important;
-            font-family: 'Times New Roman', Times, serif !important;
-            font-weight: 400 !important;
-            font-size: 9.5pt !important;
-            color: #333333 !important;
-            padding-left: 2px !important;
-          }
-          
-          .resume-bullet-list li:before {
-            content: "•" !important;
-            position: absolute !important;
-            left: -10px !important;
-            color: #333333 !important;
-          }
-          
-          .resume-summary {
-            margin-top: 3px !important;
-            margin-bottom: 8px !important;
-            line-height: 1.3 !important;
-            color: #333333 !important;
-            font-weight: 400 !important;
-            font-size: 9.5pt !important;
-            font-family: 'Times New Roman', Times, serif !important;
-          }
-          
-          .resume-skills-category {
-            margin-top: 4px !important;
-            margin-bottom: 4px !important;
-            line-height: 1.3 !important;
-            font-weight: 400 !important;
-            color: #333333 !important;
-            font-size: 9.5pt !important;
-            font-family: 'Times New Roman', Times, serif !important;
-          }
-          
-          .resume-skills-title {
-            font-weight: bold !important;
-            display: inline !important;
-            color: #333333 !important;
-            font-family: 'Times New Roman', Times, serif !important;
-          }
-          
-          .resume-school-info {
-            display: flex !important;
-            justify-content: space-between !important;
-            line-height: 1.3 !important;
-            font-size: 9.5pt !important;
-            font-family: 'Times New Roman', Times, serif !important;
-          }
-          
-          .resume-project-title {
-            font-weight: bold !important;
-            display: flex !important;
-            justify-content: space-between !important;
-            font-size: 10pt !important;
-            color: #000000 !important;
-            font-family: 'Times New Roman', Times, serif !important;
-          }
-          
-          .resume-experience-block,
-          .resume-education-block {
-            margin-bottom: 6px !important;
-          }
-          
-          .resume-preview-container section {
-            margin-bottom: 0 !important;
-          }
-          
-          .resume-preview-container section + section {
-            margin-top: 10px !important;
-          }
-        `}</style>
-
-        {/* Resume Document - Styled to match PDF exactly (8.5" x 11" at 96 DPI) */}
+      {/* Resume Preview Container */}
+      <div
+        className="p-8 rounded-xl transition-colors duration-200"
+        style={{
+          backgroundColor: theme.background,
+          minHeight: `calc(${paperDimensions.height}px * ${documentSettings.zoom / 100} + 4rem)`
+        }}
+      >
+        {/* Resume Document */}
         <div
-          className="bg-white shadow-2xl overflow-hidden resume-preview-container"
+          className="shadow-2xl overflow-hidden transition-transform duration-200"
           style={{
             transform: `scale(${documentSettings.zoom / 100})`,
             transformOrigin: 'top center',
-            marginBottom: documentSettings.zoom > 100 ? '2rem' : '0',
-            width: '816px',
-            height: '1056px',
+            width: `${paperDimensions.width}px`,
+            height: `${paperDimensions.height}px`,
             margin: '0 auto',
+            backgroundColor: '#ffffff',
             boxSizing: 'border-box',
-            outline: '15px solid #64748b',
+            outline: `15px solid ${theme.border}`,
             outlineOffset: '1px',
-            boxShadow: '0 0 20px rgba(0, 0, 0, 0.1), 0 0 40px rgba(0, 0, 0, 0.05)'
+            boxShadow: theme.shadow,
           }}
         >
-          <div className="resume-content">
-            {/* Contact Information */}
-            <header className="resume-header">
-              <h1 className="resume-name">{fullName}</h1>
-              <div className="resume-contact">
-                {contact.email && <span>{decodeHTMLEntities(contact.email)}</span>}
-                {contact.email && contact.phone && <span className="contact-separator">•</span>}
-                {contact.phone && <span>{decodeHTMLEntities(contact.phone)}</span>}
-                {(contact.email || contact.phone) && (contact.city || contact.state) && <span className="contact-separator">•</span>}
-                {(contact.city || contact.state) && (
-                  <span>{[contact.city, contact.state].filter(Boolean).map(decodeHTMLEntities).join(', ')}</span>
-                )}
-                {(contact.linkedin || contact.website) && (
-                  <>
-                    {(contact.email || contact.phone || contact.city || contact.state) && <span className="contact-separator">•</span>}
-                    {contact.linkedin && <span>linkedin.com/in/{decodeHTMLEntities(contact.linkedin).replace(/^.*\/in\//, '')}</span>}
-                    {contact.linkedin && contact.website && <span className="contact-separator">•</span>}
-                    {contact.website && <span>{decodeHTMLEntities(contact.website)}</span>}
-                  </>
-                )}
-              </div>
-            </header>
-
-            {/* Summary */}
-            {resumeData.summary && resumeData.summary.trim() && (
-              <section>
-                <h2 className="resume-section-header">PROFESSIONAL SUMMARY</h2>
-                <p className="resume-summary">{decodeHTMLEntities(resumeData.summary)}</p>
-              </section>
-            )}
-
-            {/* Experience */}
-            {resumeData.experiences && resumeData.experiences.length > 0 && (
-              <section>
-                <h2 className="resume-section-header">EXPERIENCE</h2>
-                {resumeData.experiences.map((exp: any, idx: number) => (
-                  <div key={exp.id || idx} className="resume-experience-block">
-                    <div className="resume-job-header">
-                      <h3 className="resume-job-title">{decodeHTMLEntities(exp.title || 'Position')}</h3>
-                    </div>
-                    <div className="resume-company">
-                      <span>{decodeHTMLEntities(exp.company || 'Company')}</span>
-                      <span className="resume-date" style={{ float: 'right' }}>
-                        {formatDate(exp.startDate)} - {formatDate(exp.endDate)}{exp.location && `, ${decodeHTMLEntities(exp.location)}`}
-                      </span>
-                    </div>
-                    {exp.description && (
-                      <ul className="resume-bullet-list">
-                        {parseBulletPoints(exp.description).map((bulletPoint, i) => (
-                          <li key={i}>{bulletPoint}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Education */}
-            {resumeData.education && resumeData.education.length > 0 && (
-              <section>
-                <h2 className="resume-section-header">EDUCATION</h2>
-                {resumeData.education.map((edu: any, idx: number) => (
-                  <div key={edu.id || idx} className="resume-education-block">
-                    <div className="resume-degree-title">
-                      {edu.degree && edu.fieldOfStudy ?
-                        `${edu.degree} in ${edu.fieldOfStudy}` :
-                        edu.qualification || edu.degree || 'Degree'}
-                    </div>
-                    <div className="resume-school-info">
-                      {edu.minor && `Minor in ${edu.minor} • `}
-                      {edu.institution || edu.school || 'Institution'}
-                      {edu.location && ` • ${edu.location}`}
-                      {` • ${edu.formattedDate || edu.endDate || formatDate(edu.date || null, edu.dateFormat)}`}
-                    </div>
-                    {(edu.score || edu.gpa) && (
-                      <div className="resume-school">
-                        GPA: {edu.score || edu.gpa}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Projects */}
-            {resumeData.projects && resumeData.projects.length > 0 && (
-              <section>
-                <h2 className="resume-section-header">PROJECTS</h2>
-                {resumeData.projects.map((project: any, idx: number) => (
-                  <div key={project.id || idx}>
-                    <div className="resume-project-title">
-                      <span>{project.title || 'Project'}</span>
-                      {(project.startDate || project.endDate) && (
-                        <span className="resume-date">
-                          {formatDate(project.startDate)} {project.startDate && project.endDate && '—'} {formatDate(project.endDate || (project.current ? 'Present' : ''))}
-                        </span>
-                      )}
-                    </div>
-                    {project.organization && (
-                      <div className="resume-company">{decodeHTMLEntities(project.organization)}</div>
-                    )}
-                    {project.description && (
-                      <ul className="resume-bullet-list">
-                        {parseBulletPoints(project.description).map((bulletPoint, i) => (
-                          <li key={i}>{bulletPoint}</li>
-                        ))}
-                      </ul>
-                    )}
-                    {project.technologies && project.technologies.length > 0 && (
-                      <div className="resume-skills-category">
-                        <span className="resume-skills-title">Technologies:</span>{' '}
-                        {Array.isArray(project.technologies)
-                          ? project.technologies.join(', ')
-                          : project.technologies
-                        }
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Involvement */}
-            {resumeData.involvements && resumeData.involvements.length > 0 && (
-              <section>
-                <h2
-                  className="resume-section-header"
-                  style={{
-                    color: '#000000',
-                    fontWeight: 700,
-                    fontSize: 'calc(8.5pt * var(--resume-scale))',
-                    borderBottom: documentSettings.showDividers ? '1px solid #d1d5db' : 'none',
-                    paddingBottom: '2px',
-                    marginBottom: `${documentSettings.sectionSpacing * 0.75}rem`,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  Involvement
-                </h2>
-                {resumeData.involvements.map((inv: any, idx: number) => (
-                  <div key={inv.id || idx} className="mb-2 page-break-avoid">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3
-                          className="font-semibold"
-                          style={{
-                            color: '#000',
-                            fontSize: 'calc(7.5pt * var(--resume-scale))',
-                            fontWeight: 700
-                          }}
-                        >
-                          {inv.role || 'Role'}
-                        </h3>
-                        <p
-                          style={{
-                            color: '#000',
-                            fontSize: 'calc(6.7pt * var(--resume-scale))',
-                            fontWeight: 400
-                          }}
-                        >
-                          {inv.organization || 'Organization'}
-                        </p>
-                      </div>
-                      <div
-                        className="text-right"
-                        style={{
-                          color: '#000',
-                          fontSize: 'calc(6.7pt * var(--resume-scale))',
-                          fontWeight: 400,
-                          fontStyle: 'italic'
-                        }}
-                      >
-                        {inv.location && <p style={{ color: '#000' }}>{inv.location}</p>}
-                        <p style={{ color: '#000' }}>
-                          {formatDate(inv.startDate)} - {formatDate(inv.endDate || (inv.current ? 'Present' : ''))}
-                        </p>
-                      </div>
-                    </div>
-                    {inv.description && (
-                      <ul className="resume-bullet-list">
-                        {parseBulletPoints(inv.description).map((bulletPoint, i) => (
-                          <li key={i}>{bulletPoint}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Skills */}
-            {resumeData.skillCategories && resumeData.skillCategories.length > 0 && (
-              <section>
-                <h2 className="resume-section-header">SKILLS</h2>
-                {resumeData.skillCategories.map((category: any, idx: number) => (
-                  <div key={category.id || idx} className="resume-skills-category">
-                    <span className="resume-skills-title">{category.name}:</span>
-                    <span>
-                      {' '}
-                      {Array.isArray(category.skills)
-                        ? category.skills.map((skill: any) =>
-                            typeof skill === 'string' ? skill : skill.name
-                          ).join(', ')
-                        : category.skills
-                      }
-                    </span>
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Coursework */}
-            {resumeData.coursework && resumeData.coursework.length > 0 && (
-              <section>
-                <h2
-                  className="resume-section-header"
-                  style={{
-                    color: '#000000',
-                    fontWeight: 700,
-                    fontSize: 'calc(8.5pt * var(--resume-scale))',
-                    borderBottom: documentSettings.showDividers ? '1px solid #d1d5db' : 'none',
-                    paddingBottom: '2px',
-                    marginBottom: `${documentSettings.sectionSpacing * 0.75}rem`,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  Relevant Coursework
-                </h2>
-                <div className="grid grid-cols-2 gap-1">
-                  {resumeData.coursework.map((course: any, idx: number) => (
-                    <div key={course.id || idx} style={{
-                      fontSize: 'calc(6.7pt * var(--resume-scale))',
-                      fontWeight: 300
-                    }}>
-                      <span
-                        className="font-medium"
-                        style={{
-                          color: '#000',
-                          fontWeight: 700
-                        }}
-                      >
-                        {course.name}
-                      </span>
-                      {course.department && (
-                        <span style={{ color: '#000', fontWeight: 300 }}> - {course.department}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Certifications */}
-            {resumeData.certifications && resumeData.certifications.length > 0 && (
-              <section>
-                <h2
-                  className="resume-section-header"
-                  style={{
-                    color: '#000000',
-                    fontWeight: 700,
-                    fontSize: 'calc(8.5pt * var(--resume-scale))',
-                    borderBottom: documentSettings.showDividers ? '1px solid #d1d5db' : 'none',
-                    paddingBottom: '2px',
-                    marginBottom: `${documentSettings.sectionSpacing * 0.75}rem`,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  Certifications
-                </h2>
-                {resumeData.certifications.map((cert: any, idx: number) => (
-                  <div key={cert.id || idx} className="mb-1">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3
-                          className="font-semibold"
-                          style={{
-                            color: '#000',
-                            fontSize: 'calc(7.5pt * var(--resume-scale))',
-                            fontWeight: 700
-                          }}
-                        >
-                          {cert.name || cert.title || ''}
-                        </h3>
-                        <p
-                          style={{
-                            color: '#000',
-                            fontSize: 'calc(6.7pt * var(--resume-scale))',
-                            fontWeight: 400
-                          }}
-                        >
-                          {cert.issuer || cert.organization || ''}
-                        </p>
-                      </div>
-                      <p
-                        style={{
-                          color: '#000',
-                          fontSize: 'calc(6.7pt * var(--resume-scale))',
-                          fontWeight: 400,
-                          fontStyle: 'italic'
-                        }}
-                      >
-                        {formatDate(cert.issueDate || cert.date || cert.endDate || '')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Languages */}
-            {resumeData.languages && resumeData.languages.length > 0 && (
-              <section>
-                <h2
-                  className="resume-section-header"
-                  style={{
-                    color: '#000000',
-                    fontWeight: 700,
-                    fontSize: 'calc(8.5pt * var(--resume-scale))',
-                    borderBottom: documentSettings.showDividers ? '1px solid #d1d5db' : 'none',
-                    paddingBottom: '2px',
-                    marginBottom: `${documentSettings.sectionSpacing * 0.75}rem`,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  Languages
-                </h2>
-                <div className="flex flex-wrap gap-3">
-                  {resumeData.languages.map((lang: any, idx: number) => (
-                    <div key={lang.id || idx} style={{
-                      fontSize: 'calc(6.7pt * var(--resume-scale))',
-                      fontWeight: 300
-                    }}>
-                      <span
-                        className="font-medium"
-                        style={{
-                          color: '#000',
-                          fontWeight: 700
-                        }}
-                      >
-                        {lang.name}
-                      </span>
-                      {lang.proficiency && (
-                        <span style={{ color: '#000', fontWeight: 300 }}> - {lang.proficiency}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
+          <ResumeContent />
         </div>
       </div>
     </div>
   );
 
-  // Return layout with or without job panels
-  if (showJobPanels && user) {
+  // Determine which panel to show - Simplified logic to prevent flickering
+  const renderJobPanel = () => {
+    if (!showJobPanels || !user?.uid) {
+      console.log('[ResumePreview] Not rendering job panel - no showJobPanels or user');
+      return null;
+    }
+
+    console.log(`[ResumePreview] Panel state - loading: ${loading}, initialized: ${initialized}, hasJobInfo: ${hasJobInfo}`);
+
+    if (loading && !initialized) {
+      console.log('[ResumePreview] Rendering loading panel');
+      return (
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      );
+    }
+
+    if (hasJobInfo === true) {
+      console.log('[ResumePreview] Rendering KeywordTargetingPanel');
+      return (
+        <KeywordTargetingPanel
+          onJobUpdate={handleJobUpdate}
+          className="shadow-lg"
+        />
+      );
+    }
+
+    if (hasJobInfo === false) {
+      console.log('[ResumePreview] Rendering JobInfoPanel');
+      return (
+        <JobInfoPanel
+          onComplete={handleJobInfoComplete}
+          className="shadow-lg"
+        />
+      );
+    }
+
+    console.log('[ResumePreview] No panel to render');
+    return null;
+  };
+
+  // Layout with or without job panels
+  if (showJobPanels && user?.uid) {
     return (
       <div className={`w-full ${className}`}>
         <div className="flex gap-4">
-          {/* Left Side - Resume Preview */}
           <div className="w-[1034px] flex-shrink-0">
             {resumePreviewContent}
           </div>
-
-          {/* Right Side - Conditional Panels */}
           <div className="w-72 flex-shrink-0">
             <div>
-              {loading ? (
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-              ) : hasJobInfo === false ? (
-                <JobInfoPanel
-                  onComplete={handleJobInfoComplete}
-                  className="shadow-lg"
-                />
-              ) : hasJobInfo === true ? (
-                <KeywordTargetingPanel
-                  onJobUpdate={handleJobUpdate}
-                  className="shadow-lg"
-                />
-              ) : null}
-
-              {/* Share Panel Below */}
-              {!loading && (
+              {renderJobPanel()}
+              {initialized && !loading && (
                 <SharePanel
                   resumeId={resumeId}
                   className="mt-6 shadow-lg"
@@ -1065,6 +989,5 @@ export default function ResumePreview({
     );
   }
 
-  // Return just the resume preview without panels
   return <div className={`w-full max-w-4xl mx-auto ${className}`}>{resumePreviewContent}</div>;
 }

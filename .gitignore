@@ -80,3 +80,4 @@ coordination/orchestration/
 performance-reports/
 .claude/local/
 *.log
+lib/features/auth/credentials/

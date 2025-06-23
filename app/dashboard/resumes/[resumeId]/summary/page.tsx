@@ -1,104 +1,119 @@
+// Simplified Summary Page
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
-import { useAuth } from '@/contexts/auth-context';
-import ResumeEditorArea from '@/components/resume/resume-editor-area';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { AlertCircle } from 'lucide-react';
+import { useResumeData } from "@/contexts/resume-data-context";
+import SummaryForm from "@/components/resume-editor/summary-form";
 
-interface ResumeData {
-  id: string;
-  title: string;
-  userId: string;
-  parsedData?: any;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export default function ResumeSummaryPage() {
-  const [resume, setResume] = useState<ResumeData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  
   const params = useParams();
+  const router = useRouter();
   const resumeId = params.resumeId as string;
-  const { user } = useAuth();
+  const [error, setError] = useState<string>('');
 
+  // Try to use the context - this will fail if not wrapped
+  let contextAvailable = true;
+  let resumeDataHook: any = {};
+
+  try {
+    resumeDataHook = useResumeData();
+  } catch (e) {
+    contextAvailable = false;
+    console.error('ResumeDataContext not available:', e);
+  }
+
+  const {
+    resumeData,
+    fetchResumeData,
+    loading,
+    processedData
+  } = contextAvailable ? resumeDataHook : {
+    resumeData: null,
+    fetchResumeData: async () => {},
+    loading: false,
+    processedData: null
+  };
+
+  // If context is not available, show error
+  if (!contextAvailable) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Context Not Available
+            </h3>
+            <p className="text-red-700 dark:text-red-300 mb-4">
+              The ResumeDataContext is not provided. Make sure your app layout wraps pages with ResumeDataProvider.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fetch resume data when needed
   useEffect(() => {
-    const fetchResume = async () => {
-      if (!resumeId || !user) {
-        setIsLoading(false);
-        return;
-      }
+    if (resumeId && (!resumeData || resumeData.id !== resumeId)) {
+      fetchResumeData(resumeId).catch(err => {
+        console.error('Failed to fetch resume:', err);
+        setError('Failed to load resume data');
+      });
+    }
+  }, [resumeId, resumeData, fetchResumeData]);
 
-      if (!db) {
-        console.error('Firestore database is not initialized');
-        setIsLoading(false);
-        return;
-      }
+  const handleBackToEditor = () => {
+    router.push(`/dashboard/resumes/${resumeId}/edit`);
+  };
 
-      try {
-        const resumeRef = doc(db, 'resumes', resumeId);
-        const resumeSnap = await getDoc(resumeRef);
-        
-        if (!resumeSnap.exists()) {
-          setError('Resume not found');
-          return;
-        }
-        
-        const resumeData = resumeSnap.data() as ResumeData;
-        
-        // Ensure user owns this resume
-        if (resumeData.userId !== user.uid) {
-          setError('You do not have permission to view this resume');
-          return;
-        }
-        
-        setResume({
-          ...resumeData,
-          id: resumeSnap.id
-        });
-      } catch (err) {
-        console.error('Error fetching resume:', err);
-        setError('Failed to load resume');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchResume();
-  }, [resumeId, user]);
-
-  if (isLoading) {
+  // Show loading state
+  if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[600px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading resume data...</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  // Show error state
+  if (error || (!loading && !resumeData)) {
     return (
-      <div className="p-6 bg-red-50 rounded-lg">
-        <h3 className="text-lg font-medium text-red-800 mb-2">Error</h3>
-        <p className="text-red-700">{error}</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+              Unable to Load Resume
+            </h3>
+            <p className="text-red-700 dark:text-red-300 mb-4">
+              {error || 'The resume could not be loaded. Please check the URL and try again.'}
+            </p>
+            <button
+              onClick={() => router.push('/dashboard/resumes')}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+            >
+              Back to Resumes
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!resume) {
-    return (
-      <div className="p-6 bg-gray-50 rounded-lg">
-        <h3 className="text-lg font-medium mb-2">Resume Not Found</h3>
-        <p>The resume you're looking for could not be found.</p>
-      </div>
-    );
-  }
-
+  // Main content
   return (
-    <div>
-      <ResumeEditorArea resume={resume} />
+    <div className="min-h-screen ">
+      <SummaryForm />
     </div>
   );
 }

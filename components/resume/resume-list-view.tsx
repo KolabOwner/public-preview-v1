@@ -3,7 +3,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { FileText, MoreVertical, Eye, Download, Copy, Trash2, ChevronRight, ChevronDown, Plus, FolderPlus } from 'lucide-react';
 import { deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/core/auth/firebase-config';
+import { db } from '@/lib/features/auth/firebase-config';
 import { useToast } from '@/components/hooks/use-toast';
 
 interface Resume {
@@ -207,7 +207,7 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
                 </button>
                 <button
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
-                  onClick={() => window.open(`/api/resume/download?id=${resume.id}`, '_blank')}
+                  onClick={() => window.open(`/api/resume-endpoints/download?id=${resume.id}`, '_blank')}
                 >
                   <Download className="h-4 w-4" />
                   Download PDF

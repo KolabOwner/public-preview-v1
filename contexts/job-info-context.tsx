@@ -1,9 +1,22 @@
 // src/contexts/JobInfoContext.tsx
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
-import { JobInfo } from '@/types';
-import { AnalyzeAPI } from '@/lib/api/analyze';
+import { AnalyzeAPI } from '@/lib/features/api/analyze';
 import { logger } from '@/lib/enterprise/monitoring/logging';
 import { performanceAnalytics } from '@/lib/enterprise/monitoring/analytics';
+
+export interface JobInfo {
+  title: string;
+  description: string;
+  company: string;
+  keywords: string;
+  isActive: boolean;
+  url?: string;
+  location?: string;
+  salary?: string;
+  type?: string;
+  experience?: string;
+  postedDate?: string;
+}
 
 interface EnterpriseJobInfo extends JobInfo {
   extractedKeywords?: ExtractedKeyword[];
@@ -135,10 +148,15 @@ export const JobInfoProvider: React.FC<JobInfoProviderProps> = ({ children, user
   const [error, setError] = useState<string | null>(null);
 
   const setCurrentResumeId = useCallback((resumeId: string | null) => {
-    logger.info('Setting current resume ID', { from: currentResumeId, to: resumeId });
-    setCurrentResumeIdState(resumeId);
-    setError(null); // Clear any previous errors
-  }, [currentResumeId]);
+    setCurrentResumeIdState(prev => {
+      if (prev === resumeId) {
+        return prev; // No change needed
+      }
+      logger.info('Setting current resume ID', { from: prev, to: resumeId });
+      setError(null); // Clear any previous errors
+      return resumeId;
+    });
+  }, []);
 
   // Get current job info based on resume ID
   const jobInfo = currentResumeId ? (jobInfoByResume[currentResumeId] || defaultJobInfo) : defaultJobInfo;

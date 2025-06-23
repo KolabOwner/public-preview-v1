@@ -5,7 +5,7 @@ import { useJobInfo } from "@/contexts/job-info-context";
 import { useAuth } from '@/contexts/auth-context';
 import { logger } from '@/lib/enterprise/monitoring/logging';
 import { performanceAnalytics } from '@/lib/enterprise/monitoring/analytics';
-import { AnalyzeAPI } from '@/lib/api/analyze';
+import { AnalyzeAPI } from '@/lib/features/api/analyze';
 
 export interface KeywordTargetingPanelProps {
   className?: string;

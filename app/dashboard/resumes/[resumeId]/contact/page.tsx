@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from "@/lib/core/auth/firebase-config";
+import { db } from "@/lib/features/auth/firebase-config";
 import { useAuth } from '@/contexts/auth-context';
 import ResumeEditorArea from '@/components/resume/resume-editor-area';
 
@@ -57,7 +57,9 @@ export default function ResumeContactPage() {
         
         setResume({
           ...resumeData,
-          id: resumeSnap.id
+          id: resumeSnap.id,
+          // Merge rmsRawData directly so parseToUnifiedFormat can access it
+          ...resumeData.rmsRawData
         });
       } catch (err) {
         console.error('Error fetching resume:', err);

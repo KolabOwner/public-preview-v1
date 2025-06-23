@@ -1,13 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Palette, Save, Loader2, Info, PlusCircle, Trash2, ListChecks, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
-import { useToast } from '@/components/hooks/use-toast';
-import { cn } from '../utils';
+import { Palette, Save, Loader2, Info, PlusCircle, Trash2, ListChecks, ChevronLeft, ChevronRight, AlertCircle, Plus, X } from "lucide-react";
 
 export interface SkillEntry {
   id: string;
@@ -16,199 +10,301 @@ export interface SkillEntry {
 }
 
 interface SkillsFormProps {
-  initialData: SkillEntry[];
-  onSave: (data: SkillEntry[]) => void;
+  initialData: any[]; // Accept any format from database
+  onSave: (data: SkillEntry[]) => Promise<void>;
+  autoSave?: boolean;
 }
 
-export default function SkillsForm({ initialData, onSave }: SkillsFormProps) {
+const cleanValue = (value: string | undefined | null): string => {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  const emptyValues = ['n/a', 'N/A', 'none', 'None', 'NONE', 'null', 'NULL', '-', '--', 'NA', 'na', 'undefined'];
+  return emptyValues.includes(trimmed) ? '' : trimmed;
+};
+
+export default function SkillsForm({ initialData, onSave, autoSave = false }: SkillsFormProps) {
   const [skillEntries, setSkillEntries] = useState<SkillEntry[]>([]);
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
-  const { toast } = useToast();
+  const [errors, setErrors] = useState<Record<string, Set<string>>>({});
+  const [toast, setToast] = useState({ show: false, message: '', error: false });
 
   useEffect(() => {
-    const processedData = initialData.map(skill => ({ ...skill }));
-    setSkillEntries(processedData.length > 0 ? processedData : [{ id: `skill-${Date.now()}`, category: '', keywords: '' }]);
+    const processedData = initialData.map((skill: any) => ({
+      id: skill.id || `skill-${Date.now()}-${Math.random()}`,
+      category: cleanValue(skill.category || skill.skillCategory || skill.name) || '',
+      keywords: cleanValue(skill.keywords || skill.skills || skill.items) || ''
+    }));
+
+    setSkillEntries(processedData.length > 0 ? processedData : [{
+      id: `skill-${Date.now()}`,
+      category: '',
+      keywords: ''
+    }]);
     setCurrentEntryIndex(0);
   }, [initialData]);
 
-  const validateEntry = (entry: SkillEntry): Record<string, string> => {
-    const entryErrors: Record<string, string> = {};
-    if (!entry.category.trim()) entryErrors.category = "Skill category is required.";
-    if (!entry.keywords.trim()) entryErrors.keywords = "Keywords are required for this category.";
-    return entryErrors;
+  const current = skillEntries[currentEntryIndex];
+  if (!current) return null;
+
+  const validate = (entry: SkillEntry): Set<string> => {
+    const errs = new Set<string>();
+    if (!entry.category.trim()) errs.add('category');
+    if (!entry.keywords.trim()) errs.add('keywords');
+    return errs;
   };
 
-  const validateAllEntries = () => {
-    const newErrors: Record<string, Record<string, string>> = {};
-    let formIsValid = true;
-    // Filter out entries that are completely empty before validation
-    const filledEntries = skillEntries.filter(entry => entry.category.trim() || entry.keywords.trim());
+  const update = (field: keyof SkillEntry, value: string) => {
+    setSkillEntries(prev => prev.map((e, i) => i === currentEntryIndex ? { ...e, [field]: value } : e));
 
-    filledEntries.forEach((entry, idx) => {
-      const entryErrors = validateEntry(entry);
-      if (Object.keys(entryErrors).length > 0) {
-        newErrors[entry.id] = entryErrors;
-        // Find original index to correctly highlight error if current view matches
-        const originalIndex = skillEntries.findIndex(se => se.id === entry.id);
-        if (originalIndex === currentEntryIndex) formIsValid = false;
-      }
-    });
-    setErrors(newErrors);
-    const allEntriesValid = filledEntries.every(entry => Object.keys(validateEntry(entry)).length === 0);
-    return { currentFormValid: formIsValid, allFormsValid: allEntriesValid };
-  };
-
-
-  const handleInputChange = (field: keyof SkillEntry, value: string) => {
-    setSkillEntries(prev => prev.map((entry, idx) => {
-      if (idx === currentEntryIndex) {
-        return { ...entry, [field]: value };
-      }
-      return entry;
-    }));
-  };
-
-  const addSkillEntry = () => {
-    const newId = `skill-${Date.now()}`;
-    const newEntry: SkillEntry = { id: newId, category: '', keywords: '' };
-    setSkillEntries(prev => [...prev, newEntry]);
-    setCurrentEntryIndex(skillEntries.length);
-  };
-
-  const removeCurrentSkillEntry = () => {
-    if (skillEntries.length <= 1) {
-        setSkillEntries([{ id: `skill-${Date.now()}`, category: '', keywords: '' }]);
-        setCurrentEntryIndex(0);
-        setErrors({});
-        return;
-    }
-    const entryIdToRemove = skillEntries[currentEntryIndex].id;
-    setSkillEntries(prev => prev.filter(exp => exp.id !== entryIdToRemove));
-    setCurrentEntryIndex(prev => Math.max(0, prev - 1));
+    // Clear field error
     setErrors(prev => {
-        const newErrors = {...prev};
-        delete newErrors[entryIdToRemove];
-        return newErrors;
+      const next = { ...prev };
+      if (next[current.id]) {
+        next[current.id].delete(field);
+        if (next[current.id].size === 0) delete next[current.id];
+      }
+      return next;
     });
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const { allFormsValid } = validateAllEntries();
+  const handleSave = async () => {
+    const allErrors: Record<string, Set<string>> = {};
+    skillEntries.forEach(e => {
+      const errs = validate(e);
+      if (errs.size > 0) allErrors[e.id] = errs;
+    });
 
-    // Allow saving if all *filled* entries are valid. Empty entries are filtered out.
-    if (!allFormsValid) {
-         const firstErrorEntryIndex = skillEntries.findIndex(entry => {
-            if (!entry.category.trim() && !entry.keywords.trim()) return false; // Skip empty
-            return Object.keys(validateEntry(entry)).length > 0;
-        });
-        if (firstErrorEntryIndex !== -1) {
-            setCurrentEntryIndex(firstErrorEntryIndex);
-             toast({
-                title: "Validation Error",
-                description: "Please correct the errors in the skill entries.",
-                variant: "destructive",
-            });
-        } else if (skillEntries.some(entry => (entry.category.trim() && !entry.keywords.trim()) || (!entry.category.trim() && entry.keywords.trim()))) {
-             toast({
-                title: "Incomplete Entry",
-                description: "A skill category requires keywords, and keywords require a category.",
-                variant: "destructive",
-            });
-        }
-        setIsSaving(false);
-        return;
+    if (Object.keys(allErrors).length) {
+      setErrors(allErrors);
+      setToast({ show: true, message: 'Please fill required fields', error: true });
+      setTimeout(() => setToast({ show: false, message: '', error: false }), 2000);
+      return;
     }
 
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const validEntries = skillEntries.filter(entry => entry.category.trim() && entry.keywords.trim());
-    onSave(validEntries);
-    setIsSaving(false);
-     toast({
-      title: "Skills Section Saved",
-      description: "Your skills have been updated.",
-    });
+    try {
+      const validEntries = skillEntries.filter(e => e.category.trim() && e.keywords.trim());
+      await onSave(validEntries);
+      setToast({ show: true, message: 'Skills saved successfully', error: false });
+    } catch {
+      setToast({ show: true, message: 'Failed to save', error: true });
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setToast({ show: false, message: '', error: false }), 2000);
+    }
   };
 
-  const currentEntry = skillEntries[currentEntryIndex];
+  const addSkillEntry = () => {
+    setSkillEntries([...skillEntries, {
+      id: `skill-${Date.now()}`,
+      category: '',
+      keywords: ''
+    }]);
+    setCurrentEntryIndex(skillEntries.length);
+  };
 
-   if (!currentEntry) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        Loading skills data or no entries available.
-        <Button onClick={addSkillEntry} variant="outline" className="mt-4">Add First Skill Category</Button>
-      </div>
-    );
-  }
-  const entryErrors = (errors[currentEntry.id] as Record<string, string>) || {};
-  const navigationHeaderTitle = currentEntry.category || "New Skill Category";
+  const removeCurrentEntry = () => {
+    if (skillEntries.length <= 1) return;
+    setSkillEntries(prev => prev.filter((_, i) => i !== currentEntryIndex));
+    setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1));
+  };
 
+  const err = errors[current.id] || new Set();
+  const headerTitle = current.category || "New Skill Category";
+
+  // Format keywords for display - show preview of skills
+  const getSkillsPreview = (keywords: string): string => {
+    const skills = keywords.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+    if (skills.length === 0) return "";
+    if (skills.length <= 3) return skills.join(", ");
+    return `${skills.slice(0, 3).join(", ")} +${skills.length - 3} more`;
+  };
 
   return (
-    <div className="w-full mx-auto max-w-[1400px] border-2 border-border rounded-xl overflow-hidden bg-card shadow-sm dark:shadow-md">
-      <div className="flex flex-row items-center justify-between p-3 border-b border-border/40 bg-muted/30 dark:bg-muted/10">
-        <div className="flex items-center gap-2 flex-grow min-w-0">
-          <Palette className="h-5 w-5 text-primary flex-shrink-0" />
-          <h3 className="text-base font-semibold truncate" title={navigationHeaderTitle}>
-            {navigationHeaderTitle}
-          </h3>
-        </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <span className="text-xs text-muted-foreground mr-1">{currentEntryIndex + 1} of {skillEntries.length}</span>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))} disabled={currentEntryIndex === 0}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentEntryIndex(Math.min(skillEntries.length - 1, currentEntryIndex + 1))} disabled={currentEntryIndex === skillEntries.length - 1}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={removeCurrentSkillEntry}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+    <div className="bg-white dark:bg-[#2c3442] rounded-lg overflow-hidden border border-gray-200 dark:border-transparent shadow-sm">
+      {/* Header */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-[#252d3a] border-b border-gray-200 dark:border-[#1e252f]">
+        <div className="flex items-center justify-between">
+          <h2 className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            <span>{headerTitle}</span>
+            {current.keywords && (
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                • {getSkillsPreview(current.keywords)}
+              </span>
+            )}
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))}
+              disabled={currentEntryIndex === 0}
+              className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-400 px-2">
+              {currentEntryIndex + 1} / {skillEntries.length}
+            </span>
+            <button
+              onClick={() => setCurrentEntryIndex(Math.min(skillEntries.length - 1, currentEntryIndex + 1))}
+              disabled={currentEntryIndex === skillEntries.length - 1}
+              className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            {skillEntries.length > 1 && (
+              <>
+                <div className="w-px h-5 bg-gray-300 dark:bg-[#3a4452] mx-1" />
+                <button
+                  onClick={removeCurrentEntry}
+                  className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2c3442] text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
-      <div className="p-4 sm:p-6">
-        <form onSubmit={handleSubmit} id="skillsForm" className="space-y-4 sm:space-y-6">
-          <div className="space-y-1.5">
-            <Label htmlFor={`category-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHICH <span className="font-bold">CATEGORY</span> OF SKILLS? <span className="text-red-500">*</span></Label>
-            <Input
-              id={`category-${currentEntry.id}`}
-              value={currentEntry.category}
-              onChange={(e) => handleInputChange('category', e.target.value)}
-              placeholder="e.g., Programming Languages, Design Tools"
-              className={cn("bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background", entryErrors.category ? "border-destructive" : "")}
-            />
-            {entryErrors.category && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.category}</p>}
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`keywords-${currentEntry.id}`} className="text-xs uppercase tracking-wider font-semibold">WHAT <span className="font-bold">SKILLS</span> ARE IN THIS CATEGORY? <span className="text-red-500">*</span></Label>
-            <Textarea
-              id={`keywords-${currentEntry.id}`}
-              value={currentEntry.keywords}
-              onChange={(e) => handleInputChange('keywords', e.target.value)}
-              placeholder="e.g., JavaScript, React, Node.js OR Figma, Adobe XD, Sketch"
-              rows={5}
-              className={cn("bg-background/50 dark:bg-background/20 hover:bg-background/70 dark:hover:bg-background/30 focus:bg-background focus-visible:bg-background", entryErrors.keywords ? "border-destructive" : "")}
-            />
-            {entryErrors.keywords && <p className="text-xs text-destructive flex items-center"><AlertCircle size={14} className="mr-1"/>{entryErrors.keywords}</p>}
-            <p className="text-xs text-muted-foreground flex items-center">
-              <Info size={14} className="mr-1.5"/>
-              Enter skills separated by commas or on new lines.
+
+      {/* Form */}
+      <div className="p-6 space-y-6">
+        {/* Category */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            WHICH <span className="font-bold">CATEGORY</span> OF SKILLS? <span className="text-red-500">*</span>
+          </label>
+          <input
+            value={current.category}
+            onChange={(e) => update('category', e.target.value)}
+            placeholder="e.g., Programming Languages, Design Tools, Soft Skills"
+            className={`
+              w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+              text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+              focus:outline-none focus:ring-2 
+              transition-all duration-200
+              ${err.has('category') 
+                ? 'border-red-500 focus:ring-red-500/30' 
+                : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+            `}
+          />
+          {err.has('category') && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              This field is required
             </p>
+          )}
+        </div>
+
+        {/* Keywords/Skills */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            WHAT <span className="font-bold">SKILLS</span> ARE IN THIS CATEGORY? <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            value={current.keywords}
+            onChange={(e) => update('keywords', e.target.value)}
+            placeholder="e.g., JavaScript, React, Node.js, TypeScript&#10;OR&#10;Figma&#10;Adobe XD&#10;Sketch&#10;Wireframing"
+            rows={6}
+            className={`
+              w-full px-4 py-3 bg-white dark:bg-[#1e252f] border rounded-md
+              text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+              focus:outline-none focus:ring-2 resize-none
+              transition-all duration-200
+              ${err.has('keywords') 
+                ? 'border-red-500 focus:ring-red-500/30' 
+                : 'border-gray-300 dark:border-[#3a4452] focus:ring-blue-500/50'}
+            `}
+          />
+          {err.has('keywords') && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              This field is required
+            </p>
+          )}
+          <div className="mt-2 flex items-start gap-2 text-gray-600 dark:text-gray-400 text-sm">
+            <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>Enter skills separated by commas or on new lines. Group related skills together in each category.</span>
           </div>
-        </form>
+        </div>
+
+        {/* Skills Preview */}
+        {current.keywords && (
+          <div className="bg-gray-50 dark:bg-[#1e252f] rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <ListChecks className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                SKILLS PREVIEW
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {current.keywords.split(/[,\n]/).map((skill, index) => {
+                const trimmedSkill = skill.trim();
+                if (!trimmedSkill) return null;
+                return (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-white dark:bg-[#2c3442] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-[#3a4452]"
+                  >
+                    {trimmedSkill}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
-      <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-6 pt-4 sm:pt-6 border-t dark:border-border/40 gap-3">
-        <Button type="button" variant="ghost" onClick={addSkillEntry} className="w-full sm:w-auto hover:bg-background/50 dark:hover:bg-background/20">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add New Skill Category
-        </Button>
-        <Button type="submit" form="skillsForm" disabled={isSaving} size="lg" className="w-full sm:w-auto">
-          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save Skills Section
-        </Button>
+
+      {/* Footer */}
+      <div className="px-6 py-4 bg-gray-50 dark:bg-[#252d3a] border-t border-gray-200 dark:border-[#1e252f] flex justify-between items-center">
+        <button
+          onClick={addSkillEntry}
+          className="
+            text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white
+            flex items-center gap-2
+            transition-colors
+          "
+        >
+          <Plus className="h-4 w-4" />
+          Add Another Category
+        </button>
+
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`
+            flex items-center gap-2 px-6 py-2.5
+            bg-blue-600 hover:bg-blue-700 text-white
+            rounded-md font-medium text-sm uppercase tracking-wide
+            transition-all
+            ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+          `}
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              SAVING...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              SAVE SKILLS
+            </>
+          )}
+        </button>
       </div>
+
+      {/* Toast */}
+      {toast.show && (
+        <div className={`
+          fixed bottom-4 right-4 px-3 py-2 rounded-md shadow-lg text-white text-sm
+          transform transition-all duration-300 z-50
+          ${toast.error ? 'bg-red-600' : 'bg-green-600'}
+        `}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

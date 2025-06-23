@@ -401,7 +401,7 @@ if (!isOpen) return null;
 return (
   <div
     ref={dropdownRef}
-    className={`absolute top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl py-2 z-50 min-w-max animate-in fade-in-0 zoom-in-95 duration-200 ${positionClasses[position]} ${className}`}
+    className={`absolute top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl py-2 z-[100] min-w-max animate-in fade-in-0 zoom-in-95 duration-200 ${positionClasses[position]} ${className}`}
     role="menu"
     aria-orientation="vertical"
   >
@@ -646,6 +646,7 @@ return (
     className={`${themeClasses} rounded-lg border shadow-sm flex-shrink-0 w-full mb-4 relative transition-all duration-200 ${
       disabled ? 'opacity-50 pointer-events-none' : ''
     } ${className}`}
+    style={{ position: 'relative', zIndex: 1 }}
     data-testid={testId}
   >
     {/* Main Toolbar */}

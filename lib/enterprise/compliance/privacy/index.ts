@@ -15,8 +15,8 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import { ref, deleteObject, listAll } from 'firebase/storage';
-import { db } from '@/lib/core/auth/firebase-config';
-import { storage } from '@/lib/core/auth/firebase-config';
+import { db } from '@/lib/features/auth/firebase-config';
+import { storage } from '@/lib/features/auth/firebase-config';
 import { EncryptionService } from '../../security/encryption';
 import { logger } from '../../monitoring/logging';
 import { metrics } from '../../monitoring/metrics';
