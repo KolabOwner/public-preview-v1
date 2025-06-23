@@ -6,6 +6,8 @@ import { useTheme } from '@/components/ui/theme-provider';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from "@/lib/core/auth/firebase-config";
 import ResumeGridCard from '@/components/resume/resume-grid-card';
+import ResumeListView from '@/components/resume/resume-list-view';
+import NotificationsSidebar from '@/components/ui/notifications-sidebar';
 import dynamic from 'next/dynamic';
 
 // Dynamic import with no SSR to fix serialization error
@@ -30,6 +32,7 @@ export default function ResumesPage() {
   const [sortBy, setSortBy] = useState<'created' | 'updated'>('created');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -170,9 +173,12 @@ export default function ResumesPage() {
             {/* Action buttons */}
             <div className="hidden flex-row items-center justify-between gap-4 lg:flex">
               {/* Notification bell */}
-              <div className="relative flex cursor-pointer items-center justify-center text-center font-extrabold text-gray-900 dark:text-gray-100">
+              <div 
+                className="relative flex cursor-pointer items-center justify-center text-center font-extrabold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={() => setShowNotifications(true)}
+              >
                 <i className="fad fa-bell fa-lg" aria-hidden="true"></i>
-                <div className="absolute -right-3 -top-4 flex h-4 w-4 select-none items-center justify-center rounded-full border-2 border-surface-1 bg-red-600 p-2 text-xs font-normal leading-4 text-neutral-0">1</div>
+                <div className="absolute -right-3 -top-4 flex h-4 w-4 select-none items-center justify-center rounded-full border-2 border-white dark:border-navy-800 bg-red-600 p-2 text-xs font-normal leading-4 text-white">1</div>
               </div>
 
               {/* User Menu */}
@@ -224,21 +230,6 @@ export default function ResumesPage() {
                         </div>
                       </div>
 
-                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
-                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                          <div className="flex flex-row items-start gap-2">
-                            <div>
-                              <div className="flex h-6 min-w-6 items-center justify-center">
-                                <i className="fad fa-lightbulb text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="frill-container btn w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Suggest Feature">Suggest Feature</div>
-                            </div>
-                          </div>
-                          <div></div>
-                        </div>
-                      </div>
 
                       <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
                         <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
@@ -268,7 +259,7 @@ export default function ResumesPage() {
                               <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Theme">Theme</div>
 
                               {showThemeMenu && (
-                                <div className="bg-surface-2 rounded-lg border border-surface-2-stroke absolute flex-col items-start bg-surface-2 py-2 shadow-lg z-50 min-w-28 max-w-72 flex-col items-start right-0 left-auto right-0 left-full top-[-1px] -mt-2" style={{ width: 'fit-content' }}>
+                                <div className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 absolute flex-col items-start py-2 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50 min-w-[160px] max-w-72 -left-40 top-0" style={{ width: 'fit-content' }}>
                                   <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'light' ? '!bg-rezi-blue-600 dark:!bg-rezi-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('light'); setShowThemeMenu(false); }}>
                                     <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
                                       <div className="flex flex-row items-start gap-2">
@@ -406,21 +397,33 @@ export default function ResumesPage() {
                 </div>
               </div>
 
-              {/* Resume Grid */}
+              {/* Resume Grid/List View */}
               <div className="flex flex-col gap-4">
                 {resumes.length > 0 ? (
-                  <div>
-                    <div className="mb-4 flex flex-row flex-wrap gap-4 md:gap-6">
-                      <CreateResumeCard />
+                  viewMode === 'grid' ? (
+                    <div>
+                      <div className="mb-4 flex flex-row flex-wrap gap-4 md:gap-6">
+                        <CreateResumeCard />
 
-                      {resumes.map((resume) => (
-                        <ResumeGridCard key={resume.id} resume={resume} onRefresh={() => {
-                          setIsLoading(true);
-                          fetchResumes();
-                        }} />
-                      ))}
+                        {resumes.map((resume) => (
+                          <ResumeGridCard key={resume.id} resume={resume} onRefresh={() => {
+                            setIsLoading(true);
+                            fetchResumes();
+                          }} />
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <ResumeListView 
+                      resumes={resumes} 
+                      folders={[]} 
+                      onRefresh={() => {
+                        setIsLoading(true);
+                        fetchResumes();
+                      }}
+                      onCreateNew={() => setShowCreateModal(true)}
+                    />
+                  )
                 ) : (
                   <div className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-navy-700 p-8 text-center shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50">
                     <h4 className="font-medium text-xl mb-3 text-gray-900 dark:text-gray-100">No resumes yet</h4>
@@ -447,17 +450,14 @@ export default function ResumesPage() {
             </div>
           </div>
 
-          {/* Add section button */}
-          <div className="flex flex-row items-center justify-start py-4">
-            <button type="button" className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition transition-200 latin border-none text-xs font-bold uppercase leading-4 text-gray-900 dark:text-gray-100 focus:bg-button-text-focus dark:focus:bg-gray-700 active:bg-button-text-active dark:active:bg-gray-600 hover:bg-button-text-hover dark:hover:bg-gray-700 bg-transparent border-solid border border-button-secondary-stroke dark:border-gray-600 focus:bg-button-secondary-hover dark:focus:bg-gray-700 active:bg-button-secondary-active dark:active:bg-gray-600 hover:bg-button-secondary-hover dark:hover:bg-gray-700 px-2 py-1 min-h-8 leading-4 rounded-md text-xs">
-              <i className="fad fa-folder-plus !flex items-center justify-center !leading-[0] flex-none text-sm w-[18px] h-[18px] mr-1" aria-hidden="true"></i>
-              <span className="px-1">Add section</span>
-            </button>
-          </div>
-
           <CreateResumeModal
             isOpen={showCreateModal}
             onOpenChange={setShowCreateModal}
+          />
+          
+          <NotificationsSidebar 
+            isOpen={showNotifications}
+            onClose={() => setShowNotifications(false)}
           />
         </main>
       </div>

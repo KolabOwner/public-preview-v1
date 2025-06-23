@@ -295,53 +295,38 @@ const AppSidebarNav = () => {
                 <div key={item.href} className="relative">
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-3 ${isResumeEditorRoute ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden ${
+                    className={`group flex items-center gap-3 ${isResumeEditorRoute ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden transition-colors duration-200 ${
                       isActive
-                        ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/10 text-slate-900 dark:text-white'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5'
+                        ? 'bg-slate-100 dark:bg-navy-800 text-slate-900 dark:text-white'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                     onMouseEnter={() => setHoveredItem(item.href)}
                     onMouseLeave={() => setHoveredItem(null)}
                   >
                     {/* Active indicator */}
                     {isActive && !isResumeEditorRoute && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-r-full shadow-lg shadow-blue-500/30" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full" />
                     )}
 
-                    {/* Hover effect */}
-                    <div className={`absolute inset-0 bg-gradient-to-r from-[#5b7cfd]/10 to-[#4a6bec]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
-
-                    {/* Icon with subtle animation */}
+                    {/* Icon */}
                     <span className={`sidebar-icon relative ${
-                      isActive ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                      isActive ? 'text-blue-600 dark:text-blue-400' : ''
                     } ${isResumeEditorRoute ? 'text-lg' : ''}`}>
                       {item.icon}
                     </span>
 
-                    {/* Label and description - Hidden in collapsed state */}
+                    {/* Label - Hidden in collapsed state */}
                     {!isResumeEditorRoute && (
                       <div className="flex-1 relative">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-sm">{item.label}</span>
                           {item.badge && (
-                            <span className={`${item.badgeColor} text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm`}>
+                            <span className={`${item.badgeColor} text-white text-xs font-semibold px-2 py-0.5 rounded-full`}>
                               {item.badge}
                             </span>
                           )}
                         </div>
-                        {hoveredItem === item.href && !isActive && (
-                          <p className="text-xs text-slate-600 dark:text-slate-500 mt-0.5">
-                            {item.description}
-                          </p>
-                        )}
                       </div>
-                    )}
-
-                    {/* Arrow indicator on hover - Hidden in collapsed state */}
-                    {!isResumeEditorRoute && hoveredItem === item.href && (
-                      <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
                     )}
                   </Link>
 
