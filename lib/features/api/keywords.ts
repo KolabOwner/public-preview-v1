@@ -49,7 +49,7 @@ export interface JobInfoStatus {
 
 export class KeywordsAPI {
   static async analyzeKeywords(data: KeywordAnalysisRequest): Promise<KeywordAnalysisResult> {
-    const response = await fetch('/api/resume-endpoints/analyze-keywords', {
+    const response = await fetch('/api/resume-endpoints/analyze-for-keywords', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -66,7 +66,7 @@ export class KeywordsAPI {
 
   static async checkJobInfo(resumeId: string, userId: string): Promise<JobInfoStatus> {
     const params = new URLSearchParams({ resumeId, userId });
-    const response = await fetch(`/api/resume-endpoints/analyze-keywords?${params}`, {
+    const response = await fetch(`/api/resume-endpoints/analyze-for-keywords?${params}`, {
       method: 'GET',
     });
 
@@ -81,7 +81,7 @@ export class KeywordsAPI {
 
   static async clearJobInfo(resumeId: string, userId: string): Promise<void> {
     const params = new URLSearchParams({ resumeId, userId });
-    const response = await fetch(`/api/resume-endpoints/analyze-keywords?${params}`, {
+    const response = await fetch(`/api/resume-endpoints/analyze-for-keywords?${params}`, {
       method: 'DELETE',
     });
 

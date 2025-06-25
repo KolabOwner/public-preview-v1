@@ -3,6 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import MainNavbar from '@/components/layout/main-navbar';
+import ResumeTemplateShowcase from '@/components/resume/ResumeTemplateShowcase';
+import FeatureHighlightsTabs from '@/components/resume/FeatureHighlightsTabs';
+import AdditionalFeaturesGrid from '@/components/resume/AdditionalFeaturesGrid';
 import {
   ArrowRight,
   CheckCircle2,
@@ -86,91 +90,6 @@ const AnimatedGradientBackground = () => {
   );
 };
 
-// Enhanced Navigation
-const Navigation = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-slate-950/95 backdrop-blur-xl border-b border-white/10' : ''
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <motion.div 
-            className="flex items-center"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg blur-md opacity-50" />
-                <div className="relative bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-lg">
-                  <Zap className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <span className="text-2xl font-bold text-white">Hirable<span className="bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text">AI</span></span>
-            </div>
-          </motion.div>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
-            <a href="#how-it-works" className="text-gray-300 hover:text-white transition-colors">How it Works</a>
-            <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
-            <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors">Testimonials</a>
-            <Link href="/auth/sign-in" className="text-gray-300 hover:text-white transition-colors">Login</Link>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/auth/sign-up" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg font-medium hover:from-blue-600 hover:to-purple-600 transition-all">
-                Get Started Free
-              </Link>
-            </motion.div>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden text-white"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-slate-950/95 backdrop-blur-xl border-b border-white/10"
-          >
-            <div className="px-4 py-4 space-y-3">
-              <a href="#features" className="block text-gray-300 hover:text-white transition-colors">Features</a>
-              <a href="#how-it-works" className="block text-gray-300 hover:text-white transition-colors">How it Works</a>
-              <a href="#pricing" className="block text-gray-300 hover:text-white transition-colors">Pricing</a>
-              <a href="#testimonials" className="block text-gray-300 hover:text-white transition-colors">Testimonials</a>
-              <Link href="/auth/sign-in" className="block text-gray-300 hover:text-white transition-colors">Login</Link>
-              <Link href="/auth/sign-up" className="block bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg font-medium text-center">
-                Get Started Free
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
-  );
-};
 
 // Enhanced Hero Section
 const HeroSection = () => {
@@ -183,7 +102,7 @@ const HeroSection = () => {
       <AnimatedGradientBackground />
 
       <motion.div 
-        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20"
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24"
         style={{ y, opacity }}
       >
         <div className="text-center space-y-8">
@@ -222,22 +141,20 @@ const HeroSection = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/auth/sign-up" className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all shadow-xl">
+              <Link href="/ai-resume-builder" className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all shadow-xl">
                 Start Building for Free
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </motion.div>
-            <motion.button 
-              whileHover={{ scale: 1.05 }} 
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
-            >
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-              </svg>
-              Watch Demo
-            </motion.button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link href="/resume-examples-showcase" className="inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all">
+                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                </svg>
+                View Resume Examples
+              </Link>
+            </motion.div>
           </motion.div>
 
           <motion.div
@@ -661,7 +578,7 @@ const CTASection = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/auth/sign-up" className="inline-flex items-center px-8 py-4 bg-white text-gray-900 font-semibold rounded-xl hover:bg-gray-100 transition-all shadow-xl">
+              <Link href="/ai-resume-builder" className="inline-flex items-center px-8 py-4 bg-white text-gray-900 font-semibold rounded-xl hover:bg-gray-100 transition-all shadow-xl">
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
@@ -752,11 +669,14 @@ const Footer = () => {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <Navigation />
+      <MainNavbar />
       <HeroSection />
       <FeaturesGrid />
+      <ResumeTemplateShowcase />
+      <FeatureHighlightsTabs />
       <HowItWorksSection />
       <TestimonialsSection />
+      <AdditionalFeaturesGrid />
       <PricingSection />
       <CTASection />
 

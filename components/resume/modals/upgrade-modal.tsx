@@ -132,27 +132,27 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
       <div className="fixed inset-0 z-50 overflow-y-auto">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+          className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity duration-300"
           onClick={onClose}
         />
 
         {/* Modal */}
         <div className="flex min-h-full items-center justify-center p-4">
-          <div className="relative w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 animate-in fade-in zoom-in-95">
+          <div className="relative w-full max-w-6xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 animate-in fade-in zoom-in-95 border border-slate-200 dark:border-gray-600">
             {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 z-10 p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors group"
+              className="absolute right-4 top-4 z-10 p-2 rounded-lg bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors group"
               aria-label="Close modal"
             >
-              <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-800 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-slate-600 dark:text-gray-300 group-hover:text-slate-800 dark:group-hover:text-gray-100 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
             <div className="flex flex-col lg:flex-row">
               {/* Left Visual Section */}
-              <div className="relative w-full lg:w-[400px] h-[300px] lg:h-[620px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+              <div className="relative w-full lg:w-[400px] h-[300px] lg:h-[620px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
                 {/* Grid pattern overlay */}
                 <div
                   className="absolute inset-0 opacity-10"
@@ -234,11 +234,11 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
                 <div className="flex flex-col gap-y-4">
                   {/* Header */}
                   <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-slate-900">Upgrade to Pro</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Upgrade to Pro</h1>
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
-                      className="h-8 px-3 text-sm font-semibold text-slate-700 bg-slate-100 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                      className="h-8 px-3 text-sm font-semibold text-slate-700 dark:text-gray-200 bg-slate-100 dark:bg-gray-700 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                     >
                       <option value="USD">$ (USD)</option>
                       <option value="EUR">€ (EUR)</option>
@@ -248,7 +248,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
                     </select>
                   </div>
 
-                  <p className="text-lg text-slate-600">
+                  <p className="text-lg text-slate-600 dark:text-gray-300">
                     Upgrade your plan to get access to all the features.
                   </p>
 
@@ -259,11 +259,11 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
                         <svg className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
-                        <div className="text-slate-700">
+                        <div className="text-slate-700 dark:text-gray-300">
                           {typeof feature === 'string' ? feature : (
                             <>
                               {feature.text}
-                              <span className="text-slate-500 text-sm ml-1">{feature.note}</span>
+                              <span className="text-slate-500 dark:text-gray-400 text-sm ml-1">{feature.note}</span>
                             </>
                           )}
                         </div>
@@ -276,17 +276,17 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-700">All other features</span>
-                        <svg className="w-4 h-4 text-slate-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                        <span className="text-slate-700 dark:text-gray-300">All other features</span>
+                        <svg className="w-4 h-4 text-slate-400 dark:text-gray-500 cursor-help" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                         </svg>
 
                         {/* Tooltip */}
-                        <div className="absolute left-0 top-full mt-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 bg-slate-800 text-white text-sm p-3 rounded-lg shadow-xl z-10 w-56 transform -translate-y-2 group-hover:translate-y-0">
-                          <div className="absolute -top-2 left-6 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-slate-800" />
+                        <div className="absolute left-0 top-full mt-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 bg-slate-800 dark:bg-gray-700 text-white text-sm p-3 rounded-lg shadow-xl z-10 w-56 transform -translate-y-2 group-hover:translate-y-0">
+                          <div className="absolute -top-2 left-6 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-slate-800 dark:border-b-gray-700" />
                           <ul className="list-disc list-inside space-y-1">
                             {additionalFeatures.map((feature, idx) => (
-                              <li key={idx} className="text-slate-100">{feature}</li>
+                              <li key={idx} className="text-slate-100 dark:text-gray-200">{feature}</li>
                             ))}
                           </ul>
                         </div>
@@ -302,8 +302,8 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
                         onClick={() => setSelectedPlan(plan.id)}
                         className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all duration-200 ${
                           selectedPlan === plan.id
-                            ? 'bg-gradient-to-r from-emerald-50 to-teal-50 ring-2 ring-emerald-500 shadow-lg shadow-emerald-500/10'
-                            : 'bg-slate-50 hover:bg-slate-100 ring-1 ring-slate-200'
+                            ? 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 ring-2 ring-emerald-500 shadow-lg shadow-emerald-500/10'
+                            : 'bg-slate-50 dark:bg-gray-700 hover:bg-slate-100 dark:hover:bg-gray-600 ring-1 ring-slate-200 dark:ring-gray-600'
                         }`}
                       >
                         {/* Radio button */}
@@ -311,7 +311,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                             selectedPlan === plan.id
                               ? 'border-emerald-500 bg-emerald-500 scale-110'
-                              : 'border-slate-300 bg-white hover:border-slate-400'
+                              : 'border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 hover:border-slate-400 dark:hover:border-gray-400'
                           }`}>
                             {selectedPlan === plan.id && (
                               <div className="w-2.5 h-2.5 rounded-full bg-white animate-in zoom-in-50" />
@@ -322,7 +322,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
                         {/* Plan details */}
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
-                            <span className="font-semibold text-slate-900">{plan.name}</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">{plan.name}</span>
                             {plan.savings && (
                               <span className="px-2.5 py-1 text-xs font-bold bg-gradient-to-r from-emerald-400 to-teal-400 text-white rounded-full shadow-sm">
                                 Save {plan.savings}
@@ -333,10 +333,10 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
 
                         {/* Price */}
                         <div className="text-right">
-                          <span className="text-2xl font-bold text-slate-900">
+                          <span className="text-2xl font-bold text-slate-900 dark:text-white">
                             ${plan.price.toFixed(2)}
                           </span>
-                          <span className="text-slate-500 text-sm">{plan.period}</span>
+                          <span className="text-slate-500 dark:text-gray-400 text-sm">{plan.period}</span>
                         </div>
                       </div>
                     ))}
@@ -364,17 +364,17 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
                   </div>
 
                   {/* Security badges */}
-                  <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-slate-200">
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                  <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-slate-200 dark:border-gray-600">
+                    <span className="text-xs text-slate-500 dark:text-gray-400 flex items-center gap-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       Secure Payment
                     </span>
-                    <span className="text-xs text-slate-500">•</span>
-                    <span className="text-xs text-slate-500">SSL Encrypted</span>
-                    <span className="text-xs text-slate-500">•</span>
-                    <span className="text-xs text-slate-500">Cancel Anytime</span>
+                    <span className="text-xs text-slate-500 dark:text-gray-400">•</span>
+                    <span className="text-xs text-slate-500 dark:text-gray-400">SSL Encrypted</span>
+                    <span className="text-xs text-slate-500 dark:text-gray-400">•</span>
+                    <span className="text-xs text-slate-500 dark:text-gray-400">Cancel Anytime</span>
                   </div>
                 </div>
               </section>

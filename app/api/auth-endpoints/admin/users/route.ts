@@ -1,7 +1,7 @@
 // app/api/auth/admin/users/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthToken } from '@/lib/firebase/middleware-helpers';
-import { listUsers } from '@/lib/firebase/admin';
+import { listUsers } from '@/lib/features/auth/firebase-admin';
 
 // List all users (admin only)
 export async function GET(request: NextRequest) {

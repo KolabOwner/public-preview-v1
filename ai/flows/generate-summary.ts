@@ -1,4 +1,4 @@
-// ai/flows/generate-summary.ts
+// ai/flows/summarize.ts
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 

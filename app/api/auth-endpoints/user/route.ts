@@ -1,7 +1,7 @@
 // app/api/auth/user/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthToken } from '@/lib/firebase/middleware-helpers';
-import { getUserByUid, updateUser as updateFirebaseUser } from '@/lib/firebase/admin';
+import { getUserByUid, updateUser as updateFirebaseUser } from '@/lib/features/auth/firebase-admin';
 
 // Get current user
 export async function GET(request: NextRequest) {

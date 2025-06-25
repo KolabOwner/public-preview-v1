@@ -1,7 +1,9 @@
-// app/api/generate-summary/route.ts
+// app/api/summarize/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { generateProfessionalSummary, extractExperienceText } from '@/ai/flows/generate-summary';
 import { verifyAuthToken } from '@/lib/features/auth/api-middleware';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/features/auth/firebase-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,6 +48,30 @@ export async function POST(request: NextRequest) {
       skillsHighlight,
       existingSummary,
     });
+
+    // Increment AI generation counter for the user
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      let currentAiGenerations = 0;
+      let currentMonthlyGenerations = 0;
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        currentAiGenerations = userData.usage?.aiGenerations || 0;
+        currentMonthlyGenerations = userData.usage?.monthlyAiGenerations || 0;
+      }
+
+      await updateDoc(userDocRef, {
+        'usage.aiGenerations': currentAiGenerations + 1,
+        'usage.monthlyAiGenerations': currentMonthlyGenerations + 1,
+        updatedAt: new Date(),
+      });
+    } catch (error) {
+      console.error('Error updating AI generation count:', error);
+      // Don't fail the request if counter update fails
+    }
 
     return NextResponse.json({
       success: true,

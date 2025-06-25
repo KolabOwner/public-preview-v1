@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Palette, Save, Loader2, Info, PlusCircle, Trash2, ListChecks, ChevronLeft, ChevronRight, AlertCircle, Plus, X } from "lucide-react";
+import { Palette, Save, Loader2, Info, ListChecks, ChevronLeft, ChevronRight, AlertCircle, Plus, X } from "lucide-react";
 
 export interface SkillEntry {
   id: string;

@@ -1,6 +1,6 @@
 // app/api/auth/session/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSessionCookie, verifySessionCookie } from '@/lib/firebase/admin';
+import { createSessionCookie, verifySessionCookie } from '@/lib/features/auth/firebase-admin';
 
 // Create session cookie from ID token
 export async function POST(request: NextRequest) {

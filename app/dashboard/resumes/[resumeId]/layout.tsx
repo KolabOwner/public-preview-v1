@@ -288,7 +288,7 @@ export default function ResumeEditorLayout({
               <div className="relative" ref={resumeDropdownRef}>
                 <button
                   onClick={() => setShowResumeDropdown(!showResumeDropdown)}
-                  className="rounded inline-flex items-center gap-1.5 group relative text-[11px] lg:text-xs leading-3 lg:leading-4 h-6 lg:h-7 px-2 lg:px-3 transition-all text-gray-300 hover:text-gray-100 hover:bg-surface-2/80"
+                  className="rounded inline-flex items-center gap-1.5 group relative text-[11px] lg:text-xs leading-3 lg:leading-4 h-6 lg:h-7 px-2 lg:px-3 transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-surface-2/80"
                 >
                 <span className="font-semibold uppercase tracking-wide truncate max-w-[150px] text-[10px] lg:text-[11px]">
                   {currentResume ? (
@@ -317,7 +317,7 @@ export default function ResumeEditorLayout({
                           }`}
                         >
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-gray-200 truncate">
+                            <div className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
                               {resume.isTargeted && (
                                 <span className="text-xs uppercase text-rezi-blue-400 mr-1">[TARGETED]</span>
                               )}
@@ -334,7 +334,7 @@ export default function ResumeEditorLayout({
                     <div className="border-t border-surface-2-stroke py-2">
                       <Link
                         href="/dashboard/resumes"
-                        className="w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200"
+                        className="w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                       >
                         <i className="fas fa-arrow-left text-xs"></i>
                         <span>Back to All Resumes</span>
@@ -356,7 +356,7 @@ export default function ResumeEditorLayout({
                   className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 ${
                     isActive 
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/30' 
-                      : 'focus:bg-slate-100 dark:focus:bg-navy-700'
+                      : 'text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100'
                   } cursor-pointer`}
                 >
                   <div className="w-full overflow-hidden">
@@ -371,7 +371,7 @@ export default function ResumeEditorLayout({
               <div className="relative" ref={moreMenuRef}>
                 <button
                   onClick={() => setShowMoreMenu(!showMoreMenu)}
-                  className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+                  className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
                   title="More sections"
                 >
                   <i className="fas fa-ellipsis-h"></i>
@@ -475,7 +475,7 @@ export default function ResumeEditorLayout({
                     className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
                         ? 'bg-rezi-blue-600 text-neutral-0' 
-                        : 'focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                        : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                     } cursor-pointer`}
                   >
                     <div className="w-full overflow-hidden">
@@ -518,7 +518,7 @@ export default function ResumeEditorLayout({
             <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
               <button
                 onClick={() => setShowResumeDropdown(!showResumeDropdown)}
-                className="rounded inline-flex items-center gap-1 whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all text-gray-300 hover:text-gray-100"
+                className="rounded inline-flex items-center gap-1 whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
               >
               <span className="font-semibold uppercase text-[9px] truncate max-w-[100px]">
                 {currentResume ? (
@@ -545,7 +545,7 @@ export default function ResumeEditorLayout({
                   className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
                     isActive 
                       ? 'bg-rezi-blue-600 text-neutral-0' 
-                      : 'focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                      : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                   } cursor-pointer`}
                 >
                   <div className="w-full overflow-hidden">
@@ -559,7 +559,7 @@ export default function ResumeEditorLayout({
             {hiddenTabs.length > 0 && (
               <button
                 onClick={() => setShowMoreMenu(true)}
-                className="rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+                className="rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
               >
                 <i className="fas fa-ellipsis-h text-[11px]"></i>
               </button>
@@ -577,7 +577,7 @@ export default function ResumeEditorLayout({
                     className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
                         ? 'bg-rezi-blue-600 text-neutral-0' 
-                        : 'focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                        : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                     } cursor-pointer`}
                   >
                     <div className="w-full overflow-hidden">

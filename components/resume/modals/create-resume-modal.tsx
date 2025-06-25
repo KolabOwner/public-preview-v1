@@ -7,6 +7,7 @@ import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/fi
 import { db } from "@/lib/features/auth/firebase-config";
 import { FileStatus, PDFProcessor, ProcessingResult } from "@/lib/features/pdf/pdf-generator";
 import { ResumeProcessingStatus } from '../ResumeProcessingStatus';
+import { useUserUsage } from '@/hooks/use-user-usage';
 import {
   X,
   ChevronRight,
@@ -41,6 +42,7 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const router = useRouter();
+  const { usage, loading: usageLoading, incrementPdfDownload, canDownloadPdf } = useUserUsage();
 
   // Create onClose function from the prop
   const onClose = () => onOpenChange(false);
@@ -141,6 +143,18 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
       return;
     }
 
+    // Check if usage is still loading
+    if (usageLoading) {
+      setError('Loading your usage information...');
+      return;
+    }
+
+    // Check PDF generation limit for file uploads
+    if (file && !canDownloadPdf()) {
+      setError(`You've reached your PDF generation limit (${usage.pdfGenerations}/${usage.maxPdfGenerations}). Please upgrade your plan.`);
+      return;
+    }
+
     setIsUploading(true);
     setError('');
 
@@ -170,6 +184,8 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
 
         // Create resume document in Firestore
         const docRef = await addDoc(collection(db, 'resumes'), resumeData);
+
+        // No need to update resume count anymore
 
         // Redirect to the resume editor
         router.push(`/dashboard/resumes/${docRef.id}`);
@@ -222,6 +238,9 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
         
         await updateDoc(resumeRef, updateData);
 
+        // Increment PDF generation count for uploaded PDFs
+        await incrementPdfDownload();
+
         // Redirect to the resume edit page after successful processing
         setTimeout(() => {
           router.push(`/dashboard/resumes/${newResumeId}`);
@@ -240,14 +259,14 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1e2433] rounded-lg w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-white/95 dark:bg-gray-800 backdrop-blur-sm rounded-lg w-full max-w-md shadow-2xl border border-slate-200 dark:border-gray-600">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h2 className="text-xl font-semibold text-white">Create a resume</h2>
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-gray-600">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Create a resume</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -256,14 +275,14 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
         {/* Content */}
         <div className="p-6 space-y-6">
           {error && (
-            <div className="p-3 bg-red-900/20 border border-red-800 rounded-md text-red-400 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
 
           {/* Resume Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               RESUME NAME <span className="text-red-500">*</span>
             </label>
             <input
@@ -271,27 +290,27 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter here..."
-              className="w-full px-4 py-3 bg-[#2a3142] border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
             />
           </div>
 
           {/* Experience */}
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               EXPERIENCE
             </label>
             <button
               onClick={() => setShowExperienceDropdown(!showExperienceDropdown)}
-              className="w-full px-4 py-3 bg-[#2a3142] border border-gray-600 rounded-md text-left text-gray-400 focus:outline-none focus:border-blue-500 transition-colors flex items-center justify-between"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md text-left focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors flex items-center justify-between"
             >
-              <span className={experience ? 'text-white' : 'text-gray-400'}>
+              <span className={experience ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}>
                 {experience || 'Select...'}
               </span>
               <ChevronDown className={`w-5 h-5 transition-transform ${showExperienceDropdown ? 'rotate-180' : ''}`} />
             </button>
 
             {showExperienceDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-[#2a3142] border border-gray-600 rounded-md shadow-lg z-10 overflow-hidden">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md shadow-lg z-10 overflow-hidden backdrop-blur-sm">
                 {experienceOptions.map((option) => (
                   <button
                     key={option}
@@ -299,7 +318,7 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                       setExperience(option);
                       setShowExperienceDropdown(false);
                     }}
-                    className="w-full px-4 py-2 text-left text-gray-300 hover:bg-[#3a4152] transition-colors"
+                    className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-600 transition-colors"
                   >
                     {option}
                   </button>
@@ -311,20 +330,20 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
           {/* Import from LinkedIn */}
           <button
             onClick={handleLinkedInImport}
-            className="w-full px-4 py-3 bg-[#2a3142] border border-gray-600 rounded-md text-left text-gray-300 hover:bg-[#3a4152] transition-colors flex items-center justify-between group"
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md text-left text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-between group"
           >
             <div className="flex items-center gap-3">
-              <Linkedin className="w-5 h-5 text-blue-400" />
+              <Linkedin className="w-5 h-5 text-blue-500" />
               <span>IMPORT YOUR RESUME FROM LINKEDIN</span>
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-gray-300" />
+            <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
           </button>
 
           {/* Import Existing Resume */}
           <div>
             <button
               onClick={() => setShowImportDropdown(!showImportDropdown)}
-              className="w-full px-4 py-3 bg-[#2a3142] border border-gray-600 rounded-md text-left text-gray-300 hover:bg-[#3a4152] transition-colors flex items-center justify-between"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md text-left text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-between"
             >
               <span>IMPORT YOUR EXISTING RESUME</span>
               <ChevronDown className={`w-5 h-5 transition-transform ${showImportDropdown ? 'rotate-180' : ''}`} />
@@ -342,7 +361,7 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                       border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-all
                       ${isDragging
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-gray-600 hover:border-gray-500 bg-[#2a3142]'
+                        : 'border-slate-300 dark:border-gray-600 hover:border-slate-400 dark:hover:border-gray-500 bg-slate-50 dark:bg-gray-700'
                       }
                     `}
                   >
@@ -353,16 +372,16 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                       onChange={handleFileChange}
                       className="hidden"
                     />
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-gray-500" />
-                    <p className="text-sm text-gray-400">
+                    <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {file ? file.name : 'Upload PDF resume file'}
                     </p>
                   </div>
                 ) : (
-                  <div className="border rounded-lg p-4 bg-[#2a3142]">
+                  <div className="border border-slate-300 dark:border-gray-600 rounded-lg p-4 bg-slate-50 dark:bg-gray-700">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
-                        <div className="h-8 w-8 text-blue-600 mr-3 flex items-center justify-center">
+                        <div className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-3 flex items-center justify-center">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                             <polyline points="14 2 14 8 20 8"></polyline>
@@ -372,8 +391,8 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                           </svg>
                         </div>
                         <div>
-                          <h3 className="text-sm font-medium text-gray-300">{file?.name}</h3>
-                          <p className="text-xs text-gray-500">{file ? (file.size / 1024).toFixed(1) : '0'} KB</p>
+                          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">{file?.name}</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{file ? (file.size / 1024).toFixed(1) : '0'} KB</p>
                         </div>
                       </div>
                     </div>
@@ -388,8 +407,8 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                 )}
 
                 <div className="mt-2 flex items-start gap-2">
-                  <Info className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-gray-500">
+                  <Info className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-gray-600 dark:text-gray-500">
                     This process may take up to 60 seconds. Please be patient and keep this page open.
                   </p>
                 </div>
@@ -400,7 +419,7 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
           {/* Target Resume Toggle */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-300">Target your resume</h3>
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Target your resume</h3>
               <button
                 onClick={() => setIsTargeted(!isTargeted)}
                 className={`
@@ -419,11 +438,11 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
 
             <div className="flex items-start gap-2">
               <div className="w-4 h-4 mt-0.5 flex-shrink-0 rounded-full bg-teal-500 flex items-center justify-center">
-                <svg className="w-3 h-3 text-[#1e2433]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                 A targeted resume is a resume tailored to a specific job opening.
                 You have a significantly higher chance of getting an interview when
                 you make it clear you have the experience required for the job.
@@ -432,9 +451,9 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
             
             {/* Job Details when targeted is enabled */}
             {isTargeted && (
-              <div className="mt-4 space-y-3 p-4 bg-[#161922] rounded-md border border-gray-700">
+              <div className="mt-4 space-y-3 p-4 bg-slate-50 dark:bg-gray-700 rounded-md border border-slate-200 dark:border-gray-600">
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                     JOB TITLE (Optional)
                   </label>
                   <input
@@ -442,12 +461,12 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
                     placeholder="e.g., Senior Software Engineer"
-                    className="w-full px-3 py-2 bg-[#2a3142] border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-600 border border-slate-300 dark:border-gray-500 rounded-md text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors text-sm"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                     JOB DESCRIPTION (Optional)
                   </label>
                   <textarea
@@ -455,11 +474,11 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                     onChange={(e) => setJobDescription(e.target.value)}
                     placeholder="Paste the job description here for keyword optimization..."
                     rows={4}
-                    className="w-full px-3 py-2 bg-[#2a3142] border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm resize-none"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-600 border border-slate-300 dark:border-gray-500 rounded-md text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors text-sm resize-none"
                   />
                 </div>
                 
-                <p className="text-xs text-gray-500 italic">
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                   Adding job details now will allow immediate keyword analysis after upload
                 </p>
               </div>
@@ -468,10 +487,10 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-700">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-gray-600">
           <button
             onClick={onClose}
-            className="px-6 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+            className="px-6 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors"
           >
             CANCEL
           </button>
@@ -481,8 +500,8 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
             className={`
               px-6 py-2 text-sm font-medium rounded-md transition-colors
               ${title && !isUploading && !resumeId
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               }
             `}
           >

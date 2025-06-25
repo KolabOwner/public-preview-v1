@@ -266,12 +266,23 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
   // Helper to get RMS field with both capitalizations (Rms_ and rms_)
   const getRmsField = useCallback((data: any, fieldName: string): any => {
     if (!data) return undefined;
-    // Try with capital R first (primary format from ExifTool)
+    
+    // Try exact field name first
     if (data[fieldName] !== undefined) return data[fieldName];
-    // Try with lowercase r (from Gemini parsing)
+    
+    // Try with lowercase r
     const lowerField = fieldName.replace('Rms_', 'rms_');
     if (data[lowerField] !== undefined) return data[lowerField];
-    // Return undefined if neither exists
+    
+    // Try converting camelCase to lowercase (e.g., fullName -> fullname)
+    const allLowerField = lowerField.toLowerCase();
+    if (data[allLowerField] !== undefined) return data[allLowerField];
+    
+    // Try direct lowercase version of the whole field
+    const directLower = fieldName.toLowerCase();
+    if (data[directLower] !== undefined) return data[directLower];
+    
+    // Return undefined if none exists
     return undefined;
   }, []);
 
@@ -288,39 +299,56 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
     };
 
     processed.contact = {
-      fullName: getContactField('Rms_contact_fullName') || 
+      fullName: getContactField('rms_contact_fullname') || 
+                getContactField('Rms_contact_fullName') ||
+                getContactField('rms_contact_fullName') ||
+                getContactField('Rms_contact_fullname') ||
                 getContactField('Rms_contact_givenNames') || 
+                getContactField('Rms_contact_givennames') ||
                 getContactField('Rms_contact_firstName') || '',
-      email: getContactField('Rms_contact_email') || '',
-      phone: getContactField('Rms_contact_phone') || '',
-      location: getRmsField(rmsData, 'Rms_contact_city') && getRmsField(rmsData, 'Rms_contact_state')
-        ? `${getRmsField(rmsData, 'Rms_contact_city')}, ${getRmsField(rmsData, 'Rms_contact_state')}`
-        : getContactField('Rms_contact_location') || '',
-      linkedin: getContactField('Rms_contact_linkedin') || '',
-      github: getContactField('Rms_contact_github') || '',
-      website: getContactField('Rms_contact_website') || ''
+      email: getContactField('rms_contact_email') || getContactField('Rms_contact_email') || '',
+      phone: getContactField('rms_contact_phone') || getContactField('Rms_contact_phone') || '',
+      location: (getRmsField(rmsData, 'rms_contact_city') || getRmsField(rmsData, 'Rms_contact_city')) && 
+                (getRmsField(rmsData, 'rms_contact_state') || getRmsField(rmsData, 'Rms_contact_state'))
+        ? `${getRmsField(rmsData, 'rms_contact_city') || getRmsField(rmsData, 'Rms_contact_city')}, ${getRmsField(rmsData, 'rms_contact_state') || getRmsField(rmsData, 'Rms_contact_state')}`
+        : getContactField('rms_contact_location') || getContactField('Rms_contact_location') || '',
+      linkedin: getContactField('rms_contact_linkedin') || getContactField('Rms_contact_linkedin') || '',
+      github: getContactField('rms_contact_github') || getContactField('Rms_contact_github') || '',
+      website: getContactField('rms_contact_website') || getContactField('Rms_contact_website') || ''
     };
 
     // Summary
-    const summaryValue = getRmsField(rmsData, 'Rms_summary');
+    const summaryValue = getRmsField(rmsData, 'rms_summary') || getRmsField(rmsData, 'Rms_summary');
     processed.summary = (summaryValue && summaryValue !== 'n/a') ? summaryValue : '';
 
     // Experience
-    const expCount = parseInt(getRmsField(rmsData, 'Rms_experience_count') || '0');
+    const expCount = parseInt(getRmsField(rmsData, 'rms_experience_count') || getRmsField(rmsData, 'Rms_experience_count') || '0');
     processed.experience = [];
     for (let i = 0; i < expCount; i++) {
       const exp: Experience = {
-        company: getRmsField(rmsData, `Rms_experience_${i}_company`) || '',
-        position: getRmsField(rmsData, `Rms_experience_${i}_role`) || 
-                 getRmsField(rmsData, `Rms_experience_${i}_title`) || 
+        company: getRmsField(rmsData, `rms_experience_${i}_company`) || getRmsField(rmsData, `Rms_experience_${i}_company`) || '',
+        position: getRmsField(rmsData, `rms_experience_${i}_role`) || 
+                 getRmsField(rmsData, `Rms_experience_${i}_role`) ||
+                 getRmsField(rmsData, `rms_experience_${i}_title`) || 
+                 getRmsField(rmsData, `Rms_experience_${i}_title`) ||
+                 getRmsField(rmsData, `rms_experience_${i}_position`) ||
                  getRmsField(rmsData, `Rms_experience_${i}_position`) || '',
-        location: getRmsField(rmsData, `Rms_experience_${i}_location`) || '',
-        dateBegin: getRmsField(rmsData, `Rms_experience_${i}_dateBegin`) || 
+        location: getRmsField(rmsData, `rms_experience_${i}_location`) || getRmsField(rmsData, `Rms_experience_${i}_location`) || '',
+        dateBegin: getRmsField(rmsData, `rms_experience_${i}_dateBegin`) ||
+                  getRmsField(rmsData, `Rms_experience_${i}_dateBegin`) ||
+                  getRmsField(rmsData, `rms_experience_${i}_datebegin`) ||
+                  getRmsField(rmsData, `rms_experience_${i}_dates`) || 
                   getRmsField(rmsData, `Rms_experience_${i}_dates`) || '',
-        dateEnd: getRmsField(rmsData, `Rms_experience_${i}_dateEnd`) || '',
-        isCurrent: getRmsField(rmsData, `Rms_experience_${i}_isCurrent`) === true || 
-                  getRmsField(rmsData, `Rms_experience_${i}_isCurrent`) === 'true',
-        description: getRmsField(rmsData, `Rms_experience_${i}_description`) || ''
+        dateEnd: getRmsField(rmsData, `rms_experience_${i}_dateEnd`) || 
+                getRmsField(rmsData, `Rms_experience_${i}_dateEnd`) || 
+                getRmsField(rmsData, `rms_experience_${i}_dateend`) || '',
+        isCurrent: getRmsField(rmsData, `rms_experience_${i}_isCurrent`) === true || 
+                  getRmsField(rmsData, `rms_experience_${i}_isCurrent`) === 'true' ||
+                  getRmsField(rmsData, `Rms_experience_${i}_isCurrent`) === true || 
+                  getRmsField(rmsData, `Rms_experience_${i}_isCurrent`) === 'true' ||
+                  getRmsField(rmsData, `rms_experience_${i}_iscurrent`) === true ||
+                  getRmsField(rmsData, `rms_experience_${i}_iscurrent`) === 'true',
+        description: getRmsField(rmsData, `rms_experience_${i}_description`) || getRmsField(rmsData, `Rms_experience_${i}_description`) || ''
       };
       // Only add if has meaningful content
       if (Object.values(exp).some(v => v && v !== 'n/a')) {
@@ -526,17 +554,20 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
 
   // Helper functions
   const createDefaultSections = useCallback((data: any): Record<FormSection, { isComplete: boolean }> => ({
-    contact: { isComplete: Boolean(getRmsField(data, 'Rms_contact_fullName') || 
+    contact: { isComplete: Boolean(getRmsField(data, 'rms_contact_fullname') || 
+                                  getRmsField(data, 'Rms_contact_fullName') || 
+                                  getRmsField(data, 'rms_contact_email') ||
                                   getRmsField(data, 'Rms_contact_email') ||
+                                  getRmsField(data, 'rms_contact_phone') ||
                                   getRmsField(data, 'Rms_contact_phone')) },
-    experience: { isComplete: parseInt(getRmsField(data, 'Rms_experience_count') || '0') > 0 },
-    education: { isComplete: parseInt(getRmsField(data, 'Rms_education_count') || '0') > 0 },
-    skills: { isComplete: parseInt(getRmsField(data, 'Rms_skill_count') || '0') > 0 },
-    projects: { isComplete: parseInt(getRmsField(data, 'Rms_project_count') || getRmsField(data, 'Rms_projects_count') || '0') > 0 },
-    certifications: { isComplete: parseInt(getRmsField(data, 'Rms_certification_count') || getRmsField(data, 'Rms_certifications_count') || '0') > 0 },
-    coursework: { isComplete: false },
-    involvement: { isComplete: parseInt(getRmsField(data, 'Rms_involvement_count') || '0') > 0 },
-    summary: { isComplete: Boolean(getRmsField(data, 'Rms_summary')) }
+    experience: { isComplete: parseInt(getRmsField(data, 'rms_experience_count') || getRmsField(data, 'Rms_experience_count') || '0') > 0 },
+    education: { isComplete: parseInt(getRmsField(data, 'rms_education_count') || getRmsField(data, 'Rms_education_count') || '0') > 0 },
+    skills: { isComplete: parseInt(getRmsField(data, 'rms_skill_count') || getRmsField(data, 'Rms_skill_count') || '0') > 0 },
+    projects: { isComplete: parseInt(getRmsField(data, 'rms_project_count') || getRmsField(data, 'Rms_project_count') || getRmsField(data, 'Rms_projects_count') || '0') > 0 },
+    certifications: { isComplete: parseInt(getRmsField(data, 'rms_certification_count') || getRmsField(data, 'Rms_certification_count') || getRmsField(data, 'Rms_certifications_count') || '0') > 0 },
+    coursework: { isComplete: parseInt(getRmsField(data, 'rms_coursework_count') || getRmsField(data, 'Rms_coursework_count') || '0') > 0 },
+    involvement: { isComplete: parseInt(getRmsField(data, 'rms_involvement_count') || getRmsField(data, 'Rms_involvement_count') || '0') > 0 },
+    summary: { isComplete: Boolean(getRmsField(data, 'rms_summary') || getRmsField(data, 'Rms_summary')) }
   }), [getRmsField]);
 
   const createEmptyResume = (id: string): ResumeData => ({

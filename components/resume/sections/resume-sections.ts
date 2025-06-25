@@ -193,74 +193,24 @@ export function getSectionTitle(
 
 // Get default section order for a template
 export function getDefaultSectionOrder(template?: string): string[] {
-  const templateOrders: Record<string, string[]> = {
-    professional: [
-      'summary',
-      'experience',
-      'education',
-      'skills',
-      'certifications',
-      'projects',
-      'involvement',
-    ],
-    modern: [
-      'summary',
-      'experience',
-      'skills',
-      'education',
-      'projects',
-      'certifications',
-      'involvement',
-    ],
-    creative: [
-      'summary',
-      'skills',
-      'experience',
-      'projects',
-      'education',
-      'involvement',
-    ],
-    minimal: [
-      'experience',
-      'education',
-      'skills',
-      'projects',
-    ],
-    executive: [
-      'summary',
-      'experience',
-      'education',
-      'skills',
-      'awards',
-      'certifications',
-    ],
-    academic: [
-      'summary',
-      'education',
-      'experience',
-      'publications',
-      'skills',
-      'awards',
-      'coursework',
-    ],
-    technical: [
-      'summary',
-      'skills',
-      'experience',
-      'projects',
-      'education',
-      'certifications',
-    ],
-  };
+  // Universal order for all templates: summary -> experience -> education -> projects -> involvement -> certifications -> skills
+  const universalOrder = [
+    'summary',
+    'experience',
+    'education',
+    'projects',
+    'involvement',
+    'certifications',
+    'skills',
+    'coursework',
+    'awards',
+    'publications',
+    'languages',
+    'volunteer',
+    'references'
+  ];
 
-  if (template && templateOrders[template]) {
-    return templateOrders[template];
-  }
-
-  // Default order
-  return Object.values(RESUME_SECTIONS)
-    .sort((a, b) => (a.defaultOrder || 99) - (b.defaultOrder || 99))
-    .map(section => section.id);
+  return universalOrder;
 }
 
 // Check if a section has content - Updated for consolidated context format

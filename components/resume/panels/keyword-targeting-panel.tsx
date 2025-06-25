@@ -5,7 +5,6 @@ import { useJobInfo } from "@/contexts/job-info-context";
 import { useAuth } from '@/contexts/auth-context';
 import { logger } from '@/lib/enterprise/monitoring/logging';
 import { performanceAnalytics } from '@/lib/enterprise/monitoring/analytics';
-import { AnalyzeAPI } from '@/lib/features/api/analyze';
 
 export interface KeywordTargetingPanelProps {
   className?: string;
@@ -169,56 +168,6 @@ interface RecommendationCardProps {
   onApply?: () => void;
 }
 
-const RecommendationCard = memo<RecommendationCardProps>(({ recommendation, onApply }) => {
-  const priorityColors = {
-    high: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20',
-    medium: 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20',
-    low: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
-  };
-
-  return (
-    <div className={`p-3 rounded-lg border ${priorityColors[recommendation.priority] || priorityColors.low}`}>
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              {recommendation.section}
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-500">
-              +{recommendation.impact}% impact
-            </span>
-          </div>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            {recommendation.reason}
-          </p>
-        </div>
-        {onApply && (
-          <button
-            onClick={onApply}
-            className="ml-3 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors"
-          >
-            Apply
-          </button>
-        )}
-      </div>
-      {recommendation.keywords.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {recommendation.keywords.map((keyword, idx) => (
-            <span
-              key={idx}
-              className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded"
-            >
-              {keyword}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-});
-
-RecommendationCard.displayName = 'RecommendationCard';
-
 // Loading state component
 const LoadingState = memo<{ message?: string }>(({ message = "Analyzing keywords..." }) => {
   return (
@@ -276,8 +225,7 @@ EmptyState.displayName = 'EmptyState';
 
 const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   className = '',
-  onJobUpdate,
-  onRecommendationApply
+  onJobUpdate
 }) => {
   const {
     jobInfo,
@@ -289,7 +237,6 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   } = useJobInfo();
   const { user } = useAuth();
   const [showAllMissing, setShowAllMissing] = useState(false);
-  const [showRecommendations, setShowRecommendations] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [lastAnalyzedAt, setLastAnalyzedAt] = useState<Date | null>(null);
 
@@ -586,38 +533,6 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
                   : `See all (${missingKeywords.length})`
                 }
               </button>
-            )}
-          </div>
-        )}
-
-        {/* Recommendations */}
-        {jobInfo.recommendations && jobInfo.recommendations.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-purple-500" />
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  AI Recommendations ({jobInfo.recommendations.length})
-                </p>
-              </div>
-              <button
-                onClick={() => setShowRecommendations(!showRecommendations)}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {showRecommendations ? 'Hide' : 'Show'}
-              </button>
-            </div>
-
-            {showRecommendations && (
-              <div className="space-y-3">
-                {jobInfo.recommendations.slice(0, 5).map((rec, index) => (
-                  <RecommendationCard
-                    key={index}
-                    recommendation={rec}
-                    onApply={() => onRecommendationApply?.(rec)}
-                  />
-                ))}
-              </div>
             )}
           </div>
         )}

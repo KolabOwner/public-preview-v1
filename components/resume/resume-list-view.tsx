@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { FileText, MoreVertical, Eye, Download, Copy, Trash2, ChevronRight, ChevronDown, Plus, FolderPlus } from 'lucide-react';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { createPortal } from 'react-dom';
+import { FileText, MoreVertical, Eye, Download, Copy, Trash2, ChevronRight, ChevronDown, Plus, FolderPlus, Lock } from 'lucide-react';
+import { deleteDoc, doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/features/auth/firebase-config';
 import { useToast } from '@/components/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
+import UpgradeModal from './modals/upgrade-modal';
 
 interface Resume {
   id: string;
@@ -21,30 +24,46 @@ interface Folder {
   resumes: Resume[];
 }
 
+interface UserUsage {
+  aiGenerations: number;
+  monthlyAiGenerations: number;
+  resumeCount: number;
+  maxAiGenerations: number;
+  pdfGenerations: number;
+  maxPdfGenerations: number;
+}
+
 interface ResumeListViewProps {
   resumes: Resume[];
   folders?: Folder[];
+  usage?: UserUsage;
   onRefresh: () => void;
   onCreateNew: () => void;
 }
 
-export default function ResumeListView({ resumes, folders = [], onRefresh, onCreateNew }: ResumeListViewProps) {
+export default function ResumeListView({ resumes, folders = [], usage, onRefresh, onCreateNew }: ResumeListViewProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const activeDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (activeDropdownRef.current && !activeDropdownRef.current.contains(event.target as Node)) {
         setActiveDropdown(null);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (activeDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [activeDropdown]);
 
   const toggleFolder = (folderId: string) => {
     const newExpanded = new Set(expandedFolders);
@@ -56,9 +75,8 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
     setExpandedFolders(newExpanded);
   };
 
-  const formatDate = (date: string) => {
+  const parseDate = (date: any): Date | null => {
     try {
-      // Handle Firebase Timestamp or string date
       let d: Date;
       if (typeof date === 'string') {
         d = new Date(date);
@@ -69,25 +87,32 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
         d = new Date(date);
       }
 
-      // Check if date is valid
-      if (isNaN(d.getTime())) {
-        return 'Unknown date';
-      }
-
-      const now = new Date();
-      const diffInDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (diffInDays < 30) {
-        return formatDistanceToNow(d, { addSuffix: true });
-      } else if (diffInDays < 365) {
-        return formatDistanceToNow(d, { addSuffix: true }).replace("about ", "");
-      } else {
-        return format(d, "MMM d, yyyy");
-      }
+      return isNaN(d.getTime()) ? null : d;
     } catch (error) {
-      console.error('Error formatting date:', error, date);
-      return 'Unknown date';
+      console.error('Error parsing date:', error, date);
+      return null;
     }
+  };
+
+  const formatDate = (date: any) => {
+    const d = parseDate(date);
+    if (!d) return 'Unknown date';
+
+    const now = new Date();
+    const diffInDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffInDays < 30) {
+      return formatDistanceToNow(d, { addSuffix: true });
+    } else if (diffInDays < 365) {
+      return formatDistanceToNow(d, { addSuffix: true }).replace("about ", "");
+    } else {
+      return format(d, "MMM d, yyyy");
+    }
+  };
+
+  const formatTooltipDate = (date: any) => {
+    const d = parseDate(date);
+    return d ? format(d, "MMM d, yyyy h:mm a") : 'Unknown date';
   };
 
   const handleDelete = async (resumeId: string) => {
@@ -109,18 +134,81 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
   };
 
   const handleDuplicate = async (resumeId: string) => {
-    toast({
-      title: "Duplicate functionality coming soon",
-    });
+    if (!user) return;
+
+    try {
+      // Get the original resume data
+      const originalDoc = await getDoc(doc(db, 'resumes', resumeId));
+      if (!originalDoc.exists()) {
+        toast({
+          title: "Resume not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const originalData = originalDoc.data();
+      
+      // Create new resume data with updated title and timestamps
+      const { id, ...dataWithoutId } = originalData;
+      const duplicatedData = {
+        ...dataWithoutId,
+        title: `${originalData.title} (Copy)`,
+        userId: user.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      // Add the duplicated resume to Firestore
+      const newDocRef = await addDoc(collection(db, 'resumes'), duplicatedData);
+      
+      toast({
+        title: "Resume duplicated successfully",
+      });
+      
+      // Refresh the page to show the new resume
+      onRefresh();
+      
+      // Close dropdown
+      setActiveDropdown(null);
+      
+    } catch (error) {
+      console.error('Error duplicating resume:', error);
+      toast({
+        title: "Failed to duplicate resume",
+        variant: "destructive",
+      });
+    }
   };
 
-  const ResumeItem = ({ resume }: { resume: Resume }) => {
+  const handleDropdownToggle = (resumeId: string, event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    
+    if (activeDropdown === resumeId) {
+      setActiveDropdown(null);
+    } else {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.right + window.scrollX - 200 // Align right edge
+      });
+      setActiveDropdown(resumeId);
+    }
+  };
+
+  const ResumeItem = ({ resume, isLocked = false }: { resume: Resume; isLocked?: boolean }) => {
     const isDropdownOpen = activeDropdown === resume.id;
 
     return (
       <div 
         className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-800 cursor-pointer px-4 py-3 mt-2 transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-navy-900/50"
-        onClick={() => router.push(`/resume-builder/${resume.id}`)}
+        onClick={() => {
+          if (isLocked) {
+            setShowUpgradeModal(true);
+          } else {
+            router.push(`/dashboard/resumes/${resume.id}/contact`);
+          }
+        }}
       >
         <div className="relative flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex w-full flex-row flex-wrap items-center gap-4 sm:flex-nowrap">
@@ -148,14 +236,7 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
                 {formatDate(resume.createdAt)}
               </p>
               <div className="normal-case pointer-events-none h-fit z-50 bg-slate-900 dark:bg-navy-700 px-2 py-1 text-sm font-normal leading-5 text-white transition-opacity rounded opacity-0 group-hover:opacity-100 absolute top-full mt-1 whitespace-nowrap">
-                {(() => {
-                  try {
-                    const d = new Date(resume.createdAt);
-                    return isNaN(d.getTime()) ? 'Unknown date' : format(d, "MMM d, yyyy h:mm a");
-                  } catch {
-                    return 'Unknown date';
-                  }
-                })()}
+                {formatTooltipDate(resume.createdAt)}
               </div>
             </div>
             <div className="group relative flex w-[100px] flex-col">
@@ -164,36 +245,44 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
                 {formatDate(resume.lastUpdated)}
               </p>
               <div className="normal-case pointer-events-none h-fit z-50 bg-slate-900 dark:bg-navy-700 px-2 py-1 text-sm font-normal leading-5 text-white transition-opacity rounded opacity-0 group-hover:opacity-100 absolute top-full mt-1 whitespace-nowrap">
-                {(() => {
-                  try {
-                    const d = new Date(resume.lastUpdated);
-                    return isNaN(d.getTime()) ? 'Unknown date' : format(d, "MMM d, yyyy h:mm a");
-                  } catch {
-                    return 'Unknown date';
-                  }
-                })()}
+                {formatTooltipDate(resume.lastUpdated)}
               </div>
             </div>
           </div>
           <div className="absolute right-0 top-0 flex w-6 items-center sm:relative">
-            <div 
-              className="h-6 w-6 relative flex cursor-pointer items-center justify-center text-xl hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveDropdown(isDropdownOpen ? null : resume.id);
-              }}
-            >
-              <MoreVertical className="h-5 w-5 text-gray-900 dark:text-gray-100" />
-            </div>
-            {isDropdownOpen && (
+            {isLocked ? (
               <div 
-                ref={dropdownRef}
-                className="absolute right-0 top-8 z-50 min-w-[200px] bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 py-2"
+                className="h-6 w-6 relative flex cursor-pointer items-center justify-center text-xl group"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUpgradeModal(true);
+                }}
+              >
+                <div className="w-5 h-5 rounded bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-600 group-hover:shadow-md transition-all duration-200">
+                  <Lock className="h-3 w-3 text-slate-500 dark:text-slate-400" />
+                </div>
+              </div>
+            ) : (
+              <div 
+                className="h-6 w-6 relative flex cursor-pointer items-center justify-center text-xl hover:text-blue-600 dark:hover:text-blue-400"
+                onClick={(e) => handleDropdownToggle(resume.id, e)}
+              >
+                <MoreVertical className="h-5 w-5 text-gray-900 dark:text-gray-100" />
+              </div>
+            )}
+            {isDropdownOpen && !isLocked && createPortal(
+              <div 
+                ref={activeDropdownRef}
+                className="fixed z-[9999] min-w-[200px] bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 py-2"
+                style={{
+                  top: dropdownPosition.top,
+                  left: dropdownPosition.left,
+                }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
-                  onClick={() => router.push(`/resume-builder/${resume.id}`)}
+                  onClick={() => router.push(`/dashboard/resumes/${resume.id}/contact`)}
                 >
                   <Eye className="h-4 w-4" />
                   Edit
@@ -227,7 +316,8 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
                   <Trash2 className="h-4 w-4" />
                   Delete
                 </button>
-              </div>
+              </div>,
+              document.body
             )}
           </div>
         </div>
@@ -264,8 +354,12 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
         </div>
 
         {/* Resume List */}
-        {resumes.filter(r => !r.folderId).map((resume) => (
-          <ResumeItem key={resume.id} resume={resume} />
+        {resumes.filter(r => !r.folderId).map((resume, index) => (
+          <ResumeItem 
+            key={resume.id} 
+            resume={resume} 
+            isLocked={usage && usage.maxPdfGenerations !== -1 && usage.pdfGenerations >= usage.maxPdfGenerations && (index === 1 || index === 2)}
+          />
         ))}
 
         {/* Folders */}
@@ -305,8 +399,12 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
                     </div>
                     <div className="h-6 w-6"></div>
                   </div>
-                  {folder.resumes.map((resume) => (
-                    <ResumeItem key={resume.id} resume={resume} />
+                  {folder.resumes.map((resume, index) => (
+                    <ResumeItem 
+                      key={resume.id} 
+                      resume={resume} 
+                      isLocked={usage && usage.maxPdfGenerations !== -1 && usage.pdfGenerations >= usage.maxPdfGenerations && (index === 1 || index === 2)}
+                    />
                   ))}
                 </div>
               )}
@@ -322,6 +420,12 @@ export default function ResumeListView({ resumes, folders = [], onRefresh, onCre
           </button>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+      />
     </div>
   );
 }

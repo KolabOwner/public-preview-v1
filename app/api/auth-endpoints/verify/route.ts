@@ -1,6 +1,6 @@
 // app/api/auth/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySessionCookie } from '@/lib/firebase/admin';
+import { verifySessionCookie } from '@/lib/features/auth/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {

@@ -18,7 +18,7 @@ interface GenerateSummaryResponse {
 
 /**
  * Generate a professional summary using AI
- * Calls the /api/generate-summary endpoint which uses Genkit AI
+ * Calls the /api/summarize endpoint which uses Genkit AI
  */
 export async function generateSummaryAPI(params: GenerateSummaryParams): Promise<GenerateSummaryResponse> {
   try {

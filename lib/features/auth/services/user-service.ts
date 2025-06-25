@@ -43,6 +43,13 @@ export interface UserProfile {
     startDate?: Timestamp;
     endDate?: Timestamp;
   };
+  usage?: {
+    aiGenerations: number;
+    monthlyAiGenerations: number;
+    lastResetDate?: Timestamp;
+    resumeCount?: number;
+    pdfGenerations?: number;
+  };
 }
 
 class UserService {
@@ -108,6 +115,12 @@ class UserService {
         subscription: {
           plan: 'free',
           status: 'active',
+        },
+        usage: {
+          aiGenerations: 0,
+          monthlyAiGenerations: 0,
+          pdfGenerations: 0,
+          lastResetDate: serverTimestamp() as Timestamp,
         },
         ...additionalData,
       };

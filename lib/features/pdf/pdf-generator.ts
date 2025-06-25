@@ -679,15 +679,7 @@ export class PDFProcessor {
       const fileUrl = await this.uploadPDFToStorage(file, options.userId, resumeId);
       console.log(`Uploaded PDF to: ${fileUrl}`);
 
-      // Extract text from the PDF
-      const pdfText = await this.extractTextFromPDF(file);
-      console.log(`Extracted ${pdfText.length} characters of text`);
-
-      if (!pdfText || pdfText.length < 100) {
-        throw new Error('PDF text extraction failed or resulted in too little text');
-      }
-
-      // Try to extract RMS metadata using ExifTool API
+      // Try to extract RMS metadata using ExifTool API first
       let exifRMSMetadata = null;
       try {
         console.log('Calling ExifTool API to extract RMS metadata...');
@@ -695,17 +687,18 @@ export class PDFProcessor {
         // Create FormData with the PDF file
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('action', 'extract');
 
-        const response = await fetch('/api/resume-endpoints/extract-rms', {
+        const response = await fetch('/api/resume-endpoints/rms', {
           method: 'POST',
           body: formData,
         });
 
         if (response.ok) {
           const result = await response.json();
-          if (result.success && result.hasRMSData && result.metadata) {
-            exifRMSMetadata = result.metadata;
-            console.log(`Successfully extracted RMS metadata with ${result.fieldCount} fields via API`);
+          if (result.success && result.data && result.data.hasRMSData && result.data.metadata) {
+            exifRMSMetadata = result.data.metadata;
+            console.log(`Successfully extracted RMS metadata with ${result.data.fieldCount} fields via API`);
           } else {
             console.log('No RMS metadata found in PDF');
           }
@@ -738,7 +731,8 @@ export class PDFProcessor {
 
         console.log('Fast Path - RMS Data contains:', {
           hasContactInfo: !!(rmsData.rms_contact_email || rmsData.Rms_contact_email),
-          fullName: rmsData.rms_contact_fullName || rmsData.Rms_contact_fullName,
+          fullName: rmsData.rms_contact_fullName || rmsData.Rms_contact_fullName || 
+                    rmsData.rms_contact_fullname || rmsData.Rms_contact_fullname,
           email: rmsData.rms_contact_email || rmsData.Rms_contact_email,
           experienceCount: rmsData.rms_experience_count || rmsData.Rms_experience_count || 0
         });
@@ -748,6 +742,14 @@ export class PDFProcessor {
         console.log(`💰 Performance gain: ~${Math.round(30000/fastPathTime)}x faster processing`);
       } else {
         console.log('Incomplete or no RMS metadata - proceeding with Gemini multimodal PDF parsing');
+
+        // Extract text from the PDF for AI parsing
+        const pdfText = await this.extractTextFromPDF(file);
+        console.log(`Extracted ${pdfText.length} characters of text`);
+
+        if (!pdfText || pdfText.length < 100) {
+          throw new Error('PDF text extraction failed or resulted in too little text');
+        }
 
         // Use Gemini multimodal PDF parsing instead of text extraction + AI parsing
         try {
@@ -928,7 +930,7 @@ export class PDFProcessor {
       formData.append('file', file);
 
       console.log('Calling PDF extraction API...');
-      const response = await fetch('/api/resume-endpoints/extract', {
+      const response = await fetch('/api/resume-endpoints/parse', {
         method: 'POST',
         body: formData,
       });
@@ -1767,8 +1769,19 @@ export class PDFProcessor {
    * Check if RMS metadata contains enough information to skip AI parsing
    */
   private static isCompleteRMSData(rmsMetadata: any): boolean {
+    // Debug: Log all contact-related fields
+    const contactFields = Object.keys(rmsMetadata).filter(key => 
+      key.toLowerCase().includes('contact') || key.toLowerCase().includes('name')
+    );
+    console.log('RMS contact fields found:', contactFields);
+    
     // Check for essential fields that indicate complete resume data
-    const hasContact = rmsMetadata.rms_contact_fullName || rmsMetadata.Rms_contact_fullName;
+    const hasContact = rmsMetadata.rms_contact_fullName || rmsMetadata.Rms_contact_fullName || 
+                      rmsMetadata.rms_contact_fullname || rmsMetadata.Rms_contact_fullname ||
+                      rmsMetadata.rms_contact_givenNames || rmsMetadata.Rms_contact_givenNames ||
+                      rmsMetadata.rms_contact_givennames || rmsMetadata.Rms_contact_givennames ||
+                      rmsMetadata.rms_contact_lastName || rmsMetadata.Rms_contact_lastName ||
+                      rmsMetadata.rms_contact_lastname || rmsMetadata.Rms_contact_lastname;
     const hasEmail = rmsMetadata.rms_contact_email || rmsMetadata.Rms_contact_email;
 
     // Check for at least one substantial section
@@ -1782,7 +1795,12 @@ export class PDFProcessor {
 
     // Detect and exclude test/default/fallback data patterns
     const email = hasEmail ? (rmsMetadata.rms_contact_email || rmsMetadata.Rms_contact_email) : '';
-    const fullName = hasContact ? (rmsMetadata.rms_contact_fullName || rmsMetadata.Rms_contact_fullName) : '';
+    const fullName = hasContact ? (rmsMetadata.rms_contact_fullName || rmsMetadata.Rms_contact_fullName || 
+                                   rmsMetadata.rms_contact_fullname || rmsMetadata.Rms_contact_fullname ||
+                                   `${rmsMetadata.rms_contact_givenNames || rmsMetadata.Rms_contact_givenNames || 
+                                      rmsMetadata.rms_contact_givennames || rmsMetadata.Rms_contact_givennames || ''} ${
+                                      rmsMetadata.rms_contact_lastName || rmsMetadata.Rms_contact_lastName || 
+                                      rmsMetadata.rms_contact_lastname || rmsMetadata.Rms_contact_lastname || ''}`.trim()) : '';
 
     const testDataPatterns = [
       'john.doe@example.com',

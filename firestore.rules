@@ -10,33 +10,33 @@ service cloud.firestore {
     // Resumes - users can only access their own resumes
     match /resumes/{resumeId} {
       allow read, write: if request.auth != null && 
-        request.auth.uid == resource.data.user_id;
+        request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.user_id;
+        request.auth.uid == request.resource.data.userId;
     }
     
     // Cover Letters - users can only access their own cover letters
     match /coverLetters/{letterId} {
       allow read, write: if request.auth != null && 
-        request.auth.uid == resource.data.user_id;
+        request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.user_id;
+        request.auth.uid == request.resource.data.userId;
     }
     
     // Job Info - per resume, user-specific
     match /jobInfo/{resumeId} {
       allow read, write: if request.auth != null && 
-        request.auth.uid == resource.data.user_id;
+        request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.user_id;
+        request.auth.uid == request.resource.data.userId;
     }
     
     // Keywords analysis - per resume, user-specific
     match /keywords/{resumeId} {
       allow read, write: if request.auth != null && 
-        request.auth.uid == resource.data.user_id;
+        request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.user_id;
+        request.auth.uid == request.resource.data.userId;
     }
     
     // Public templates (read-only)

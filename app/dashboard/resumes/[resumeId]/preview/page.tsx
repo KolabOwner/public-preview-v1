@@ -125,25 +125,36 @@ function processRMSData(rmsData: any) {
   if (!rmsData) return null;
   
   const getRmsField = (field: string) => {
-    return rmsData[field] || '';
+    // Try the field name as-is first
+    if (rmsData[field] !== undefined) return rmsData[field] || '';
+    
+    // Try lowercase version (rms_ instead of Rms_)
+    const lowerField = field.replace('Rms_', 'rms_');
+    if (rmsData[lowerField] !== undefined) return rmsData[lowerField] || '';
+    
+    // Try uppercase version (Rms_ instead of rms_)
+    const upperField = field.replace('rms_', 'Rms_');
+    if (rmsData[upperField] !== undefined) return rmsData[upperField] || '';
+    
+    return '';
   };
   
   const processed: any = {
     // Contact information
     contact: {
-      firstName: getRmsField('Rms_contact_firstName'),
-      lastName: getRmsField('Rms_contact_lastName'),
-      fullName: getRmsField('Rms_contact_fullName') || `${getRmsField('Rms_contact_firstName')} ${getRmsField('Rms_contact_lastName')}`.trim(),
-      email: getRmsField('Rms_contact_email'),
-      phone: getRmsField('Rms_contact_phone'),
-      city: getRmsField('Rms_contact_city'),
-      state: getRmsField('Rms_contact_state'),
-      country: getRmsField('Rms_contact_country'),
-      linkedin: getRmsField('Rms_contact_linkedin'),
+      firstName: getRmsField('rms_contact_givennames') || getRmsField('Rms_contact_firstName'),
+      lastName: getRmsField('rms_contact_lastname') || getRmsField('Rms_contact_lastName'),
+      fullName: getRmsField('rms_contact_fullname') || getRmsField('Rms_contact_fullName') || `${getRmsField('rms_contact_givennames') || getRmsField('Rms_contact_firstName')} ${getRmsField('rms_contact_lastname') || getRmsField('Rms_contact_lastName')}`.trim(),
+      email: getRmsField('rms_contact_email') || getRmsField('Rms_contact_email'),
+      phone: getRmsField('rms_contact_phone') || getRmsField('Rms_contact_phone'),
+      city: getRmsField('rms_contact_city') || getRmsField('Rms_contact_city'),
+      state: getRmsField('rms_contact_state') || getRmsField('Rms_contact_state'),
+      country: getRmsField('rms_contact_country') || getRmsField('rms_contact_countrycode') || getRmsField('Rms_contact_country'),
+      linkedin: getRmsField('rms_contact_linkedin') || getRmsField('Rms_contact_linkedin'),
     },
     
     // Summary
-    summary: getRmsField('Rms_summary'),
+    summary: getRmsField('rms_summary') || getRmsField('Rms_summary'),
     
     // Experience
     experience: [],
@@ -159,17 +170,17 @@ function processRMSData(rmsData: any) {
   };
   
   // Process experience
-  const expCount = parseInt(getRmsField('Rms_experience_count') || '0');
+  const expCount = parseInt(getRmsField('rms_experience_count') || getRmsField('Rms_experience_count') || '0');
   for (let i = 0; i < expCount; i++) {
     const exp = {
-      company: getRmsField(`Rms_experience_${i}_company`),
-      position: getRmsField(`Rms_experience_${i}_position`) || getRmsField(`Rms_experience_${i}_title`) || getRmsField(`Rms_experience_${i}_role`),
-      title: getRmsField(`Rms_experience_${i}_title`) || getRmsField(`Rms_experience_${i}_position`),
-      location: getRmsField(`Rms_experience_${i}_location`),
-      dateBegin: getRmsField(`Rms_experience_${i}_dateBegin`) || getRmsField(`Rms_experience_${i}_startDate`),
-      dateEnd: getRmsField(`Rms_experience_${i}_dateEnd`) || getRmsField(`Rms_experience_${i}_endDate`),
-      description: getRmsField(`Rms_experience_${i}_description`),
-      isCurrent: getRmsField(`Rms_experience_${i}_isCurrent`) === 'true',
+      company: getRmsField(`rms_experience_${i}_company`) || getRmsField(`Rms_experience_${i}_company`),
+      position: getRmsField(`rms_experience_${i}_role`) || getRmsField(`rms_experience_${i}_position`) || getRmsField(`rms_experience_${i}_title`) || getRmsField(`Rms_experience_${i}_position`) || getRmsField(`Rms_experience_${i}_title`) || getRmsField(`Rms_experience_${i}_role`),
+      title: getRmsField(`rms_experience_${i}_role`) || getRmsField(`rms_experience_${i}_title`) || getRmsField(`rms_experience_${i}_position`) || getRmsField(`Rms_experience_${i}_title`) || getRmsField(`Rms_experience_${i}_position`),
+      location: getRmsField(`rms_experience_${i}_location`) || getRmsField(`Rms_experience_${i}_location`),
+      dateBegin: getRmsField(`rms_experience_${i}_datebegin`) || getRmsField(`rms_experience_${i}_dateBegin`) || getRmsField(`rms_experience_${i}_startDate`) || getRmsField(`Rms_experience_${i}_dateBegin`) || getRmsField(`Rms_experience_${i}_startDate`),
+      dateEnd: getRmsField(`rms_experience_${i}_dateend`) || getRmsField(`rms_experience_${i}_dateEnd`) || getRmsField(`rms_experience_${i}_endDate`) || getRmsField(`Rms_experience_${i}_dateEnd`) || getRmsField(`Rms_experience_${i}_endDate`),
+      description: getRmsField(`rms_experience_${i}_description`) || getRmsField(`Rms_experience_${i}_description`),
+      isCurrent: getRmsField(`rms_experience_${i}_iscurrent`) === true || getRmsField(`rms_experience_${i}_iscurrent`) === 'true' || getRmsField(`rms_experience_${i}_isCurrent`) === 'true' || getRmsField(`Rms_experience_${i}_isCurrent`) === 'true',
     };
     
     // Debug logging to see what fields are available
@@ -188,15 +199,16 @@ function processRMSData(rmsData: any) {
   }
   
   // Process education
-  const eduCount = parseInt(getRmsField('Rms_education_count') || '0');
+  const eduCount = parseInt(getRmsField('rms_education_count') || getRmsField('Rms_education_count') || '0');
   for (let i = 0; i < eduCount; i++) {
     const edu = {
-      institution: getRmsField(`Rms_education_${i}_institution`),
-      qualification: getRmsField(`Rms_education_${i}_qualification`),
-      fieldOfStudy: getRmsField(`Rms_education_${i}_fieldOfStudy`),
-      date: getRmsField(`Rms_education_${i}_date`),
-      location: getRmsField(`Rms_education_${i}_location`),
-      gpa: getRmsField(`Rms_education_${i}_gpa`),
+      institution: getRmsField(`rms_education_${i}_institution`) || getRmsField(`Rms_education_${i}_institution`),
+      qualification: getRmsField(`rms_education_${i}_qualification`) || getRmsField(`Rms_education_${i}_qualification`),
+      fieldOfStudy: getRmsField(`rms_education_${i}_fieldOfStudy`) || getRmsField(`Rms_education_${i}_fieldOfStudy`),
+      date: getRmsField(`rms_education_${i}_date`) || getRmsField(`Rms_education_${i}_date`),
+      location: getRmsField(`rms_education_${i}_location`) || getRmsField(`Rms_education_${i}_location`),
+      gpa: getRmsField(`rms_education_${i}_gpa`) || getRmsField(`Rms_education_${i}_gpa`),
+      isGraduate: getRmsField(`rms_education_${i}_isgraduate`) || getRmsField(`rms_education_${i}_isGraduate`) || getRmsField(`Rms_education_${i}_isGraduate`),
     };
     if (edu.institution || edu.qualification) {
       processed.education.push(edu);
@@ -204,11 +216,11 @@ function processRMSData(rmsData: any) {
   }
   
   // Process skills
-  const skillCount = parseInt(getRmsField('Rms_skill_count') || '0');
+  const skillCount = parseInt(getRmsField('rms_skill_count') || getRmsField('Rms_skill_count') || '0');
   for (let i = 0; i < skillCount; i++) {
     const skill = {
-      category: getRmsField(`Rms_skill_${i}_category`),
-      keywords: getRmsField(`Rms_skill_${i}_keywords`),
+      category: getRmsField(`rms_skill_${i}_category`) || getRmsField(`Rms_skill_${i}_category`),
+      keywords: getRmsField(`rms_skill_${i}_keywords`) || getRmsField(`Rms_skill_${i}_keywords`),
     };
     if (skill.category || skill.keywords) {
       processed.skills.push(skill);
@@ -216,18 +228,18 @@ function processRMSData(rmsData: any) {
   }
   
   // Process projects
-  const projCount = parseInt(getRmsField('Rms_project_count') || '0');
+  const projCount = parseInt(getRmsField('rms_project_count') || getRmsField('Rms_project_count') || '0');
   for (let i = 0; i < projCount; i++) {
     const proj = {
-      name: getRmsField(`Rms_project_${i}_name`) || getRmsField(`Rms_project_${i}_title`),
-      title: getRmsField(`Rms_project_${i}_title`) || getRmsField(`Rms_project_${i}_name`),
-      organization: getRmsField(`Rms_project_${i}_organization`),
-      description: getRmsField(`Rms_project_${i}_description`),
-      dateBegin: getRmsField(`Rms_project_${i}_dateBegin`),
-      dateEnd: getRmsField(`Rms_project_${i}_dateEnd`),
-      url: getRmsField(`Rms_project_${i}_url`),
-      repository: getRmsField(`Rms_project_${i}_repository`),
-      role: getRmsField(`Rms_project_${i}_role`),
+      name: getRmsField(`rms_project_${i}_name`) || getRmsField(`rms_project_${i}_title`) || getRmsField(`Rms_project_${i}_name`) || getRmsField(`Rms_project_${i}_title`),
+      title: getRmsField(`rms_project_${i}_title`) || getRmsField(`rms_project_${i}_name`) || getRmsField(`Rms_project_${i}_title`) || getRmsField(`Rms_project_${i}_name`),
+      organization: getRmsField(`rms_project_${i}_organization`) || getRmsField(`Rms_project_${i}_organization`),
+      description: getRmsField(`rms_project_${i}_description`) || getRmsField(`Rms_project_${i}_description`),
+      dateBegin: getRmsField(`rms_project_${i}_dateBegin`) || getRmsField(`Rms_project_${i}_dateBegin`),
+      dateEnd: getRmsField(`rms_project_${i}_dateEnd`) || getRmsField(`Rms_project_${i}_dateEnd`),
+      url: getRmsField(`rms_project_${i}_url`) || getRmsField(`Rms_project_${i}_url`),
+      repository: getRmsField(`rms_project_${i}_repository`) || getRmsField(`Rms_project_${i}_repository`),
+      role: getRmsField(`rms_project_${i}_role`) || getRmsField(`Rms_project_${i}_role`),
     };
     if (proj.name || proj.description) {
       processed.projects.push(proj);
@@ -235,16 +247,16 @@ function processRMSData(rmsData: any) {
   }
   
   // Process certifications
-  const certCount = parseInt(getRmsField('Rms_certification_count') || '0');
+  const certCount = parseInt(getRmsField('rms_certification_count') || getRmsField('Rms_certification_count') || '0');
   processed.certifications = [];
   for (let i = 0; i < certCount; i++) {
     const cert = {
-      name: getRmsField(`Rms_certification_${i}_name`),
-      date: getRmsField(`Rms_certification_${i}_date`),
-      issuer: getRmsField(`Rms_certification_${i}_issuer`) || getRmsField(`Rms_certification_${i}_department`),
-      description: getRmsField(`Rms_certification_${i}_description`),
-      credentialId: getRmsField(`Rms_certification_${i}_credentialId`),
-      url: getRmsField(`Rms_certification_${i}_url`),
+      name: getRmsField(`rms_certification_${i}_name`) || getRmsField(`Rms_certification_${i}_name`),
+      date: getRmsField(`rms_certification_${i}_date`) || getRmsField(`Rms_certification_${i}_date`),
+      issuer: getRmsField(`rms_certification_${i}_issuer`) || getRmsField(`rms_certification_${i}_department`) || getRmsField(`Rms_certification_${i}_issuer`) || getRmsField(`Rms_certification_${i}_department`),
+      description: getRmsField(`rms_certification_${i}_description`) || getRmsField(`Rms_certification_${i}_description`),
+      credentialId: getRmsField(`rms_certification_${i}_credentialId`) || getRmsField(`Rms_certification_${i}_credentialId`),
+      url: getRmsField(`rms_certification_${i}_url`) || getRmsField(`Rms_certification_${i}_url`),
     };
     if (cert.name || cert.issuer) {
       processed.certifications.push(cert);
@@ -252,16 +264,16 @@ function processRMSData(rmsData: any) {
   }
   
   // Process involvement/activities
-  const invCount = parseInt(getRmsField('Rms_involvement_count') || '0');
+  const invCount = parseInt(getRmsField('rms_involvement_count') || getRmsField('Rms_involvement_count') || '0');
   processed.involvement = [];
   for (let i = 0; i < invCount; i++) {
     const inv = {
-      organization: getRmsField(`Rms_involvement_${i}_organization`),
-      role: getRmsField(`Rms_involvement_${i}_role`),
-      location: getRmsField(`Rms_involvement_${i}_location`),
-      dateBegin: getRmsField(`Rms_involvement_${i}_dateBegin`) || getRmsField(`Rms_involvement_${i}_dates`),
-      dateEnd: getRmsField(`Rms_involvement_${i}_dateEnd`),
-      description: getRmsField(`Rms_involvement_${i}_description`),
+      organization: getRmsField(`rms_involvement_${i}_organization`) || getRmsField(`Rms_involvement_${i}_organization`),
+      role: getRmsField(`rms_involvement_${i}_role`) || getRmsField(`Rms_involvement_${i}_role`),
+      location: getRmsField(`rms_involvement_${i}_location`) || getRmsField(`Rms_involvement_${i}_location`),
+      dateBegin: getRmsField(`rms_involvement_${i}_datebegin`) || getRmsField(`rms_involvement_${i}_dateBegin`) || getRmsField(`rms_involvement_${i}_dates`) || getRmsField(`Rms_involvement_${i}_dateBegin`) || getRmsField(`Rms_involvement_${i}_dates`),
+      dateEnd: getRmsField(`rms_involvement_${i}_dateend`) || getRmsField(`rms_involvement_${i}_dateEnd`) || getRmsField(`Rms_involvement_${i}_dateEnd`),
+      description: getRmsField(`rms_involvement_${i}_description`) || getRmsField(`Rms_involvement_${i}_description`),
     };
     if (inv.organization || inv.role) {
       processed.involvement.push(inv);
@@ -269,15 +281,15 @@ function processRMSData(rmsData: any) {
   }
   
   // Process coursework
-  const courseCount = parseInt(getRmsField('Rms_coursework_count') || '0');
+  const courseCount = parseInt(getRmsField('rms_coursework_count') || getRmsField('Rms_coursework_count') || '0');
   processed.coursework = [];
   for (let i = 0; i < courseCount; i++) {
     const course = {
-      name: getRmsField(`Rms_coursework_${i}_name`),
-      department: getRmsField(`Rms_coursework_${i}_department`),
-      code: getRmsField(`Rms_coursework_${i}_code`),
-      grade: getRmsField(`Rms_coursework_${i}_grade`),
-      description: getRmsField(`Rms_coursework_${i}_description`),
+      name: getRmsField(`rms_coursework_${i}_name`) || getRmsField(`Rms_coursework_${i}_name`),
+      department: getRmsField(`rms_coursework_${i}_department`) || getRmsField(`Rms_coursework_${i}_department`),
+      code: getRmsField(`rms_coursework_${i}_code`) || getRmsField(`Rms_coursework_${i}_code`),
+      grade: getRmsField(`rms_coursework_${i}_grade`) || getRmsField(`Rms_coursework_${i}_grade`),
+      description: getRmsField(`rms_coursework_${i}_description`) || getRmsField(`Rms_coursework_${i}_description`),
     };
     if (course.name || course.department) {
       processed.coursework.push(course);
@@ -285,16 +297,16 @@ function processRMSData(rmsData: any) {
   }
   
   // Process awards/honors
-  const awardCount = parseInt(getRmsField('Rms_award_count') || '0');
+  const awardCount = parseInt(getRmsField('rms_award_count') || getRmsField('Rms_award_count') || '0');
   processed.awards = [];
   for (let i = 0; i < awardCount; i++) {
     const award = {
-      title: getRmsField(`Rms_award_${i}_title`) || getRmsField(`Rms_award_${i}_name`),
-      name: getRmsField(`Rms_award_${i}_name`) || getRmsField(`Rms_award_${i}_title`),
-      issuer: getRmsField(`Rms_award_${i}_issuer`) || getRmsField(`Rms_award_${i}_organization`),
-      organization: getRmsField(`Rms_award_${i}_organization`) || getRmsField(`Rms_award_${i}_issuer`),
-      date: getRmsField(`Rms_award_${i}_date`),
-      description: getRmsField(`Rms_award_${i}_description`),
+      title: getRmsField(`rms_award_${i}_title`) || getRmsField(`rms_award_${i}_name`) || getRmsField(`Rms_award_${i}_title`) || getRmsField(`Rms_award_${i}_name`),
+      name: getRmsField(`rms_award_${i}_name`) || getRmsField(`rms_award_${i}_title`) || getRmsField(`Rms_award_${i}_name`) || getRmsField(`Rms_award_${i}_title`),
+      issuer: getRmsField(`rms_award_${i}_issuer`) || getRmsField(`rms_award_${i}_organization`) || getRmsField(`Rms_award_${i}_issuer`) || getRmsField(`Rms_award_${i}_organization`),
+      organization: getRmsField(`rms_award_${i}_organization`) || getRmsField(`rms_award_${i}_issuer`) || getRmsField(`Rms_award_${i}_organization`) || getRmsField(`Rms_award_${i}_issuer`),
+      date: getRmsField(`rms_award_${i}_date`) || getRmsField(`Rms_award_${i}_date`),
+      description: getRmsField(`rms_award_${i}_description`) || getRmsField(`Rms_award_${i}_description`),
     };
     if (award.title || award.name) {
       processed.awards.push(award);
@@ -302,17 +314,17 @@ function processRMSData(rmsData: any) {
   }
   
   // Process publications
-  const pubCount = parseInt(getRmsField('Rms_publication_count') || '0');
+  const pubCount = parseInt(getRmsField('rms_publication_count') || getRmsField('Rms_publication_count') || '0');
   processed.publications = [];
   for (let i = 0; i < pubCount; i++) {
     const pub = {
-      title: getRmsField(`Rms_publication_${i}_title`),
-      authors: getRmsField(`Rms_publication_${i}_authors`),
-      journal: getRmsField(`Rms_publication_${i}_journal`),
-      date: getRmsField(`Rms_publication_${i}_date`),
-      url: getRmsField(`Rms_publication_${i}_url`),
-      doi: getRmsField(`Rms_publication_${i}_doi`),
-      description: getRmsField(`Rms_publication_${i}_description`),
+      title: getRmsField(`rms_publication_${i}_title`) || getRmsField(`Rms_publication_${i}_title`),
+      authors: getRmsField(`rms_publication_${i}_authors`) || getRmsField(`Rms_publication_${i}_authors`),
+      journal: getRmsField(`rms_publication_${i}_journal`) || getRmsField(`Rms_publication_${i}_journal`),
+      date: getRmsField(`rms_publication_${i}_date`) || getRmsField(`Rms_publication_${i}_date`),
+      url: getRmsField(`rms_publication_${i}_url`) || getRmsField(`Rms_publication_${i}_url`),
+      doi: getRmsField(`rms_publication_${i}_doi`) || getRmsField(`Rms_publication_${i}_doi`),
+      description: getRmsField(`rms_publication_${i}_description`) || getRmsField(`Rms_publication_${i}_description`),
     };
     if (pub.title || pub.journal) {
       processed.publications.push(pub);
@@ -320,13 +332,13 @@ function processRMSData(rmsData: any) {
   }
   
   // Process languages
-  const langCount = parseInt(getRmsField('Rms_language_count') || '0');
+  const langCount = parseInt(getRmsField('rms_language_count') || getRmsField('Rms_language_count') || '0');
   processed.languages = [];
   for (let i = 0; i < langCount; i++) {
     const lang = {
-      name: getRmsField(`Rms_language_${i}_name`),
-      proficiency: getRmsField(`Rms_language_${i}_proficiency`),
-      nativeLanguage: getRmsField(`Rms_language_${i}_nativeLanguage`) === 'true',
+      name: getRmsField(`rms_language_${i}_name`) || getRmsField(`Rms_language_${i}_name`),
+      proficiency: getRmsField(`rms_language_${i}_proficiency`) || getRmsField(`Rms_language_${i}_proficiency`),
+      nativeLanguage: (getRmsField(`rms_language_${i}_nativeLanguage`) || getRmsField(`Rms_language_${i}_nativeLanguage`)) === 'true',
     };
     if (lang.name) {
       processed.languages.push(lang);
@@ -334,18 +346,18 @@ function processRMSData(rmsData: any) {
   }
   
   // Process volunteer work
-  const volCount = parseInt(getRmsField('Rms_volunteer_count') || '0');
+  const volCount = parseInt(getRmsField('rms_volunteer_count') || getRmsField('Rms_volunteer_count') || '0');
   processed.volunteer = [];
   for (let i = 0; i < volCount; i++) {
     const vol = {
-      organization: getRmsField(`Rms_volunteer_${i}_organization`),
-      role: getRmsField(`Rms_volunteer_${i}_role`) || getRmsField(`Rms_volunteer_${i}_title`),
-      title: getRmsField(`Rms_volunteer_${i}_title`) || getRmsField(`Rms_volunteer_${i}_role`),
-      location: getRmsField(`Rms_volunteer_${i}_location`),
-      startDate: getRmsField(`Rms_volunteer_${i}_startDate`) || getRmsField(`Rms_volunteer_${i}_dateBegin`),
-      endDate: getRmsField(`Rms_volunteer_${i}_endDate`) || getRmsField(`Rms_volunteer_${i}_dateEnd`),
-      current: getRmsField(`Rms_volunteer_${i}_current`) === 'true',
-      description: getRmsField(`Rms_volunteer_${i}_description`),
+      organization: getRmsField(`rms_volunteer_${i}_organization`) || getRmsField(`Rms_volunteer_${i}_organization`),
+      role: getRmsField(`rms_volunteer_${i}_role`) || getRmsField(`rms_volunteer_${i}_title`) || getRmsField(`Rms_volunteer_${i}_role`) || getRmsField(`Rms_volunteer_${i}_title`),
+      title: getRmsField(`rms_volunteer_${i}_title`) || getRmsField(`rms_volunteer_${i}_role`) || getRmsField(`Rms_volunteer_${i}_title`) || getRmsField(`Rms_volunteer_${i}_role`),
+      location: getRmsField(`rms_volunteer_${i}_location`) || getRmsField(`Rms_volunteer_${i}_location`),
+      startDate: getRmsField(`rms_volunteer_${i}_startDate`) || getRmsField(`rms_volunteer_${i}_dateBegin`) || getRmsField(`Rms_volunteer_${i}_startDate`) || getRmsField(`Rms_volunteer_${i}_dateBegin`),
+      endDate: getRmsField(`rms_volunteer_${i}_endDate`) || getRmsField(`rms_volunteer_${i}_dateEnd`) || getRmsField(`Rms_volunteer_${i}_endDate`) || getRmsField(`Rms_volunteer_${i}_dateEnd`),
+      current: (getRmsField(`rms_volunteer_${i}_current`) || getRmsField(`Rms_volunteer_${i}_current`)) === 'true',
+      description: getRmsField(`rms_volunteer_${i}_description`) || getRmsField(`Rms_volunteer_${i}_description`),
     };
     if (vol.organization || vol.role) {
       processed.volunteer.push(vol);

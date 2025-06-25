@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/ui/theme-provider';
+import { useUserUsage } from '@/hooks/use-user-usage';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from "@/lib/features/auth/firebase-config";
 import ResumeGridCard from '@/components/resume/resume-grid-card';
@@ -13,6 +14,11 @@ import dynamic from 'next/dynamic';
 // Dynamic import with no SSR to fix serialization error
 const CreateResumeModal = dynamic(
   () => import('@/components/resume/modals/create-resume-modal'),
+  { ssr: false }
+);
+
+const UpgradeModal = dynamic(
+  () => import('@/components/resume/modals/upgrade-modal'),
   { ssr: false }
 );
 
@@ -28,6 +34,7 @@ export default function ResumesPage() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'created' | 'updated'>('created');
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -35,6 +42,7 @@ export default function ResumesPage() {
   const [showNotifications, setShowNotifications] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { usage, loading: usageLoading, canDownloadPdf } = useUserUsage();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
 
@@ -113,20 +121,41 @@ export default function ResumesPage() {
   };
 
   // Create resume card component
-  const CreateResumeCard = () => (
-    <div className="">
-      <div
-        className="flex w-[calc(50vw_-_25px)] cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-300 dark:border-navy-600 bg-white/50 dark:bg-navy-800/30 backdrop-blur-sm p-4 xs:h-48 sm:h-[290px] md:w-60"
-        onClick={() => setShowCreateModal(true)}
-      >
-        <div className="relative flex w-[calc(50vw_-_25px)] items-center justify-center xs:h-48 sm:h-[290px] md:w-60">
-          <div className="line-clamp-3 text-center text-base font-semibold text-slate-600 dark:text-slate-300">Create new resume</div>
+  const CreateResumeCard = () => {
+    const isLocked = !canDownloadPdf();
+    
+    return (
+      <div className="">
+        <div
+          className={`flex w-[calc(50vw_-_25px)] items-center justify-center rounded-xl border-2 border-dashed xs:h-48 sm:h-[290px] md:w-60 border-slate-300 dark:border-navy-600 bg-white/50 dark:bg-navy-800/30 backdrop-blur-sm p-4 transition-colors ${
+            isLocked 
+              ? 'cursor-not-allowed opacity-50' 
+              : 'cursor-pointer hover:border-blue-400 dark:hover:border-blue-500'
+          }`}
+          onClick={() => !isLocked && setShowCreateModal(true)}
+        >
+          <div className="relative flex w-[calc(50vw_-_25px)] items-center justify-center xs:h-48 sm:h-[290px] md:w-60 flex-col gap-2">
+            {isLocked ? (
+              <>
+                <i className="fad fa-lock text-2xl text-slate-600 dark:text-slate-300" aria-hidden="true"></i>
+                <div className="line-clamp-3 text-center text-base font-semibold text-slate-600 dark:text-slate-300">Limit Reached</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 text-center px-4">
+                  {usage.pdfGenerations}/{usage.maxPdfGenerations} resumes used
+                </div>
+              </>
+            ) : (
+              <>
+                <i className="fad fa-plus text-2xl text-slate-600 dark:text-slate-300" aria-hidden="true"></i>
+                <div className="line-clamp-3 text-center text-base font-semibold text-slate-600 dark:text-slate-300">Create new resume</div>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  if (isLoading) {
+  if (isLoading || usageLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="relative">
@@ -153,7 +182,7 @@ export default function ResumesPage() {
                 </div>
               </div>
               <div
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-slate-100 dark:focus:bg-navy-700 cursor-pointer"
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
                 role="tab"
               >
                 <div className="w-full overflow-hidden">
@@ -161,7 +190,7 @@ export default function ResumesPage() {
                 </div>
               </div>
               <div
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-slate-100 dark:focus:bg-navy-700 cursor-pointer"
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
                 role="tab"
               >
                 <div className="w-full overflow-hidden">
@@ -349,12 +378,12 @@ export default function ResumesPage() {
                   <p className="font-semibold uppercase truncate">Resumes</p>
                 </div>
               </div>
-              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-slate-100 dark:focus:bg-navy-700 cursor-pointer" role="tab">
+              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer" role="tab">
                 <div className="w-full overflow-hidden">
                   <p className="font-semibold uppercase truncate">Cover Letters</p>
                 </div>
               </div>
-              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 focus:bg-slate-100 dark:focus:bg-navy-700 cursor-pointer" role="tab">
+              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer" role="tab">
                 <div className="w-full overflow-hidden">
                   <p className="font-semibold uppercase truncate">Resignation Letters</p>
                 </div>
@@ -405,11 +434,17 @@ export default function ResumesPage() {
                       <div className="mb-4 flex flex-row flex-wrap gap-4 md:gap-6">
                         <CreateResumeCard />
 
-                        {resumes.map((resume) => (
-                          <ResumeGridCard key={resume.id} resume={resume} onRefresh={() => {
-                            setIsLoading(true);
-                            fetchResumes();
-                          }} />
+                        {resumes.map((resume, index) => (
+                          <ResumeGridCard 
+                            key={resume.id} 
+                            resume={resume} 
+                            isLocked={usage.maxPdfGenerations !== -1 && usage.pdfGenerations >= usage.maxPdfGenerations && (index === 1 || index === 2)} 
+                            usage={usage}
+                            onRefresh={() => {
+                              setIsLoading(true);
+                              fetchResumes();
+                            }} 
+                          />
                         ))}
                       </div>
                     </div>
@@ -417,6 +452,7 @@ export default function ResumesPage() {
                     <ResumeListView 
                       resumes={resumes} 
                       folders={[]} 
+                      usage={usage}
                       onRefresh={() => {
                         setIsLoading(true);
                         fetchResumes();
@@ -432,14 +468,20 @@ export default function ResumesPage() {
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                       <button
-                        onClick={() => setShowCreateModal(true)}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-blue-500/30"
+                        onClick={() => !canDownloadPdf() ? setShowUpgradeModal(true) : setShowCreateModal(true)}
+                        className={`font-bold py-3 px-6 rounded-lg shadow-lg ${
+                          canDownloadPdf() 
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/30' 
+                            : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                        }`}
                       >
-                        Create Resume
+                        {canDownloadPdf() ? 'Create Resume' : 'Limit Reached'}
                       </button>
                       <a
                         href="/resumes/upload"
-                        className="border-2 border-slate-300 dark:border-navy-600 bg-white/70 dark:bg-navy-700/50 text-slate-700 dark:text-slate-300 font-bold py-3 px-6 rounded-lg shadow-md"
+                        className={`border-2 border-slate-300 dark:border-navy-600 bg-white/70 dark:bg-navy-700/50 text-slate-700 dark:text-slate-300 font-bold py-3 px-6 rounded-lg shadow-md ${
+                          !canDownloadPdf() ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                        }`}
                       >
                         Upload Existing Resume
                       </a>
@@ -453,6 +495,14 @@ export default function ResumesPage() {
           <CreateResumeModal
             isOpen={showCreateModal}
             onOpenChange={setShowCreateModal}
+          />
+          
+          <UpgradeModal
+            isOpen={showUpgradeModal}
+            onClose={() => setShowUpgradeModal(false)}
+            feature="resumes"
+            currentCount={usage.pdfGenerations}
+            maxCount={usage.maxPdfGenerations}
           />
           
           <NotificationsSidebar 

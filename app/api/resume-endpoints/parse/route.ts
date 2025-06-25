@@ -3,8 +3,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {withCORS} from "@/lib/features/api/middleware/cors";
-import { FileStatus, PDFProcessor } from "@/lib/features/pdf/processor";
-import { parsePDFWithGenkit, parseResumeTextWithGenkit } from "@/lib/features/pdf/parsing/genkit-parser";
+import {
+  FileStatus,
+  parsePDFWithGenkit,
+  parseResumeTextWithGenkit,
+  PDFProcessor
+} from "@/lib/features/pdf/pdf-generator";
 
 
 // Increase timeout for API route

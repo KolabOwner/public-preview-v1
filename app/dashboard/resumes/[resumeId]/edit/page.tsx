@@ -3,11 +3,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from "@/lib/features/auth/firebase-config";
 import { useAuth } from '@/contexts/auth-context';
 import ResumeEditor from '@/components/resume/resume-editor-area';
-import { generateResumePDF } from "@/lib/features/pdf/generator";
 
 // Note: If you're still getting TypeScript errors, check the ResumeEditorAreaProps interface
 // in @/components/resume/resume-editor-area to see the exact prop names expected.

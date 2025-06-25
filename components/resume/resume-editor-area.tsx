@@ -126,17 +126,17 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
       ...unified.contactInfo,
       ...data.contactInfo
     };
-  } else if (data.Rms_contact_fullName) {
-    // Handle RMS format
+  } else if (data.rms_contact_fullname || data.Rms_contact_fullName || data.rms_contact_fullName) {
+    // Handle RMS format - try both lowercase and capitalized field names
     unified.contactInfo = {
-      fullName: data.Rms_contact_fullName || '',
-      email: data.Rms_contact_email || '',
-      phone: data.Rms_contact_phone || '',
-      linkedin: data.Rms_contact_linkedin || '',
-      website: data.Rms_contact_website || '',
-      country: data.Rms_contact_country || '',
-      state: data.Rms_contact_state || '',
-      city: data.Rms_contact_city || '',
+      fullName: data.rms_contact_fullname || data.Rms_contact_fullName || data.rms_contact_fullName || '',
+      email: data.rms_contact_email || data.Rms_contact_email || '',
+      phone: data.rms_contact_phone || data.Rms_contact_phone || '',
+      linkedin: data.rms_contact_linkedin || data.Rms_contact_linkedin || '',
+      website: data.rms_contact_website || data.Rms_contact_website || '',
+      country: data.rms_contact_country || data.rms_contact_countrycode || data.Rms_contact_country || '',
+      state: data.rms_contact_state || data.Rms_contact_state || '',
+      city: data.rms_contact_city || data.Rms_contact_city || '',
       showEmail: true,
       showPhone: true,
       showLinkedin: true,
@@ -146,16 +146,17 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
   }
 
   // Parse summary
-  unified.summary = data.summary || data.Rms_summary || '';
+  unified.summary = data.summary || data.rms_summary || data.Rms_summary || '';
 
   // Parse experiences
   if (data.experiences && Array.isArray(data.experiences)) {
     unified.experiences = data.experiences;
-  } else if (data.Rms_experience_count) {
-    // Handle RMS format
+  } else if (data.rms_experience_count || data.Rms_experience_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const expCount = data.rms_experience_count || data.Rms_experience_count;
     unified.experiences = [];
-    for (let i = 0; i < data.Rms_experience_count; i++) {
-      const description = data[`Rms_experience_${i}_description`] || '';
+    for (let i = 0; i < expCount; i++) {
+      const description = data[`rms_experience_${i}_description`] || data[`Rms_experience_${i}_description`] || '';
       // Convert description to bullet points if it contains line breaks or bullet markers
       const bulletPoints = description
         .split(/[\n•·▪]/g)
@@ -165,12 +166,12 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
 
       unified.experiences.push({
         id: `exp_${i}`,
-        title: data[`Rms_experience_${i}_role`] || '',
-        company: data[`Rms_experience_${i}_company`] || '',
-        location: data[`Rms_experience_${i}_location`] || '',
-        startDate: data[`Rms_experience_${i}_dateBegin`] || '',
-        endDate: data[`Rms_experience_${i}_dateEnd`] || '',
-        current: data[`Rms_experience_${i}_isCurrent`] || false,
+        title: data[`rms_experience_${i}_role`] || data[`Rms_experience_${i}_role`] || '',
+        company: data[`rms_experience_${i}_company`] || data[`Rms_experience_${i}_company`] || '',
+        location: data[`rms_experience_${i}_location`] || data[`Rms_experience_${i}_location`] || '',
+        startDate: data[`rms_experience_${i}_dateBegin`] || data[`rms_experience_${i}_datebegin`] || data[`Rms_experience_${i}_dateBegin`] || '',
+        endDate: data[`rms_experience_${i}_dateEnd`] || data[`rms_experience_${i}_dateend`] || data[`Rms_experience_${i}_dateEnd`] || '',
+        current: data[`rms_experience_${i}_isCurrent`] || data[`rms_experience_${i}_iscurrent`] || data[`Rms_experience_${i}_isCurrent`] || false,
         description: description,
         bulletPoints: bulletPoints
       });
@@ -192,22 +193,23 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
       details: edu.details || edu.description || '',
       isGraduate: edu.isGraduate !== undefined ? edu.isGraduate : true
     }));
-  } else if (data.Rms_education_count) {
-    // Handle RMS format
+  } else if (data.rms_education_count || data.Rms_education_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const eduCount = data.rms_education_count || data.Rms_education_count;
     unified.education = [];
-    for (let i = 0; i < data.Rms_education_count; i++) {
+    for (let i = 0; i < eduCount; i++) {
       unified.education.push({
         id: `edu_${i}`,
-        institution: data[`Rms_education_${i}_institution`] || '',
-        qualification: data[`Rms_education_${i}_qualification`] || '',
-        location: data[`Rms_education_${i}_location`] || '',
-        date: data[`Rms_education_${i}_date`] || '',
+        institution: data[`rms_education_${i}_institution`] || data[`Rms_education_${i}_institution`] || '',
+        qualification: data[`rms_education_${i}_qualification`] || data[`Rms_education_${i}_qualification`] || '',
+        location: data[`rms_education_${i}_location`] || data[`Rms_education_${i}_location`] || '',
+        date: data[`rms_education_${i}_date`] || data[`Rms_education_${i}_date`] || '',
         dateFormat: 'MMMM YYYY',
         minor: '',
-        score: data[`Rms_education_${i}_score`]?.toString() || '',
-        scoreType: data[`Rms_education_${i}_scoreType`] || '',
+        score: (data[`rms_education_${i}_score`] || data[`Rms_education_${i}_score`])?.toString() || '',
+        scoreType: data[`rms_education_${i}_scoreType`] || data[`Rms_education_${i}_scoreType`] || '',
         details: '',
-        isGraduate: data[`Rms_education_${i}_isGraduate`] || true
+        isGraduate: data[`rms_education_${i}_isGraduate`] || data[`rms_education_${i}_isgraduate`] || data[`Rms_education_${i}_isGraduate`] || true
       });
     }
   }
@@ -221,14 +223,15 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
         ? cat.skills.map((s: any) => s.name || s).join(', ')
         : cat.keywords || ''
     }));
-  } else if (data.Rms_skill_count) {
-    // Handle RMS format
+  } else if (data.rms_skill_count || data.Rms_skill_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const skillCount = data.rms_skill_count || data.Rms_skill_count;
     unified.skills = [];
-    for (let i = 0; i < data.Rms_skill_count; i++) {
+    for (let i = 0; i < skillCount; i++) {
       unified.skills.push({
         id: `skill_${i}`,
-        category: data[`Rms_skill_${i}_category`] || '',
-        keywords: data[`Rms_skill_${i}_keywords`] || ''
+        category: data[`rms_skill_${i}_category`] || data[`Rms_skill_${i}_category`] || '',
+        keywords: data[`rms_skill_${i}_keywords`] || data[`Rms_skill_${i}_keywords`] || ''
       });
     }
   }
@@ -245,19 +248,21 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
       description: proj.description || '',
       technologies: Array.isArray(proj.technologies) ? proj.technologies : []
     }));
-  } else if (data.Rms_project_count) {
-    // Handle RMS format
+  } else if (data.rms_project_count || data.Rms_project_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const projectCount = data.rms_project_count || data.Rms_project_count;
     unified.projects = [];
-    for (let i = 0; i < data.Rms_project_count; i++) {
+    for (let i = 0; i < projectCount; i++) {
       unified.projects.push({
         id: `proj_${i}`,
-        title: data[`Rms_project_${i}_title`] || '',
-        organization: data[`Rms_project_${i}_organization`] || '',
+        title: data[`rms_project_${i}_title`] || data[`Rms_project_${i}_title`] || '',
+        organization: data[`rms_project_${i}_organization`] || data[`Rms_project_${i}_organization`] || '',
         startDate: '',
         endDate: '',
-        url: data[`Rms_project_${i}_url`] || '',
-        description: data[`Rms_project_${i}_description`] || '',
-        technologies: []
+        url: data[`rms_project_${i}_url`] || data[`Rms_project_${i}_url`] || '',
+        description: data[`rms_project_${i}_description`] || data[`Rms_project_${i}_description`] || '',
+        current: false,
+        bulletPoints: []
       });
     }
   }
@@ -265,19 +270,20 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
   // Parse involvements
   if (data.involvements && Array.isArray(data.involvements)) {
     unified.involvements = data.involvements;
-  } else if (data.Rms_involvement_count) {
-    // Handle RMS format
+  } else if (data.rms_involvement_count || data.Rms_involvement_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const involvementCount = data.rms_involvement_count || data.Rms_involvement_count;
     unified.involvements = [];
-    for (let i = 0; i < data.Rms_involvement_count; i++) {
+    for (let i = 0; i < involvementCount; i++) {
       unified.involvements.push({
         id: `inv_${i}`,
-        organization: data[`Rms_involvement_${i}_organization`] || '',
-        role: data[`Rms_involvement_${i}_role`] || '',
-        location: data[`Rms_involvement_${i}_location`] || '',
-        startDate: data[`Rms_involvement_${i}_dateBegin`] || '',
-        endDate: data[`Rms_involvement_${i}_dateEnd`] || '',
+        organization: data[`rms_involvement_${i}_organization`] || data[`Rms_involvement_${i}_organization`] || '',
+        role: data[`rms_involvement_${i}_role`] || data[`Rms_involvement_${i}_role`] || '',
+        location: data[`rms_involvement_${i}_location`] || data[`Rms_involvement_${i}_location`] || '',
+        startDate: data[`rms_involvement_${i}_dateBegin`] || data[`rms_involvement_${i}_datebegin`] || data[`Rms_involvement_${i}_dateBegin`] || '',
+        endDate: data[`rms_involvement_${i}_dateEnd`] || data[`rms_involvement_${i}_dateend`] || data[`Rms_involvement_${i}_dateEnd`] || '',
         current: false,
-        description: data[`Rms_involvement_${i}_description`] || ''
+        description: data[`rms_involvement_${i}_description`] || data[`Rms_involvement_${i}_description`] || ''
       });
     }
   }
@@ -293,15 +299,16 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
       credentialId: cert.credentialId || '',
       url: cert.url || ''
     }));
-  } else if (data.Rms_certification_count) {
-    // Handle RMS format
+  } else if (data.rms_certification_count || data.Rms_certification_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const certificationCount = data.rms_certification_count || data.Rms_certification_count;
     unified.certifications = [];
-    for (let i = 0; i < data.Rms_certification_count; i++) {
+    for (let i = 0; i < certificationCount; i++) {
       unified.certifications.push({
         id: `cert_${i}`,
-        name: data[`Rms_certification_${i}_name`] || '',
-        issuer: data[`Rms_certification_${i}_department`] || data[`Rms_certification_${i}_issuer`] || '',
-        date: data[`Rms_certification_${i}_date`] || '',
+        name: data[`rms_certification_${i}_name`] || data[`Rms_certification_${i}_name`] || '',
+        issuer: data[`rms_certification_${i}_department`] || data[`rms_certification_${i}_issuer`] || data[`Rms_certification_${i}_department`] || data[`Rms_certification_${i}_issuer`] || '',
+        date: data[`rms_certification_${i}_date`] || data[`Rms_certification_${i}_date`] || '',
         expiryDate: '',
         credentialId: '',
         url: ''

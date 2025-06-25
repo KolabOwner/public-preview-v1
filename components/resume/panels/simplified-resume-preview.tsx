@@ -10,6 +10,7 @@ import SimpleJobPanel from '@/components/resume/panels/simple-job-panel';
 import SimpleKeywordsPanel from '@/components/resume/panels/simple-keywords-panel';
 import SharePanel from "@/components/resume/panels/share-panel";
 import { getDefaultSectionOrder, getSectionTitle, sectionHasContent } from '../sections/resume-sections';
+import { InlineDraggableSection, InlineDraggableSectionsContainer } from '../sections/inline-draggable-section';
 import { useResumeFont, useResumeStyles, useResumeTheme } from '@/components/hooks/use-resume-styles';
 import { generateResumePDFAsync } from "@/lib/features/pdf/pdf-generator";
 
@@ -267,6 +268,13 @@ export default function SimplifiedResumePreview({
     }
   }, [resumeId]);
 
+  const handleSectionReorder = useCallback((dragIndex: number, dropIndex: number) => {
+    const newOrder = [...sectionOrder];
+    const [draggedSection] = newOrder.splice(dragIndex, 1);
+    newOrder.splice(dropIndex, 0, draggedSection);
+    handleSectionOrderChange(newOrder);
+  }, [sectionOrder, handleSectionOrderChange]);
+
   const handleAutoAdjust = async () => {
     toast({
       title: "Auto-adjust Applied",
@@ -466,28 +474,34 @@ export default function SimplifiedResumePreview({
         <ResumeSection key="involvement" title={getSectionTitle('involvement', currentTemplate)} styles={inlineStyles}>
           {safeArray(resumeData.involvement).map((inv: any, idx: number) => (
             <div key={inv.id || idx} className="resume-involvement-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <h3 className="resume-involvement-title" style={inlineStyles.jobTitle}>
-                    {inv.role || 'Role'}
-                  </h3>
-                  <p className="resume-detail-text" style={inlineStyles.detailText}>
-                    {inv.organization || 'Organization'}
-                  </p>
-                </div>
-                <div style={{ textAlign: 'right' }}>
+              {/* Role title */}
+              <div className="flex gap-2">
+                <h3 className="resume-involvement-title" style={inlineStyles.jobTitle}>
+                  {inv.role || 'Role'}
+                </h3>
+              </div>
+              
+              {/* Location, Organization, and Dates on same line with bullet separators */}
+              <div className="flex justify-between gap-2 font-semibold">
+                <div className="flex flex-wrap" style={{ ...inlineStyles.detailText, fontWeight: 'normal', fontSize: '0.65em', lineHeight: '1.5' }}>
                   {inv.location && (
-                    <p className="resume-detail-text" style={{ ...inlineStyles.detailText, fontStyle: 'italic' }}>
+                    <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
                       {inv.location}
-                    </p>
+                    </span>
+                  )}
+                  {inv.organization && (
+                    <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
+                      {inv.organization}
+                    </span>
                   )}
                   {(inv.dateBegin || inv.dateEnd) && (
-                    <p className="resume-detail-text" style={{ ...inlineStyles.detailText, fontStyle: 'italic' }}>
-                      {formatDate(inv.dateBegin)} {inv.dateBegin && inv.dateEnd && ' - '} {formatDate(inv.dateEnd)}
-                    </p>
+                    <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
+                      {formatDate(inv.dateBegin)}{inv.dateBegin && inv.dateEnd && ' - '}{formatDate(inv.dateEnd)}
+                    </span>
                   )}
                 </div>
               </div>
+              
               {inv.description && (
                 <BulletList
                   items={parseBulletPoints(inv.description)}
@@ -652,7 +666,7 @@ export default function SimplifiedResumePreview({
           minHeight: '11in',
           boxSizing: 'border-box'
         }}>
-          {/* Contact Information */}
+          {/* Contact Information - Always First */}
           <header>
             <h1 className="resume-name" style={inlineStyles.name}>
               {fullName}
@@ -683,11 +697,23 @@ export default function SimplifiedResumePreview({
             </div>
           </header>
 
-          {/* Render sections */}
-          {sectionOrder
-            .filter(sectionId => sectionComponents[sectionId])
-            .map(sectionId => sectionComponents[sectionId])
-          }
+          {/* Render sections with inline drag handles */}
+          <InlineDraggableSectionsContainer>
+            {sectionOrder
+              .filter(sectionId => sectionComponents[sectionId])
+              .map((sectionId, index) => (
+                <InlineDraggableSection
+                  key={sectionId}
+                  sectionId={sectionId}
+                  index={index}
+                  onReorder={handleSectionReorder}
+                  className="mb-2 mt-4"
+                >
+                  {sectionComponents[sectionId]}
+                </InlineDraggableSection>
+              ))
+            }
+          </InlineDraggableSectionsContainer>
         </div>
       </div>
     );
@@ -786,11 +812,11 @@ export default function SimplifiedResumePreview({
             {resumePreviewContent}
           </div>
           <div className="w-72 flex-shrink-0">
-            <div>
+            <div className="space-y-6">
               {renderJobPanel()}
               <SharePanel
                 resumeId={resumeId}
-                className="mt-6 shadow-lg"
+                className="shadow-lg"
               />
             </div>
           </div>

@@ -401,7 +401,7 @@ if (!isOpen) return null;
 return (
   <div
     ref={dropdownRef}
-    className={`absolute top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl py-2 z-[100] min-w-max animate-in fade-in-0 zoom-in-95 duration-200 ${positionClasses[position]} ${className}`}
+    className={`absolute top-full mt-2 bg-white/95 dark:bg-gray-800 backdrop-blur-sm border border-slate-200 dark:border-gray-600 rounded-lg shadow-xl shadow-slate-300/30 dark:shadow-gray-900/50 py-2 z-[100] min-w-max animate-in fade-in-0 zoom-in-95 duration-200 text-gray-900 dark:text-gray-100 ${positionClasses[position]} ${className}`}
     role="menu"
     aria-orientation="vertical"
   >
@@ -625,17 +625,9 @@ const handleTemplateChange = useCallback((template: string) => {
 }, [handleAsync, onTemplateChange, toggleDropdown]);
 
 // Theme classes
-const themeClasses = useMemo(() =>
-  isDarkMode
-    ? 'bg-gray-800 border-gray-600 text-gray-100'
-    : 'bg-white border-gray-200 text-gray-900',
-  [isDarkMode]
-);
+const themeClasses = 'bg-white/95 dark:bg-gray-800 backdrop-blur-sm border-slate-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 shadow-lg shadow-slate-200/50 dark:shadow-gray-900/50';
 
-const expandedPanelClasses = useMemo(() =>
-  isDarkMode ? 'bg-gray-700 text-gray-100' : 'bg-gray-50',
-  [isDarkMode]
-);
+const expandedPanelClasses = 'bg-slate-50/80 dark:bg-gray-700 backdrop-blur-sm text-gray-900 dark:text-gray-100 border-t border-slate-200 dark:border-gray-600';
 
 // Validation
 const normalizedScore = Math.max(0, Math.min(100, resumeScore));
@@ -783,8 +775,7 @@ return (
                   handleDownloadDOCX();
                   toggleDropdown('download');
                 }}
-                className="w-full px-4 py-2 text-left text-sm active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3 transition-colors rounded-md mx-1 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none text-gray-900
-dark:text-gray-100"
+                className="w-full px-4 py-2 text-left text-sm active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3 transition-colors rounded-md mx-1 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none text-gray-900 dark:text-gray-100"
                 role="menuitem"
                 disabled={loadingStates.downloadDOCX}
                 data-testid="download-docx-btn"
@@ -800,8 +791,7 @@ dark:text-gray-100"
                   handleSaveToDrive();
                   toggleDropdown('download');
                 }}
-                className="w-full px-4 py-2 text-left text-sm active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3 transition-colors rounded-md mx-1 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none text-gray-900
-dark:text-gray-100"
+                className="w-full px-4 py-2 text-left text-sm active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3 transition-colors rounded-md mx-1 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none text-gray-900 dark:text-gray-100"
                 role="menuitem"
                 disabled={loadingStates.saveToDrive}
                 data-testid="save-drive-btn"
@@ -1256,8 +1246,8 @@ dark:text-gray-100"
             </Dropdown>
           </div>
 
-          {/* Section Order */}
-          {onSectionOrderChange && (
+          {/* Section Order - Hidden when using new panel */}
+          {false && onSectionOrderChange && (
             <div className="relative">
               <ActionButton
                 onClick={() => toggleDropdown('sectionOrder')}

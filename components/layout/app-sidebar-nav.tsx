@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpgradeModal from '../resume/modals/upgrade-modal';
+import { useUserUsage } from '@/hooks/use-user-usage';
 import dynamic from 'next/dynamic';
 
 // Dynamic import with no SSR to fix serialization error
@@ -15,7 +16,7 @@ const CreateResumeModal = dynamic(
 const AppSidebarNav = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const [aiGenerations, setAiGenerations] = useState(9);
+  const { usage, displayUsage, loading } = useUserUsage();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -355,65 +356,47 @@ const AppSidebarNav = () => {
               );
             })}
 
-            {/* AI Generations - Updated with blue accents */}
-            {!isResumeEditorRoute && (
-              <div className="mt-6 p-3 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-xl border border-blue-600/20 dark:border-blue-500/20 backdrop-blur-sm">
-                <div className="flex items-center justify-between text-slate-900 dark:text-white">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                    <span className="text-sm font-medium">AI Generations</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text text-lg">{aiGenerations}</span>
-                    <button
-                      onClick={() => setAiGenerations(prev => prev + 1)}
-                      className="text-xl hover:bg-blue-600/20 dark:hover:bg-blue-500/20 rounded-lg p-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </nav>
 
           {/* Bottom section - Hidden in collapsed state */}
           {!isResumeEditorRoute && (
-            <div className="space-y-4 mt-4">
-              {/* Upgrade Card with blue gradient */}
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-100 to-gray-100 dark:from-navy-800 dark:to-navy-700 p-4 border border-slate-200 dark:border-navy-600">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/20 rounded-full blur-2xl" />
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <svg className="w-5 h-5 text-[#5b7cfd]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                    <h3 className="font-bold text-slate-900 dark:text-white">Get Hired Faster</h3>
+            <div className="mx-1 flex flex-col items-start gap-y-4 self-stretch rounded-xl p-4 bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10" data-test-id="free-usage-counter">
+              <div className="flex w-full flex-col gap-y-2">
+                <div className="flex w-full flex-row items-center justify-between gap-x-2 opacity-70">
+                  <div className="flex flex-row items-center gap-x-2">
+                    <div className="h-5 w-5 cursor-pointer group relative flex items-center justify-center">
+                      <i className="!flex items-center justify-center fad fa-file text-base w-5 h-5 text-slate-600 dark:text-slate-300 h-[14px] w-[14px]" aria-hidden="true"></i>
+                    </div>
+                    <span className="text-sm font-bold leading-5 text-slate-600 dark:text-slate-300">RESUMES</span>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs mb-3">Unlock premium AI features</p>
-                  <button
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md shadow-blue-500/30"
-                  >
-                    Upgrade to Pro
-                  </button>
+                  <span className="text-sm font-bold leading-5 text-slate-600 dark:text-slate-300">
+                    {loading ? '...' : `${usage.pdfGenerations} / ${usage.maxPdfGenerations === -1 ? '∞' : usage.maxPdfGenerations}`}
+                  </span>
+                </div>
+                <div className="h-[1px] w-full bg-white/30 dark:bg-white/20"></div>
+                <div className="flex w-full flex-row items-center justify-between gap-x-2">
+                  <div className="flex flex-row items-center gap-x-2">
+                    <div className="h-5 w-5 cursor-pointer group relative flex items-center justify-center">
+                      <i className="!flex items-center justify-center fad fa-sparkles text-base w-5 h-5 text-slate-600 dark:text-slate-300 h-[14px] w-[14px]" aria-hidden="true"></i>
+                    </div>
+                    <span className="text-sm font-bold leading-5 text-slate-600 dark:text-slate-300">AI GENERATIONS</span>
+                  </div>
+                  <span className="text-sm font-bold leading-5 text-slate-600 dark:text-slate-300">
+                    {loading ? '...' : `${usage.monthlyAiGenerations} / ${usage.maxAiGenerations}`}
+                  </span>
                 </div>
               </div>
-
-              {/* Community Link */}
-              <Link
-                href="/dashboard/community"
-                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm p-2 rounded-lg hover:bg-slate-100/50 dark:hover:bg-white/5"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <span>Join the Community</span>
-              </Link>
+              <div className="w-full">
+                <button 
+                  type="button" 
+                  data-busy="false" 
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full border-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white px-2 py-1 min-h-8 leading-4 rounded-md text-xs shadow-lg shadow-blue-500/30"
+                >
+                  <i className="fad fa-circle-arrow-up !flex items-center justify-center !leading-[0] flex-none text-sm w-[18px] h-[18px] mr-1" aria-hidden="true"></i>
+                  <span className="px-1">UPGRADE</span>
+                </button>
+              </div>
             </div>
           )}
 

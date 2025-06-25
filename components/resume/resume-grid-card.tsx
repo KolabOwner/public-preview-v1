@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { doc, deleteDoc, getDoc } from 'firebase/firestore';
+import { doc, deleteDoc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/lib/features/auth/firebase-config";
+import { useAuth } from '@/contexts/auth-context';
+import UpgradeModal from './modals/upgrade-modal';
+
 
 
 interface ResumeProps {
@@ -16,6 +20,8 @@ interface ResumeProps {
     isTargeted?: boolean;
     thumbnail?: string;
   };
+  isLocked?: boolean;
+  usage?: any;
   onDelete?: () => void;
   onRefresh?: () => void;
 }
@@ -80,12 +86,16 @@ interface ResumeData {
   summary?: string;
 }
 
-export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumeProps) {
+export default function ResumeGridCard({ resume, isLocked = false, usage, onDelete, onRefresh }: ResumeProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const dropdownButtonRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -196,6 +206,38 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
     fetchResumeData();
   }, [resume.id, resume.title]);
 
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownButtonRef.current && !dropdownButtonRef.current.contains(event.target as Node)) {
+        const target = event.target as Element;
+        // Don't close if clicking inside the dropdown portal
+        if (!target.closest('[data-dropdown-portal]')) {
+          setShowMenu(false);
+        }
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMenu]);
+
+  const handleMenuToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!showMenu && dropdownButtonRef.current) {
+      const rect = dropdownButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.right + window.scrollX - 200 // Align right edge
+      });
+    }
+    
+    setShowMenu(!showMenu);
+  };
+
   const formatDateRange = (startDate?: string, endDate?: string, current?: boolean) => {
     if (!startDate && !endDate) return '';
 
@@ -265,12 +307,20 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
 
   // Navigate to the resume editor
   const handleEdit = () => {
-    router.push(`/dashboard/resumes/${resume.id}/edit`);
+    if (isLocked) {
+      setShowUpgradeModal(true);
+      return;
+    }
+    router.push(`/dashboard/resumes/${resume.id}/contact`);
   };
 
   // Navigate to the resume builder/details page
   const handleCardClick = () => {
-    router.push(`/dashboard/resumes/${resume.id}`);
+    if (isLocked) {
+      setShowUpgradeModal(true);
+      return;
+    }
+    router.push(`/dashboard/resumes/${resume.id}/contact`);
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -303,9 +353,43 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
 
   const handleDuplicate = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement duplicate functionality
-    router.push(`/dashboard/resumes/${resume.id}/duplicate`);
     setShowMenu(false);
+    
+    if (!user) return;
+
+    try {
+      // Get the original resume data
+      const originalDoc = await getDoc(doc(db, 'resumes', resume.id));
+      if (!originalDoc.exists()) {
+        alert('Resume not found');
+        return;
+      }
+
+      const originalData = originalDoc.data();
+      
+      // Create new resume data with updated title and timestamps
+      const { id, ...dataWithoutId } = originalData;
+      const duplicatedData = {
+        ...dataWithoutId,
+        title: `${originalData.title} (Copy)`,
+        userId: user.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      // Add the duplicated resume to Firestore
+      const newDocRef = await addDoc(collection(db, 'resumes'), duplicatedData);
+      
+      // Refresh the page to show the new resume
+      if (onRefresh) onRefresh();
+      
+      // Optionally navigate to the new resume
+      router.push(`/dashboard/resumes/${newDocRef.id}/contact`);
+      
+    } catch (error) {
+      console.error('Error duplicating resume:', error);
+      alert('Failed to duplicate resume');
+    }
   };
 
   return (
@@ -732,141 +816,107 @@ export default function ResumeGridCard({ resume, onDelete, onRefresh }: ResumePr
             </div>
 
             {/* Menu Button or Lock Icon */}
-            {resume.isTargeted ? (
+            {isLocked ? (
+              <div 
+                className="flex h-12 w-12 items-center justify-center cursor-pointer" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUpgradeModal(true);
+                }}
+              >
+                <i className="fad fa-lock text-gray-400 dark:text-gray-300" aria-hidden="true"></i>
+              </div>
+            ) : resume.isTargeted ? (
               <div className="flex h-12 w-12 items-center justify-center">
                 <i className="fad fa-lock text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
               </div>
             ) : (
               <div className="h-12 min-w-12 relative flex cursor-pointer items-center justify-center text-xl">
-                <div className="h-6 w-6 cursor-pointer group relative flex items-center justify-center" id="icon">
+                <div 
+                  ref={dropdownButtonRef}
+                  className="h-6 w-6 cursor-pointer group relative flex items-center justify-center" 
+                  id="icon"
+                >
                   <i
                     className="!flex items-center justify-center fas fa-ellipsis-vertical text-gray-900 dark:text-gray-100 text-xl w-6 h-6"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowMenu(!showMenu);
-                    }}
+                    onClick={handleMenuToggle}
                   ></i>
                 </div>
 
-                {/* Dropdown Menu */}
-                {showMenu && (
-                  <div className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 absolute flex-col items-start py-2 shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 backdrop-blur-sm z-50 min-w-28 max-w-72 right-0 top-10">
-                    <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
+                {/* Dropdown Menu - Rendered as Portal */}
+                {showMenu && createPortal(
+                  <div 
+                    data-dropdown-portal="true"
+                    className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 fixed flex flex-col items-start py-2 shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 backdrop-blur-sm z-[9999] min-w-48"
+                    style={{
+                      top: dropdownPosition.top,
+                      left: dropdownPosition.left,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEdit();
                         setShowMenu(false);
                       }}
                     >
-                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                        <div className="flex flex-row items-start gap-2">
-                          <div>
-                            <div className="flex h-6 min-w-6 items-center justify-center">
-                              <i className="fad fa-pen-to-square text-left text-base text-gray-900 dark:text-gray-100"></i>
-                            </div>
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100">
-                              Edit
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      <i className="fad fa-pen-to-square text-base"></i>
+                      Edit
+                    </button>
 
-                    <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
+                    <button
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
-                        router.push(`/dashboard/resumes/preview/${resume.id}`);
+                        router.push(`/dashboard/resumes/${resume.id}/preview`);
                         setShowMenu(false);
                       }}
                     >
-                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                        <div className="flex flex-row items-start gap-2">
-                          <div>
-                            <div className="flex h-6 min-w-6 items-center justify-center">
-                              <i className="fad fa-eye text-left text-base text-gray-900 dark:text-gray-100"></i>
-                            </div>
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100">
-                              Preview
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      <i className="fad fa-eye text-base"></i>
+                      Preview
+                    </button>
 
-                    <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
+                    <button
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
                       onClick={handleDownload}
                     >
-                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                        <div className="flex flex-row items-start gap-2">
-                          <div>
-                            <div className="flex h-6 min-w-6 items-center justify-center">
-                              <i className="fad fa-download text-left text-base text-gray-900 dark:text-gray-100"></i>
-                            </div>
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100">
-                              Download PDF
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      <i className="fad fa-download text-base"></i>
+                      Download PDF
+                    </button>
 
-                    <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
+                    <button
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
                       onClick={handleDuplicate}
                     >
-                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                        <div className="flex flex-row items-start gap-2">
-                          <div>
-                            <div className="flex h-6 min-w-6 items-center justify-center">
-                              <i className="fad fa-copy text-left text-base text-gray-900 dark:text-gray-100"></i>
-                            </div>
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100">
-                              Duplicate
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      <i className="fad fa-copy text-base"></i>
+                      Duplicate
+                    </button>
 
                     <div className="w-full border-t border-slate-200 dark:border-navy-700 mt-2 mb-2"></div>
 
-                    <div
-                      className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer"
+                    <button
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       onClick={handleDelete}
                     >
-                      <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                        <div className="flex flex-row items-start gap-2">
-                          <div>
-                            <div className="flex h-6 min-w-6 items-center justify-center">
-                              <i className="fad fa-trash text-left text-base text-red-500"></i>
-                            </div>
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-red-500">
-                              {isDeleting ? 'Deleting...' : 'Delete'}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                      <i className="fad fa-trash text-base"></i>
+                      {isDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>,
+                  document.body
                 )}
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+      />
     </div>
   );
 }
