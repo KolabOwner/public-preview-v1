@@ -50,6 +50,7 @@ export interface UserProfile {
     resumeCount?: number;
     pdfGenerations?: number;
   };
+  showFirstTimeOverlay?: boolean;
 }
 
 class UserService {
@@ -122,6 +123,7 @@ class UserService {
           pdfGenerations: 0,
           lastResetDate: serverTimestamp() as Timestamp,
         },
+        showFirstTimeOverlay: true,
         ...additionalData,
       };
 
