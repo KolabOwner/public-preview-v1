@@ -27,6 +27,14 @@ interface AnalysisResult {
     educationMatch: number;
     formatting: number;
   };
+  extractedKeywords: Array<{
+    keyword: string;
+    frequency: number;
+    category: string;
+    importance: string;
+    variations: string[];
+    contexts: string[];
+  }>;
   matchedKeywords: Array<{
     keyword: string;
     category: string;
@@ -226,6 +234,7 @@ async function handleAnalysis(
           educationMatch: 0,
           formatting: 0
         },
+        extractedKeywords: analysisResult.extractedKeywords || [],
         matchedKeywords: (analysisResult.matchedKeywords || []).map((k: any) => ({
           keyword: k.keyword,
           category: k.category || 'general',
@@ -249,6 +258,7 @@ async function handleAnalysis(
           ...structuredResult,
           analyzed_at: new Date().toISOString()
         },
+        isTargeted: true,
         'metadata.lastModified': new Date().toISOString()
       };
 
@@ -362,22 +372,26 @@ async function handleGetStatus(
   const resumeData = validation.resumeData;
   const jobInfo = resumeData.job_info;
 
+  // Return data in format expected by JobInfoContext (analyze.ts API)
   const status = {
     resumeId: params.resumeId,
-    hasAnalysis: !!jobInfo,
-    lastAnalyzed: jobInfo?.analyzed_at || null,
-    currentJob: jobInfo ? {
+    hasJobAssociated: !!jobInfo,
+    jobInfo: jobInfo ? {
       title: jobInfo.title,
-      company: jobInfo.company,
-      atsScore: jobInfo.atsScore
+      company: jobInfo.company || '',
+      description: jobInfo.description,
+      keywords: jobInfo.extractedKeywords || [],
+      updated_at: jobInfo.analyzed_at,
+      parsedData: {
+        keywords: jobInfo.extractedKeywords || [],
+        skills: [],
+        requirements: []
+      }
     } : null,
-    metrics: jobInfo ? {
-      atsScore: jobInfo.atsScore,
-      matchedKeywords: jobInfo.matchedKeywords?.length || 0,
-      missingKeywords: jobInfo.missingKeywords?.length || 0,
-      totalKeywords: (jobInfo.matchedKeywords?.length || 0) + (jobInfo.missingKeywords?.length || 0)
-    } : null,
-    breakdown: jobInfo?.breakdown || null
+    keywordCount: jobInfo?.extractedKeywords?.length || 0,
+    atsScore: jobInfo?.atsScore,
+    lastAnalyzed: jobInfo?.analyzed_at || null,
+    recommendations: 0
   };
 
   return createResponse(status, true, undefined, Date.now() - startTime);
@@ -453,6 +467,7 @@ async function handleClearAnalysis(
     const resumeRef = doc(db, 'resumes', params.resumeId);
     await updateDoc(resumeRef, {
       job_info: null,
+      isTargeted: false,
       'metadata.lastModified': new Date().toISOString()
     });
 

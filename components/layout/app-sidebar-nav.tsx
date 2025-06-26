@@ -358,8 +358,8 @@ const AppSidebarNav = () => {
 
           </nav>
 
-          {/* Bottom section - Hidden in collapsed state */}
-          {!isResumeEditorRoute && (
+          {/* Bottom section - Hidden in collapsed state and for Pro/Enterprise users */}
+          {!isResumeEditorRoute && usage.maxPdfGenerations !== -1 && (
             <div className="mx-1 flex flex-col items-start gap-y-4 self-stretch rounded-xl p-4 bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10" data-test-id="free-usage-counter">
               <div className="flex w-full flex-col gap-y-2">
                 <div className="flex w-full flex-row items-center justify-between gap-x-2 opacity-70">

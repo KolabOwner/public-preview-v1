@@ -171,10 +171,10 @@ export class AnalyzeAPI {
     // In server-side contexts, we need a full URL
     if (typeof window === 'undefined') {
       // Server-side: use localhost for internal calls
-      return 'http://localhost:3000/api/resume-endpoints/analyze-enterprise';
+      return 'http://localhost:3000/api/resume-endpoints/analyze-for-keywords';
     }
     // Client-side: use relative URL
-    return '/api/resume-endpoints/analyze-enterprise';
+    return '/api/resume-endpoints/analyze-for-keywords';
   }
 
   /**

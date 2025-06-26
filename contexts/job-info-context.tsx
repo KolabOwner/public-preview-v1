@@ -138,11 +138,12 @@ const JobInfoContext = createContext<JobInfoContextType>({
 interface JobInfoProviderProps {
   children: ReactNode;
   userId?: string;
+  resumeId?: string;
 }
 
-export const JobInfoProvider: React.FC<JobInfoProviderProps> = ({ children, userId }) => {
+export const JobInfoProvider: React.FC<JobInfoProviderProps> = ({ children, userId, resumeId }) => {
   const [jobInfoByResume, setJobInfoByResume] = useState<Record<string, EnterpriseJobInfo>>({});
-  const [currentResumeId, setCurrentResumeIdState] = useState<string | null>(null);
+  const [currentResumeId, setCurrentResumeIdState] = useState<string | null>(resumeId || null);
   const [isEnterpriseMode, setIsEnterpriseMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -463,6 +464,13 @@ export const JobInfoProvider: React.FC<JobInfoProviderProps> = ({ children, user
       await timer();
     }
   }, [currentResumeId, userId, jobInfo.enterpriseMetadata, updateJobInfo]);
+
+  // Update currentResumeId when prop changes
+  useEffect(() => {
+    if (resumeId && resumeId !== currentResumeId) {
+      setCurrentResumeId(resumeId);
+    }
+  }, [resumeId, currentResumeId, setCurrentResumeId]);
 
   // Auto-load job info when resumeId changes
   useEffect(() => {

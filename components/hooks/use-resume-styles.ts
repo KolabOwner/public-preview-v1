@@ -55,7 +55,7 @@ interface UseResumeStylesReturn {
 }
 
 const DEFAULT_SETTINGS: DocumentSettings = {
-  zoom: 100,
+  zoom: 120,
   fontFamily: 'Merriweather',
   primaryColor: '#000000',
   textColor: '#000000',
@@ -63,6 +63,12 @@ const DEFAULT_SETTINGS: DocumentSettings = {
   lineHeight: 1.2,
   sectionSpacing: 0.75,
   paperSize: 'Letter',
+  margins: {
+    top: 0.75,
+    right: 0.75,
+    bottom: 0.75,
+    left: 0.75,
+  },
   showIcons: false,
   showDividers: true,
   useIndent: false,
@@ -97,11 +103,18 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
   }, [persistSettings, storageKey]);
 
   // Initialize settings with persisted values, defaults, and initial overrides
-  const [documentSettings, setDocumentSettings] = useState<DocumentSettings>(() => ({
-    ...DEFAULT_SETTINGS,
-    ...loadPersistedSettings(),
-    ...initialSettings,
-  }));
+  const [documentSettings, setDocumentSettings] = useState<DocumentSettings>(() => {
+    const persisted = loadPersistedSettings();
+    // If no persisted zoom setting, use the new default of 120
+    if (!persisted.zoom) {
+      persisted.zoom = 120;
+    }
+    return {
+      ...DEFAULT_SETTINGS,
+      ...persisted,
+      ...initialSettings,
+    };
+  });
 
   const [currentTemplate, setCurrentTemplate] = useState(initialTemplate);
 

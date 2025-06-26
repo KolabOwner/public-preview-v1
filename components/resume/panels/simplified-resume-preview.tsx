@@ -4,11 +4,12 @@ import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { AlertCircle } from "lucide-react";
 import { useToast } from "@/components/hooks/use-toast";
 import { useAuth } from '@/contexts/auth-context';
-import { useSimpleJob } from '@/contexts/simple-job-context';
+import { useJobInfo } from '@/contexts/job-info-context';
 import ResumeHeaderBar, { ResumeHeaderBarRef } from '@/components/layout/resume-header-bar';
-import SimpleJobPanel from '@/components/resume/panels/simple-job-panel';
-import SimpleKeywordsPanel from '@/components/resume/panels/simple-keywords-panel';
+import JobInfoPanel from '@/components/resume/panels/job-info-panel';
+import KeywordTargetingPanel from '@/components/resume/panels/keyword-targeting-panel';
 import SharePanel from "@/components/resume/panels/share-panel";
+import { JobInfoProvider } from '@/contexts/job-info-context';
 import { getDefaultSectionOrder, getSectionTitle, sectionHasContent } from '../sections/resume-sections';
 import { InlineDraggableSection, InlineDraggableSectionsContainer } from '../sections/inline-draggable-section';
 import { useResumeFont, useResumeStyles, useResumeTheme } from '@/components/hooks/use-resume-styles';
@@ -67,13 +68,10 @@ export default function SimplifiedResumePreview({
 }: SimplifiedResumePreviewProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { setCurrentResumeId, checkJobInfo, jobInfo, isLoading: jobLoading } = useSimpleJob();
   const headerBarRef = useRef<ResumeHeaderBarRef>(null);
 
   // State
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [hasJobInfo, setHasJobInfo] = useState<boolean>(false);
-  const [isCheckingJob, setIsCheckingJob] = useState(true);
   const [sectionOrder, setSectionOrder] = useState<string[]>(() =>
     getDefaultSectionOrder(initialTemplate)
   );
@@ -99,33 +97,6 @@ export default function SimplifiedResumePreview({
 
   // Get theme colors based on dark mode
   const theme = useResumeTheme(isDarkMode);
-
-  // Initialize job context and check for existing job info
-  useEffect(() => {
-    const initializeJobContext = async () => {
-      if (!resumeId || !user?.uid || !showJobPanels) {
-        setIsCheckingJob(false);
-        setHasJobInfo(false);
-        return;
-      }
-
-      try {
-        // Set the current resume ID in context
-        setCurrentResumeId(resumeId);
-        
-        // Check if job info exists
-        const status = await checkJobInfo(resumeId);
-        setHasJobInfo(status.hasJobInfo);
-      } catch (error) {
-        console.error('[SimplifiedResumePreview] Error checking job info:', error);
-        setHasJobInfo(false);
-      } finally {
-        setIsCheckingJob(false);
-      }
-    };
-
-    initializeJobContext();
-  }, [resumeId, user?.uid, showJobPanels, setCurrentResumeId, checkJobInfo]);
 
   // Check for dark mode
   useEffect(() => {
@@ -157,11 +128,12 @@ export default function SimplifiedResumePreview({
 
   // Handlers
   const handleJobComplete = useCallback(() => {
-    setHasJobInfo(true);
+    // Job panel will trigger a reload of job info
+    window.location.reload();
   }, []);
 
   const handleJobUpdate = useCallback(() => {
-    setHasJobInfo(false);
+    // Keyword panel update button clicked
   }, []);
 
   const handleDownloadPDF = async () => {
@@ -728,7 +700,7 @@ export default function SimplifiedResumePreview({
 
       <ResumeHeaderBar
         ref={headerBarRef}
-        resumeScore={jobInfo?.atsScore || 90}
+        resumeScore={90}
         documentSettings={documentSettings}
         onDocumentSettingChange={updateSetting}
         onDownloadPDF={handleDownloadPDF}
@@ -769,13 +741,15 @@ export default function SimplifiedResumePreview({
     </div>
   );
 
-  // Render job panel
-  const renderJobPanel = () => {
+  // Render job panel wrapped in its own JobInfoContext check
+  const JobPanelWrapper = () => {
+    const { jobInfo, isLoading } = useJobInfo();
+    
     if (!showJobPanels || !user?.uid) {
       return null;
     }
 
-    if (isCheckingJob || jobLoading) {
+    if (isLoading) {
       return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
           <div className="animate-pulse">
@@ -786,17 +760,18 @@ export default function SimplifiedResumePreview({
       );
     }
 
-    if (hasJobInfo) {
+    // Check if job info exists
+    if (jobInfo && jobInfo.title) {
       return (
-        <SimpleKeywordsPanel
-          onUpdate={handleJobUpdate}
+        <KeywordTargetingPanel
+          onJobUpdate={handleJobUpdate}
           className="shadow-lg"
         />
       );
     }
 
     return (
-      <SimpleJobPanel
+      <JobInfoPanel
         onComplete={handleJobComplete}
         className="shadow-lg"
       />
@@ -806,22 +781,24 @@ export default function SimplifiedResumePreview({
   // Layout with or without job panels
   if (showJobPanels && user?.uid) {
     return (
-      <div className={`w-full ${className}`}>
-        <div className="flex gap-4">
-          <div className="w-[1034px] flex-shrink-0">
-            {resumePreviewContent}
-          </div>
-          <div className="w-72 flex-shrink-0">
-            <div className="space-y-6">
-              {renderJobPanel()}
-              <SharePanel
-                resumeId={resumeId}
-                className="shadow-lg"
-              />
+      <JobInfoProvider resumeId={resumeId} userId={user?.uid}>
+        <div className={`w-full ${className}`}>
+          <div className="flex gap-4">
+            <div className="w-[1034px] flex-shrink-0">
+              {resumePreviewContent}
+            </div>
+            <div className="w-72 flex-shrink-0">
+              <div className="space-y-6">
+                <JobPanelWrapper />
+                <SharePanel
+                  resumeId={resumeId}
+                  className="shadow-lg"
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </JobInfoProvider>
     );
   }
 

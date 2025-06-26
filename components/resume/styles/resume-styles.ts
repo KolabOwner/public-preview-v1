@@ -127,7 +127,7 @@ export function generateResumeStyles(
       bulletGap: settings.sectionSpacing * 0.25,
       headerMarginTop: settings.sectionSpacing * 0.5,
       headerMarginBottom: settings.sectionSpacing * 0.3,
-      documentPadding: '0.75in',
+      documentPadding: `${settings.margins.top}in ${settings.margins.right}in ${settings.margins.bottom}in ${settings.margins.left}in`,
     },
     colors: {
       text: settings.textColor,

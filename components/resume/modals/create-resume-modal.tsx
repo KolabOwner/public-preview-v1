@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -45,7 +45,49 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
   const { usage, loading: usageLoading, incrementPdfDownload, canDownloadPdf } = useUserUsage();
 
   // Create onClose function from the prop
-  const onClose = () => onOpenChange(false);
+  const onClose = () => {
+    // Reset all state when closing
+    setTitle('');
+    setExperience('');
+    setShowExperienceDropdown(false);
+    setShowImportDropdown(false);
+    setIsTargeted(false);
+    setFile(null);
+    setIsUploading(false);
+    setError('');
+    setIsDragging(false);
+    setResumeId(null);
+    setProcessingResult(null);
+    setJobTitle('');
+    setJobDescription('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    onOpenChange(false);
+  };
+
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset all state when modal is closed
+      setTitle('');
+      setExperience('');
+      setShowExperienceDropdown(false);
+      setShowImportDropdown(false);
+      setIsTargeted(false);
+      setFile(null);
+      setIsUploading(false);
+      setError('');
+      setIsDragging(false);
+      setResumeId(null);
+      setProcessingResult(null);
+      setJobTitle('');
+      setJobDescription('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [isOpen]);
 
   // Early return if modal is not open
   if (!isOpen) return null;

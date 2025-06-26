@@ -1,6 +1,6 @@
 // src/components/resume/panels/KeywordTargetingPanel.tsx
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
-import { Check, RefreshCw, AlertCircle, Loader, Target, TrendingUp, AlertTriangle, Sparkles } from 'lucide-react';
+import { X, Lock, Circle, RefreshCw, Loader, Target, AlertCircle } from 'lucide-react';
 import { useJobInfo } from "@/contexts/job-info-context";
 import { useAuth } from '@/contexts/auth-context';
 import { logger } from '@/lib/enterprise/monitoring/logging';
@@ -12,161 +12,64 @@ export interface KeywordTargetingPanelProps {
   onRecommendationApply?: (recommendation: any) => void;
 }
 
-// KeywordItem component with memoization
+// KeywordItem component for the new design
 interface KeywordItemProps {
   keyword: string;
   isMatching: boolean;
-  frequency?: number;
-  importance?: 'critical' | 'high' | 'medium' | 'low';
-  category?: string;
+  isPro?: boolean;
+  onRemove?: () => void;
 }
 
-const KeywordItem = memo<KeywordItemProps>(({ keyword, isMatching, frequency, importance, category }) => {
-  const importanceColors = {
-    critical: 'text-red-600 dark:text-red-400',
-    high: 'text-orange-600 dark:text-orange-400',
-    medium: 'text-yellow-600 dark:text-yellow-400',
-    low: 'text-gray-600 dark:text-gray-400'
-  };
+const KeywordItem = memo<KeywordItemProps>(({ keyword, isMatching, isPro = false, onRemove }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  if (isPro) {
+    return (
+      <div className="flex justify-between items-center px-6 py-1 group hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+        <span className="flex items-center gap-2">
+          <span className="leading-6 font-semibold capitalize text-gray-300 dark:text-gray-500 bg-gray-300 dark:bg-gray-600 px-2 rounded blur-sm select-none">
+            hidden keyword
+          </span>
+          <b className="text-sm">PRO</b>
+        </span>
+        <span className="flex">
+          <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-      <div className="flex-1">
-        <span className="font-medium capitalize text-gray-900 dark:text-gray-100">
-          {keyword}
-        </span>
-        <div className="flex items-center gap-3 mt-1 text-xs">
-          {category && (
-            <span className="text-gray-500 dark:text-gray-400">{category}</span>
-          )}
-          {frequency && frequency > 1 && (
-            <span className="text-gray-500 dark:text-gray-400">×{frequency}</span>
-          )}
-          {importance && !isMatching && (
-            <span className={importanceColors[importance]}>{importance}</span>
-          )}
-        </div>
-      </div>
-      {isMatching ? (
-        <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-          <Check className="w-3 h-3 text-white" />
-        </div>
-      ) : (
-        importance === 'critical' && (
-          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-        )
-      )}
+    <div 
+      className="flex justify-between items-center px-6 py-1 group hover:bg-gray-50 dark:hover:bg-gray-700"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <span className="leading-6 font-semibold capitalize text-gray-900 dark:text-gray-100">
+        {keyword}
+      </span>
+      <span className="flex h-full justify-center items-center gap-2">
+        {onRemove && (
+          <X 
+            className={`w-4 h-4 text-gray-600 dark:text-gray-400 mr-2 cursor-pointer transition-opacity ${
+              isHovered ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={onRemove}
+          />
+        )}
+        <Circle 
+          className={`w-2 h-2 ${
+            isMatching 
+              ? 'text-green-500 fill-green-500' 
+              : 'text-gray-300 dark:text-gray-600 opacity-40'
+          }`} 
+        />
+      </span>
     </div>
   );
 });
 
 KeywordItem.displayName = 'KeywordItem';
-
-// ATS Score Display component
-interface ATSScoreProps {
-  score: number;
-  breakdown?: {
-    keywordMatch: number;
-    skillsAlignment: number;
-    experienceRelevance: number;
-    educationMatch: number;
-    formatting: number;
-  };
-}
-
-const ATSScoreDisplay = memo<ATSScoreProps>(({ score, breakdown }) => {
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-blue-500';
-    if (score >= 40) return 'text-yellow-500';
-    return 'text-red-500';
-  };
-
-  const getScoreGrade = (score: number) => {
-    if (score >= 90) return 'A+';
-    if (score >= 80) return 'A';
-    if (score >= 70) return 'B';
-    if (score >= 60) return 'C';
-    if (score >= 50) return 'D';
-    return 'F';
-  };
-
-  const getScoreMessage = (score: number) => {
-    if (score >= 80) return 'Excellent match! Your resume is well-optimized.';
-    if (score >= 60) return 'Good match. Some improvements recommended.';
-    if (score >= 40) return 'Fair match. Consider adding missing keywords.';
-    return 'Poor match. Significant improvements needed.';
-  };
-
-  return (
-    <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          ATS Compatibility Score
-        </h3>
-        <div className="flex items-center gap-3">
-          <span className={`text-3xl font-bold ${getScoreColor(score)}`}>
-            {score}%
-          </span>
-          <span className={`text-xl font-bold ${getScoreColor(score)}`}>
-            {getScoreGrade(score)}
-          </span>
-        </div>
-      </div>
-
-      <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
-        <div
-          className={`h-3 rounded-full transition-all duration-500 ${
-            score >= 80 ? 'bg-green-500' :
-            score >= 60 ? 'bg-blue-500' :
-            score >= 40 ? 'bg-yellow-500' :
-            'bg-red-500'
-          }`}
-          style={{ width: `${score}%` }}
-        />
-      </div>
-
-      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-        {getScoreMessage(score)}
-      </p>
-
-      {breakdown && (
-        <div className="space-y-2 pt-3 border-t border-gray-200 dark:border-gray-600">
-          <div className="text-xs space-y-1">
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Keyword Match</span>
-              <span className="font-medium">{breakdown.keywordMatch}%</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Skills Alignment</span>
-              <span className="font-medium">{breakdown.skillsAlignment}%</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Experience Relevance</span>
-              <span className="font-medium">{breakdown.experienceRelevance}%</span>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-});
-
-ATSScoreDisplay.displayName = 'ATSScoreDisplay';
-
-// Recommendation card component
-interface RecommendationCardProps {
-  recommendation: {
-    type: string;
-    priority: string;
-    section: string;
-    suggestedText: string;
-    reason: string;
-    keywords: string[];
-    impact: number;
-  };
-  onApply?: () => void;
-}
 
 // Loading state component
 const LoadingState = memo<{ message?: string }>(({ message = "Analyzing keywords..." }) => {
@@ -236,74 +139,52 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
     error: contextError
   } = useJobInfo();
   const { user } = useAuth();
-  const [showAllMissing, setShowAllMissing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [lastAnalyzedAt, setLastAnalyzedAt] = useState<Date | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   // Extract keywords and analysis data from jobInfo
-  const { matchedKeywords, missingKeywords } = useMemo(() => {
-    // If we have ATS analysis data, use it
-    if (jobInfo.matchedKeywords && jobInfo.missingKeywords) {
-      return {
-        matchedKeywords: jobInfo.matchedKeywords.map(kw => ({
-          keyword: kw.keyword,
-          isMatching: true,
-          frequency: kw.resumeFrequency,
-          category: kw.category,
-          relevanceScore: kw.relevanceScore
-        })),
-        missingKeywords: jobInfo.missingKeywords.map(kw => ({
-          keyword: kw.keyword,
-          isMatching: false,
-          importance: kw.importance,
-          category: kw.category,
-          suggestions: kw.suggestions
-        }))
-      };
-    }
-
-    // Otherwise, extract from jobInfo.extractedKeywords
-    if (!jobInfo.extractedKeywords || jobInfo.extractedKeywords.length === 0) {
-      return { matchedKeywords: [], missingKeywords: [] };
+  const { allKeywords, matchedCount, missingCount } = useMemo(() => {
+    // Get extractedKeywords or fall back to empty array
+    const extractedKeywords = jobInfo.extractedKeywords || [];
+    
+    if (extractedKeywords.length === 0) {
+      return { allKeywords: [], matchedCount: 0, missingCount: 0 };
     }
 
     // Create a map of resume keywords for quick lookup
+    // Handle both string array and single string formats
+    let keywordsArray: string[] = [];
+    if (Array.isArray(jobInfo.keywords)) {
+      keywordsArray = jobInfo.keywords.map(k => 
+        typeof k === 'string' ? k : (k.keyword || '')
+      );
+    } else if (typeof jobInfo.keywords === 'string' && jobInfo.keywords) {
+      // If it's a comma-separated string
+      keywordsArray = jobInfo.keywords.split(',').map(k => k.trim());
+    }
+    
     const resumeKeywordSet = new Set(
-      jobInfo.keywords.map(k => k.toLowerCase())
+      keywordsArray.map(k => k.toLowerCase()).filter(k => k.length > 0)
     );
 
-    const matched: any[] = [];
-    const missing: any[] = [];
-
-    // Process extracted keywords from the job
-    jobInfo.extractedKeywords.forEach(kw => {
+    // Process all extracted keywords
+    const processedKeywords = extractedKeywords.map(kw => {
       const keywordLower = kw.keyword.toLowerCase();
       
-      // Check if keyword exists in resume
+      // Check if keyword exists in resume (including variations)
       const isMatched = resumeKeywordSet.has(keywordLower) || 
-        kw.variations.some(v => resumeKeywordSet.has(v.toLowerCase()));
+        (kw.variations || []).some(v => resumeKeywordSet.has(v.toLowerCase()));
 
-      if (isMatched) {
-        matched.push({
-          keyword: kw.keyword,
-          isMatching: true,
-          frequency: kw.frequency,
-          category: kw.category,
-          importance: kw.importance
-        });
-      } else {
-        missing.push({
-          keyword: kw.keyword,
-          isMatching: false,
-          frequency: kw.frequency,
-          importance: kw.importance,
-          category: kw.category,
-          variations: kw.variations
-        });
-      }
+      return {
+        keyword: kw.keyword,
+        isMatching: isMatched,
+        frequency: kw.frequency,
+        importance: kw.importance,
+        category: kw.category
+      };
     });
 
-    // Sort by importance
+    // Sort by matching status first, then by importance
     const importanceOrder = {
       'critical': 0,
       'required': 1,
@@ -314,26 +195,43 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
       'low': 6
     };
 
-    matched.sort((a, b) => {
+    processedKeywords.sort((a, b) => {
+      // Missing keywords first
+      if (a.isMatching !== b.isMatching) {
+        return a.isMatching ? 1 : -1;
+      }
+      // Then by importance
       const aImportance = importanceOrder[a.importance] || 999;
       const bImportance = importanceOrder[b.importance] || 999;
       return aImportance - bImportance;
     });
 
-    missing.sort((a, b) => {
-      const aImportance = importanceOrder[a.importance] || 999;
-      const bImportance = importanceOrder[b.importance] || 999;
-      return aImportance - bImportance;
-    });
+    const matchedCount = processedKeywords.filter(k => k.isMatching).length;
+    const missingCount = processedKeywords.filter(k => !k.isMatching).length;
 
-    return { matchedKeywords: matched, missingKeywords: missing };
-  }, [jobInfo.extractedKeywords, jobInfo.keywords, jobInfo.matchedKeywords, jobInfo.missingKeywords]);
+    return { 
+      allKeywords: processedKeywords, 
+      matchedCount, 
+      missingCount 
+    };
+  }, [jobInfo.extractedKeywords, jobInfo.keywords]);
 
-  const displayedMissingKeywords = useMemo(() => {
-    return showAllMissing
-      ? missingKeywords
-      : missingKeywords.slice(0, 10);
-  }, [missingKeywords, showAllMissing]);
+  // Determine how many keywords to display
+  const displayedKeywords = useMemo(() => {
+    if (showAll) return allKeywords;
+    
+    // Show first 5 missing keywords and some matching ones
+    const missingKeywords = allKeywords.filter(k => !k.isMatching).slice(0, 5);
+    const matchingKeywords = allKeywords.filter(k => k.isMatching).slice(0, 3);
+    
+    return [...missingKeywords, ...matchingKeywords];
+  }, [allKeywords, showAll]);
+
+  // Calculate how many pro keywords to show (for non-pro users)
+  const proKeywordsCount = useMemo(() => {
+    if (showAll) return 0;
+    return Math.max(0, Math.min(5, allKeywords.length - displayedKeywords.length));
+  }, [allKeywords, displayedKeywords, showAll]);
 
   // Perform ATS analysis
   const performAnalysis = useCallback(async () => {
@@ -346,38 +244,25 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
     setIsAnalyzing(true);
 
     try {
-      logger.info('Performing ATS analysis', { resumeId: currentResumeId });
+      logger.info('Performing keyword analysis', { resumeId: currentResumeId });
 
-      const result = await analyzeATS({
-        includeRecommendations: true,
+      await analyzeATS({
+        includeRecommendations: false,
         targetScore: 80
       });
 
-      setLastAnalyzedAt(new Date());
-
-      logger.info('ATS analysis completed', {
-        score: result.score,
-        recommendationCount: result.recommendations.length
-      });
+      logger.info('Keyword analysis completed');
 
     } catch (error) {
-      logger.error('ATS analysis failed', { error });
+      logger.error('Keyword analysis failed', { error });
     } finally {
       setIsAnalyzing(false);
       await timer();
     }
   }, [currentResumeId, user?.uid, jobInfo.title, analyzeATS]);
 
-  // Auto-analyze when job info is loaded
-  useEffect(() => {
-    if (jobInfo.title && jobInfo.extractedKeywords && !jobInfo.atsScore && !isAnalyzing) {
-      performAnalysis();
-    }
-  }, [jobInfo.title, jobInfo.extractedKeywords, jobInfo.atsScore, isAnalyzing, performAnalysis]);
-
   const handleJobUpdate = useCallback(() => {
     onJobUpdate?.();
-    setLastAnalyzedAt(null);
   }, [onJobUpdate]);
 
   const handleRefresh = useCallback(async () => {
@@ -385,7 +270,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   }, [performAnalysis]);
 
   const containerClasses = useMemo(() =>
-    `bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-200 ${className}`.trim(),
+    `bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 ${className}`.trim(),
     [className]
   );
 
@@ -393,13 +278,9 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   if (!jobInfo?.title || !jobInfo?.description) {
     return (
       <div className={containerClasses}>
-        <div className="flex items-center gap-2 mb-6">
-          <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            AI Keyword Targeting
-          </h2>
+        <div className="p-6">
+          <EmptyState onAddJob={handleJobUpdate} />
         </div>
-        <EmptyState onAddJob={handleJobUpdate} />
       </div>
     );
   }
@@ -407,13 +288,9 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   if (isLoading || isAnalyzing) {
     return (
       <div className={containerClasses}>
-        <div className="flex items-center gap-2 mb-6">
-          <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            AI Keyword Targeting
-          </h2>
+        <div className="p-6">
+          <LoadingState message={isAnalyzing ? "Analyzing keywords..." : "Loading keyword data..."} />
         </div>
-        <LoadingState message={isAnalyzing ? "Performing ATS analysis..." : "Loading keyword data..."} />
       </div>
     );
   }
@@ -421,16 +298,12 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   if (contextError && !jobInfo.extractedKeywords) {
     return (
       <div className={containerClasses}>
-        <div className="flex items-center gap-2 mb-6">
-          <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            AI Keyword Targeting
-          </h2>
+        <div className="p-6">
+          <ErrorState
+            onRetry={handleRefresh}
+            errorMessage={contextError || "Failed to analyze keywords"}
+          />
         </div>
-        <ErrorState
-          onRetry={handleRefresh}
-          errorMessage={contextError || "Failed to analyze keywords"}
-        />
       </div>
     );
   }
@@ -438,120 +311,54 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   // Main content
   return (
     <div className={containerClasses}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {isEnterpriseMode ? 'Enterprise AI Keyword Targeting' : 'AI Keyword Targeting'}
-          </h2>
-          {isEnterpriseMode && (
-            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
-              Enterprise
-            </span>
-          )}
+      {/* Header text */}
+      {missingCount > 0 && (
+        <div className="px-6 py-4 text-sm leading-5 text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+          Want to improve your chances of getting this role? Consider adding the following keywords to your resume:
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={isAnalyzing}
-          className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-          title="Refresh analysis"
-        >
-          <RefreshCw className={`w-4 h-4 ${isAnalyzing ? 'animate-spin' : ''}`} />
-        </button>
+      )}
+
+      {/* Keywords list */}
+      <div className="divide-y divide-gray-100 dark:divide-gray-700">
+        {displayedKeywords.map((keyword, index) => (
+          <KeywordItem
+            key={`keyword-${index}`}
+            keyword={keyword.keyword}
+            isMatching={keyword.isMatching}
+          />
+        ))}
+        
+        {/* Pro keywords (blurred) */}
+        {proKeywordsCount > 0 && Array.from({ length: proKeywordsCount }).map((_, index) => (
+          <KeywordItem
+            key={`pro-${index}`}
+            keyword=""
+            isMatching={false}
+            isPro={true}
+          />
+        ))}
       </div>
 
-      <div className="space-y-6">
-        {/* ATS Score Display */}
-        {jobInfo.atsScore !== undefined && (
-          <ATSScoreDisplay
-            score={jobInfo.atsScore}
-            breakdown={jobInfo.enterpriseMetadata?.lastAnalyzed ? {
-              keywordMatch: 68,
-              skillsAlignment: 75,
-              experienceRelevance: 82,
-              educationMatch: 90,
-              formatting: 95
-            } : undefined}
-          />
-        )}
-
-        {/* Matched Keywords */}
-        {matchedKeywords.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-4 h-4 text-green-500" />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Keywords you're ranking for ({matchedKeywords.length})
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              {matchedKeywords.map((keyword, index) => (
-                <KeywordItem
-                  key={`matching-${index}`}
-                  keyword={keyword.keyword}
-                  isMatching={true}
-                  category={keyword.category}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Missing Keywords */}
-        {missingKeywords.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <AlertCircle className="w-4 h-4 text-yellow-500" />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Keywords to consider adding ({missingKeywords.length})
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              {displayedMissingKeywords.map((keyword, index) => (
-                <KeywordItem
-                  key={`missing-${index}`}
-                  keyword={keyword.keyword}
-                  isMatching={false}
-                  frequency={keyword.frequency}
-                  importance={keyword.importance}
-                  category={keyword.category}
-                />
-              ))}
-            </div>
-
-            {/* Show All Toggle */}
-            {missingKeywords.length > 10 && (
-              <button
-                onClick={() => setShowAllMissing(!showAllMissing)}
-                className="mt-4 text-sm font-medium transition-colors text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-              >
-                {showAllMissing
-                  ? 'Show less'
-                  : `See all (${missingKeywords.length})`
-                }
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="pt-4 space-y-3">
+      {/* Show more/less button */}
+      {allKeywords.length > 8 && (
+        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700">
           <button
-            onClick={handleJobUpdate}
-            className="w-full py-3 px-4 border-2 rounded-lg font-bold uppercase text-sm transition-colors border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            onClick={() => setShowAll(!showAll)}
+            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
           >
-            Update Job Description
+            {showAll ? 'Show less' : `Show all ${allKeywords.length} keywords`}
           </button>
-
-          {lastAnalyzedAt && (
-            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-              Last analyzed: {new Date(lastAnalyzedAt).toLocaleTimeString()}
-            </p>
-          )}
         </div>
+      )}
+
+      {/* Update job description button */}
+      <div className="px-6 pb-6 pt-4">
+        <button
+          onClick={handleJobUpdate}
+          className="w-full relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition duration-200 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 px-3 py-2.5 h-10 leading-5 rounded-md text-sm"
+        >
+          Update job description
+        </button>
       </div>
     </div>
   );

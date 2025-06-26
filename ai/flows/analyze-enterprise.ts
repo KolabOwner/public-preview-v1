@@ -115,12 +115,19 @@ Position: {{jobTitle}}
 **Analysis Instructions:**
 
 1. **Keyword Extraction & Analysis:**
-   - Extract ALL important keywords from the job description including:
-     * Technical skills and tools
-     * Soft skills and competencies  
-     * Qualifications and certifications
-     * Industry-specific terms
-     * Experience requirements
+   - **CRITICAL REQUIREMENT: Extract AT LEAST 25-40 keywords from the job description**
+   - Be comprehensive and thorough - include ALL relevant terms:
+     * Technical skills and tools (e.g., Python, SQL, AWS, Docker, Git, APIs, REST, GraphQL)
+     * Soft skills and competencies (e.g., leadership, communication, problem-solving, teamwork)
+     * Qualifications and certifications (e.g., Bachelor's degree, MBA, PMP, AWS Certified)
+     * Industry-specific terms and domain knowledge (e.g., SaaS, B2B, fintech, healthcare)
+     * Experience requirements (e.g., "5+ years", "senior level", "team management")
+     * Action verbs and responsibilities (e.g., "develop", "implement", "optimize", "lead")
+     * Methodologies and frameworks (e.g., Agile, Scrum, DevOps, CI/CD, SDLC)
+     * Business concepts (e.g., ROI, KPIs, stakeholder management, strategic planning)
+   - Include both single-word and multi-word phrases as keywords
+   - Extract variations, abbreviations, and related terms (e.g., "JavaScript" → also include "JS", "Node.js")
+   - Don't filter out keywords - include all relevant terms regardless of perceived importance
    - Categorize each keyword by type and importance level
    - Identify variations and synonyms that should be recognized
 
@@ -156,11 +163,14 @@ Position: {{jobTitle}}
    - Provide overall fit assessment
 
 **Output Requirements:**
+- **MANDATORY: The extractedKeywords array MUST contain at least 25-40 keywords**
+- If the job description is brief, still extract compound phrases, related terms, and implied skills
 - Be specific and actionable in all recommendations
 - Use exact keywords from the job description
 - Provide realistic improvement estimates
 - Focus on changes that maintain authenticity
 - Consider ATS parsing limitations and best practices
+- Ensure comprehensive keyword coverage across all categories
 
 Return a comprehensive JSON analysis following the specified schema.`,
 });

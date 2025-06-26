@@ -39,6 +39,12 @@ readonly fontSize: number;
 readonly lineHeight: number;
 readonly sectionSpacing: number;
 readonly paperSize: string;
+readonly margins: {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+};
 readonly showIcons: boolean;
 readonly showDividers: boolean;
 readonly useIndent: boolean;
@@ -78,6 +84,7 @@ type DropdownId =
 | 'lineHeight'
 | 'sectionSpacing'
 | 'paperSize'
+| 'margins'
 | 'zoom'
 | 'textColor'
 | 'accentColor'
@@ -124,11 +131,18 @@ const PAPER_SIZE_OPTIONS = [
 const LINE_HEIGHT_OPTIONS = [1, 1.15, 1.2, 1.5, 1.8, 2] as const;
 const SECTION_SPACING_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 
+const MARGIN_OPTIONS = [
+  { value: 0.5, label: 'Narrow', description: '0.5 inch' },
+  { value: 0.75, label: 'Normal', description: '0.75 inch' },
+  { value: 1, label: 'Wide', description: '1 inch' },
+  { value: 1.25, label: 'Extra Wide', description: '1.25 inch' }
+] as const;
+
 const ZOOM_CONFIG = {
 MIN: 50,
 MAX: 200,
 STEP: 5,
-DEFAULT: 100
+DEFAULT: 120
 } as const;
 
 const FONT_SIZE_CONFIG = {
@@ -369,6 +383,7 @@ onClose: () => void;
 children: React.ReactNode;
 className?: string;
 position?: 'left' | 'right' | 'center';
+buttonRef?: React.RefObject<HTMLElement>;
 }
 
 const Dropdown = memo<DropdownProps>(({
@@ -376,15 +391,10 @@ isOpen,
 onClose,
 children,
 className = '',
-position = 'left'
+position = 'left',
+buttonRef
 }) => {
 const dropdownRef = useRef<HTMLDivElement>(null);
-
-const positionClasses = useMemo(() => ({
-  left: 'left-0',
-  right: 'right-0',
-  center: 'left-1/2 -translate-x-1/2'
-}), []);
 
 useEffect(() => {
   if (isOpen && dropdownRef.current) {
@@ -396,12 +406,42 @@ useEffect(() => {
   }
 }, [isOpen]);
 
+useEffect(() => {
+  if (isOpen) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          buttonRef?.current && !buttonRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+    
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }
+}, [isOpen, onClose, buttonRef]);
+
 if (!isOpen) return null;
+
+const positionClasses = {
+  left: 'left-0',
+  right: 'right-0',
+  center: 'left-1/2 -translate-x-1/2'
+};
 
 return (
   <div
     ref={dropdownRef}
-    className={`absolute top-full mt-2 bg-white/95 dark:bg-gray-800 backdrop-blur-sm border border-slate-200 dark:border-gray-600 rounded-lg shadow-xl shadow-slate-300/30 dark:shadow-gray-900/50 py-2 z-[100] min-w-max animate-in fade-in-0 zoom-in-95 duration-200 text-gray-900 dark:text-gray-100 ${positionClasses[position]} ${className}`}
+    className={`absolute top-full mt-2 bg-white/95 dark:bg-gray-800 backdrop-blur-sm border border-slate-200 dark:border-gray-600 rounded-lg shadow-xl shadow-slate-300/30 dark:shadow-gray-900/50 py-2 z-[100] min-w-[200px] max-w-[300px] animate-in fade-in-0 zoom-in-95 duration-200 text-gray-900 dark:text-gray-100 ${positionClasses[position]} ${className}`}
     role="menu"
     aria-orientation="vertical"
   >
@@ -566,6 +606,19 @@ const {
 const { tooltip, showTooltip, hideTooltip } = useTooltipManager();
 const { loadingStates, handleAsync } = useAsyncHandler();
 
+// Refs for dropdown buttons
+const templateButtonRef = useRef<HTMLButtonElement>(null);
+const fontButtonRef = useRef<HTMLButtonElement>(null);
+const fontSizeButtonRef = useRef<HTMLButtonElement>(null);
+const lineHeightButtonRef = useRef<HTMLButtonElement>(null);
+const sectionSpacingButtonRef = useRef<HTMLButtonElement>(null);
+const paperSizeButtonRef = useRef<HTMLButtonElement>(null);
+const marginButtonRef = useRef<HTMLButtonElement>(null);
+const downloadButtonRef = useRef<HTMLButtonElement>(null);
+const zoomButtonRef = useRef<HTMLButtonElement>(null);
+const textColorButtonRef = useRef<HTMLButtonElement>(null);
+const accentColorButtonRef = useRef<HTMLButtonElement>(null);
+
 // Expose methods via ref
 useImperativeHandle(ref, () => ({
   expand: () => setIsExpanded(true),
@@ -699,6 +752,7 @@ return (
         {/* Template Dropdown */}
         <div className="relative">
           <ActionButton
+            ref={templateButtonRef}
             onClick={() => toggleDropdown('template')}
             variant="secondary"
             size="sm"
@@ -715,6 +769,7 @@ return (
           <Dropdown
             isOpen={activeDropdown === 'template'}
             onClose={() => toggleDropdown('template')}
+            buttonRef={templateButtonRef}
             position="right"
             className="min-w-[180px]"
           >
@@ -751,6 +806,7 @@ return (
 
           <div className="relative">
             <ActionButton
+              ref={downloadButtonRef}
               onClick={() => toggleDropdown('download')}
               variant="primary"
               size="sm"
@@ -767,6 +823,7 @@ return (
             <Dropdown
               isOpen={activeDropdown === 'download'}
               onClose={() => toggleDropdown('download')}
+              buttonRef={downloadButtonRef}
               position="right"
               className="min-w-[180px]"
             >
@@ -810,8 +867,8 @@ return (
 
     {/* Expandable Settings Panel */}
     <div
-      className={`${expandedPanelClasses} transition-all duration-300 ease-in-out overflow-hidden ${
-        isExpanded ? 'py-3 opacity-100 max-h-96' : 'py-0 opacity-0 max-h-0'
+      className={`${expandedPanelClasses} transition-all duration-300 ease-in-out ${
+        isExpanded ? 'py-3 opacity-100' : 'py-0 opacity-0 max-h-0 overflow-hidden'
       }`}
       aria-hidden={!isExpanded}
     >
@@ -849,6 +906,7 @@ return (
         {/* Font Family Dropdown */}
         <div className="relative">
           <ActionButton
+            ref={fontButtonRef}
             onClick={() => toggleDropdown('font')}
             variant="secondary"
             size="sm"
@@ -867,6 +925,7 @@ return (
           <Dropdown
             isOpen={activeDropdown === 'font'}
             onClose={() => toggleDropdown('font')}
+            buttonRef={fontButtonRef}
             className="min-w-[200px]"
           >
             {FONT_OPTIONS.map(font => (
@@ -935,6 +994,7 @@ return (
         {/* Line Height Dropdown */}
         <div className="relative">
           <ActionButton
+            ref={lineHeightButtonRef}
             onClick={() => toggleDropdown('lineHeight')}
             variant="secondary"
             size="sm"
@@ -952,6 +1012,7 @@ return (
           <Dropdown
             isOpen={activeDropdown === 'lineHeight'}
             onClose={() => toggleDropdown('lineHeight')}
+            buttonRef={lineHeightButtonRef}
             className="min-w-[120px]"
           >
             {LINE_HEIGHT_OPTIONS.map(height => (
@@ -976,6 +1037,7 @@ return (
         {/* Section Spacing Dropdown */}
         <div className="relative">
           <ActionButton
+            ref={sectionSpacingButtonRef}
             onClick={() => toggleDropdown('sectionSpacing')}
             variant="secondary"
             size="sm"
@@ -993,6 +1055,7 @@ return (
           <Dropdown
             isOpen={activeDropdown === 'sectionSpacing'}
             onClose={() => toggleDropdown('sectionSpacing')}
+            buttonRef={sectionSpacingButtonRef}
             className="min-w-[120px]"
           >
             {SECTION_SPACING_OPTIONS.map(spacing => (
@@ -1048,6 +1111,7 @@ return (
         <div className="flex items-center gap-1" role="group" aria-label="Page settings">
           <div className="relative">
             <ActionButton
+              ref={paperSizeButtonRef}
               onClick={() => toggleDropdown('paperSize')}
               variant="secondary"
               size="sm"
@@ -1064,6 +1128,7 @@ return (
             <Dropdown
               isOpen={activeDropdown === 'paperSize'}
               onClose={() => toggleDropdown('paperSize')}
+              buttonRef={paperSizeButtonRef}
               className="min-w-[200px]"
             >
               {PAPER_SIZE_OPTIONS.map(size => (
@@ -1090,6 +1155,58 @@ return (
 
           <div className="relative">
             <ActionButton
+              ref={marginButtonRef}
+              onClick={() => toggleDropdown('margins')}
+              variant="secondary"
+              size="sm"
+              onMouseEnter={(e) => showTooltip(`Margins: ${documentSettings.margins.top}" all sides`, e)}
+              onMouseLeave={hideTooltip}
+              aria-label="Change margins"
+              aria-expanded={activeDropdown === 'margins'}
+              data-testid="margins-btn"
+            >
+              <span className="text-xs font-semibold uppercase px-1">Margins</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </ActionButton>
+
+            <Dropdown
+              isOpen={activeDropdown === 'margins'}
+              onClose={() => toggleDropdown('margins')}
+              buttonRef={marginButtonRef}
+              className="min-w-[250px]"
+            >
+              <div className="p-2">
+                <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Page Margins</div>
+                {MARGIN_OPTIONS.map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      handleSettingChange('margins', {
+                        top: option.value,
+                        right: option.value,
+                        bottom: option.value,
+                        left: option.value
+                      });
+                      toggleDropdown('margins');
+                    }}
+                    className={`w-full px-3 py-2 text-left text-sm active:bg-gray-100 dark:active:bg-gray-700 transition-colors rounded-md focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none text-gray-900 dark:text-gray-100 ${
+                      documentSettings.margins.top === option.value ? 'bg-blue-50 dark:bg-blue-900/30 font-semibold' : ''
+                    }`}
+                    role="menuitem"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span>{option.label}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{option.description}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Dropdown>
+          </div>
+
+          <div className="relative">
+            <ActionButton
+              ref={zoomButtonRef}
               onClick={() => toggleDropdown('zoom')}
               variant="secondary"
               size="sm"
@@ -1106,6 +1223,7 @@ return (
             <Dropdown
               isOpen={activeDropdown === 'zoom'}
               onClose={() => toggleDropdown('zoom')}
+              buttonRef={zoomButtonRef}
               className="min-w-[220px] p-4"
             >
               <div className="mb-3 flex justify-between items-center">
@@ -1170,6 +1288,7 @@ return (
         <div className="flex items-center gap-1" role="group" aria-label="Color settings">
           <div className="relative">
             <ActionButton
+              ref={textColorButtonRef}
               onClick={() => toggleDropdown('textColor')}
               variant="secondary"
               size="sm"
@@ -1190,6 +1309,7 @@ return (
             <Dropdown
               isOpen={activeDropdown === 'textColor'}
               onClose={() => toggleDropdown('textColor')}
+              buttonRef={textColorButtonRef}
               className="p-3"
             >
               <label className="block text-xs font-medium mb-2 text-gray-900 dark:text-gray-100">Text Color</label>
@@ -1209,6 +1329,7 @@ return (
 
           <div className="relative">
             <ActionButton
+              ref={accentColorButtonRef}
               onClick={() => toggleDropdown('accentColor')}
               variant="secondary"
               size="sm"
@@ -1229,6 +1350,7 @@ return (
             <Dropdown
               isOpen={activeDropdown === 'accentColor'}
               onClose={() => toggleDropdown('accentColor')}
+              buttonRef={accentColorButtonRef}
               className="p-3"
             >
               <label className="block text-xs font-medium mb-2 text-gray-900 dark:text-gray-100">Accent Color</label>
