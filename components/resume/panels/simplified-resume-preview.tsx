@@ -8,6 +8,7 @@ import { useJobInfo } from '@/contexts/job-info-context';
 import ResumeHeaderBar, { ResumeHeaderBarRef } from '@/components/layout/resume-header-bar';
 import JobInfoPanel from '@/components/resume/panels/job-info-panel';
 import KeywordTargetingPanel from '@/components/resume/panels/keyword-targeting-panel';
+import ATSScorePanel from '@/components/resume/panels/ats-score-panel';
 import SharePanel from "@/components/resume/panels/share-panel";
 import { JobInfoProvider } from '@/contexts/job-info-context';
 import { getDefaultSectionOrder, getSectionTitle, sectionHasContent } from '../sections/resume-sections';
@@ -267,12 +268,6 @@ export default function SimplifiedResumePreview({
     }
   };
 
-  const handleExploreScore = () => {
-    toast({
-      title: "Score Analysis",
-      description: "Resume score analysis coming soon!",
-    });
-  };
 
   // Early return if no data
   if (!resumeData) {
@@ -700,13 +695,11 @@ export default function SimplifiedResumePreview({
 
       <ResumeHeaderBar
         ref={headerBarRef}
-        resumeScore={90}
         documentSettings={documentSettings}
         onDocumentSettingChange={updateSetting}
         onDownloadPDF={handleDownloadPDF}
         onAutoAdjust={handleAutoAdjust}
         onTemplateChange={handleTemplateChange}
-        onExploreScore={handleExploreScore}
         sectionOrder={sectionOrder}
         onSectionOrderChange={handleSectionOrderChange}
         isDarkMode={isDarkMode}
@@ -789,6 +782,11 @@ export default function SimplifiedResumePreview({
             </div>
             <div className="w-72 flex-shrink-0">
               <div className="space-y-6">
+                <ATSScorePanel
+                  resumeData={resumeData}
+                  resumeId={resumeId}
+                  className="shadow-lg"
+                />
                 <JobPanelWrapper />
                 <SharePanel
                   resumeId={resumeId}

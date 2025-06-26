@@ -59,7 +59,6 @@ closeAllDropdowns: () => void;
 }
 
 export interface ResumeHeaderBarProps {
-resumeScore?: number;
 documentSettings: DocumentSettings;
 onDocumentSettingChange: (setting: keyof DocumentSettings, value: DocumentSettings[keyof DocumentSettings]) => void;
 onDownloadPDF?: () => Promise<void> | void;
@@ -67,7 +66,6 @@ onDownloadDOCX?: () => Promise<void> | void;
 onSaveToDrive?: () => Promise<void> | void;
 onAutoAdjust?: () => Promise<void> | void;
 onTemplateChange?: (template: string) => Promise<void> | void;
-onExploreScore?: () => void;
 sectionOrder?: string[];
 onSectionOrderChange?: (newOrder: string[]) => void;
 isDarkMode?: boolean;
@@ -452,77 +450,6 @@ return (
 
 Dropdown.displayName = 'Dropdown';
 
-interface ScoreCircleProps {
-score: number;
-onClick?: () => void;
-size?: number;
-strokeWidth?: number;
-className?: string;
-}
-
-const ScoreCircle = memo<ScoreCircleProps>(({
-score,
-onClick,
-size = 50,
-strokeWidth = 7,
-className = ''
-}) => {
-const radius = (size - strokeWidth) / 2;
-const circumference = 2 * Math.PI * radius;
-const strokeDashoffset = circumference - (circumference * Math.max(0, Math.min(100, score))) / 100;
-
-return (
-  <div
-    className={`relative cursor-pointer flex items-center justify-center transition-transform active:scale-95 ${className}`}
-    style={{ width: size, height: size }}
-    onClick={onClick}
-    role="button"
-    tabIndex={0}
-    aria-label={`Resume score: ${score}%`}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onClick?.();
-      }
-    }}
-  >
-    <svg width={size} height={size} className="transform -rotate-90">
-      <circle
-        className="stroke-gray-200 dark:stroke-gray-600"
-        r={radius}
-        cy={size / 2}
-        cx={size / 2}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        fill="none"
-      />
-      <circle
-        r={radius}
-        cy={size / 2}
-        cx={size / 2}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        fill="none"
-        stroke="rgb(245, 158, 11)"
-        strokeDasharray={circumference}
-        strokeDashoffset={strokeDashoffset}
-        className="transition-all duration-1000 ease-out"
-      />
-      <text
-        x={size / 2}
-        y={size / 2}
-        dominantBaseline="middle"
-        textAnchor="middle"
-        className="fill-gray-900 dark:fill-gray-100 text-base font-bold transform rotate-90"
-      >
-        {score}
-      </text>
-    </svg>
-  </div>
-);
-});
-
-ScoreCircle.displayName = 'ScoreCircle';
 
 interface ToggleSwitchProps {
 checked: boolean;
@@ -579,7 +506,6 @@ ToggleSwitch.displayName = 'ToggleSwitch';
 // ==================== MAIN COMPONENT ====================
 
 const ResumeHeaderBar = memo(forwardRef<ResumeHeaderBarRef, ResumeHeaderBarProps>(({
-resumeScore = 89,
 documentSettings,
 onDocumentSettingChange,
 onDownloadPDF,
@@ -587,7 +513,6 @@ onDownloadDOCX,
 onSaveToDrive,
 onAutoAdjust,
 onTemplateChange,
-onExploreScore,
 sectionOrder,
 onSectionOrderChange,
 isDarkMode = false,
@@ -683,7 +608,6 @@ const themeClasses = 'bg-white/95 dark:bg-gray-800 backdrop-blur-sm border-slate
 const expandedPanelClasses = 'bg-slate-50/80 dark:bg-gray-700 backdrop-blur-sm text-gray-900 dark:text-gray-100 border-t border-slate-200 dark:border-gray-600';
 
 // Validation
-const normalizedScore = Math.max(0, Math.min(100, resumeScore));
 
 return (
   <div
@@ -696,29 +620,7 @@ return (
   >
     {/* Main Toolbar */}
     <div className="flex flex-row flex-wrap items-center justify-between gap-4 px-6 py-3 xl:flex-nowrap">
-      {/* Left Section - Score & Explore */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <ScoreCircle
-            score={normalizedScore}
-            onClick={onExploreScore}
-            className="focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full"
-          />
-          <ActionButton
-            onClick={onExploreScore}
-            onMouseEnter={(e) => showTooltip('View detailed score breakdown and improvement suggestions', e)}
-            onMouseLeave={hideTooltip}
-            variant="secondary"
-            size="sm"
-            aria-label="Explore resume score details"
-            data-testid="explore-score-btn"
-          >
-            <span className="px-1">Explore My Rezi score</span>
-          </ActionButton>
-        </div>
-      </div>
-
-      {/* Right Section - Action Buttons */}
+      {/* Left Section - Controls */}
       <div className="flex items-center gap-2">
         <ActionButton
           onClick={handleAutoAdjust}
@@ -786,8 +688,10 @@ return (
             ))}
           </Dropdown>
         </div>
+      </div>
 
-        {/* Download Button Group */}
+      {/* Right Section - Download Button Group */}
+      <div className="flex items-center gap-2">
         <div className="relative flex">
           <ActionButton
             onClick={handleDownloadPDF}
