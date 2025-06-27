@@ -178,6 +178,7 @@ const config: Config = {
       animation: {
         'gradient-shift': 'gradient 8s ease infinite',
         'blob': 'blob 7s infinite',
+        'loading': 'loading 2s infinite',
       },
       keyframes: {
         gradient: {
@@ -202,6 +203,14 @@ const config: Config = {
           },
           '100%': {
             transform: 'translate(0px, 0px) scale(1)',
+          },
+        },
+        loading: {
+          '0%': {
+            'background-position': 'left center',
+          },
+          '100%': {
+            'background-position': 'right center',
           },
         },
       },

@@ -27,7 +27,8 @@ const AppSidebarNav = () => {
      pathname.includes('/experience') || pathname.includes('/education') ||
      pathname.includes('/skills') || pathname.includes('/projects') ||
      pathname.includes('/involvement') || pathname.includes('/coursework') ||
-     pathname.includes('/certifications') || pathname.includes('/preview'));
+     pathname.includes('/certifications') || pathname.includes('/preview') ||
+     pathname.includes('/cover-letter'));
 
   const navItems = [
     {
