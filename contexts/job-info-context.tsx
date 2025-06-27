@@ -20,6 +20,8 @@ export interface JobInfo {
 
 interface EnterpriseJobInfo extends JobInfo {
   extractedKeywords?: ExtractedKeyword[];
+  matchedKeywords?: ExtractedKeyword[];
+  missingKeywords?: ExtractedKeyword[];
   atsScore?: number;
   recommendations?: KeywordRecommendation[];
   analysisId?: string;

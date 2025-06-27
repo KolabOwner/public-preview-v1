@@ -3,8 +3,10 @@ import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { X, Lock, Circle, RefreshCw, Loader, Target, AlertCircle } from 'lucide-react';
 import { useJobInfo } from "@/contexts/job-info-context";
 import { useAuth } from '@/contexts/auth-context';
+import { useUserUsage } from '@/hooks/use-user-usage';
 import { logger } from '@/lib/enterprise/monitoring/logging';
 import { performanceAnalytics } from '@/lib/enterprise/monitoring/analytics';
+import JobUpdateModal from '../modals/job-update-modal';
 
 export interface KeywordTargetingPanelProps {
   className?: string;
@@ -134,13 +136,42 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
     jobInfo,
     currentResumeId,
     analyzeATS,
+    updateJobInfo,
     isEnterpriseMode,
     isLoading,
     error: contextError
   } = useJobInfo();
   const { user } = useAuth();
+  const { usage } = useUserUsage();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [userPlan, setUserPlan] = useState<'free' | 'pro' | 'enterprise'>('free');
+  const [isJobUpdateModalOpen, setIsJobUpdateModalOpen] = useState(false);
+
+  // Fetch user subscription plan
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        const { doc, getDoc } = await import('firebase/firestore');
+        const { db } = await import('@/lib/features/auth/firebase-config');
+        
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const plan = userData.subscription?.plan || 'free';
+          setUserPlan(plan);
+        }
+      } catch (error) {
+        logger.error('Failed to fetch user subscription plan', { error });
+      }
+    };
+
+    fetchUserPlan();
+  }, [user?.uid]);
 
   // Extract keywords and analysis data from jobInfo
   const { allKeywords, matchedCount, missingCount } = useMemo(() => {
@@ -151,29 +182,19 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
       return { allKeywords: [], matchedCount: 0, missingCount: 0 };
     }
 
-    // Create a map of resume keywords for quick lookup
-    // Handle both string array and single string formats
-    let keywordsArray: string[] = [];
-    if (Array.isArray(jobInfo.keywords)) {
-      keywordsArray = jobInfo.keywords.map(k => 
-        typeof k === 'string' ? k : (k.keyword || '')
-      );
-    } else if (typeof jobInfo.keywords === 'string' && jobInfo.keywords) {
-      // If it's a comma-separated string
-      keywordsArray = jobInfo.keywords.split(',').map(k => k.trim());
-    }
-    
-    const resumeKeywordSet = new Set(
-      keywordsArray.map(k => k.toLowerCase()).filter(k => k.length > 0)
+    // Get matched keywords from the analysis (keywords found in both resume and job)
+    const matchedKeywords = jobInfo.matchedKeywords || [];
+    const matchedKeywordSet = new Set(
+      matchedKeywords.map(k => k.keyword.toLowerCase())
     );
 
     // Process all extracted keywords
     const processedKeywords = extractedKeywords.map(kw => {
       const keywordLower = kw.keyword.toLowerCase();
       
-      // Check if keyword exists in resume (including variations)
-      const isMatched = resumeKeywordSet.has(keywordLower) || 
-        (kw.variations || []).some(v => resumeKeywordSet.has(v.toLowerCase()));
+      // Check if this keyword was found in the resume
+      const isMatched = matchedKeywordSet.has(keywordLower) || 
+        (kw.variations || []).some(v => matchedKeywordSet.has(v.toLowerCase()));
 
       return {
         keyword: kw.keyword,
@@ -214,24 +235,39 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
       matchedCount, 
       missingCount 
     };
-  }, [jobInfo.extractedKeywords, jobInfo.keywords]);
+  }, [jobInfo.extractedKeywords, jobInfo.matchedKeywords]);
 
   // Determine how many keywords to display
   const displayedKeywords = useMemo(() => {
-    if (showAll) return allKeywords;
+    // Only Pro/Enterprise users can use showAll
+    if (showAll && (userPlan === 'pro' || userPlan === 'enterprise')) {
+      return allKeywords;
+    }
     
-    // Show first 5 missing keywords and some matching ones
+    // Pro/Enterprise users see more keywords by default
+    if (userPlan === 'pro' || userPlan === 'enterprise') {
+      const missingKeywords = allKeywords.filter(k => !k.isMatching).slice(0, 10);
+      const matchingKeywords = allKeywords.filter(k => k.isMatching).slice(0, 5);
+      return [...missingKeywords, ...matchingKeywords];
+    }
+    
+    // Free users see limited keywords (showAll doesn't affect them)
     const missingKeywords = allKeywords.filter(k => !k.isMatching).slice(0, 5);
     const matchingKeywords = allKeywords.filter(k => k.isMatching).slice(0, 3);
     
     return [...missingKeywords, ...matchingKeywords];
-  }, [allKeywords, showAll]);
+  }, [allKeywords, showAll, userPlan]);
 
   // Calculate how many pro keywords to show (for non-pro users)
   const proKeywordsCount = useMemo(() => {
+    // Pro and Enterprise users don't see blurred keywords
+    if (userPlan === 'pro' || userPlan === 'enterprise') {
+      return 0;
+    }
+    
     if (showAll) return 0;
     return Math.max(0, Math.min(5, allKeywords.length - displayedKeywords.length));
-  }, [allKeywords, displayedKeywords, showAll]);
+  }, [allKeywords, displayedKeywords, showAll, userPlan]);
 
   // Perform ATS analysis
   const performAnalysis = useCallback(async () => {
@@ -262,8 +298,26 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   }, [currentResumeId, user?.uid, jobInfo.title, analyzeATS]);
 
   const handleJobUpdate = useCallback(() => {
-    onJobUpdate?.();
-  }, [onJobUpdate]);
+    setIsJobUpdateModalOpen(true);
+  }, []);
+
+  const handleJobUpdateSubmit = useCallback(async (title: string, description: string) => {
+    try {
+      // Update job info in context
+      updateJobInfo({
+        title,
+        description
+      });
+
+      // Trigger analysis with new job info
+      await performAnalysis();
+
+      // Call parent callback if provided
+      onJobUpdate?.();
+    } catch (error) {
+      logger.error('Failed to update job description', { error });
+    }
+  }, [updateJobInfo, performAnalysis, onJobUpdate]);
 
   const handleRefresh = useCallback(async () => {
     await performAnalysis();
@@ -311,22 +365,43 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   // Main content
   return (
     <div className={containerClasses}>
-      {/* Header text */}
-      {missingCount > 0 && (
-        <div className="px-6 py-4 text-sm leading-5 text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-          Want to improve your chances of getting this role? Consider adding the following keywords to your resume:
-        </div>
-      )}
-
       {/* Keywords list */}
       <div className="divide-y divide-gray-100 dark:divide-gray-700">
-        {displayedKeywords.map((keyword, index) => (
-          <KeywordItem
-            key={`keyword-${index}`}
-            keyword={keyword.keyword}
-            isMatching={keyword.isMatching}
-          />
-        ))}
+        {/* Missing keywords section */}
+        {missingCount > 0 && (
+          <>
+            {displayedKeywords.filter(k => !k.isMatching).length > 1 && (
+              <div className="px-6 py-4 text-sm leading-5 text-gray-600 dark:text-gray-400">
+                Want to improve your chances of getting this role? Consider adding the following keywords to your resume:
+              </div>
+            )}
+            {displayedKeywords.filter(k => !k.isMatching).map((keyword, index) => (
+              <KeywordItem
+                key={`missing-${index}`}
+                keyword={keyword.keyword}
+                isMatching={keyword.isMatching}
+              />
+            ))}
+          </>
+        )}
+        
+        {/* Matching keywords section */}
+        {matchedCount > 0 && displayedKeywords.some(k => k.isMatching) && (
+          <>
+            {displayedKeywords.filter(k => k.isMatching).length > 1 && (
+              <div className="px-6 py-4 text-sm leading-5 text-gray-600 dark:text-gray-400">
+                Great job! Your resume already includes these important keywords from the job description:
+              </div>
+            )}
+            {displayedKeywords.filter(k => k.isMatching).map((keyword, index) => (
+              <KeywordItem
+                key={`matching-${index}`}
+                keyword={keyword.keyword}
+                isMatching={keyword.isMatching}
+              />
+            ))}
+          </>
+        )}
         
         {/* Pro keywords (blurred) */}
         {proKeywordsCount > 0 && Array.from({ length: proKeywordsCount }).map((_, index) => (
@@ -339,8 +414,8 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
         ))}
       </div>
 
-      {/* Show more/less button */}
-      {allKeywords.length > 8 && (
+      {/* Show more/less button - only for Pro/Enterprise users */}
+      {(userPlan === 'pro' || userPlan === 'enterprise') && allKeywords.length > 15 && (
         <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setShowAll(!showAll)}
@@ -360,6 +435,15 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
           Update job description
         </button>
       </div>
+
+      {/* Job Update Modal */}
+      <JobUpdateModal
+        isOpen={isJobUpdateModalOpen}
+        onClose={() => setIsJobUpdateModalOpen(false)}
+        onUpdate={handleJobUpdateSubmit}
+        currentTitle={jobInfo.title}
+        currentDescription={jobInfo.description}
+      />
     </div>
   );
 };
