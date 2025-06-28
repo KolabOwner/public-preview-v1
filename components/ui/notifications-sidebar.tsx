@@ -51,10 +51,10 @@ export default function NotificationsSidebar({ isOpen, onClose }: NotificationsS
             <div className="relative flex w-full flex-row items-start justify-start">
               <div className="flex flex-col items-start justify-center gap-2">
                 <div className="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
-                  Follow Rezi on LinkedIn for 40% off Rezi Pro
+                  Follow Resume on LinkedIn for 40% off Resume Pro
                 </div>
                 <div className="text-base font-normal leading-5 text-gray-700 dark:text-gray-300">
-                  Connect with Rezi founder, Jacob, to stay up to date with Rezi news, updates, and more.
+                  Connect with Resume founder, Jacob, to stay up to date with Resume news, updates, and more.
                 </div>
                 <div className="flex flex-row items-start justify-center gap-2">
                   <button 

@@ -1,5 +1,5 @@
 // components/landing/ReziFeatures.tsx
-// Specific features commonly found in Rezi and similar AI resume builders
+// Specific features commonly found in Resume and similar AI resume builders
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

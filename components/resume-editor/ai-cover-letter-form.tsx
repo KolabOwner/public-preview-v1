@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/auth';
+import { doc, getDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
+import {db} from "@/lib/features/auth/firebase-config";
 import { useAuth } from '@/contexts/auth-context';
 
 interface CoverLetterFormProps {
@@ -226,7 +226,7 @@ ${contactInfo.fullName || 'Your Name'}
             </select>
             {resumes.length === 0 && (
               <p className="text-sm text-red-600 mt-1">
-                You don't have any resumes. <a href="/dashboard/resumes" className="underline">Create one</a> first.
+                You don&apos;t have any resumes. <a href="/dashboard/resumes" className="underline">Create one</a> first.
               </p>
             )}
           </div>

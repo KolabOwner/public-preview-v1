@@ -95,7 +95,7 @@ const features: Feature[] = [
     description: 'Fine-tune margins, spacing, and layout for perfect presentation'
   },
   {
-    title: 'Rezi Score',
+    title: 'Resume Score',
     icon: <Star className="w-6 h-6" />,
     description: 'Get your resume rated on 23 criteria with actionable feedback'
   },
@@ -144,12 +144,12 @@ export default function AdditionalFeaturesGrid() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <span className="text-blue-400 font-semibold mb-2 block">Even more reasons to love Rezi</span>
+          <span className="text-blue-400 font-semibold mb-2 block">Even more reasons to love Resume</span>
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
-            Rezi does more than any other resume builder
+            Resume does more than any other resume builder
           </h2>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-            Rezi makes it easy to get the help you need, stay organized, and take on any challenge. 
+            Resume makes it easy to get the help you need, stay organized, and take on any challenge. 
             Its clear, simple design just makes sense — especially if you have many applications.
           </p>
         </div>
@@ -195,17 +195,17 @@ export default function AdditionalFeaturesGrid() {
             Ready to experience all these features?
           </h3>
           <p className="text-gray-400 text-lg mb-8">
-            Join over 3 million job seekers who trust Rezi to land their dream jobs
+            Join over 3 million job seekers who trust Resume to land their dream jobs
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="https://app.rezi.ai/signup"
+              href="https://app.resume.ai/signup"
               className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all shadow-xl"
             >
               Start Free Trial
             </a>
             <a
-              href="/rezi-docs"
+              href="/resume-docs"
               className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-lg font-semibold hover:bg-white/20 transition-all"
             >
               Explore User Guides

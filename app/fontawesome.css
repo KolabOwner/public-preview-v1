@@ -37,3 +37,25 @@
 .fad.fa-moon-stars::before { content: "\f755"; }
 .fad.fa-sun::before { content: "\f185"; }
 .fad.fa-moon-over-sun::before { content: "\f74a"; }
+
+/* Additional icon mappings for toolbar - ensure regular (far) icons work */
+.far.fa-minus::before { 
+  font-family: "Font Awesome 6 Free";
+  font-weight: 400;
+  content: "\f068"; 
+}
+.far.fa-plus::before { 
+  font-family: "Font Awesome 6 Free";
+  font-weight: 400;
+  content: "\f067"; 
+}
+.fas.fa-line-height::before { 
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  content: "\f871"; 
+}
+.far.fa-angle-down::before { 
+  font-family: "Font Awesome 6 Free";
+  font-weight: 400;
+  content: "\f107"; 
+}

@@ -16,7 +16,7 @@ const SharePanel: React.FC<SharePanelProps> = ({ resumeId, className = '' }) => 
   const [customLinkEnabled, setCustomLinkEnabled] = useState(false);
   const { toast } = useToast();
 
-  const shareLink = `app.rezi.ai/s/${resumeId}`;
+  const shareLink = `app.resume.ai/s/${resumeId}`;
 
   const handleCopyLink = useCallback(() => {
     if (accessLevel === 'no-access') {
@@ -125,7 +125,7 @@ const SharePanel: React.FC<SharePanelProps> = ({ resumeId, className = '' }) => 
                 }`}
               >
                 <span className="px-3 font-semibold whitespace-nowrap text-gray-600 dark:text-gray-400">
-                  app.rezi.ai/s/
+                  app.resume.ai/s/
                 </span>
                 <input
                   type="text"

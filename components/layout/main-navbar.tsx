@@ -169,7 +169,7 @@ const MainNavbar = () => {
                     <div>
                       <h4 className="text-sm font-semibold text-blue-600 mb-4">User Guides</h4>
                       <div className="space-y-4">
-                        <a href="https://www.rezi.ai/rezi-docs/ai-keyword-targeting-explained" className="block group">
+                        <a href="https://www.resume.ai/resume-docs/ai-keyword-targeting-explained" className="block group">
                           <div className="aspect-video bg-gray-100 rounded-lg mb-2 overflow-hidden">
                             <img 
                               src="https://cdn.prod.website-files.com/62f0854c1cef28185535ab61/684d5d73e6b11bd987ec13e4_Screenshot%202025-06-14%20at%208.30.39%E2%80%AFPM.png" 
@@ -181,7 +181,7 @@ const MainNavbar = () => {
                           <div className="text-xs text-gray-600 mt-1">Tailor your resume by adding keywords from the job ad</div>
                         </a>
                         
-                        <Link href="/rezi-docs" className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                        <Link href="/resume-docs" className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
                           All user guides
                           <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

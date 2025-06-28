@@ -223,7 +223,7 @@ export default function ResumeExamplesShowcase() {
             <p className="text-gray-600 mb-6">Use these examples as inspiration to create your own ATS-optimized resume</p>
             <div className="flex gap-4 justify-center">
               <a
-                href="https://app.rezi.ai/signup"
+                href="https://app.resume.ai/signup"
                 className="px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
               >
                 Create Free Resume

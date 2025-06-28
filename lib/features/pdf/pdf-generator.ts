@@ -1562,7 +1562,7 @@ export class PDFProcessor {
     // Start with basic structure
     const rmsData: Record<string, string | number | boolean> = {
       Producer: "rms_v2.0.1",
-      Rms_schema_details: "https://github.com/rezi-io/resume-standard"
+      Rms_schema_details: "https://github.com/resume-io/resume-standard"
     };
 
     // Process Contact Information
@@ -1873,7 +1873,7 @@ export class PDFProcessor {
 
   /**
    * Formats the structured resume data into a flat key-value pair object
-   * according to the Rezi Resume Metadata Standard (RMS) style.
+   * according to the Resume Resume Metadata Standard (RMS) style.
    * This now generates the proper RMS format that matches ExifTool output.
    * @param data The structured data extracted from the resume.
    * @returns A flattened object with proper RMS-style keys.
@@ -1964,7 +1964,7 @@ export class PDFProcessor {
     rmsData['Rms_coursework_count'] = 0;
     rmsData['Rms_publication_count'] = 0;
     rmsData['Rms_reference_count'] = 0;
-    rmsData['Rms_schema_details'] = "https://github.com/rezi-io/resume-standard";
+    rmsData['Rms_schema_details'] = "https://github.com/resume-io/resume-standard";
 
     return rmsData;
   }

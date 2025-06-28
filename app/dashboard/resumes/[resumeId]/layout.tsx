@@ -248,8 +248,8 @@ export default function ResumeEditorLayout({
     { label: 'Coursework', href: `/dashboard/resumes/${resumeId}/coursework`, key: 'coursework' },
     { label: 'Certifications', href: `/dashboard/resumes/${resumeId}/certifications`, key: 'certifications' },
     { label: 'Summary', href: `/dashboard/resumes/${resumeId}/summary`, key: 'summary' },
-    { label: 'Cover Letter', href: `/dashboard/resumes/${resumeId}/cover-letter`, key: 'cover-letter' },
     { label: 'Preview', href: `/dashboard/resumes/${resumeId}/preview`, key: 'preview' },
+    { label: 'Cover Letter', href: `/dashboard/resumes/${resumeId}/cover-letter`, key: 'cover-letter' },
   ];
 
   // Filter tabs based on content and visibility
@@ -319,13 +319,13 @@ export default function ResumeEditorLayout({
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
                               {resume.isTargeted && (
-                                <span className="text-xs uppercase text-rezi-blue-400 mr-1">[TARGETED]</span>
+                                <span className="text-xs uppercase text-resume-blue-400 mr-1">[TARGETED]</span>
                               )}
                               {resume.title}
                             </div>
                           </div>
                           {resume.id === resumeId && (
-                            <i className="fas fa-check text-rezi-blue-500 text-sm"></i>
+                            <i className="fas fa-check text-resume-blue-500 text-sm"></i>
                           )}
                         </button>
                       ))}
@@ -449,7 +449,7 @@ export default function ResumeEditorLayout({
                                 type="checkbox"
                                 checked={isEnabled}
                                 onChange={() => toggleTabVisibility(tab.key)}
-                                className="w-4 h-4 text-rezi-blue-600 bg-surface-1 border-gray-600 rounded focus:ring-rezi-blue-500 focus:ring-2"
+                                className="w-4 h-4 text-resume-blue-600 bg-surface-1 border-gray-600 rounded focus:ring-resume-blue-500 focus:ring-2"
                               />
                               <span className="ml-2 text-xs text-gray-400">Show</span>
                             </label>
@@ -474,7 +474,7 @@ export default function ResumeEditorLayout({
                     href={tab.href}
                     className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
-                        ? 'bg-rezi-blue-600 text-neutral-0' 
+                        ? 'bg-resume-blue-600 text-neutral-0' 
                         : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                     } cursor-pointer`}
                   >
@@ -544,7 +544,7 @@ export default function ResumeEditorLayout({
                   href={tab.href}
                   className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
                     isActive 
-                      ? 'bg-rezi-blue-600 text-neutral-0' 
+                      ? 'bg-resume-blue-600 text-neutral-0' 
                       : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                   } cursor-pointer`}
                 >
@@ -576,7 +576,7 @@ export default function ResumeEditorLayout({
                     href={tab.href}
                     className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
-                        ? 'bg-rezi-blue-600 text-neutral-0' 
+                        ? 'bg-resume-blue-600 text-neutral-0' 
                         : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                     } cursor-pointer`}
                   >
@@ -612,13 +612,13 @@ export default function ResumeEditorLayout({
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-200">
                         {resume.isTargeted && (
-                          <span className="text-xs uppercase text-rezi-blue-400 mr-1">[TARGETED]</span>
+                          <span className="text-xs uppercase text-resume-blue-400 mr-1">[TARGETED]</span>
                         )}
                         {resume.title}
                       </div>
                     </div>
                     {resume.id === resumeId && (
-                      <i className="fas fa-check text-rezi-blue-500 text-sm"></i>
+                      <i className="fas fa-check text-resume-blue-500 text-sm"></i>
                     )}
                   </button>
                 ))}
@@ -710,7 +710,7 @@ export default function ResumeEditorLayout({
                           type="checkbox"
                           checked={isEnabled}
                           onChange={() => toggleTabVisibility(tab.key)}
-                          className="w-4 h-4 text-rezi-blue-600 bg-surface-1 border-gray-600 rounded focus:ring-rezi-blue-500"
+                          className="w-4 h-4 text-resume-blue-600 bg-surface-1 border-gray-600 rounded focus:ring-resume-blue-500"
                         />
                         <span className="ml-2 text-xs text-gray-400">Show</span>
                       </label>

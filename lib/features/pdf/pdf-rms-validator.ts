@@ -50,7 +50,7 @@ export function validateRMSMetadata(metadata: any): RMSValidationResult {
   const schemaDetail = metadata.rms_schema_detail || metadata.Rms_schema_detail;
   if (!schemaDetail) {
     result.warnings.push('Missing rms_schema_detail field');
-  } else if (schemaDetail !== 'https://github.com/rezi-io/resume-standard') {
+  } else if (schemaDetail !== 'https://github.com/resume-io/resume-standard') {
     result.warnings.push('Schema detail does not match official RMS repository');
   }
 
@@ -256,7 +256,7 @@ export function detectRMSCompliance(metadata: any): boolean {
   }
 
   // Check for RMS schema detail
-  if (metadata.rms_schema_detail === 'https://github.com/rezi-io/resume-standard') {
+  if (metadata.rms_schema_detail === 'https://github.com/resume-io/resume-standard') {
     return true;
   }
 

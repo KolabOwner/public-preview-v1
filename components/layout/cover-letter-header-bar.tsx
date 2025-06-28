@@ -8,7 +8,9 @@ import {
   Palette,
   Type,
   AlignLeft,
-  FileDown
+  FileDown,
+  Minus,
+  Plus
 } from 'lucide-react';
 
 export interface CoverLetterSettings {
@@ -17,6 +19,7 @@ export interface CoverLetterSettings {
   readonly lineHeight: number;
   readonly textColor: string;
   readonly template: string;
+  readonly zoom?: number;
 }
 
 export interface CoverLetterHeaderBarRef {
@@ -118,7 +121,7 @@ const CoverLetterHeaderBar = memo(forwardRef<CoverLetterHeaderBarRef, CoverLette
     >
       <div className="flex items-center justify-between px-6 py-3">
         {/* Left Section - Adjustments */}
-        <div className="relative">
+        <div className="flex items-center">
           <button
             onClick={() => toggleDropdown('adjustments')}
             className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
@@ -129,101 +132,6 @@ const CoverLetterHeaderBar = memo(forwardRef<CoverLetterHeaderBarRef, CoverLette
             <span>Adjustments</span>
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${activeDropdown === 'adjustments' ? 'rotate-180' : ''}`} />
           </button>
-
-          {activeDropdown === 'adjustments' && (
-            <div className="absolute top-full mt-2 left-0 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-lg shadow-xl p-4 z-50 min-w-[280px]">
-              {/* Template Selection */}
-              <div className="mb-4">
-                <label className="block text-xs font-semibold uppercase text-gray-700 dark:text-gray-300 mb-2">
-                  Template
-                </label>
-                <div className="space-y-1">
-                  {TEMPLATE_OPTIONS.map(template => (
-                    <button
-                      key={template}
-                      onClick={() => handleTemplateChange(template)}
-                      className={`w-full px-3 py-2 text-left text-sm rounded-md transition-colors ${
-                        settings.template === template 
-                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      {template}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
-                {/* Font Selection */}
-                <div className="mb-3">
-                  <label className="block text-xs font-semibold uppercase text-gray-700 dark:text-gray-300 mb-2">
-                    Font
-                  </label>
-                  <select
-                    value={settings.fontFamily}
-                    onChange={(e) => onSettingChange('fontFamily', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
-                    style={{ fontFamily: settings.fontFamily }}
-                  >
-                    {FONT_OPTIONS.map(font => (
-                      <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
-                        {font.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Font Size */}
-                <div className="mb-3">
-                  <label className="block text-xs font-semibold uppercase text-gray-700 dark:text-gray-300 mb-2">
-                    Font Size: {settings.fontSize}pt
-                  </label>
-                  <input
-                    type="range"
-                    min="10"
-                    max="14"
-                    step="0.5"
-                    value={settings.fontSize}
-                    onChange={(e) => onSettingChange('fontSize', Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Line Height */}
-                <div className="mb-3">
-                  <label className="block text-xs font-semibold uppercase text-gray-700 dark:text-gray-300 mb-2">
-                    Line Height: {settings.lineHeight}
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="2"
-                    step="0.1"
-                    value={settings.lineHeight}
-                    onChange={(e) => onSettingChange('lineHeight', Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Text Color */}
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-gray-700 dark:text-gray-300 mb-2">
-                    Text Color
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={settings.textColor}
-                      onChange={(e) => onSettingChange('textColor', e.target.value)}
-                      className="w-10 h-10 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
-                    />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{settings.textColor}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right Section - Download Button */}
@@ -270,6 +178,86 @@ const CoverLetterHeaderBar = memo(forwardRef<CoverLetterHeaderBarRef, CoverLette
           )}
         </div>
       </div>
+
+      {/* Expanding Adjustments Panel */}
+      {activeDropdown === 'adjustments' && (
+        <div className="border-t border-slate-200 dark:border-gray-600 bg-surface-1-1">
+          <div className="flex select-none flex-wrap items-center justify-start gap-y-2 font-semibold opacity-1 py-2 px-6 transition-all duration-300 ease-in-out">
+            {/* Font Size Controls */}
+            <div className="flex items-center">
+              <button
+                onClick={() => onSettingChange('fontSize', Math.max(8, settings.fontSize - 1))}
+                className="relative flat block h-[32px] min-w-[36px] rounded-md text-[16px] disabled:hover:bg-transparent [&:not(.flat)]:disabled:bg-neutral-100 [&:not(.flat)]:disabled:text-neutral-400 hover:bg-neutral-200/50 [&:not(.flat)]:hover:bg-neutral-200/50 [&:not(.flat)]:bg-neutral-100 flex items-center justify-center"
+              >
+                <Minus className="w-4 h-4" />
+                <div className="normal-case pointer-events-none h-fit z-50 bg-surface-3 px-2 py-1 text-sm font-normal leading-5 text-surface-3-label transition-opacity rounded before:border-surface-3 before:absolute before:border-[6px] before:border-l-transparent before:border-r-transparent before:border-t-transparent before:left-1/2 before:-translate-x-1/2 before:-top-[12px] w-fit min-w-fit whitespace-pre opacity-0 absolute">
+                  Decrease font size
+                </div>
+              </button>
+              <div className="w-7 text-center text-[16px]">
+                <span className="text-[12px]">{settings.fontSize}</span>
+              </div>
+              <button
+                onClick={() => onSettingChange('fontSize', Math.min(24, settings.fontSize + 1))}
+                className="relative flat block h-[32px] min-w-[36px] rounded-md text-[16px] disabled:hover:bg-transparent [&:not(.flat)]:disabled:bg-neutral-100 [&:not(.flat)]:disabled:text-neutral-400 hover:bg-neutral-200/50 [&:not(.flat)]:hover:bg-neutral-200/50 [&:not(.flat)]:bg-neutral-100 flex items-center justify-center"
+              >
+                <Plus className="w-4 h-4" />
+                <div className="normal-case pointer-events-none h-fit z-50 bg-surface-3 px-2 py-1 text-sm font-normal leading-5 text-surface-3-label transition-opacity rounded before:border-surface-3 before:absolute before:border-[6px] before:border-l-transparent before:border-r-transparent before:border-t-transparent before:left-1/2 before:-translate-x-1/2 before:-top-[12px] w-fit min-w-fit whitespace-pre opacity-0 absolute">
+                  Increase font size
+                </div>
+              </button>
+            </div>
+
+            <hr className="mx-1 h-6 border-l border-surface-2-stroke" />
+
+            {/* Line Height Control */}
+            <div className="flex items-center">
+              <div className="group relative origin-bottom-left text-[16px]">
+                <button
+                  className="flex h-[32px] w-full items-center rounded-md px-[8px] hover:bg-button-text-hover disabled:hover:bg-transparent hover:bg-neutral-200/50"
+                  onClick={() => {
+                    const nextHeight = settings.lineHeight === 1.0 ? 1.5 : settings.lineHeight === 1.5 ? 2.0 : 1.0;
+                    onSettingChange('lineHeight', nextHeight);
+                  }}
+                >
+                  <Type className="w-[18px] h-[18px] flex items-center justify-center" />
+                  <span className="font-semibold uppercase w-fit text-center text-[12px]">
+                    <div className="px-1">{settings.lineHeight.toFixed(1)}</div>
+                  </span>
+                  <ChevronDown className="w-[18px] h-[18px] flex items-center justify-center" />
+                  <div className="normal-case pointer-events-none h-fit z-50 bg-surface-3 px-2 py-1 text-sm font-normal leading-5 text-surface-3-label transition-opacity rounded before:border-surface-3 before:absolute before:border-[6px] before:border-l-transparent before:border-r-transparent before:border-t-transparent before:left-1/2 before:-translate-x-1/2 before:-top-[12px] w-fit min-w-fit whitespace-pre opacity-0 absolute">
+                    Line height
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <hr className="mx-1 h-6 border-l border-surface-2-stroke" />
+
+            {/* Zoom Control */}
+            <div className="flex items-center">
+              <div className="group relative origin-bottom-left text-[16px]">
+                <button
+                  className="flex h-[32px] w-full items-center rounded-md px-[8px] hover:bg-button-text-hover disabled:hover:bg-transparent hover:bg-neutral-200/50"
+                  onClick={() => {
+                    const currentZoomPercent = Math.round((settings.zoom || 1) * 100);
+                    const nextZoom = currentZoomPercent === 100 ? 1.17 : currentZoomPercent === 117 ? 1.5 : 1.0;
+                    onSettingChange('zoom', nextZoom);
+                  }}
+                >
+                  <span className="font-semibold uppercase w-fit text-center text-[12px]">
+                    <div className="px-1">{Math.round((settings.zoom || 1) * 100)}%</div>
+                  </span>
+                  <ChevronDown className="w-[18px] h-[18px] flex items-center justify-center" />
+                  <div className="normal-case pointer-events-none h-fit z-50 bg-surface-3 px-2 py-1 text-sm font-normal leading-5 text-surface-3-label transition-opacity rounded before:border-surface-3 before:absolute before:border-[6px] before:border-l-transparent before:border-r-transparent before:border-t-transparent before:left-1/2 before:-translate-x-1/2 before:-top-[12px] w-fit min-w-fit whitespace-pre opacity-0 absolute">
+                    Zoom
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }));

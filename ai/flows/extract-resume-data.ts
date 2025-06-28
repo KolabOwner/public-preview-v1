@@ -10,7 +10,7 @@
  * - Direct PDF binary processing (no text extraction required)
  * - Multimodal vision capabilities for layout understanding
  * - Optimized for PDFs without embedded RMS metadata
- * - Adheres to the Rezi Resume Metadata Standard (RMS)
+ * - Adheres to the Resume Resume Metadata Standard (RMS)
  * - Systematic replacement of legacy Ollama parser
  *
  * Integration Points:

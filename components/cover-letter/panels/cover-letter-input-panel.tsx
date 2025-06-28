@@ -168,7 +168,7 @@ export default function CoverLetterInputPanel({
           <div className="border-t border-gray-200 dark:border-gray-700 w-full mt-3 h-0 transition duration-150 ease-in-out"></div>
         </div>
         <h5 className="text-sm leading-5 font-normal text-gray-500 dark:text-gray-400">
-          Rezi AI helps you to write your cover letter. It's super easy - let's start by adding information for the position you want apply for. Strange result? Just regenerate!
+          Resume AI helps you to write your cover letter. It's super easy - let's start by adding information for the position you want apply for. Strange result? Just regenerate!
         </h5>
       </div>
 

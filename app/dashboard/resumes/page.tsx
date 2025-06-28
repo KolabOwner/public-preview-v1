@@ -189,14 +189,6 @@ export default function ResumesPage() {
                   <p className="font-semibold uppercase truncate">Cover Letters</p>
                 </div>
               </div>
-              <div
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
-                role="tab"
-              >
-                <div className="w-full overflow-hidden">
-                  <p className="font-semibold uppercase truncate">Resignation Letters</p>
-                </div>
-              </div>
             </div>
 
             {/* Action buttons */}
@@ -289,7 +281,7 @@ export default function ResumesPage() {
 
                               {showThemeMenu && (
                                 <div className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 absolute flex-col items-start py-2 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50 min-w-[160px] max-w-72 -left-40 top-0" style={{ width: 'fit-content' }}>
-                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'light' ? '!bg-rezi-blue-600 dark:!bg-rezi-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('light'); setShowThemeMenu(false); }}>
+                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'light' ? '!bg-resume-blue-600 dark:!bg-resume-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('light'); setShowThemeMenu(false); }}>
                                     <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
                                       <div className="flex flex-row items-start gap-2">
                                         <div>
@@ -304,7 +296,7 @@ export default function ResumesPage() {
                                       <div></div>
                                     </div>
                                   </div>
-                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'dark' ? '!bg-rezi-blue-600 dark:!bg-rezi-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('dark'); setShowThemeMenu(false); }}>
+                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'dark' ? '!bg-resume-blue-600 dark:!bg-resume-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('dark'); setShowThemeMenu(false); }}>
                                     <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
                                       <div className="flex flex-row items-start gap-2">
                                         <div>
@@ -319,7 +311,7 @@ export default function ResumesPage() {
                                       <div></div>
                                     </div>
                                   </div>
-                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'system' ? '!bg-rezi-blue-600 dark:!bg-rezi-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('system'); setShowThemeMenu(false); }}>
+                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'system' ? '!bg-resume-blue-600 dark:!bg-resume-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('system'); setShowThemeMenu(false); }}>
                                     <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
                                       <div className="flex flex-row items-start gap-2">
                                         <div>
@@ -383,11 +375,6 @@ export default function ResumesPage() {
                   <p className="font-semibold uppercase truncate">Cover Letters</p>
                 </div>
               </div>
-              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer" role="tab">
-                <div className="w-full overflow-hidden">
-                  <p className="font-semibold uppercase truncate">Resignation Letters</p>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -413,7 +400,7 @@ export default function ResumesPage() {
                     className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative"
                     onClick={() => setViewMode('grid')}
                   >
-                    <i className={`!flex items-center justify-center fad fa-grid-2 text-xl w-6 h-6 ${viewMode === 'grid' ? 'text-rezi-blue-700 dark:text-rezi-blue-400' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
+                    <i className={`!flex items-center justify-center fad fa-grid-2 text-xl w-6 h-6 ${viewMode === 'grid' ? 'text-resume-blue-700 dark:text-resume-blue-400' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
                   </div>
                 </div>
                 <div className="group relative flex h-6 w-6 items-center justify-center">
@@ -421,7 +408,7 @@ export default function ResumesPage() {
                     className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative"
                     onClick={() => setViewMode('list')}
                   >
-                    <i className={`!flex items-center justify-center fad fa-list text-xl w-6 h-6 ${viewMode === 'list' ? 'text-rezi-blue-700 dark:text-rezi-blue-400' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
+                    <i className={`!flex items-center justify-center fad fa-list text-xl w-6 h-6 ${viewMode === 'list' ? 'text-resume-blue-700 dark:text-resume-blue-400' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
                   </div>
                 </div>
               </div>

@@ -14,7 +14,7 @@ const templates: Template[] = [
   {
     id: 'modern',
     name: 'Modern Resume Template',
-    description: 'Our newest resume template developed with attractive colors, clean lines, and high content density. Rezi recommends this format for all users.',
+    description: 'Our newest resume template developed with attractive colors, clean lines, and high content density. Resume recommends this format for all users.',
     image: 'https://cdn.prod.website-files.com/62f0854c1cef28185535ab61/671f1eafad9bda69665472e8_prod_modern_template_47.webp',
     downloadTypes: ['PDF'],
     isPopular: true
@@ -43,7 +43,7 @@ const templates: Template[] = [
   {
     id: 'alternative',
     name: 'Alternative Resume Template',
-    description: 'We\'ve created an alternative Rezi format that is designed to be printed and viewed on paper. Well suited for when you need modern resume templates.',
+    description: 'We\'ve created an alternative Resume format that is designed to be printed and viewed on paper. Well suited for when you need modern resume templates.',
     image: 'https://cdn.prod.website-files.com/62f0854c1cef28185535ab61/634e80d1ba6592bf5aa00c69_63072ff7cfd3b09f19b7377b_alt.webp',
     downloadTypes: ['PDF']
   }
@@ -129,7 +129,7 @@ export default function ResumeTemplateShowcase() {
 
                 <div className="flex gap-4">
                   <a
-                    href="https://app.rezi.ai/signup"
+                    href="https://app.resume.ai/signup"
                     className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all shadow-xl"
                   >
                     Use This Template

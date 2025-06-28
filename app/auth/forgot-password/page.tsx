@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
         >
           {/* Logo */}
           <Link href="/" className="inline-block mb-12">
-            <h1 className="text-4xl font-bold text-white">Rezi</h1>
+            <h1 className="text-4xl font-bold text-white">Resume</h1>
           </Link>
 
           {/* Back to Login Link */}

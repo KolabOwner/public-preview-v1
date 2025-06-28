@@ -68,8 +68,8 @@ const config: Config = {
         'grey-800': '#2d3748',
         'grey-900': '#1a202c',
 
-        // Rezi brand colors
-        'rezi-blue': {
+        // Resume brand colors
+        'resume-blue': {
           50: '#e6f7ff',
           100: '#bae7ff',
           200: '#91d5ff',
@@ -81,7 +81,7 @@ const config: Config = {
           800: '#003a8c',
           900: '#002766',
         },
-        'rezi-teal': {
+        'resume-teal': {
           DEFAULT: '#48c9b0',
           dark: '#16a085',
         },

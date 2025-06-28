@@ -19,7 +19,7 @@ const features: Feature[] = [
     id: 'ats-keyword',
     title: 'ATS Keyword Targeting',
     icon: <Target className="w-6 h-6" />,
-    description: 'Instantly improve your chances of being selected for an interview by using the targeted keywords identified by Rezi.',
+    description: 'Instantly improve your chances of being selected for an interview by using the targeted keywords identified by Resume.',
     benefits: [
       'AI-powered keyword extraction from job descriptions',
       'Real-time keyword density analysis',
@@ -36,7 +36,7 @@ const features: Feature[] = [
     id: 'content-analysis',
     title: 'Real Time Content Analysis',
     icon: <BarChart3 className="w-6 h-6" />,
-    description: 'Rezi instantly identifies common content errors such as missing bullet points, buzzwords, useful metrics, and more.',
+    description: 'Resume instantly identifies common content errors such as missing bullet points, buzzwords, useful metrics, and more.',
     benefits: [
       'Instant feedback on resume content',
       'Grammar and spelling checks',
@@ -50,10 +50,10 @@ const features: Feature[] = [
     ]
   },
   {
-    id: 'rezi-score',
-    title: 'The Rezi Score',
+    id: 'resume-score',
+    title: 'The Resume Score',
     icon: <Sparkles className="w-6 h-6" />,
-    description: 'The Rezi Score critiques how well you\'ve created your resume across 23 criteria points - translating the result into a score rated from 1 - 100.',
+    description: 'The Resume Score critiques how well you\'ve created your resume across 23 criteria points - translating the result into a score rated from 1 - 100.',
     benefits: [
       'Comprehensive 23-point evaluation',
       'Actionable improvement suggestions',
@@ -147,7 +147,7 @@ export default function FeatureHighlightsTabs() {
 
                 {/* CTA */}
                 <a
-                  href="https://app.rezi.ai/signup"
+                  href="https://app.resume.ai/signup"
                   className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all shadow-xl"
                 >
                   Try It Free

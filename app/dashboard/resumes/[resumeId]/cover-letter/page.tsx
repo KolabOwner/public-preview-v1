@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/lib/features/auth/firebase-config";
 import { useAuth } from '@/contexts/auth-context';
 import { useJobInfo } from '@/contexts/job-info-context';
@@ -63,7 +63,8 @@ function CoverLetterBuilderContent() {
     fontSize: 12,
     lineHeight: 1.5,
     textColor: '#000000',
-    template: 'Professional'
+    template: 'Professional',
+    zoom: 1.17
   });
 
   // Load resume data
@@ -100,6 +101,94 @@ function CoverLetterBuilderContent() {
 
     loadResumeData();
   }, [user, resumeId, router, toast]);
+
+  // Load the cover letter from the resume document
+  useEffect(() => {
+    const loadCoverLetter = async () => {
+      if (!resumeData || !resumeData.coverLetter) return;
+
+      try {
+        const data = resumeData.coverLetter;
+        
+        // Parse the content back into cover letter structure
+        const lines = data.content.split('\n');
+        const salutationIndex = lines.findIndex(line => line.trim() !== '');
+        const salutation = lines[salutationIndex] || '';
+        
+        // Find opening (first non-empty line after salutation)
+        let openingIndex = salutationIndex + 1;
+        while (openingIndex < lines.length && lines[openingIndex].trim() === '') {
+          openingIndex++;
+        }
+        const opening = lines[openingIndex] || '';
+        
+        // Find closing and signature (work backwards)
+        let signatureIndex = lines.length - 1;
+        while (signatureIndex > 0 && lines[signatureIndex].trim() === '') {
+          signatureIndex--;
+        }
+        const signature = lines[signatureIndex] || '';
+        
+        let closingIndex = signatureIndex - 1;
+        while (closingIndex > 0 && lines[closingIndex].trim() === '') {
+          closingIndex--;
+        }
+        const closing = lines[closingIndex] || '';
+        
+        // Extract body paragraphs (everything between opening and closing)
+        const bodyStartIndex = openingIndex + 1;
+        const bodyEndIndex = closingIndex;
+        const bodyParagraphs = [];
+        let currentParagraph = '';
+        
+        for (let i = bodyStartIndex; i < bodyEndIndex; i++) {
+          if (lines[i].trim() === '') {
+            if (currentParagraph.trim() !== '') {
+              bodyParagraphs.push(currentParagraph.trim());
+              currentParagraph = '';
+            }
+          } else {
+            currentParagraph += (currentParagraph ? ' ' : '') + lines[i];
+          }
+        }
+        if (currentParagraph.trim() !== '') {
+          bodyParagraphs.push(currentParagraph.trim());
+        }
+
+        // Set the loaded cover letter
+        setCoverLetter({
+          salutation,
+          opening,
+          bodyParagraphs,
+          closing,
+          signature,
+          metadata: data.metadata
+        });
+
+        // Set recipient info
+        setRecipientInfo({
+          companyName: data.company,
+          positionTitle: data.jobTitle
+        });
+
+        // Load settings if available
+        if (data.settings) {
+          setSettings(data.settings);
+        }
+
+        toast({
+          title: "Cover Letter Loaded",
+          description: "Your saved cover letter has been loaded.",
+        });
+      } catch (error) {
+        console.error('Error loading cover letter:', error);
+        // Don't show error toast as this is optional
+      }
+    };
+
+    // Load cover letter when resume data is available
+    loadCoverLetter();
+  }, [resumeData]);
 
   // Check user subscription
   useEffect(() => {
@@ -145,6 +234,52 @@ function CoverLetterBuilderContent() {
     });
   };
 
+  // Save cover letter to Firestore
+  const saveCoverLetter = async (coverLetterData: CoverLetterData, params: CoverLetterParams) => {
+    if (!user || !resumeId) return;
+
+    try {
+      // Format the cover letter content as a single string
+      const content = [
+        coverLetterData.salutation,
+        '',
+        coverLetterData.opening,
+        '',
+        ...coverLetterData.bodyParagraphs.map(p => p + '\n'),
+        coverLetterData.closing,
+        '',
+        coverLetterData.signature
+      ].join('\n');
+
+      // Update the resume document with cover letter data
+      const resumeRef = doc(db, 'resumes', resumeId);
+      await updateDoc(resumeRef, {
+        coverLetter: {
+          jobTitle: params.positionTitle,
+          company: params.companyName,
+          jobDescription: params.jobDescription || '',
+          content: content,
+          metadata: coverLetterData.metadata,
+          settings: settings,
+          lastUpdated: serverTimestamp(),
+        },
+        updatedAt: serverTimestamp()
+      });
+
+      toast({
+        title: "Cover Letter Saved",
+        description: "Your cover letter has been saved successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving cover letter:', error);
+      toast({
+        title: "Save Failed",
+        description: "Unable to save cover letter. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Handler for generating cover letter
   const handleGenerateCoverLetter = async (params: CoverLetterParams) => {
     // Block free users from generating
@@ -181,14 +316,19 @@ function CoverLetterBuilderContent() {
       });
 
       // Set the generated cover letter
-      setCoverLetter({
+      const generatedCoverLetter = {
         salutation: result.sections.salutation,
         opening: result.sections.opening,
         bodyParagraphs: result.sections.bodyParagraphs,
         closing: result.sections.closing,
         signature: result.sections.signature,
         metadata: result.metadata
-      });
+      };
+      
+      setCoverLetter(generatedCoverLetter);
+
+      // Save the cover letter to Firestore
+      await saveCoverLetter(generatedCoverLetter, params);
 
       toast({
         title: "Cover Letter Generated",
