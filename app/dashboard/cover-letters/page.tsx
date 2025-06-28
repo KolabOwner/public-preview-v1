@@ -5,49 +5,95 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from "@/lib/features/auth/firebase-config";
-import AICoverLetterForm from '@/components/resume-editor/ai-cover-letter-form';
+import DashboardNav from '@/components/ui/dashboard-nav';
+import ViewControls from '@/components/ui/view-controls';
+import CoverLetterGrid from '@/components/cover-letter/cover-letter-grid';
+import CoverLetterList from '@/components/cover-letter/cover-letter-list';
+
+interface CoverLetter {
+  id: string;
+  title: string;
+  company: string;
+  jobTitle: string;
+  content: string;
+  createdAt: any;
+  updatedAt: any;
+  contactInfo?: any;
+}
 
 export default function CoverLettersPage() {
-  const [coverLetters, setCoverLetters] = useState<any[]>([]);
+  const [coverLetters, setCoverLetters] = useState<CoverLetter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<'created' | 'updated'>('created');
   const { user } = useAuth();
   const router = useRouter();
 
+
   // Fetch user's saved cover letters
-  useEffect(() => {
-    const fetchCoverLetters = async () => {
-      if (!user) return;
+  const fetchCoverLetters = async () => {
+    if (!user) return;
 
-      try {
-        const coverLettersQuery = query(
-          collection(db, 'coverLetters'),
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc')
-        );
+    try {
+      // Query all resumes for the user
+      const resumesQuery = query(
+        collection(db, 'resumes'),
+        where('userId', '==', user.uid),
+        orderBy('updatedAt', 'desc')
+      );
 
-        const querySnapshot = await getDocs(coverLettersQuery);
+      const querySnapshot = await getDocs(resumesQuery);
+      const coverLettersList: CoverLetter[] = [];
 
-        const coverLettersList: any[] = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.coverLetter) {
           coverLettersList.push({
             id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate?.() || new Date(),
+            title: data.coverLetter.jobTitle || 'Untitled Cover Letter',
+            company: data.coverLetter.company || 'Unknown Company',
+            jobTitle: data.coverLetter.jobTitle || 'Unknown Position',
+            content: data.coverLetter.content || '',
+            createdAt: data.coverLetter.lastUpdated || data.createdAt,
+            updatedAt: data.coverLetter.lastUpdated || data.updatedAt,
+            contactInfo: data.parsedData?.contact || data.parsedData?.contactInfo
           });
-        });
+        }
+      });
 
-        setCoverLetters(coverLettersList);
-      } catch (error) {
-        console.error('Error fetching cover letters:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      // Sort by created/updated date
+      coverLettersList.sort((a, b) => {
+        const dateA = sortBy === 'created' ? a.createdAt : a.updatedAt;
+        const dateB = sortBy === 'created' ? b.createdAt : b.updatedAt;
+        
+        // Handle different date formats
+        const getTime = (date: any) => {
+          if (!date) return 0;
+          if (date.toDate) return date.toDate().getTime(); // Firestore timestamp
+          if (date.seconds) return date.seconds * 1000; // Timestamp with seconds
+          if (date instanceof Date) return date.getTime(); // Already a Date object
+          return new Date(date).getTime(); // Try to parse as string
+        };
+        
+        return getTime(dateB) - getTime(dateA);
+      });
 
+      setCoverLetters(coverLettersList);
+    } catch (error) {
+      console.error('Error fetching cover letters:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchCoverLetters();
-  }, [user]);
+  }, [user, sortBy]);
+
+  const toggleSortBy = () => {
+    setSortBy(sortBy === 'created' ? 'updated' : 'created');
+  };
+
 
   if (isLoading) {
     return (
@@ -58,66 +104,30 @@ export default function CoverLettersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h1 className="text-2xl font-bold mb-4">AI Cover Letter Generator</h1>
-        <p className="text-gray-600 mb-6">
-          Create a customized cover letter based on your resume and the job details.
-        </p>
+    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-navy-950 dark:via-navy-900 dark:to-slate-900">
+      <div className="relative w-full max-w-full gap-4 flex min-h-[calc(100dvh_-_64px)] w-full flex-col justify-start gap-4 px-4 md:px-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8" id="layout_full_screen">
+        <main className="sm:h-full lg:h-auto">
+          <DashboardNav activeTab="cover-letters" />
 
-        <AICoverLetterForm />
-      </div>
+          {/* Main content */}
+          <div className="flex-start flex self-stretch">
+            <div className="w-full">
+              <ViewControls 
+                sortBy={sortBy}
+                viewMode={viewMode}
+                onSortToggle={toggleSortBy}
+                onViewModeChange={(mode) => setViewMode(mode)}
+              />
 
-      {coverLetters.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-xl font-bold mb-4">Your Cover Letters</h2>
-          <div className="space-y-4">
-            {coverLetters.map((letter) => (
-              <div key={letter.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-medium">{letter.jobTitle} at {letter.company}</h3>
-                    <p className="text-sm text-gray-500">
-                      Created on {letter.createdAt.toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      className="px-3 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200"
-                      onClick={() => {
-                        // Create a Blob with the cover letter text
-                        const blob = new Blob([letter.content], { type: 'text/plain' });
-                        const url = URL.createObjectURL(blob);
-
-                        // Create a download link and trigger the download
-                        const linkElement = document.createElement('a');
-                        linkElement.href = url;
-                        linkElement.download = `Cover_Letter_${letter.company}_${letter.jobTitle}.txt`;
-                        document.body.appendChild(linkElement);
-                        linkElement.click();
-                        document.body.removeChild(linkElement);
-                        URL.revokeObjectURL(url);
-                      }}
-                    >
-                      Download
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              {/* Cover Letters Grid/List */}
+              {viewMode === 'grid' ? (
+                <CoverLetterGrid coverLetters={coverLetters} onRefresh={fetchCoverLetters} />
+              ) : (
+                <CoverLetterList coverLetters={coverLetters} onRefresh={fetchCoverLetters} />
+              )}
+            </div>
           </div>
-        </div>
-      )}
-
-      <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
-        <h4 className="text-sm font-medium text-blue-800 mb-2">Cover Letter Tips</h4>
-        <ul className="text-sm text-blue-700 list-disc pl-5 space-y-1">
-          <li>Customize your cover letter for each job application</li>
-          <li>Address specific job requirements in your letter</li>
-          <li>Keep it concise - one page is usually sufficient</li>
-          <li>Highlight relevant achievements from your resume</li>
-          <li>Proofread carefully before sending</li>
-        </ul>
+        </main>
       </div>
     </div>
   );

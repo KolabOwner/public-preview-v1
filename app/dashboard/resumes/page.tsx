@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useTheme } from '@/components/ui/theme-provider';
 import { useUserUsage } from '@/hooks/use-user-usage';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from "@/lib/features/auth/firebase-config";
 import ResumeGridCard from '@/components/resume/resume-grid-card';
 import ResumeListView from '@/components/resume/resume-list-view';
 import NotificationsSidebar from '@/components/ui/notifications-sidebar';
+import DashboardNav from '@/components/ui/dashboard-nav';
+import ViewControls from '@/components/ui/view-controls';
 import dynamic from 'next/dynamic';
 
 // Dynamic import with no SSR to fix serialization error
@@ -37,31 +38,10 @@ export default function ResumesPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'created' | 'updated'>('created');
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
   const { usage, loading: usageLoading, canDownloadPdf } = useUserUsage();
-  const userMenuRef = useRef<HTMLDivElement>(null);
-  const themeMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close menus when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setShowUserMenu(false);
-      }
-      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
-        setShowThemeMenu(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const fetchResumes = async () => {
     if (!user) return;
@@ -99,25 +79,8 @@ export default function ResumesPage() {
     fetchResumes();
   }, [user]);
 
-  const toggleViewMode = () => {
-    setViewMode(viewMode === 'grid' ? 'list' : 'grid');
-  };
-
   const toggleSortBy = () => {
     setSortBy(sortBy === 'created' ? 'updated' : 'created');
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setShowUserMenu(false);
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
   };
 
   // Create resume card component
@@ -170,248 +133,21 @@ export default function ResumesPage() {
     <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-navy-950 dark:via-navy-900 dark:to-slate-900">
       <div className="relative w-full max-w-full gap-4 flex min-h-[calc(100dvh_-_64px)] w-full flex-col justify-start gap-4 px-4 md:px-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8" id="layout_full_screen">
         <main className="sm:h-full lg:h-auto">
-          {/* Tab navigation */}
-          <div className="hidden w-full flex-row items-center justify-between self-stretch sm:flex">
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 my-6 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
-              <div
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white cursor-pointer shadow-md shadow-blue-500/30"
-                role="tab"
-              >
-                <div className="w-full overflow-hidden">
-                  <p className="font-semibold uppercase truncate">Resumes</p>
-                </div>
-              </div>
-              <div
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
-                role="tab"
-              >
-                <div className="w-full overflow-hidden">
-                  <p className="font-semibold uppercase truncate">Cover Letters</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="hidden flex-row items-center justify-between gap-4 lg:flex">
-              {/* Notification bell */}
-              <div 
-                className="relative flex cursor-pointer items-center justify-center text-center font-extrabold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={() => setShowNotifications(true)}
-              >
-                <i className="fad fa-bell fa-lg" aria-hidden="true"></i>
-                <div className="absolute -right-3 -top-4 flex h-4 w-4 select-none items-center justify-center rounded-full border-2 border-white dark:border-navy-800 bg-red-600 p-2 text-xs font-normal leading-4 text-white">1</div>
-              </div>
-
-              {/* User Menu */}
-              {user && (
-                <div className="hidden lg:!block relative p-3 lg:p-0" ref={userMenuRef}>
-                  <div className="flex cursor-pointer flex-row items-center justify-end gap-1 px-0">
-                    <button
-                      type="button"
-                      className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none lg-h-8 flex h-6 !min-h-6 w-6 items-center justify-center !text-xs !font-semibold leading-4 lg:!min-h-8 lg:w-8 lg:!text-base lg:!leading-6 disabled:bg-input-bg-disabled disabled:text-input-disabled disabled:cursor-not-allowed border-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2 py-1 min-h-8 leading-4 rounded-md text-xs !rounded-full shadow-md shadow-blue-500/30"
-                      onClick={() => setShowUserMenu(!showUserMenu)}
-                    >
-                      <span className="px-1">{user.displayName?.[0] || user.email?.[0] || 'K'}</span>
-                    </button>
-                    <div className="hidden h-5 w-5 items-center justify-center lg:flex">
-                      <i className="fas fa-caret-down text-base" aria-hidden="true"></i>
-                    </div>
-                  </div>
-
-                  {showUserMenu && (
-                    <div className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 absolute flex-col items-start py-2 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50 min-w-28 max-w-72 left-0" style={{ width: 'fit-content', top: '34px' }}>
-                      <div className="relative pointer-events-none flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-default">
-                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                          <div className="flex flex-row items-start gap-2">
-                            <div></div>
-                            <div className="flex flex-col">
-                             <div className="select-none !text-gray-500 dark:!text-gray-400 w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title={user.email ?? undefined}>
-                              {user.email ?? ''}
-                            </div>
-                            </div>
-                          </div>
-                          <div></div>
-                        </div>
-                      </div>
-                      <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
-
-                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
-                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                          <div className="flex flex-row items-start gap-2">
-                            <div>
-                              <div className="flex h-6 min-w-6 items-center justify-center">
-                                <i className="fad fa-user text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Account">Account</div>
-                            </div>
-                          </div>
-                          <div></div>
-                        </div>
-                      </div>
-
-
-                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
-                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                          <div className="flex flex-row items-start gap-2">
-                            <div>
-                              <div className="flex h-6 min-w-6 items-center justify-center">
-                                <i className="fad fa-file-lines text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="User Guides">User Guides</div>
-                            </div>
-                          </div>
-                          <div></div>
-                        </div>
-                      </div>
-
-                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover" ref={themeMenuRef}>
-                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full" onClick={() => setShowThemeMenu(!showThemeMenu)}>
-                          <div className="flex flex-row items-start gap-2">
-                            <div>
-                              <div className="flex h-6 min-w-6 items-center justify-center">
-                                <i className="fad fa-palette text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Theme">Theme</div>
-
-                              {showThemeMenu && (
-                                <div className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 absolute flex-col items-start py-2 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm z-50 min-w-[160px] max-w-72 -left-40 top-0" style={{ width: 'fit-content' }}>
-                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'light' ? '!bg-resume-blue-600 dark:!bg-resume-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('light'); setShowThemeMenu(false); }}>
-                                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                                      <div className="flex flex-row items-start gap-2">
-                                        <div>
-                                          <div className="flex h-6 min-w-6 items-center justify-center">
-                                            <i className={`fad fa-sun text-left text-base ${theme === 'light' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
-                                          </div>
-                                        </div>
-                                        <div className="flex flex-col">
-                                          <div className={`w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 ${theme === 'light' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} title="Light">Light</div>
-                                        </div>
-                                      </div>
-                                      <div></div>
-                                    </div>
-                                  </div>
-                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'dark' ? '!bg-resume-blue-600 dark:!bg-resume-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('dark'); setShowThemeMenu(false); }}>
-                                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                                      <div className="flex flex-row items-start gap-2">
-                                        <div>
-                                          <div className="flex h-6 min-w-6 items-center justify-center">
-                                            <i className={`fad fa-moon-stars text-left text-base ${theme === 'dark' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
-                                          </div>
-                                        </div>
-                                        <div className="flex flex-col">
-                                          <div className={`w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 ${theme === 'dark' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} title="Dark">Dark</div>
-                                        </div>
-                                      </div>
-                                      <div></div>
-                                    </div>
-                                  </div>
-                                  <div className={`relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 ${theme === 'system' ? '!bg-resume-blue-600 dark:!bg-resume-blue-700 hover:none' : 'cursor-pointer sm:hover:bg-menu-item-hover'}`} onClick={() => { setTheme('system'); setShowThemeMenu(false); }}>
-                                    <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                                      <div className="flex flex-row items-start gap-2">
-                                        <div>
-                                          <div className="flex h-6 min-w-6 items-center justify-center">
-                                            <i className={`fad fa-moon-over-sun text-left text-base ${theme === 'system' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
-                                          </div>
-                                        </div>
-                                        <div className="flex flex-col">
-                                          <div className={`w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 ${theme === 'system' ? '!text-white' : 'text-gray-900 dark:text-gray-100'}`} title="System">System</div>
-                                        </div>
-                                      </div>
-                                      <div></div>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="flex h-6 min-w-6 items-center justify-center">
-                              <i className="fas fa-angle-right text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
-
-                      <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover" onClick={handleLogout}>
-                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
-                          <div className="flex flex-row items-start gap-2">
-                            <div>
-                              <div className="flex h-6 min-w-6 items-center justify-center">
-                                <i className="fad fa-right-from-bracket text-left text-base text-gray-900 dark:text-gray-100" aria-hidden="true"></i>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900 dark:text-gray-100" title="Log out">Log out</div>
-                            </div>
-                          </div>
-                          <div></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile tab navigation */}
-          <div className="flex overflow-scroll py-4 xs:flex sm:hidden">
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
-              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white cursor-pointer shadow-md shadow-blue-500/30" role="tab">
-                <div className="w-full overflow-hidden">
-                  <p className="font-semibold uppercase truncate">Resumes</p>
-                </div>
-              </div>
-              <div className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer" role="tab">
-                <div className="w-full overflow-hidden">
-                  <p className="font-semibold uppercase truncate">Cover Letters</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardNav 
+            activeTab="resumes" 
+            showNotifications={true}
+            onNotificationClick={() => setShowNotifications(true)}
+          />
 
           {/* Main content */}
           <div className="flex-start flex self-stretch">
             <div className="w-full">
-              <div className="py-4 flex items-center justify-end gap-4">
-                {/* Sort dropdown */}
-                <div className="relative flex flex-row items-center justify-start">
-                  <button
-                    type="button"
-                    className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition transition-200 latin border-none !px-2 text-xs font-bold uppercase leading-4 text-gray-900 dark:text-gray-100 focus:bg-button-text-focus dark:focus:bg-gray-700 active:bg-button-text-active dark:active:bg-gray-600 hover:bg-button-text-hover dark:hover:bg-gray-700 bg-transparent border-solid border border-button-secondary-stroke dark:border-gray-600 focus:bg-button-secondary-hover dark:focus:bg-gray-700 active:bg-button-secondary-active dark:active:bg-gray-600 hover:bg-button-secondary-hover dark:hover:bg-gray-700 px-2 py-1 min-h-8 leading-4 rounded-md text-xs"
-                    onClick={toggleSortBy}
-                  >
-                    <span className="px-1">{sortBy === 'created' ? 'Created' : 'Updated'}</span>
-                    <i className="fad fa-angle-down !flex items-center justify-center !leading-[0] flex-none text-sm w-[18px] h-[18px] mr-1" aria-hidden="true"></i>
-                  </button>
-                </div>
-
-                {/* View mode toggles */}
-                <div className="group relative flex h-6 w-6 items-center justify-center">
-                  <div
-                    className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative"
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <i className={`!flex items-center justify-center fad fa-grid-2 text-xl w-6 h-6 ${viewMode === 'grid' ? 'text-resume-blue-700 dark:text-resume-blue-400' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
-                  </div>
-                </div>
-                <div className="group relative flex h-6 w-6 items-center justify-center">
-                  <div
-                    className="h-6 w-6 cursor-pointer group relative flex items-center justify-center relative"
-                    onClick={() => setViewMode('list')}
-                  >
-                    <i className={`!flex items-center justify-center fad fa-list text-xl w-6 h-6 ${viewMode === 'list' ? 'text-resume-blue-700 dark:text-resume-blue-400' : 'text-gray-900 dark:text-gray-100'}`} aria-hidden="true"></i>
-                  </div>
-                </div>
-              </div>
+              <ViewControls 
+                sortBy={sortBy}
+                viewMode={viewMode}
+                onSortToggle={toggleSortBy}
+                onViewModeChange={(mode) => setViewMode(mode)}
+              />
 
               {/* Resume Grid/List View */}
               <div className="flex flex-col gap-4">
