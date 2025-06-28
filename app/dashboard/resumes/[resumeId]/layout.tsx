@@ -366,16 +366,15 @@ export default function ResumeEditorLayout({
               );
             })}
 
-            {/* More Menu for Hidden Tabs */}
-            {hiddenTabs.length > 0 && (
-              <div className="relative" ref={moreMenuRef}>
-                <button
-                  onClick={() => setShowMoreMenu(!showMoreMenu)}
-                  className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
-                  title="More sections"
-                >
-                  <i className="fas fa-ellipsis-h"></i>
-                </button>
+            {/* More Menu for Additional Sections */}
+            <div className="relative" ref={moreMenuRef}>
+              <button
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+                title="More sections"
+              >
+                <i className="fas fa-ellipsis-h"></i>
+              </button>
 
                 {/* More Menu Dropdown */}
                 {showMoreMenu && (
@@ -461,7 +460,6 @@ export default function ResumeEditorLayout({
                   </>
                 )}
               </div>
-            )}
             </div>
 
             {/* Preview/Action Tabs Group */}
@@ -556,14 +554,12 @@ export default function ResumeEditorLayout({
             })}
             
             {/* Mobile More Button */}
-            {hiddenTabs.length > 0 && (
-              <button
-                onClick={() => setShowMoreMenu(true)}
-                className="rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
-              >
-                <i className="fas fa-ellipsis-h text-[11px]"></i>
-              </button>
-            )}
+            <button
+              onClick={() => setShowMoreMenu(true)}
+              className="rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+            >
+              <i className="fas fa-ellipsis-h text-[11px]"></i>
+            </button>
             </div>
 
             {/* Mobile Action Tabs Group */}

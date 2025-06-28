@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/ui/theme-provider';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/features/auth/firebase-config';
+import UpgradeModal from '@/components/resume/modals/upgrade-modal';
+import { useToast } from '@/components/hooks/use-toast';
 
 interface DashboardNavProps {
   activeTab: 'resumes' | 'cover-letters';
@@ -15,8 +19,11 @@ interface DashboardNavProps {
 export default function DashboardNav({ activeTab, showNotifications, onNotificationClick }: DashboardNavProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
+  const [userPlan, setUserPlan] = useState<'free' | 'pro' | 'enterprise'>('free');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
   const router = useRouter();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
@@ -38,12 +45,71 @@ export default function DashboardNav({ activeTab, showNotifications, onNotificat
     };
   }, []);
 
+  // Check user subscription
+  useEffect(() => {
+    const checkUserSubscription = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const plan = userData.subscription?.plan || 'free';
+          setUserPlan(plan);
+        }
+      } catch (error) {
+        console.error('Failed to check user subscription:', error);
+      }
+    };
+
+    checkUserSubscription();
+  }, [user?.uid]);
+
   const handleLogout = async () => {
     try {
       await logout();
       setShowUserMenu(false);
     } catch (error) {
       console.error('Error during logout:', error);
+    }
+  };
+
+  // Handle upgrade
+  const handleUpgrade = async (planId: string) => {
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: planId,
+          successUrl: `${window.location.origin}/dashboard/payment-success`,
+          cancelUrl: `${window.location.origin}/dashboard/cover-letters`,
+        }),
+      });
+      
+      const { sessionUrl } = await response.json();
+      
+      if (sessionUrl) {
+        window.location.href = sessionUrl;
+      }
+    } catch (error) {
+      console.error('Upgrade failed:', error);
+      toast({
+        title: "Upgrade Failed",
+        description: "Unable to process upgrade. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCoverLettersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (userPlan === 'free') {
+      e.preventDefault();
+      setShowUpgradeModal(true);
     }
   };
 
@@ -67,6 +133,7 @@ export default function DashboardNav({ activeTab, showNotifications, onNotificat
           </Link>
           <Link
             href="/dashboard/cover-letters"
+            onClick={handleCoverLettersClick}
             className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 cursor-pointer ${
               activeTab === 'cover-letters'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/30'
@@ -269,6 +336,7 @@ export default function DashboardNav({ activeTab, showNotifications, onNotificat
           </Link>
           <Link
             href="/dashboard/cover-letters"
+            onClick={handleCoverLettersClick}
             className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 cursor-pointer ${
               activeTab === 'cover-letters'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/30'
@@ -282,6 +350,13 @@ export default function DashboardNav({ activeTab, showNotifications, onNotificat
           </Link>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onUpgrade={handleUpgrade}
+      />
     </>
   );
 }
