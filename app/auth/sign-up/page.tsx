@@ -1,7 +1,7 @@
 // app/auth/sign-up/page.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -15,6 +15,11 @@ import {
 import { onAuthStateChange } from "@/lib/features/auth/firebase-auth";
 import { userService } from "@/lib/features/auth/services/user-service";
 import { useAuth } from "@/contexts/auth-context";
+import { recaptcha } from "@/lib/features/security/recaptcha";
+import { PasswordStrengthIndicator } from "@/components/auth/password-strength-indicator";
+import { EmailValidator } from "@/lib/features/validation/email-validator";
+import { AccessibleFormField, LiveRegion, ScreenReaderOnly } from "@/components/auth/accessible-form-field";
+import { debounce } from 'lodash';
 
 
 export default function SignUpPage() {
@@ -36,8 +41,15 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailSuggestion, setEmailSuggestion] = useState('');
+  const [formAnnouncement, setFormAnnouncement] = useState('');
 
   const returnUrl = searchParams.get('from') || '/dashboard/resumes';
+
+  // Input constraints
+  const MAX_EMAIL_LENGTH = 254;
+  const MAX_PASSWORD_LENGTH = 128;
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -51,12 +63,73 @@ export default function SignUpPage() {
     return () => clearError();
   }, [clearError]);
 
+  // Load reCAPTCHA on mount
+  useEffect(() => {
+    recaptcha.load().catch(console.error);
+  }, []);
+
+  // Debounced email validation
+  const validateEmail = useCallback(
+    debounce((value: string) => {
+      if (!value) {
+        setEmailError('');
+        setEmailSuggestion('');
+        return;
+      }
+
+      const error = EmailValidator.getErrorMessage(value);
+      if (error) {
+        setEmailError(error);
+        setEmailSuggestion('');
+      } else {
+        setEmailError('');
+        const suggestion = EmailValidator.getSuggestion(value);
+        if (suggestion && suggestion !== value) {
+          setEmailSuggestion(suggestion);
+        } else {
+          setEmailSuggestion('');
+        }
+      }
+    }, 300),
+    []
+  );
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.slice(0, MAX_EMAIL_LENGTH);
+    setEmail(value);
+    validateEmail(value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.slice(0, MAX_PASSWORD_LENGTH);
+    setPassword(value);
+  };
+
+  const acceptEmailSuggestion = () => {
+    setEmail(emailSuggestion);
+    setEmailSuggestion('');
+    setEmailError('');
+    setFormAnnouncement('Email suggestion accepted');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError('');
+    
+    // Validate email before submission
+    if (emailError) {
+      setFormAnnouncement('Please fix the email error before submitting');
+      return;
+    }
+
     setIsLoading(true);
+    setFormAnnouncement('Creating your account...');
 
     try {
+      // Execute reCAPTCHA
+      const recaptchaToken = await recaptcha.execute('signup');
+
+      // Register with reCAPTCHA token
       await register(email, password);
 
       // Wait for auth state to update
@@ -67,19 +140,22 @@ export default function SignUpPage() {
           // Create user document in Firestore
           await userService.createUserDocument(currentUser);
 
-          // Create session cookie
+          // Create session cookie with reCAPTCHA token
           const idToken = await currentUser.getIdToken();
           if (idToken) {
             await fetch('/api/auth-endpoints/session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken }),
+              body: JSON.stringify({ idToken, recaptchaToken }),
             });
           }
+          
+          setFormAnnouncement('Account created successfully! Redirecting...');
         }
       });
     } catch (err: any) {
       setLocalError(err.message || 'Registration failed');
+      setFormAnnouncement('Registration failed. Please try again.');
       setIsLoading(false);
     }
   };
@@ -234,43 +310,84 @@ export default function SignUpPage() {
           )}
 
           {/* Sign Up Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email"
-                  className="w-full px-4 py-3 bg-[#252b3b] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#48c9b0] focus:ring-1 focus:ring-[#48c9b0] transition-colors"
-                  required
-                  disabled={isLoading}
-                />
-                <Mail className="absolute right-3 top-3.5 w-5 h-5 text-gray-500" />
-              </div>
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            {/* Email Field */}
+            <AccessibleFormField
+              label="Email address"
+              error={emailError}
+              required
+            >
+              {(props) => (
+                <div>
+                  <div className="relative">
+                    <input
+                      {...props}
+                      type="email"
+                      value={email}
+                      onChange={handleEmailChange}
+                      placeholder="Your email"
+                      className="w-full px-4 py-3 bg-[#252b3b] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#48c9b0] focus:ring-1 focus:ring-[#48c9b0] transition-colors"
+                      required
+                      disabled={isLoading}
+                      maxLength={MAX_EMAIL_LENGTH}
+                      autoComplete="email"
+                    />
+                    <Mail className="absolute right-3 top-3.5 w-5 h-5 text-gray-500" aria-hidden="true" />
+                  </div>
+                  {emailSuggestion && !emailError && (
+                    <div className="mt-2 flex items-center gap-2 text-xs">
+                      <span className="text-gray-400">Did you mean</span>
+                      <button
+                        type="button"
+                        onClick={acceptEmailSuggestion}
+                        className="text-[#48c9b0] hover:text-[#16a085] underline"
+                      >
+                        {emailSuggestion}
+                      </button>
+                      <span className="text-gray-400">?</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </AccessibleFormField>
 
-            <div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Your password"
-                  className="w-full px-4 py-3 bg-[#252b3b] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#48c9b0] focus:ring-1 focus:ring-[#48c9b0] transition-colors"
-                  required
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-gray-500 hover:text-gray-300"
-                  disabled={isLoading}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
+            {/* Password Field */}
+            <AccessibleFormField
+              label="Password"
+              required
+            >
+              {(props) => (
+                <div>
+                  <div className="relative">
+                    <input
+                      {...props}
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={handlePasswordChange}
+                      placeholder="Your password"
+                      className="w-full px-4 py-3 bg-[#252b3b] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#48c9b0] focus:ring-1 focus:ring-[#48c9b0] transition-colors"
+                      required
+                      disabled={isLoading}
+                      maxLength={MAX_PASSWORD_LENGTH}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3.5 text-gray-500 hover:text-gray-300"
+                      disabled={isLoading}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? 
+                        <EyeOff className="w-5 h-5" aria-hidden="true" /> : 
+                        <Eye className="w-5 h-5" aria-hidden="true" />
+                      }
+                    </button>
+                  </div>
+                  <PasswordStrengthIndicator password={password} />
+                </div>
+              )}
+            </AccessibleFormField>
 
             <button
               type="submit"
@@ -278,12 +395,18 @@ export default function SignUpPage() {
               className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition transition-200 whitespace-nowrap w-full border-0 bg-[#4e70ff] active:bg-[#3954d4] focus:bg-[#4e70ff] text-white hover:bg-[#3954d4] px-3 py-2.5 h-10 leading-5 rounded-md text-[14px] tracking-[0.14px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                  <ScreenReaderOnly>Creating account...</ScreenReaderOnly>
+                </>
               ) : (
                 <span className="px-1">Create an Account</span>
               )}
             </button>
           </form>
+
+          {/* Live region for form announcements */}
+          <LiveRegion announcement={formAnnouncement} priority="polite" />
 
           <div className="mt-6 text-center">
             <span className="text-gray-400">Do you have an Account? </span>

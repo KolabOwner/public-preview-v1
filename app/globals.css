@@ -918,6 +918,24 @@
     @apply bg-primary/20 text-primary;
   }
 
+  /* Screen reader only text */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Focus visible styles */
+  .focus-visible:focus {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
   /* IMPROVEMENT: Debug helper for baseline grid */
   .show-baseline-grid {
     background-image: repeating-linear-gradient(
