@@ -192,7 +192,7 @@ export default function DashboardNav({ activeTab, showNotifications, onNotificat
                 </div>
                 <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
 
-                <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover">
+                <div className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover" onClick={() => { router.push('/dashboard/account'); setShowUserMenu(false); }}>
                   <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
                     <div className="flex flex-row items-start gap-2">
                       <div>
