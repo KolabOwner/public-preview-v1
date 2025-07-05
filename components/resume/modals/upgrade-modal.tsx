@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useStripeUpgrade } from '@/hooks/use-stripe-upgrade';
 
 interface Plan {
   id: string;
@@ -25,8 +26,16 @@ interface UpgradeModalProps {
 const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade }) => {
   const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
   const [currency, setCurrency] = useState<string>('USD');
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
+  
+  const { handleUpgrade, isProcessing } = useStripeUpgrade({
+    onSuccess: () => {
+      onClose();
+    },
+    onError: (error) => {
+      console.error('Stripe upgrade failed:', error);
+    },
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -46,19 +55,16 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
   }, [isOpen]);
 
   const handleContinue = async () => {
-    setIsProcessing(true);
     try {
       if (onUpgrade) {
+        // Use custom upgrade handler if provided
         await onUpgrade(selectedPlan);
       } else {
-        // Default behavior if no onUpgrade handler provided
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Use Stripe integration by default
+        await handleUpgrade(selectedPlan);
       }
-      onClose();
     } catch (error) {
       console.error('Upgrade failed:', error);
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -76,13 +82,6 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
       price: 19.00,
       period: '/mo',
       savings: '34%'
-    },
-    {
-      id: 'lifetime',
-      name: 'Lifetime',
-      price: 149.00,
-      period: '/once',
-      savings: null
     }
   ];
 

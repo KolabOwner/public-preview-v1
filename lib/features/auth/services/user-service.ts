@@ -42,6 +42,8 @@ export interface UserProfile {
     status: 'active' | 'cancelled' | 'expired';
     startDate?: Timestamp;
     endDate?: Timestamp;
+    stripeCustomerId?: string;
+    subscriptionId?: string;
   };
   usage?: {
     aiGenerations: number;
@@ -243,3 +245,6 @@ class UserService {
 }
 
 export const userService = new UserService();
+
+// Export specific functions for webhook usage
+export const updateUserSubscription = userService.updateUserSubscription.bind(userService);

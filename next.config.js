@@ -40,13 +40,13 @@ const nextConfig = {
             value: `
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://apis.google.com https://cdnjs.cloudflare.com;
-              script-src-elem 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://apis.google.com https://cdnjs.cloudflare.com;
+              script-src-elem 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://apis.google.com https://cdnjs.cloudflare.com https://js.stripe.com;
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
               style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
               font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:;
-              img-src 'self' data: blob: https://firebasestorage.googleapis.com https://www.google.com https://www.gstatic.com https://lh3.googleusercontent.com;
-              connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseapp.com https://firebaseio.com wss://*.firebaseio.com https://www.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://firebasestorage.googleapis.com;
-              frame-src 'self' https://www.google.com https://recaptcha.google.com https://my-rms-validator.firebaseapp.com;
+              img-src 'self' data: blob: https://firebasestorage.googleapis.com https://www.google.com https://www.gstatic.com https://lh3.googleusercontent.com https://cdn.prod.website-files.com https://randomuser.me;
+              connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseapp.com https://firebaseio.com wss://*.firebaseio.com https://www.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://firebasestorage.googleapis.com https://api.stripe.com https://firebaseinstallations.googleapis.com;
+              frame-src 'self' https://www.google.com https://recaptcha.google.com https://my-rms-validator.firebaseapp.com https://js.stripe.com https://checkout.stripe.com;
               object-src 'none';
               base-uri 'self';
               form-action 'self';

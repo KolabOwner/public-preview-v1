@@ -32,6 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/components/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useStripePortal } from '@/hooks/use-stripe-portal';
 
 interface UserProfile {
   displayName?: string;
@@ -52,6 +53,8 @@ interface UserProfile {
     plan: 'free' | 'pro' | 'enterprise';
     status: 'active' | 'cancelled' | 'expired';
     endDate?: any;
+    stripeCustomerId?: string;
+    subscriptionId?: string;
   };
 }
 
@@ -63,6 +66,16 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<UserProfile>({});
   const [activeTab, setActiveTab] = useState('account');
   const [redemptionCode, setRedemptionCode] = useState('');
+  
+  const { openCustomerPortal, isLoading: isPortalLoading } = useStripePortal({
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to open billing portal. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
 
   // Form states
   const [firstName, setFirstName] = useState('');
@@ -247,12 +260,21 @@ export default function AccountPage() {
     }
   };
 
-  const handleManageBilling = () => {
-    // TODO: Integrate with Stripe Customer Portal
-    toast({
-      title: 'Coming Soon',
-      description: 'Billing management will be available soon',
-    });
+  const handleManageBilling = async () => {
+    if (!profile.subscription?.stripeCustomerId) {
+      toast({
+        title: 'No billing information',
+        description: 'You don\'t have any billing information on file.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await openCustomerPortal(profile.subscription.stripeCustomerId);
+    } catch (error) {
+      // Error handling is done in the hook
+    }
   };
 
   const getUserInitials = () => {
@@ -563,9 +585,22 @@ export default function AccountPage() {
                       Status: {profile.subscription?.status || 'Active'}
                     </p>
                   </div>
-                  <Button onClick={handleManageBilling} variant="outline">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Manage Billing
+                  <Button 
+                    onClick={handleManageBilling} 
+                    variant="outline"
+                    disabled={isPortalLoading || !profile.subscription?.stripeCustomerId}
+                  >
+                    {isPortalLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Opening...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Manage Billing
+                      </>
+                    )}
                   </Button>
                 </div>
 

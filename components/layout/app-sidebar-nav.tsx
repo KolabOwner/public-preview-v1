@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpgradeModal from '../resume/modals/upgrade-modal';
 import { useUserUsage } from '@/hooks/use-user-usage';
+import { useAuth } from '@/contexts/auth-context';
+import { STRIPE_PRICE_IDS } from '@/lib/stripe';
 import dynamic from 'next/dynamic';
 
 // Dynamic import with no SSR to fix serialization error
@@ -16,6 +18,7 @@ const CreateResumeModal = dynamic(
 const AppSidebarNav = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { user } = useAuth();
   const { usage, displayUsage, loading } = useUserUsage();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -89,24 +92,42 @@ const AppSidebarNav = () => {
 
   const handleUpgrade = async (planId: string) => {
     console.log(`Processing upgrade to ${planId} plan`);
+    
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
+
     try {
-      // Redirect to Stripe checkout
-      const response = await fetch('/api/payments/create-checkout-session', {
+      // Get the correct price ID based on plan
+      const priceId = planId === 'monthly' ? STRIPE_PRICE_IDS.monthly : STRIPE_PRICE_IDS.quarterly;
+      
+      // Create checkout session
+      const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId: planId,
-          successUrl: `${window.location.origin}/dashboard/payment-success`,
-          cancelUrl: `${window.location.origin}/dashboard`,
+          priceId: priceId,
+          userId: user.uid,
+          email: user.email,
+          interval: planId,
         }),
       });
       
-      const { sessionUrl } = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
-      if (sessionUrl) {
-        window.location.href = sessionUrl;
+      const { sessionId } = await response.json();
+      
+      if (sessionId) {
+        // Redirect to Stripe checkout
+        const stripe = await import('@stripe/stripe-js').then(m => m.loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!));
+        if (stripe) {
+          await stripe.redirectToCheckout({ sessionId });
+        }
       }
     } catch (error) {
       console.error('Upgrade failed:', error);
