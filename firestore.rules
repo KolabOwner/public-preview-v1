@@ -1,0 +1,110 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users can only read/write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Resume documents - users can only access their own resumes
+    match /resumes/{resumeId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Cover letter documents - users can only access their own cover letters
+    match /cover_letters/{coverLetterId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Resume analysis results - linked to resumes
+    match /resume_analysis/{analysisId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user  
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Job applications - users can only access their own applications
+    match /applications/{applicationId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Analysis history - users can only access their own history
+    match /analysis_history/{historyId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // User sessions - users can only access their own sessions
+    match /user_sessions/{sessionId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // User preferences/settings
+    match /user_settings/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Templates - read-only for authenticated users, write for admins only
+    match /templates/{templateId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // System/public data that everyone can read but only admins can write
+    match /system/{document} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Feedback/support tickets - users can create and read their own
+    match /feedback/{feedbackId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Analytics data - read-only for the user, write for system
+    match /analytics/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Write operations should be done server-side with admin SDK
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
