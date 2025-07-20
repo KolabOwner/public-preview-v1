@@ -781,16 +781,16 @@ export default function ResumePreview({
       />
 
       <div
-        className="p-8 rounded-xl transition-colors duration-200"
+        className="p-4 lg:p-8 rounded-xl transition-colors duration-200"
         style={{
           backgroundColor: theme.background,
-          minHeight: `calc(${paperDimensions.height}px * ${documentSettings.zoom / 100} + 4rem)`
+          minHeight: `calc(${paperDimensions.height}px * ${Math.min(documentSettings.zoom / 100, 1)} + 4rem)`
         }}
       >
         <div
-          className="shadow-2xl overflow-hidden transition-transform duration-200"
+          className="shadow-2xl overflow-hidden transition-transform duration-200 max-w-full"
           style={{
-            transform: `scale(${documentSettings.zoom / 100})`,
+            transform: `scale(${Math.min(documentSettings.zoom / 100, 1)})`,
             transformOrigin: 'top center',
             width: `${paperDimensions.width}px`,
             height: `${paperDimensions.height}px`,
@@ -799,6 +799,7 @@ export default function ResumePreview({
             boxSizing: 'border-box',
             outlineOffset: '1px',
             boxShadow: theme.shadow,
+            maxWidth: '100%',
           }}
         >
           <ResumeContent />
@@ -849,11 +850,11 @@ export default function ResumePreview({
   if (showJobPanels && user?.uid) {
     return (
       <div className={`w-full ${className}`}>
-        <div className="flex gap-4">
-          <div className="w-[1034px] flex-shrink-0">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 min-w-0">
             {resumePreviewContent}
           </div>
-          <div className="w-72 flex-shrink-0">
+          <div className="w-full lg:w-72 lg:flex-shrink-0">
             <div className="space-y-6">
               <ATSScorePanel
                 resumeData={resumeData}
