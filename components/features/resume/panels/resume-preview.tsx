@@ -89,10 +89,14 @@ export default function ResumePreview({
     paperDimensions,
     updateSetting,
     changeTemplate,
+    isLoadingFromFirestore,
+    isReady,
   } = useResumeStyles({
     initialTemplate,
     persistSettings: true,
     storageKey: `resume-settings-${resumeId}`,
+    resumeId: resumeId,
+    syncWithFirestore: true,
   });
 
   // Load custom fonts
@@ -362,18 +366,58 @@ export default function ResumePreview({
         <ResumeSection key="experience" title={getSectionTitle('experience', currentTemplate)} styles={inlineStyles}>
           {safeArray(resumeData.experiences || resumeData.experience).map((exp: any, idx: number) => (
             <div key={exp.id || idx} className="resume-experience-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
-              <div style={{ marginBottom: '0.05rem' }}>
-                <h3 className="resume-job-title" style={inlineStyles.jobTitle}>
-                  {decodeHTMLEntities(exp.position || exp.title || 'Position')}
-                </h3>
-              </div>
-              <div className="resume-company" style={inlineStyles.bodyText}>
-                <span>{decodeHTMLEntities(exp.company || 'Company')}</span>
-                <span className="resume-date" style={inlineStyles.date}>
-                  {formatDate(exp.dateBegin || exp.startDate)} - {formatDate(exp.dateEnd || exp.endDate)}
-                  {exp.location && `, ${decodeHTMLEntities(exp.location)}`}
-                </span>
-              </div>
+              {currentTemplate === 'modern' ? (
+                <>
+                  <div style={{ marginBottom: '0.1rem' }}>
+                    <span className="resume-job-title" style={{ ...inlineStyles.jobTitle, color: '#2563eb' }}>
+                      {decodeHTMLEntities(exp.position || exp.title || 'Position')}
+                    </span>
+                    <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem' }}>|</span>
+                    <span className="resume-company" style={{ ...inlineStyles.bodyText, fontStyle: 'normal', color: '#1f2937' }}>
+                      {decodeHTMLEntities(exp.company || 'Company')}
+                    </span>
+                  </div>
+                  <div style={{ ...inlineStyles.detailText, marginBottom: '0.2rem', color: '#9ca3af' }}>
+                    {formatDate(exp.dateBegin || exp.startDate)} - {formatDate(exp.dateEnd || exp.endDate)}
+                    {exp.location && `, ${decodeHTMLEntities(exp.location)}`}
+                  </div>
+                </>
+              ) : currentTemplate === 'minimal' || currentTemplate === 'bold' ? (
+                <>
+                  <div style={{ marginBottom: '0.1rem', lineHeight: '1.2' }}>
+                    <span className="resume-job-title" style={{ ...inlineStyles.jobTitle, fontWeight: 500 }}>
+                      {decodeHTMLEntities(exp.position || exp.title || 'Position')}
+                    </span>
+                    <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
+                    <span className="resume-company" style={{ ...inlineStyles.bodyText, fontStyle: 'normal', fontWeight: 400 }}>
+                      {decodeHTMLEntities(exp.company || 'Company')}
+                    </span>
+                    <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
+                    <span style={{ ...inlineStyles.bodyText, fontWeight: 400 }}>
+                      {exp.location ? decodeHTMLEntities(exp.location) : 'Location'}
+                    </span>
+                    <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
+                    <span style={{ ...inlineStyles.bodyText, fontWeight: 400 }}>
+                      {formatDate(exp.dateBegin || exp.startDate)} - {formatDate(exp.dateEnd || exp.endDate)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '0.05rem' }}>
+                    <h3 className="resume-job-title" style={inlineStyles.jobTitle}>
+                      {decodeHTMLEntities(exp.position || exp.title || 'Position')}
+                    </h3>
+                  </div>
+                  <div className="resume-company" style={inlineStyles.bodyText}>
+                    <span>{decodeHTMLEntities(exp.company || 'Company')}</span>
+                    <span className="resume-date" style={inlineStyles.date}>
+                      {formatDate(exp.dateBegin || exp.startDate)} - {formatDate(exp.dateEnd || exp.endDate)}
+                      {exp.location && `, ${decodeHTMLEntities(exp.location)}`}
+                    </span>
+                  </div>
+                </>
+              )}
               {(exp.bulletPoints || exp.description) && (
                 <BulletList
                   items={exp.bulletPoints && exp.bulletPoints.length > 0 
@@ -407,20 +451,83 @@ export default function ResumePreview({
             
             return (
               <div key={edu.id || idx} className="resume-education-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
-                <div className="resume-degree-title" style={inlineStyles.jobTitle}>
-                  {edu.qualification && edu.fieldOfStudy ?
-                    `${edu.qualification} in ${edu.fieldOfStudy}` :
-                    edu.qualification || edu.degree || 'Degree'}
-                </div>
-                <div className="resume-school-info" style={inlineStyles.bodyText}>
-                  {institutionName}
-                  {location && ` • ${location}`}
-                  {edu.date && ` • ${formatDate(edu.date, edu.dateFormat)}`}
-                </div>
-                {edu.gpa && (
-                  <div className="resume-detail-text" style={inlineStyles.detailText}>
-                    GPA: {edu.gpa}
-                  </div>
+                {currentTemplate === 'modern' ? (
+                  <>
+                    <div style={{ marginBottom: '0.1rem' }}>
+                      <span className="resume-degree-title" style={{ ...inlineStyles.jobTitle, color: '#2563eb' }}>
+                        {edu.qualification && edu.fieldOfStudy ?
+                          `${edu.qualification} in ${edu.fieldOfStudy}` :
+                          edu.qualification || edu.degree || 'Degree'}
+                      </span>
+                      <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem' }}>|</span>
+                      <span className="resume-school-info" style={{ ...inlineStyles.bodyText, fontStyle: 'normal', color: '#1f2937' }}>
+                        {institutionName}
+                      </span>
+                    </div>
+                    <div style={{ ...inlineStyles.detailText, marginBottom: '0.2rem', color: '#9ca3af' }}>
+                      {edu.date && formatDate(edu.date, edu.dateFormat)}
+                      {location && edu.date && `, `}
+                      {location}
+                    </div>
+                    {edu.gpa && (
+                      <div className="resume-detail-text" style={{ ...inlineStyles.detailText, color: '#9ca3af' }}>
+                        GPA: {edu.gpa}
+                      </div>
+                    )}
+                  </>
+                ) : currentTemplate === 'minimal' || currentTemplate === 'bold' ? (
+                  <>
+                    <div style={{ marginBottom: '0.1rem', lineHeight: '1.2' }}>
+                      <span className="resume-degree-title" style={{ ...inlineStyles.jobTitle, fontWeight: 500 }}>
+                        {edu.qualification && edu.fieldOfStudy ?
+                          `${edu.qualification} in ${edu.fieldOfStudy}` :
+                          edu.qualification || edu.degree || 'Degree'}
+                      </span>
+                      {edu.minor && (
+                        <>
+                          <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
+                          <span style={{ ...inlineStyles.bodyText, fontWeight: 400 }}>
+                            Minor: {edu.minor}
+                          </span>
+                        </>
+                      )}
+                      <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
+                      <span className="resume-school-info" style={{ ...inlineStyles.bodyText, fontStyle: 'normal', fontWeight: 400 }}>
+                        {institutionName}
+                      </span>
+                      <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
+                      <span style={{ ...inlineStyles.bodyText, fontWeight: 400 }}>
+                        {edu.date ? formatDate(edu.date, edu.dateFormat) : 'Graduation Date'}
+                      </span>
+                    </div>
+                    {(edu.gpa || location || edu.description) && (
+                      <div style={{ ...inlineStyles.detailText, marginBottom: '0.1rem', lineHeight: '1.2' }}>
+                        {edu.gpa && <span>GPA: {edu.gpa}</span>}
+                        {edu.gpa && location && <span style={{ margin: '0 0.4rem' }}> | </span>}
+                        {location && <span>{location}</span>}
+                        {(edu.gpa || location) && edu.description && <span style={{ margin: '0 0.4rem' }}> | </span>}
+                        {edu.description && <span>{edu.description}</span>}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="resume-degree-title" style={inlineStyles.jobTitle}>
+                      {edu.qualification && edu.fieldOfStudy ?
+                        `${edu.qualification} in ${edu.fieldOfStudy}` :
+                        edu.qualification || edu.degree || 'Degree'}
+                    </div>
+                    <div className="resume-school-info" style={inlineStyles.bodyText}>
+                      {institutionName}
+                      {location && ` • ${location}`}
+                      {edu.date && ` • ${formatDate(edu.date, edu.dateFormat)}`}
+                    </div>
+                    {edu.gpa && (
+                      <div className="resume-detail-text" style={inlineStyles.detailText}>
+                        GPA: {edu.gpa}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             );
@@ -760,51 +867,120 @@ export default function ResumePreview({
 
   ResumeContent.displayName = 'ResumeContent';
 
-  // Main resume preview content
-  const resumePreviewContent = (
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
     <div className="w-full">
-      <style>{resumeCSS}</style>
-
-      <ResumeHeaderBar
-        ref={headerBarRef}
-        documentSettings={documentSettings}
-        onDocumentSettingChange={updateSetting}
-        onDownloadPDF={handleDownloadPDF}
-        onAutoAdjust={handleAutoAdjust}
-        onTemplateChange={handleTemplateChange}
-        selectedTemplate={currentTemplate}
-        resumeId={resumeId}
-        sectionOrder={sectionOrder}
-        onSectionOrderChange={handleSectionOrderChange}
-        isDarkMode={isDarkMode}
-        className="no-print"
-      />
-
+      {/* Header skeleton */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div>
+          <div className="flex gap-2">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Resume skeleton */}
       <div
-        className="p-4 lg:p-8 rounded-xl transition-colors duration-200"
+        className="p-4 lg:p-8 rounded-xl"
         style={{
           backgroundColor: theme.background,
           minHeight: `calc(${paperDimensions.height}px * ${Math.min(documentSettings.zoom / 100, 1)} + 4rem)`
         }}
       >
         <div
-          className="shadow-2xl overflow-hidden transition-transform duration-200 max-w-full"
+          className="shadow-2xl overflow-hidden max-w-full bg-white"
           style={{
             transform: `scale(${Math.min(documentSettings.zoom / 100, 1)})`,
             transformOrigin: 'top center',
             width: `${paperDimensions.width}px`,
             height: `${paperDimensions.height}px`,
             margin: '0 auto',
-            backgroundColor: '#ffffff',
             boxSizing: 'border-box',
             outlineOffset: '1px',
             boxShadow: theme.shadow,
             maxWidth: '100%',
           }}
         >
-          <ResumeContent />
+          <div className="p-12 space-y-6">
+            {/* Name skeleton */}
+            <div className="text-center space-y-2">
+              <div className="h-6 bg-gray-200 rounded w-48 mx-auto animate-pulse"></div>
+              <div className="h-3 bg-gray-200 rounded w-64 mx-auto animate-pulse"></div>
+            </div>
+            
+            {/* Section skeletons */}
+            {[1, 2, 3, 4].map((section) => (
+              <div key={section} className="space-y-3">
+                <div className="h-4 bg-gray-300 rounded w-32 animate-pulse"></div>
+                <div className="border-b border-gray-200"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-full animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-5/6 animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-4/5 animate-pulse"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+    </div>
+  );
+
+  // Main resume preview content
+  const resumePreviewContent = (
+    <div className="w-full">
+      <style>{resumeCSS}</style>
+
+      {/* Only show skeleton on first load when no cached data exists and truly loading */}
+      {isLoadingFromFirestore && !isReady ? (
+        <LoadingSkeleton />
+      ) : (
+        <>
+          <ResumeHeaderBar
+            ref={headerBarRef}
+            documentSettings={documentSettings}
+            onDocumentSettingChange={updateSetting}
+            onDownloadPDF={handleDownloadPDF}
+            onAutoAdjust={handleAutoAdjust}
+            onTemplateChange={handleTemplateChange}
+            selectedTemplate={currentTemplate}
+            resumeId={resumeId}
+            sectionOrder={sectionOrder}
+            onSectionOrderChange={handleSectionOrderChange}
+            isDarkMode={isDarkMode}
+            className="no-print"
+          />
+
+          <div
+            className={`p-4 lg:p-8 rounded-xl transition-all duration-300 ${isReady ? 'opacity-100' : 'opacity-75'}`}
+            style={{
+              backgroundColor: theme.background,
+              minHeight: `calc(${paperDimensions.height}px * ${Math.min(documentSettings.zoom / 100, 1)} + 4rem)`
+            }}
+          >
+            <div
+              className="shadow-2xl overflow-hidden transition-all duration-300 max-w-full"
+              style={{
+                transform: `scale(${Math.min(documentSettings.zoom / 100, 1)})`,
+                transformOrigin: 'top center',
+                width: `${paperDimensions.width}px`,
+                height: `${paperDimensions.height}px`,
+                margin: '0 auto',
+                backgroundColor: '#ffffff',
+                boxSizing: 'border-box',
+                outlineOffset: '1px',
+                boxShadow: theme.shadow,
+                maxWidth: '100%',
+              }}
+            >
+              <ResumeContent />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 

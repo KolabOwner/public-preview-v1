@@ -12,6 +12,7 @@ export const FONT_FAMILY_MAP: Record<string, string> = {
   'Merriweather': '"Merriweather", Georgia, serif',
   'Source Sans Pro': '"Source Sans Pro", -apple-system, BlinkMacSystemFont, sans-serif',
   'Roboto': '"Roboto", -apple-system, BlinkMacSystemFont, sans-serif',
+  'Inter': '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
 };
 
 // Font size scales based on professional PDF standards
@@ -123,11 +124,11 @@ export function generateResumeStyles(
 ): ResumeStyleConfig {
   const baseFontSize = settings.fontSize;
   const template = RESUME_TEMPLATES[templateId];
-  
+
   // Fallback to professional template if template not found
   const templateConfig = template || RESUME_TEMPLATES.professional;
   const styles = templateConfig.styles;
-  
+
   return {
     fontSizes: {
       name: baseFontSize * styles.fontScales.name,
@@ -145,11 +146,11 @@ export function generateResumeStyles(
       body: settings.lineHeight,
     },
     spacing: {
-      sectionGap: styles.layout.sectionSpacing,
-      blockGap: styles.layout.sectionSpacing * 0.5,
+      sectionGap: settings.sectionSpacing,
+      blockGap: settings.sectionSpacing * 0.5,
       bulletGap: styles.layout.bulletSpacing,
-      headerMarginTop: styles.layout.sectionSpacing * 0.5,
-      headerMarginBottom: styles.layout.sectionSpacing * 0.3,
+      headerMarginTop: settings.sectionSpacing * 0.5,
+      headerMarginBottom: templateId === 'modern' ? 0 : templateId === 'minimal' ? 0.1 : settings.sectionSpacing * 0.3,
       documentPadding: `${settings.margins.top}in ${settings.margins.right}in ${settings.margins.bottom}in ${settings.margins.left}in`,
     },
     colors: {
@@ -181,7 +182,7 @@ export function generateResumeStyles(
     layout: {
       showDividers: styles.layout.useDividers,
       useIndent: styles.layout.useIndentation,
-      bulletIndent: styles.layout.useIndentation ? '1.5rem' : '0.75rem',
+      bulletIndent: styles.layout.useIndentation ? '2rem' : '1.25rem',
       dividerStyle: styles.layout.dividerStyle,
       iconStyle: styles.layout.iconStyle,
       textAlign: {
@@ -220,21 +221,21 @@ export function generateCSSVariables(styles: ResumeStyleConfig): string {
       --resume-font-size-title: ${styles.fontSizes.jobTitle}pt;
       --resume-font-size-body: ${styles.fontSizes.body}pt;
       --resume-font-size-detail: ${styles.fontSizes.detail}pt;
-      
+
       /* Line Heights */
       --resume-line-height-name: ${styles.lineHeights.name};
       --resume-line-height-contact: ${styles.lineHeights.contact};
       --resume-line-height-section: ${styles.lineHeights.sectionHeader};
       --resume-line-height-title: ${styles.lineHeights.jobTitle};
       --resume-line-height-body: ${styles.lineHeights.body};
-      
+
       /* Spacing */
       --resume-spacing-section: ${styles.spacing.sectionGap}rem;
       --resume-spacing-block: ${styles.spacing.blockGap}rem;
       --resume-spacing-bullet: ${styles.spacing.bulletGap}rem;
       --resume-spacing-header-top: ${styles.spacing.headerMarginTop}rem;
       --resume-spacing-header-bottom: ${styles.spacing.headerMarginBottom}rem;
-      
+
       /* Colors */
       --resume-color-text: ${styles.colors.text};
       --resume-color-primary: ${styles.colors.primary};
@@ -242,7 +243,7 @@ export function generateCSSVariables(styles: ResumeStyleConfig): string {
       --resume-color-divider: ${styles.colors.divider};
       --resume-color-accent: ${styles.colors.accent};
       --resume-color-muted: ${styles.colors.muted};
-      
+
       /* Typography */
       --resume-font-family: ${styles.typography.fontFamily};
       --resume-letter-spacing-name: ${styles.typography.letterSpacing.name};
@@ -254,13 +255,13 @@ export function generateCSSVariables(styles: ResumeStyleConfig): string {
       --resume-font-weight-body: ${styles.typography.fontWeights.body};
       --resume-text-transform-name: ${styles.typography.textTransform.name};
       --resume-text-transform-section: ${styles.typography.textTransform.section};
-      
+
       /* Layout */
       --resume-bullet-indent: ${styles.layout.bulletIndent};
       --resume-text-align-name: ${styles.layout.textAlign.name};
       --resume-text-align-contact: ${styles.layout.textAlign.contact};
       --resume-text-align-body: ${styles.layout.textAlign.body};
-      
+
       /* Decorations */
       --resume-border-radius: ${styles.decorations.borderRadius};
       --resume-box-shadow: ${styles.decorations.useShadows ? getShadowStyle(styles.decorations.shadowIntensity) : 'none'};
@@ -269,25 +270,32 @@ export function generateCSSVariables(styles: ResumeStyleConfig): string {
 }
 
 // Generate complete CSS stylesheet for resume
-export function generateResumeCSS(styles: ResumeStyleConfig): string {
+export function generateResumeCSS(styles: ResumeStyleConfig, templateId: string = 'professional'): string {
   // Helper function to get divider styles
-  const getDividerStyle = (dividerType: string, color: string) => {
+  const getDividerStyle = (dividerType: string, color: string, templateId?: string) => {
+    const thickness = templateId === 'minimal' ? '2px' : '1px';
     switch (dividerType) {
-      case 'dotted': return `border-bottom: 1px dotted ${color};`;
-      case 'dashed': return `border-bottom: 1px dashed ${color};`;
+      case 'dotted': return `border-bottom: ${thickness} dotted ${color};`;
+      case 'dashed': return `border-bottom: ${thickness} dashed ${color};`;
       case 'double': return `border-bottom: 3px double ${color};`;
       case 'solid':
-      default: return `border-bottom: 1px solid ${color};`;
+      default: return `border-bottom: ${thickness} solid ${color};`;
     }
   };
 
+  // Add template-specific top border for Bold template
+  const topBorderStyle = templateId === 'bold'
+    ? `border-top: 4px solid ${styles.colors.primary};`
+    : '';
+
   return `
     ${generateCSSVariables(styles)}
-    
+
     /* Reset and Base Styles */
     .resume-container {
       font-family: var(--resume-font-family) !important;
       color: var(--resume-color-text) !important;
+      ${topBorderStyle}
       ${styles.decorations.useShadows ? 'box-shadow: var(--resume-box-shadow) !important;' : ''}
       ${styles.decorations.useRoundedCorners ? 'border-radius: var(--resume-border-radius) !important;' : ''}
     }
@@ -299,7 +307,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       font-family: inherit !important;
       color: inherit !important;
     }
-    
+
     /* Name Styles */
     .resume-name {
       font-size: var(--resume-font-size-name) !important;
@@ -309,9 +317,10 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       text-align: var(--resume-text-align-name) !important;
       letter-spacing: var(--resume-letter-spacing-name) !important;
       margin-bottom: var(--resume-spacing-header-bottom) !important;
-      color: var(--resume-color-primary) !important;
+      color: var(--resume-color-text) !important;
+      ${templateId === 'bold' ? 'border-bottom: 1px solid #9ca3af; padding-bottom: 0.5rem;' : ''}
     }
-    
+
     /* Contact Styles */
     .resume-contact {
       font-size: var(--resume-font-size-contact) !important;
@@ -320,7 +329,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       margin-bottom: var(--resume-spacing-section) !important;
       color: var(--resume-color-muted) !important;
     }
-    
+
     /* Section Header Styles */
     .resume-section-header {
       font-size: var(--resume-font-size-section) !important;
@@ -332,9 +341,9 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       margin-bottom: var(--resume-spacing-header-bottom) !important;
       padding-bottom: 2px !important;
       color: var(--resume-color-primary) !important;
-      ${styles.layout.showDividers ? getDividerStyle(styles.layout.dividerStyle, styles.colors.divider) : ''}
+      ${styles.layout.showDividers ? getDividerStyle(styles.layout.dividerStyle, styles.colors.divider, templateId) : ''}
     }
-    
+
     /* Title Styles (Job, Degree, Project) */
     .resume-job-title,
     .resume-degree-title,
@@ -345,7 +354,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       font-weight: var(--resume-font-weight-title) !important;
       color: var(--resume-color-secondary) !important;
     }
-    
+
     /* Company and School Names */
     .resume-company,
     .resume-school-info {
@@ -366,7 +375,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       text-align: var(--resume-text-align-body) !important;
       color: var(--resume-color-text) !important;
     }
-    
+
     /* Detail Text Styles */
     .resume-detail-text,
     .resume-date {
@@ -375,18 +384,17 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       font-weight: var(--resume-font-weight-body) !important;
       color: var(--resume-color-muted) !important;
     }
-    
+
     .resume-date {
       font-style: italic !important;
-      float: right !important;
     }
-    
+
     /* List Styles */
     .resume-bullet-list {
       margin-left: var(--resume-bullet-indent) !important;
       list-style: none !important;
     }
-    
+
     .resume-bullet-list li {
       position: relative !important;
       margin-bottom: var(--resume-spacing-bullet) !important;
@@ -398,15 +406,15 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       text-align: var(--resume-text-align-body) !important;
       color: var(--resume-color-text) !important;
     }
-    
+
     .resume-bullet-list li:before {
       content: "•" !important;
       position: absolute !important;
       left: -0.75rem !important;
-      color: var(--resume-color-accent) !important;
+      color: var(--resume-color-text) !important;
       font-weight: bold !important;
     }
-    
+
     /* Block Spacing */
     .resume-experience-block,
     .resume-education-block,
@@ -415,27 +423,27 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
       margin-bottom: var(--resume-spacing-block) !important;
       ${styles.decorations.useRoundedCorners ? 'border-radius: var(--resume-border-radius) !important;' : ''}
     }
-    
+
     .resume-experience-block:last-child,
     .resume-education-block:last-child,
     .resume-project-block:last-child,
     .resume-involvement-block:last-child {
       margin-bottom: 0 !important;
     }
-    
+
     /* Skills Styles */
     .resume-skills-category {
       font-size: var(--resume-font-size-body) !important;
       line-height: var(--resume-line-height-body) !important;
       margin-bottom: var(--resume-spacing-bullet) !important;
     }
-    
+
     .resume-skills-title {
       font-weight: var(--resume-font-weight-title) !important;
       display: inline !important;
       color: var(--resume-color-secondary) !important;
     }
-    
+
     /* Summary Styles */
     .resume-summary {
       text-align: var(--resume-text-align-body) !important;
@@ -460,7 +468,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig): string {
         box-shadow: none !important;
         border-radius: 0 !important;
       }
-      
+
       .no-print {
         display: none !important;
       }
@@ -497,7 +505,7 @@ export function pxToPt(px: number): number {
 }
 
 // Generate inline styles object for React components
-export function generateInlineStyles(styles: ResumeStyleConfig) {
+export function generateInlineStyles(styles: ResumeStyleConfig, templateId: string = 'professional') {
   return {
     container: {
       fontFamily: styles.typography.fontFamily,
@@ -522,8 +530,12 @@ export function generateInlineStyles(styles: ResumeStyleConfig) {
       textTransform: styles.typography.textTransform.name as any,
       textAlign: styles.layout.textAlign.name as any,
       letterSpacing: styles.typography.letterSpacing.name,
-      marginBottom: `${styles.spacing.headerMarginBottom}rem`,
-      color: styles.colors.primary,
+      marginBottom: templateId === 'modern' ? '0.4rem' : `${styles.spacing.headerMarginBottom}rem`,
+      color: templateId === 'bold' ? styles.colors.text : styles.colors.primary,
+      ...(templateId === 'bold' && {
+        borderBottom: '1px solid #9ca3af',
+        paddingBottom: '0.5rem'
+      }),
     },
     contact: {
       fontSize: `${styles.fontSizes.contact}pt`,
@@ -544,12 +556,12 @@ export function generateInlineStyles(styles: ResumeStyleConfig) {
       color: styles.colors.primary,
       ...(styles.layout.showDividers && {
         borderBottom: styles.layout.dividerStyle === 'dotted'
-          ? `1px dotted ${styles.colors.divider}`
+          ? `${templateId === 'minimal' ? '2px' : '1px'} dotted ${styles.colors.divider}`
           : styles.layout.dividerStyle === 'dashed'
-          ? `1px dashed ${styles.colors.divider}`
+          ? `${templateId === 'minimal' ? '2px' : '1px'} dashed ${styles.colors.divider}`
           : styles.layout.dividerStyle === 'double'
           ? `3px double ${styles.colors.divider}`
-          : `1px solid ${styles.colors.divider}`
+          : `${templateId === 'minimal' ? '2px' : '1px'} solid ${styles.colors.divider}`
       }),
     },
     jobTitle: {
@@ -584,7 +596,7 @@ export function generateInlineStyles(styles: ResumeStyleConfig) {
       lineHeight: styles.lineHeights.body,
       fontWeight: styles.typography.fontWeights.body,
       fontStyle: 'italic' as const,
-      float: 'right' as const,
+      ...(templateId === 'modern' ? {} : { float: 'right' as const }),
       color: styles.colors.muted,
     },
     bulletList: {
@@ -602,7 +614,7 @@ export function generateInlineStyles(styles: ResumeStyleConfig) {
       color: styles.colors.text,
     },
     bulletPoint: {
-      color: styles.colors.accent,
+      color: styles.colors.text,
       fontWeight: 'bold' as const,
     },
     skillsTitle: {

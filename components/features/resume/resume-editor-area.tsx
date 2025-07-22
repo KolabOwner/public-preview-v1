@@ -1,20 +1,69 @@
 // components/resume/resume-editor-tabs-area.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname, useParams } from 'next/navigation';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
-import ContactForm, { ContactFormData } from './forms/contact-form';
-import ExperienceForm, { ExperienceEntry } from './forms/experience-form';
-import EducationForm, { EducationEntry } from './forms/education-form';
-import SkillsForm, { SkillEntry } from './forms/skills-form';
-import ProjectsForm, { ProjectEntry } from './forms/projects-form';
-import InvolvementForm, { InvolvementEntry } from './forms/involvement-form';
-import CourseworkForm, { CourseworkEntry } from './forms/coursework-form';
-import CertificationsForm, { CertificationEntry } from './forms/certifications-form';
-import SummaryForm from './forms/summary-form';
+import dynamic from 'next/dynamic';
+
+// Export types for use in lazy-loaded components
+export type { ContactFormData } from './forms/contact-form';
+export type { ExperienceEntry } from './forms/experience-form';
+export type { EducationEntry } from './forms/education-form';
+export type { SkillEntry } from './forms/skills-form';
+export type { ProjectEntry } from './forms/projects-form';
+export type { InvolvementEntry } from './forms/involvement-form';
+export type { CourseworkEntry } from './forms/coursework-form';
+export type { CertificationEntry } from './forms/certifications-form';
+
+// Dynamic imports for all form components - no loading UI to prevent flash
+const ContactForm = dynamic(() => import('./forms/contact-form').then(mod => ({ default: mod.default })), {
+  ssr: false
+});
+
+const ExperienceForm = dynamic(() => import('./forms/experience-form').then(mod => ({ default: mod.default })), {
+  ssr: false
+});
+
+const EducationForm = dynamic(() => import('./forms/education-form').then(mod => ({ default: mod.default })), {
+  ssr: false
+});
+
+const SkillsForm = dynamic(() => import('./forms/skills-form').then(mod => ({ default: mod.default })), {
+  ssr: false
+});
+
+const ProjectsForm = dynamic(() => import('./forms/projects-form').then(mod => ({ default: mod.default })), {
+  ssr: false
+});
+
+const InvolvementForm = dynamic(() => import('./forms/involvement-form').then(mod => ({ default: mod.default })), {
+  ssr: false
+});
+
+const CourseworkForm = dynamic(() => import('./forms/coursework-form').then(mod => ({ default: mod.default })), {
+  ssr: false
+});
+
+const CertificationsForm = dynamic(() => import('./forms/certifications-form').then(mod => ({ default: mod.default })), {
+  ssr: false
+});
+
+const SummaryForm = dynamic(() => import('./forms/summary-form'), {
+  ssr: false
+});
+
+// Re-import types that are used in this file
+import type { ContactFormData } from './forms/contact-form';
+import type { ExperienceEntry } from './forms/experience-form';
+import type { EducationEntry } from './forms/education-form';
+import type { SkillEntry } from './forms/skills-form';
+import type { ProjectEntry } from './forms/projects-form';
+import type { InvolvementEntry } from './forms/involvement-form';
+import type { CourseworkEntry } from './forms/coursework-form';
+import type { CertificationEntry } from './forms/certifications-form';
 
 // Unified Resume Data Structure
 interface UnifiedResumeData {
@@ -357,11 +406,43 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
   return unified;
 };
 
-export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
+const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
   const pathname = usePathname();
   const params = useParams();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+
+  // Preload all form components on mount to prevent flash on cold loads
+  useEffect(() => {
+    // Start preloading components immediately after mount
+    const preloadComponents = async () => {
+      try {
+        // Preload the most commonly used forms first
+        await Promise.all([
+          import('./forms/contact-form'),
+          import('./forms/experience-form'),
+          import('./forms/education-form'),
+          import('./forms/skills-form')
+        ]);
+        
+        // Then preload the less common ones
+        setTimeout(() => {
+          Promise.all([
+            import('./forms/projects-form'),
+            import('./forms/involvement-form'),
+            import('./forms/coursework-form'),
+            import('./forms/certifications-form'),
+            import('./forms/summary-form')
+          ]);
+        }, 100);
+      } catch (error) {
+        // Silently handle preload errors
+        console.debug('Component preload failed:', error);
+      }
+    };
+    
+    preloadComponents();
+  }, []);
 
   // Initialize with unified format
   const [resumeData, setResumeData] = useState<UnifiedResumeData>(() => {
@@ -572,4 +653,6 @@ export default function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
       )}
     </div>
   );
-}
+});
+
+export default ResumeEditorArea;

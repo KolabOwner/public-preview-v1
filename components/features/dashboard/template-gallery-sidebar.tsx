@@ -26,7 +26,7 @@ import {
   SubscriptionError,
   TemplateError
 } from "@/lib/client/utils/template-errors";
-import { DocumentSettingsService } from "@/lib/server/services/resume/document-settings-service";
+import { DocumentSettingsClient } from "@/lib/client/services/resume/document-settings-client";
 
 export interface TemplateGallerySidebarProps {
   isOpen: boolean;
@@ -45,11 +45,12 @@ const TEMPLATE_IMAGES: Record<string, string> = {
   minimal: "/images/templates/CompactTemplate.png",
   executive: "/images/templates/AlternativeTemplate.png",
   academic: "/images/templates/StandardTemplate.png",
-  technical: "/images/templates/ModernTemplate.png"
+  technical: "/images/templates/ModernTemplate.png",
+  bold: "/images/templates/BoldTemplate.png"
 };
 
 // Featured/Recommended templates (most popular ones)
-const RECOMMENDED_TEMPLATE_IDS = ["professional", "modern", "minimal"];
+const RECOMMENDED_TEMPLATE_IDS = ["professional", "modern", "minimal", "bold"];
 
 // Get recommended and other templates from the actual template data
 const RECOMMENDED_TEMPLATES = RECOMMENDED_TEMPLATE_IDS.map(id => RESUME_TEMPLATES[id]).filter(Boolean);
@@ -276,32 +277,8 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
           throw new Error('Template application returned false');
         }
 
-        // Persist template selection to Firestore if resumeId is provided
-        if (resumeId && success !== false) {
-          try {
-            // Note: We'll get the actual document settings from the parent component
-            // For now, just save the template selection
-            await DocumentSettingsService.updateTemplate(resumeId, templateId, {
-              zoom: 120,
-              fontFamily: template.defaults.fontFamily || 'Merriweather',
-              primaryColor: template.defaults.primaryColor || '#000000',
-              textColor: template.defaults.textColor || '#000000',
-              fontSize: template.defaults.fontSize || 11,
-              lineHeight: template.defaults.lineHeight || 1.2,
-              sectionSpacing: template.defaults.sectionSpacing || 0.75,
-              paperSize: 'Letter',
-              margins: { top: 0.75, right: 0.75, bottom: 0.75, left: 0.75 },
-              showIcons: template.defaults.showIcons || false,
-              showDividers: template.defaults.showDividers || true,
-              useIndent: template.defaults.useIndent || false,
-              viewAsPages: true,
-            });
-            console.log(`Template ${templateId} persisted to Firestore for resume ${resumeId}`);
-          } catch (firestoreError) {
-            console.warn('Failed to persist template to Firestore:', firestoreError);
-            // Don't fail the entire operation if Firestore save fails
-          }
-        }
+        // Template persistence is now handled by the useResumeStyles hook
+        // so we don't need to duplicate the Firestore save here
 
         return success;
       },

@@ -1,11 +1,15 @@
-// components/resume/summary-form.tsx
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronLeft, ChevronRight, Save, Loader2, FileText, AlertCircle, Target, Cpu } from "lucide-react";
 import { useResumeData } from "@/contexts/resume-data-context";
 import { generateSummaryAPI } from '@/lib/client/api/summary';
+import { Button } from '@/components/shared/button';
+import { Input } from '@/components/shared/input';
+import { Label } from '@/components/shared/label';
+import { Textarea } from '@/components/shared/textarea';
+import { Switch } from '@/components/shared/switch';
+import { useToast } from '@/lib/client/hooks/ui/use-toast';
 
 export interface SummaryData {
   summary: string;
@@ -15,7 +19,6 @@ export interface SummaryData {
 }
 
 interface SummaryFormProps {
-  autoSave?: boolean;
   onSaveSuccess?: () => void;
 }
 
@@ -26,7 +29,17 @@ const cleanValue = (value: string | undefined | null): string => {
   return emptyValues.includes(trimmed) ? '' : trimmed;
 };
 
-export default function SummaryForm({ autoSave = false, onSaveSuccess }: SummaryFormProps) {
+// Clean data to ensure no undefined values for Firestore
+const cleanDataForFirestore = (data: SummaryData) => {
+  return {
+    summary: data.summary || '',
+    positionHighlight: data.positionHighlight || false,
+    position: data.position || '',
+    skillsHighlight: data.skillsHighlight || '',
+  };
+};
+
+export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
   const {
     resumeData,
     processedData,
@@ -34,6 +47,7 @@ export default function SummaryForm({ autoSave = false, onSaveSuccess }: Summary
     saveResumeData,
     loading: contextLoading
   } = useResumeData();
+  const { toast } = useToast();
 
   const [summaryData, setSummaryData] = useState<SummaryData>({
     summary: '',
@@ -43,12 +57,10 @@ export default function SummaryForm({ autoSave = false, onSaveSuccess }: Summary
   });
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Set<string>>(new Set());
-  const [toast, setToast] = useState({ show: false, message: '', error: false });
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAlternatives, setAiAlternatives] = useState<string[]>([]);
   const [currentAlternativeIndex, setCurrentAlternativeIndex] = useState(0);
   const [showAlternatives, setShowAlternatives] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
 
   // Helper function to get field value with both capitalizations
   const getResumeField = useCallback((fieldName: string): string | boolean | number | undefined => {
@@ -141,7 +153,6 @@ export default function SummaryForm({ autoSave = false, onSaveSuccess }: Summary
 
   const update = (field: keyof SummaryData, value: SummaryData[keyof SummaryData]) => {
     setSummaryData(prev => ({ ...prev, [field]: value }));
-    setHasChanges(true);
 
     if (errors.has(field)) {
       setErrors(prev => {
@@ -152,48 +163,61 @@ export default function SummaryForm({ autoSave = false, onSaveSuccess }: Summary
     }
   };
 
+  // Manual save
   const handleSave = useCallback(async () => {
     if (!validate()) {
-      setToast({ show: true, message: 'Please write a professional summary', error: true });
-      setTimeout(() => setToast({ show: false, message: '', error: false }), 3000);
+      toast({
+        title: "Validation Error",
+        description: "Please write a professional summary",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsSaving(true);
     try {
       const useCapital = resumeData && Object.keys(resumeData).some(key => key.startsWith('Rms_'));
+      const cleanedData = cleanDataForFirestore(summaryData);
 
       const updates: Record<string, string | boolean> = {};
-      updates[useCapital ? 'Rms_summary' : 'rms_summary'] = summaryData.summary;
-      updates['summary_position_highlight'] = summaryData.positionHighlight;
-      updates['summary_target_position'] = summaryData.positionHighlight ? summaryData.position : '';
-      updates['summary_skills_highlight'] = summaryData.skillsHighlight;
+      updates[useCapital ? 'Rms_summary' : 'rms_summary'] = cleanedData.summary;
+      updates['summary_position_highlight'] = cleanedData.positionHighlight;
+      updates['summary_target_position'] = cleanedData.positionHighlight ? cleanedData.position : '';
+      updates['summary_skills_highlight'] = cleanedData.skillsHighlight;
 
       updateResumeData(updates);
       await saveResumeData();
 
-      setHasChanges(false);
-      setToast({ show: true, message: 'Summary saved successfully', error: false });
+      toast({
+        title: "Success",
+        description: "Summary saved successfully",
+      });
 
       if (onSaveSuccess) {
         onSaveSuccess();
       }
     } catch (error) {
-      console.error('Save error:', error);
-      setToast({ show: true, message: 'Failed to save summary', error: true });
+      console.error('Summary save error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save summary",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
-      setTimeout(() => setToast({ show: false, message: '', error: false }), 3000);
     }
-  }, [summaryData, resumeData, updateResumeData, saveResumeData, onSaveSuccess, validate]);
+  }, [summaryData, resumeData, updateResumeData, saveResumeData, onSaveSuccess, validate, toast]);
 
   const handleAIWrite = async () => {
     const hasExperience = positions.length > 0;
     const hasSkills = extractedSkills.length > 0;
 
     if (!hasExperience && !hasSkills) {
-      setToast({ show: true, message: 'Please add experience or skills to your resume first', error: true });
-      setTimeout(() => setToast({ show: false, message: '', error: false }), 3000);
+      toast({
+        title: "Missing Data",
+        description: "Please add experience or skills to your resume first",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -286,21 +310,19 @@ export default function SummaryForm({ autoSave = false, onSaveSuccess }: Summary
         setShowAlternatives(true);
       }
 
-      setToast({ show: true, message: 'Summary generated successfully!', error: false });
-
-      if (autoSave) {
-        setTimeout(() => handleSave(), 500);
-      }
+      toast({
+        title: "Success",
+        description: "Summary generated successfully!",
+      });
     } catch (error) {
       console.error('AI generation error:', error);
-      setToast({
-        show: true,
-        message: error instanceof Error ? error.message : 'Failed to generate summary',
-        error: true
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to generate summary',
+        variant: "destructive",
       });
     } finally {
       setAiLoading(false);
-      setTimeout(() => setToast({ show: false, message: '', error: false }), 3000);
     }
   };
 
@@ -318,209 +340,233 @@ export default function SummaryForm({ autoSave = false, onSaveSuccess }: Summary
     handleAlternativeSelect(newIndex);
   };
 
-  // Auto-save effect
-  useEffect(() => {
-    if (autoSave && hasChanges && summaryData.summary && !errors.has('summary')) {
-      const timer = setTimeout(() => {
-        handleSave().catch(error => {
-          console.error('Auto-save failed:', error);
-        });
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [summaryData.summary, autoSave, hasChanges, handleSave, errors]);
-
   const hasEnoughContent = positions.length > 0 || extractedSkills.length > 0;
 
   if (contextLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">Loading resume data...</p>
+          <Loader2 className="animate-spin h-8 w-8 text-corporate-amber-500 mx-auto mb-3" />
+          <p className="text-corporate-navy-600 dark:text-gray-400 text-sm">Loading resume data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Main Summary Form */}
-      <div className="lg:col-span-2">
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="p-6">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">
-              WRITE A PROFESSIONAL <span className="font-bold">SUMMARY</span>
-            </h3>
+    <div className={`relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${
+      isSaving 
+        ? 'opacity-75 pointer-events-none border-corporate-amber-300 dark:border-corporate-amber-600' 
+        : 'border-corporate-navy-200 dark:border-corporate-navy-700 hover:border-corporate-amber-300 dark:hover:border-corporate-amber-600/50'
+    }`}>
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" aria-hidden="true" />
+      
+      {/* Subtle pattern overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.02),transparent_50%)]" aria-hidden="true" />
+      
+      <div className="relative">
+        {/* Header */}
+        <div className="px-6 py-4 bg-white/90 dark:bg-corporate-navy-800/90 backdrop-blur-sm border-b-2 border-corporate-navy-100 dark:border-corporate-navy-700 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-corporate-navy-900 dark:text-gray-100 flex items-center gap-2">
+            <div className="p-1.5 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-lg shadow-sm">
+              <FileText className="h-4 w-4 text-white" />
+            </div>
+            <span>Professional Summary</span>
+          </h2>
+        </div>
 
-            <textarea
-              value={summaryData.summary}
-              onChange={(e) => update('summary', e.target.value)}
-              placeholder="Experienced global early-stage executive with economics and mathematics degree from the University of Wisconsin. Passion for building inspiring companies people love through industry-leading design, development, branding, and making big bets."
-              rows={6}
-              className={`
-                w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border rounded-md
-                text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                transition-colors duration-200
-                ${errors.has('summary') 
-                  ? 'border-red-500' 
-                  : 'border-gray-300 dark:border-gray-600'}
-              `}
-            />
+        {/* Form Content */}
+        <div className="relative bg-white/80 dark:bg-corporate-navy-900/90 backdrop-blur-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-8">
+            {/* Main Summary Form */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Summary Textarea */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+                  Professional Summary <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
+                </Label>
+                <div className={`
+                  rounded-lg border-2 transition-all duration-200
+                  ${errors.has('summary') 
+                    ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                    : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+                  }
+                  ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+                `}>
+                  <Textarea
+                    value={summaryData.summary}
+                    onChange={(e) => update('summary', e.target.value)}
+                    placeholder="Experienced global early-stage executive with economics and mathematics degree from the University of Wisconsin. Passion for building inspiring companies people love through industry-leading design, development, branding, and making big bets."
+                    className="border-0 bg-transparent focus:ring-0 focus:border-0 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 p-4 resize-none min-h-[180px]"
+                    rows={8}
+                    disabled={isSaving}
+                  />
+                </div>
+                {errors.has('summary') && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    Please write a professional summary
+                  </p>
+                )}
+              </div>
 
-            {/* AI Alternatives Navigation */}
-            {showAlternatives && aiAlternatives.length > 1 && (
-              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-blue-700 dark:text-blue-300">
-                    Alternative {currentAlternativeIndex + 1} of {aiAlternatives.length}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => navigateAlternative('prev')}
-                      disabled={currentAlternativeIndex === 0}
-                      className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <ChevronLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </button>
-                    <button
-                      onClick={() => navigateAlternative('next')}
-                      disabled={currentAlternativeIndex === aiAlternatives.length - 1}
-                      className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <ChevronRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </button>
+              {/* AI Alternatives Navigation */}
+              {showAlternatives && aiAlternatives.length > 1 && (
+                <div className="bg-corporate-amber-50/50 dark:bg-corporate-amber-900/20 rounded-xl p-4 border-2 border-corporate-amber-200 dark:border-corporate-amber-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-corporate-amber-800 dark:text-corporate-amber-300">
+                      Alternative {currentAlternativeIndex + 1} of {aiAlternatives.length}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigateAlternative('prev')}
+                        disabled={currentAlternativeIndex === 0}
+                        className="hover:bg-corporate-amber-100 dark:hover:bg-corporate-amber-900/30 disabled:opacity-40"
+                      >
+                        <ChevronLeft className="h-4 w-4 text-corporate-amber-700 dark:text-corporate-amber-400" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigateAlternative('next')}
+                        disabled={currentAlternativeIndex === aiAlternatives.length - 1}
+                        className="hover:bg-corporate-amber-100 dark:hover:bg-corporate-amber-900/30 disabled:opacity-40"
+                      >
+                        <ChevronRight className="h-4 w-4 text-corporate-amber-700 dark:text-corporate-amber-400" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Save Button */}
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={handleSave}
-                disabled={isSaving || contextLoading}
-                className={`
-                  px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white
-                  rounded-md font-medium text-sm uppercase tracking-wide
-                  transition-colors duration-200
-                  disabled:opacity-60 disabled:cursor-not-allowed
-                `}
-              >
-                {isSaving ? 'SAVING...' : 'SAVE SUMMARY INFO'}
-              </button>
+              )}
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* AI Summary Writer */}
-      <div className="lg:col-span-1">
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              AI Summary Writer
-            </h3>
+            {/* AI Summary Writer */}
+            <div className="lg:col-span-1">
+              <div className="bg-white/90 dark:bg-corporate-navy-800/90 rounded-xl p-6 border-2 border-corporate-navy-100 dark:border-corporate-navy-700 space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-corporate-navy-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-corporate-amber-500" />
+                    AI Summary Writer
+                  </h3>
+                  <p className="text-sm text-corporate-navy-600 dark:text-gray-400">
+                    AI writer helps you to write your summary for a{' '}
+                    <span className="text-corporate-amber-600 dark:text-corporate-amber-400 font-medium">targeted job position</span>.
+                    Strange result? Just regenerate!
+                  </p>
+                </div>
 
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              AI writer helps you to write your summary for a{' '}
-              <span className="text-blue-600 dark:text-blue-400">targeted job position</span>.
-              Strange result? Just regenerate!
-            </p>
+                {/* Position Toggle & Dropdown */}
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+                        Position Highlight
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-corporate-navy-500 dark:text-gray-400">from resume</span>
+                        <Switch
+                          checked={summaryData.positionHighlight}
+                          onCheckedChange={(checked) => update('positionHighlight', checked)}
+                          disabled={isSaving}
+                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
+                        />
+                      </div>
+                    </div>
 
-            {/* Position Toggle & Dropdown */}
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase">
-                    POSITION HIGHLIGHT *
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">from resume</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={summaryData.positionHighlight}
-                        onChange={(e) => update('positionHighlight', e.target.checked)}
-                        className="sr-only peer"
+                    <div className={`
+                      flex items-center rounded-lg border-2 transition-all duration-200
+                      ${!summaryData.positionHighlight ? 'opacity-50' : ''}
+                      ${'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'}
+                      ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+                    `}>
+                      <Target className="h-4 w-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 mr-2 flex-shrink-0" />
+                      <select
+                        value={summaryData.position}
+                        onChange={(e) => update('position', e.target.value)}
+                        disabled={!summaryData.positionHighlight || isSaving}
+                        className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 px-0 pr-3 w-full"
+                      >
+                        {positions.length === 0 ? (
+                          <option value="">No positions found</option>
+                        ) : (
+                          <>
+                            <option value="">Select a position</option>
+                            {positions.map((pos, index) => (
+                              <option key={index} value={pos}>{pos}</option>
+                            ))}
+                          </>
+                        )}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Skills Highlight */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+                      Skills Highlight
+                    </Label>
+                    <div className={`
+                      flex items-center rounded-lg border-2 transition-all duration-200
+                      ${'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'}
+                      ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+                    `}>
+                      <Cpu className="h-4 w-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 mr-2 flex-shrink-0" />
+                      <Input
+                        value={summaryData.skillsHighlight}
+                        onChange={(e) => update('skillsHighlight', e.target.value)}
+                        placeholder="Enter key skills"
+                        className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-0 pr-3"
+                        disabled={isSaving}
                       />
-                      <div className="w-9 h-5 bg-gray-200 dark:bg-gray-600 peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-300 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
+                    </div>
                   </div>
+
+                  {/* AI Writer Button */}
+                  <Button
+                    onClick={handleAIWrite}
+                    disabled={aiLoading || !hasEnoughContent || isSaving}
+                    className={`
+                      w-full flex items-center justify-center gap-2 h-12
+                      ${hasEnoughContent 
+                        ? 'bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white' 
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'}
+                      font-medium text-sm uppercase tracking-wide
+                      transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:shadow-md
+                    `}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    {aiLoading ? 'GENERATING...' : 'AI WRITER READY'}
+                  </Button>
                 </div>
-
-                <select
-                  value={summaryData.position}
-                  onChange={(e) => update('position', e.target.value)}
-                  disabled={!summaryData.positionHighlight}
-                  className={`
-                    w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border rounded-md
-                    text-gray-900 dark:text-gray-100
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                    transition-colors duration-200
-                    ${!summaryData.positionHighlight ? 'opacity-50 cursor-not-allowed' : ''}
-                    border-gray-300 dark:border-gray-600
-                  `}
-                >
-                  {positions.length === 0 ? (
-                    <option value="">No positions found</option>
-                  ) : (
-                    <>
-                      <option value="">Select a position</option>
-                      {positions.map((pos, index) => (
-                        <option key={index} value={pos}>{pos}</option>
-                      ))}
-                    </>
-                  )}
-                </select>
               </div>
-
-              {/* Skills Highlight */}
-              <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase mb-3 block">
-                  SKILLS HIGHLIGHT *
-                </label>
-                <input
-                  type="text"
-                  value={summaryData.skillsHighlight}
-                  onChange={(e) => update('skillsHighlight', e.target.value)}
-                  placeholder="Enter skill"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                />
-              </div>
-
-              {/* AI Writer Button */}
-              <button
-                onClick={handleAIWrite}
-                disabled={aiLoading || !hasEnoughContent}
-                className={`
-                  w-full flex items-center justify-center gap-2 px-4 py-3
-                  ${hasEnoughContent 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'}
-                  rounded-md font-medium text-sm uppercase tracking-wide
-                  transition-colors duration-200
-                `}
-              >
-                <Sparkles className="h-4 w-4" />
-                {aiLoading ? 'GENERATING...' : 'AI WRITER READY'}
-              </button>
             </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end items-center p-6 md:p-8 pt-0 border-t-2 border-corporate-navy-100 dark:border-corporate-navy-700">
+            <Button 
+              onClick={handleSave}
+              disabled={isSaving}
+              className="w-full md:w-auto bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white font-semibold px-8 py-2.5 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Summary
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <div className={`
-          fixed bottom-4 right-4 px-4 py-3 rounded-md shadow-lg text-white text-sm
-          transform transition-all duration-300 z-50
-          ${toast.error ? 'bg-red-600' : 'bg-green-600'}
-        `}>
-          {toast.message}
-        </div>
-      )}
     </div>
   );
 }

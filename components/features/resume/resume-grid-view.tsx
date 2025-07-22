@@ -479,7 +479,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
   return (
     <div className="relative">
       <div className="relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60 group">
-        <div className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-navy-700 relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60 shadow-lg shadow-slate-200/30 dark:shadow-navy-900/50">
+        <div className="bg-white/90 dark:bg-corporate-navy-800/90 backdrop-blur-sm rounded-xl border-2 border-corporate-navy-200 dark:border-corporate-navy-700 hover:border-corporate-amber-300 dark:hover:border-corporate-amber-600/50 relative w-[calc(50vw_-_25px)] xs:h-48 sm:h-[290px] md:w-60 shadow-lg shadow-corporate-gold-500/10 dark:shadow-corporate-navy-900/50 transition-all duration-300">
           {/* Resume Preview Section */}
           <div
             className="relative h-[calc(100%-60px)] cursor-pointer overflow-hidden"
@@ -488,20 +488,20 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
             <div className="relative h-full">
               <div className="h-full w-full overflow-hidden rounded-lg rounded-b-none border-b-0 p-0 bg-white dark:bg-slate-800">
                 {isLoading ? (
-                  <div className="flex h-full w-full items-center justify-center bg-white dark:bg-slate-800">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#48c9b0] border-t-transparent"></div>
+                  <div className="flex h-full w-full items-center justify-center bg-white dark:bg-corporate-navy-800">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-corporate-amber-500 border-t-transparent"></div>
                   </div>
                 ) : error ? (
-                  <div className="flex h-full w-full items-center justify-center bg-white dark:bg-slate-800">
+                  <div className="flex h-full w-full items-center justify-center bg-white dark:bg-corporate-navy-800">
                     <p className="text-red-500 text-sm">{error}</p>
                   </div>
                 ) : (
                   <div>
-                    <div className="bg-white dark:bg-slate-800 select-none">
-                      <div className="bg-white dark:bg-slate-800" style={{ minHeight: '11in' }}>
+                    <div className="bg-white dark:bg-corporate-navy-800 select-none">
+                      <div className="bg-white dark:bg-corporate-navy-800" style={{ minHeight: '11in' }}>
                         <div
                           id="resume"
-                          className="relative bg-white dark:bg-slate-800 [&>*]:pointer-events-none [&>*]:select-none false"
+                          className="relative bg-white dark:bg-corporate-navy-800 [&>*]:pointer-events-none [&>*]:select-none false"
                           data-type="designStudio"
                           data-format="letter"
                           data-template="standard"
@@ -880,20 +880,20 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
 
             {/* Targeted Badge */}
             {resume.isTargeted && (
-              <div className="absolute right-2 top-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-md shadow-blue-500/30">
+              <div className="absolute right-2 top-2 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-md shadow-corporate-gold-500/30">
                 TARGETED
               </div>
             )}
           </div>
 
           {/* Card Footer */}
-          <div className="relative flex h-[60px] flex-row items-center justify-between rounded-b-xl rounded-t-none bg-gradient-to-r from-slate-100 to-gray-100 dark:from-navy-800 dark:to-navy-700 py-2 border-t border-slate-200 dark:border-navy-600">
+          <div className="relative flex h-[60px] flex-row items-center justify-between rounded-b-xl rounded-t-none bg-gradient-to-r from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-800 dark:to-corporate-navy-700 py-2 border-t-2 border-corporate-navy-100 dark:border-corporate-navy-600">
             <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
               <div className="w-full">
-                <p className="overflow-hidden overflow-ellipsis whitespace-nowrap pr-2 text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
+                <p className="overflow-hidden overflow-ellipsis whitespace-nowrap pr-2 text-base font-semibold leading-6 text-corporate-navy-900 dark:text-gray-100">
                   {resume.title}
                 </p>
-                <p className="text-400 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm leading-5 text-gray-500 dark:text-gray-400">
+                <p className="text-400 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm leading-5 text-corporate-navy-500 dark:text-gray-400">
                   {getLastUpdatedText()}
                 </p>
               </div>
@@ -908,7 +908,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
                   setShowUpgradeModal(true);
                 }}
               >
-                <i className="fad fa-lock text-gray-400 dark:text-gray-300" aria-hidden="true"></i>
+                <i className="fad fa-lock text-corporate-navy-400 dark:text-gray-300" aria-hidden="true"></i>
               </div>
             ) : (
               <div className="h-12 min-w-12 relative flex cursor-pointer items-center justify-center text-xl">
@@ -918,7 +918,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
                   id="icon"
                 >
                   <i
-                    className="!flex items-center justify-center fas fa-ellipsis-vertical text-gray-900 dark:text-gray-100 text-xl w-6 h-6"
+                    className="!flex items-center justify-center fas fa-ellipsis-vertical text-corporate-navy-700 dark:text-gray-100 hover:text-corporate-amber-600 dark:hover:text-corporate-amber-400 text-xl w-6 h-6 transition-colors duration-200"
                     onClick={handleMenuToggle}
                   ></i>
                 </div>
@@ -927,7 +927,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
                 {showMenu && createPortal(
                   <div
                     data-dropdown-portal="true"
-                    className="bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 fixed flex flex-col items-start py-2 shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 backdrop-blur-sm z-[9999] min-w-48"
+                    className="bg-white/90 dark:bg-corporate-navy-800/90 rounded-xl border-2 border-corporate-navy-200 dark:border-corporate-navy-700 fixed flex flex-col items-start py-2 shadow-2xl shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50 backdrop-blur-sm z-[9999] min-w-48"
                     style={{
                       top: dropdownPosition.top,
                       left: dropdownPosition.left,
@@ -935,7 +935,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEdit();
@@ -946,7 +946,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
                     </button>
 
                     <button
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/dashboard/resumes/${resume.id}/preview`);
@@ -958,7 +958,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
                     </button>
 
                     <button
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors"
                       onClick={handleDownload}
                     >
                       <i className="fad fa-download text-base"></i>
@@ -966,14 +966,14 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
                     </button>
 
                     <button
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors"
                       onClick={handleDuplicate}
                     >
                       <i className="fad fa-copy text-base"></i>
                       Duplicate
                     </button>
 
-                    <div className="w-full border-t border-slate-200 dark:border-navy-700 mt-2 mb-2"></div>
+                    <div className="w-full border-t border-corporate-navy-200 dark:border-corporate-navy-700 mt-2 mb-2"></div>
 
                     <button
                       className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

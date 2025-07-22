@@ -147,8 +147,10 @@ export const validationRules: ValidationRules = {
   },
   city: {
     validate: (value: string, formValues: any) => {
-      if (formValues.showLocation && !cleanPlaceholderValue(value)) {
-        return 'City is required when showing location';
+      const cleanValue = cleanPlaceholderValue(value);
+      // City is optional - only validate if user wants to show it and it's empty
+      if (formValues.showCity && !cleanValue) {
+        return 'City is required when choosing to show city on resume';
       }
       return true;
     }

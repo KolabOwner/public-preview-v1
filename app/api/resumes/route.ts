@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
     
     
-    // Create resume data
+    // Create resume data with default professional template settings
     const resumeData: any = {
       title: title.trim(),
       userId,
@@ -47,7 +47,31 @@ export async function POST(request: NextRequest) {
       isTargeted: isTargeted || false,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      status: FileStatus.UPLOADED
+      status: FileStatus.UPLOADED,
+      // Initialize with professional template by default
+      documentSettings: {
+        zoom: 120,
+        fontFamily: 'Merriweather',
+        primaryColor: '#000000',
+        textColor: '#000000',
+        fontSize: 11,
+        lineHeight: 1.2,
+        sectionSpacing: 0.75,
+        paperSize: 'Letter',
+        margins: {
+          top: 0.75,
+          right: 0.75,
+          bottom: 0.75,
+          left: 0.75,
+        },
+        showIcons: false,
+        showDividers: true,
+        useIndent: false,
+        viewAsPages: true,
+        template: 'professional',
+        lastUpdated: new Date().toISOString(),
+        version: 1,
+      }
     };
     
     // Add job info if targeted and provided

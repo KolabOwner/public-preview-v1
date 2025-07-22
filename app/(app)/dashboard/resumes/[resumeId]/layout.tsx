@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo, useMemo, useCallback } from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
@@ -14,7 +14,7 @@ interface Resume {
   isTargeted?: boolean;
 }
 
-export default function ResumeEditorLayout({
+const ResumeEditorLayout = memo(function ResumeEditorLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -325,7 +325,7 @@ export default function ResumeEditorLayout({
                             </div>
                           </div>
                           {resume.id === resumeId && (
-                            <i className="fas fa-check text-resume-blue-500 text-sm"></i>
+                            <i className="fas fa-check text-corporate-amber-600 dark:text-corporate-amber-400 text-sm"></i>
                           )}
                         </button>
                       ))}
@@ -346,7 +346,7 @@ export default function ResumeEditorLayout({
             </div>
 
             {/* Editor Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
             {visibleTabs.map((tab) => {
               const isActive = pathname === tab.href || (isMainPage && tab.label === 'Contact');
               return (
@@ -370,7 +370,7 @@ export default function ResumeEditorLayout({
             <div className="relative" ref={moreMenuRef}>
               <button
                 onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400 cursor-pointer"
                 title="More sections"
               >
                 <i className="fas fa-ellipsis-h"></i>
@@ -381,13 +381,13 @@ export default function ResumeEditorLayout({
                   <>
                     {/* Invisible backdrop */}
                     <div className="fixed inset-0" style={{ zIndex: 999998 }} onClick={() => setShowMoreMenu(false)} />
-                    <div className="absolute top-full right-0 mt-2 min-w-[280px] bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm"
+                    <div className="absolute top-full right-0 mt-2 min-w-[280px] bg-white dark:bg-corporate-navy-800 rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 shadow-2xl shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50 backdrop-blur-sm"
                          style={{ zIndex: 999999 }}>
-                    <div className="p-3 border-b border-surface-2-stroke">
+                    <div className="p-3 border-b border-corporate-navy-200 dark:border-corporate-navy-700">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-sm font-semibold text-gray-300">Additional Sections</h3>
-                          <p className="text-xs text-gray-500 mt-1">Click to navigate or toggle visibility</p>
+                          <h3 className="text-sm font-semibold text-corporate-navy-700 dark:text-gray-300">Additional Sections</h3>
+                          <p className="text-xs text-corporate-navy-500 dark:text-gray-500 mt-1">Click to navigate or toggle visibility</p>
                         </div>
                         <button
                           onClick={() => {
@@ -410,7 +410,7 @@ export default function ResumeEditorLayout({
                               localStorage.removeItem(`resumeTabVisibility_${resumeId}`);
                             }
                           }}
-                          className="text-xs text-blue-500 hover:text-blue-400 underline"
+                          className="text-xs text-corporate-amber-600 hover:text-corporate-amber-500 dark:text-corporate-amber-400 dark:hover:text-corporate-amber-300 underline"
                         >
                           Reset
                         </button>
@@ -426,18 +426,18 @@ export default function ResumeEditorLayout({
                         return (
                           <div
                             key={tab.key}
-                            className="flex items-center justify-between px-4 py-2.5 hover:bg-surface-3/50 transition-colors"
+                            className="flex items-center justify-between px-4 py-2.5 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors"
                           >
                             <Link
                               href={tab.href}
                               className="flex-1 flex items-center gap-2"
                               onClick={() => setShowMoreMenu(false)}
                             >
-                              <span className={`text-sm font-medium ${hasContent ? 'text-gray-200' : 'text-gray-500'}`}>
+                              <span className={`text-sm font-medium ${hasContent ? 'text-corporate-navy-700 dark:text-gray-200' : 'text-corporate-navy-500 dark:text-gray-500'}`}>
                                 {tab.label}
                               </span>
                               {hasContent && (
-                                <span className="text-xs text-green-500">
+                                <span className="text-xs text-corporate-amber-600 dark:text-corporate-amber-400">
                                   <i className="fas fa-check-circle"></i>
                                 </span>
                               )}
@@ -448,9 +448,9 @@ export default function ResumeEditorLayout({
                                 type="checkbox"
                                 checked={isEnabled}
                                 onChange={() => toggleTabVisibility(tab.key)}
-                                className="w-4 h-4 text-resume-blue-600 bg-surface-1 border-gray-600 rounded focus:ring-resume-blue-500 focus:ring-2"
+                                className="w-4 h-4 text-corporate-amber-600 bg-white dark:bg-corporate-navy-700 border-corporate-navy-300 dark:border-corporate-navy-600 rounded focus:ring-corporate-amber-500 focus:ring-2"
                               />
-                              <span className="ml-2 text-xs text-gray-400">Show</span>
+                              <span className="ml-2 text-xs text-corporate-navy-500 dark:text-gray-400">Show</span>
                             </label>
                           </div>
                         );
@@ -463,7 +463,7 @@ export default function ResumeEditorLayout({
             </div>
 
             {/* Preview/Action Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
               {actionTabs.map((tab) => {
                 const isActive = pathname === tab.href;
                 return (
@@ -472,8 +472,8 @@ export default function ResumeEditorLayout({
                     href={tab.href}
                     className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
-                        ? 'bg-resume-blue-600 text-neutral-0' 
-                        : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                        ? 'bg-corporate-amber-600 text-white' 
+                        : 'text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400'
                     } cursor-pointer`}
                   >
                     <div className="w-full overflow-hidden">
@@ -493,7 +493,7 @@ export default function ResumeEditorLayout({
       <div className="sm:hidden">
         {/* Mobile Header */}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-semibold text-white truncate max-w-[60%]">
+          <h1 className="text-lg font-semibold text-corporate-navy-900 dark:text-white truncate max-w-[60%]">
             {currentResume?.title || 'Resume Editor'}
           </h1>
 
@@ -501,7 +501,7 @@ export default function ResumeEditorLayout({
           {user && (
             <button
               type="button"
-              className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none h-8 w-8 !text-xs !font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-md shadow-blue-500/30"
+              className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none h-8 w-8 !text-xs !font-semibold bg-gradient-to-r from-corporate-amber-600 to-corporate-gold-600 text-white rounded-full shadow-md shadow-corporate-gold-500/30"
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <span>{user.displayName?.[0] || user.email?.[0] || 'U'}</span>
@@ -513,10 +513,10 @@ export default function ResumeEditorLayout({
         <div className="overflow-x-auto pb-4 mb-4 -mx-6 px-6">
           <div className="flex flex-row gap-1 w-max">
             {/* Mobile Resume Selector Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
               <button
                 onClick={() => setShowResumeDropdown(!showResumeDropdown)}
-                className="rounded inline-flex items-center gap-1 whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                className="rounded inline-flex items-center gap-1 whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all text-corporate-navy-600 dark:text-gray-300 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400"
               >
               <span className="font-semibold uppercase text-[9px] truncate max-w-[100px]">
                 {currentResume ? (
@@ -533,7 +533,7 @@ export default function ResumeEditorLayout({
             </div>
 
             {/* Mobile Editor Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 gap-0.5 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 gap-0.5 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
             {visibleTabs.map((tab) => {
               const isActive = pathname === tab.href || (isMainPage && tab.label === 'Contact');
               return (
@@ -542,8 +542,8 @@ export default function ResumeEditorLayout({
                   href={tab.href}
                   className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
                     isActive 
-                      ? 'bg-resume-blue-600 text-neutral-0' 
-                      : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                      ? 'bg-corporate-amber-600 text-white' 
+                      : 'text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400'
                   } cursor-pointer`}
                 >
                   <div className="w-full overflow-hidden">
@@ -556,7 +556,7 @@ export default function ResumeEditorLayout({
             {/* Mobile More Button */}
             <button
               onClick={() => setShowMoreMenu(true)}
-              className="rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer"
+              className="rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400 cursor-pointer"
             >
               <i className="fas fa-ellipsis-h text-[11px]"></i>
             </button>
@@ -614,7 +614,7 @@ export default function ResumeEditorLayout({
                       </div>
                     </div>
                     {resume.id === resumeId && (
-                      <i className="fas fa-check text-resume-blue-500 text-sm"></i>
+                      <i className="fas fa-check text-corporate-amber-600 dark:text-corporate-amber-400 text-sm"></i>
                     )}
                   </button>
                 ))}
@@ -670,11 +670,11 @@ export default function ResumeEditorLayout({
         {/* Mobile More Menu Modal */}
         {showMoreMenu && (
           <div className="fixed inset-0 bg-black/50 z-50 sm:hidden" onClick={() => setShowMoreMenu(false)}>
-            <div className="absolute bottom-0 left-0 right-0 bg-surface-2 rounded-t-2xl border-t border-surface-2-stroke p-4 max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
-              <div className="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4"></div>
+            <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-corporate-navy-800 rounded-t-2xl border-t border-corporate-navy-200 dark:border-corporate-navy-700 p-4 max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+              <div className="w-12 h-1 bg-corporate-navy-300 dark:bg-gray-600 rounded-full mx-auto mb-4"></div>
 
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">Additional Sections</h3>
-              <p className="text-xs text-gray-500 mb-4">Tap to navigate or toggle visibility</p>
+              <h3 className="text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 mb-3">Additional Sections</h3>
+              <p className="text-xs text-corporate-navy-500 dark:text-gray-500 mb-4">Tap to navigate or toggle visibility</p>
 
               <div className="space-y-2 overflow-y-auto max-h-[60vh]">
                 {allEditorTabs.filter(tab => !['contact', 'preview', 'cover-letter'].includes(tab.key)).map((tab) => {
@@ -684,18 +684,18 @@ export default function ResumeEditorLayout({
                   return (
                     <div
                       key={tab.key}
-                      className="flex items-center justify-between p-3 rounded-lg bg-surface-3/30"
+                      className="flex items-center justify-between p-3 rounded-lg bg-corporate-amber-50/30 dark:bg-corporate-navy-700/30"
                     >
                       <Link
                         href={tab.href}
                         className="flex-1 flex items-center gap-2"
                         onClick={() => setShowMoreMenu(false)}
                       >
-                        <span className={`text-sm font-medium ${hasContent ? 'text-gray-200' : 'text-gray-500'}`}>
+                        <span className={`text-sm font-medium ${hasContent ? 'text-corporate-navy-700 dark:text-gray-200' : 'text-corporate-navy-500 dark:text-gray-500'}`}>
                           {tab.label}
                         </span>
                         {hasContent && (
-                          <span className="text-xs text-green-500">
+                          <span className="text-xs text-corporate-amber-600 dark:text-corporate-amber-400">
                             <i className="fas fa-check-circle"></i>
                           </span>
                         )}
@@ -706,9 +706,9 @@ export default function ResumeEditorLayout({
                           type="checkbox"
                           checked={isEnabled}
                           onChange={() => toggleTabVisibility(tab.key)}
-                          className="w-4 h-4 text-resume-blue-600 bg-surface-1 border-gray-600 rounded focus:ring-resume-blue-500"
+                          className="w-4 h-4 text-corporate-amber-600 bg-white dark:bg-corporate-navy-700 border-corporate-navy-300 dark:border-corporate-navy-600 rounded focus:ring-corporate-amber-500"
                         />
-                        <span className="ml-2 text-xs text-gray-400">Show</span>
+                        <span className="ml-2 text-xs text-corporate-navy-500 dark:text-gray-400">Show</span>
                       </label>
                     </div>
                   );
@@ -725,4 +725,6 @@ export default function ResumeEditorLayout({
       </div>
     </main>
   );
-}
+});
+
+export default ResumeEditorLayout;

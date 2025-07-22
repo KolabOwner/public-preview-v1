@@ -1,27 +1,15 @@
 'use client';
 
-import React, { useEffect, useState, ChangeEvent, useMemo, useCallback } from 'react';
-import { useForm, UseFormRegister, FieldErrors } from 'react-hook-form';
-import { Save, Loader2, AlertCircle, Link2, Mail, Phone, Linkedin, Globe, MapPin, LucideIcon } from "lucide-react";
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Save, Loader2, Mail, Phone, Globe, MapPin } from "lucide-react";
 import { Switch } from '@/components/shared/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shared/select';
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
-import {
-  validationRules,
-  cleanPlaceholderValue,
-  normalizeLinkedInUrl,
-  formatWebsiteUrl,
-  formatPhoneNumber
-} from './utils/validation';
-import {
-  COUNTRIES,
-  getStateOptions,
-  getStateLabel,
-  isStateSelectionEnabled
-} from './utils/location-data';
+import { COUNTRIES, getStateOptions, getStateLabel, isStateSelectionEnabled } from './utils/location-data';
 
 export interface ContactFormData {
   fullName: string;
@@ -45,385 +33,278 @@ export interface ContactFormData {
 interface ContactFormProps {
   initialData: ContactFormData;
   onSave: (data: ContactFormData) => Promise<void>;
-  autoSave?: boolean;
 }
 
-interface FormFieldProps {
-  id: keyof ContactFormData;
-  label: string;
-  placeholder: string;
-  type?: string;
-  prefix?: string;
-  icon?: LucideIcon | null;
-  showToggle?: boolean;
-  toggleValue?: boolean;
-  onToggleChange?: (checked: boolean) => void;
-  register: UseFormRegister<ContactFormData>;
-  errors: FieldErrors<ContactFormData>;
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-  onBlur?: (e: ChangeEvent<HTMLInputElement>) => void;
-  value?: string;
-  disabled?: boolean;
-  required?: boolean;
-  'aria-describedby'?: string;
-}
+// Clean placeholder values and format fields
+const cleanValue = (value: string): string => {
+  if (!value) return '';
+  return value.replace(/^(Enter your |Your |Please enter )/i, '').trim();
+};
 
-// Form Field Component using shared components
-const FormField: React.FC<FormFieldProps> = React.memo(({
-  id,
-  label,
-  placeholder,
-  type = "text",
-  prefix,
-  icon: Icon,
-  showToggle,
-  toggleValue,
-  onToggleChange,
-  register,
-  errors,
-  onChange,
-  onBlur,
-  value,
-  disabled = false,
-  required = false,
-  'aria-describedby': ariaDescribedBy
-}) => {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label htmlFor={id} className="text-sm font-medium text-gray-900 dark:text-gray-100">
-          {label}
-          {required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
-        </Label>
-        {showToggle && onToggleChange && (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Show on resume</span>
-            <Switch
-              id={`${id}-toggle`}
-              checked={toggleValue || false}
-              onCheckedChange={onToggleChange}
-              className="scale-75"
-            />
-          </div>
-        )}
-      </div>
+const formatPhone = (value: string): string => {
+  const cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 10) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  }
+  return value;
+};
 
-      <div className="relative">
-        <div className={`
-          flex items-center rounded-md border-2 transition-colors
-          ${errors[id] ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-gray-600'}
-          bg-white dark:bg-gray-800
-        `}>
-          {Icon && <Icon className="w-4 h-4 text-gray-400 dark:text-gray-500 ml-3" />}
-          {prefix && (
-            <span className={`py-2 text-base font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap ${
-              id === 'linkedin' ? 'pl-3 pr-0' : 'px-3'
-            }`}>
-              {prefix}
-            </span>
-          )}
-          <Input
-            id={id}
-            type={type}
-            placeholder={placeholder}
-            className={`border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold ${
-              id === 'linkedin' ? 'pl-0 pr-3' : 'px-3'
-            }`}
-            {...register(id, (validationRules as any)[id] || {})}
-            onChange={onChange}
-            onBlur={onBlur}
-            value={value}
-            disabled={disabled}
-            required={required}
-            aria-describedby={ariaDescribedBy || (errors[id] ? `${id}-error` : undefined)}
-            aria-invalid={errors[id] ? 'true' : 'false'}
-          />
-          {id === 'linkedin' && (
-            <Link2 className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3" />
-          )}
-        </div>
-        {errors[id] && (
-          <p
-            id={`${id}-error`}
-            className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
-            role="alert"
-            aria-live="polite"
-          >
-            <AlertCircle className="h-4 w-4" />
-            {errors[id]?.message}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-});
+const formatLinkedIn = (value: string): string => {
+  if (!value) return '';
+  const cleaned = cleanValue(value);
+  if (cleaned.includes('linkedin.com/in/')) {
+    return cleaned.split('linkedin.com/in/')[1] || '';
+  }
+  return cleaned;
+};
 
-function ContactForm({ initialData, onSave }: ContactFormProps): JSX.Element {
+const formatWebsite = (value: string): string => {
+  const cleaned = cleanValue(value);
+  if (!cleaned) return '';
+  if (!/^https?:\/\//.test(cleaned)) {
+    return `https://${cleaned}`;
+  }
+  return cleaned;
+};
+
+export default function ContactForm({ initialData, onSave }: ContactFormProps) {
   const { toast } = useToast();
-
-  // Process initial data to match the cleaned/normalized format
-  const processedInitialData = useMemo(() => {
-    const processed = { ...initialData };
-
-    // Clean all string fields of placeholder values
-    Object.keys(processed).forEach((key) => {
-      const currentValue = processed[key as keyof ContactFormData];
-      if (typeof currentValue === 'string') {
-        let cleanedValue = cleanPlaceholderValue(currentValue);
-
-        // Special normalization for LinkedIn on initial load
-        if (key === 'linkedin' && cleanedValue) {
-          cleanedValue = normalizeLinkedInUrl(cleanedValue);
-        }
-
-        processed[key as keyof ContactFormData] = cleanedValue as any;
-      }
-    });
-
-    return processed;
-  }, [initialData]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const {
-    handleSubmit,
     register,
+    watch,
     setValue,
     getValues,
-    watch,
-    formState: { errors, isSubmitting },
+    formState: { errors }
   } = useForm<ContactFormData>({
-    defaultValues: processedInitialData,
+    defaultValues: initialData,
     mode: 'onChange'
   });
 
-  const [saveDebounceTimer, setSaveDebounceTimer] = useState<NodeJS.Timeout | null>(null);
-  const [isDebouncing, setIsDebouncing] = useState(false);
-
-  // Simple local state for dropdowns
-  const [countryValue, setCountryValue] = useState(processedInitialData.country || '');
-  const [stateValue, setStateValue] = useState(processedInitialData.state || '');
-
-  // Simplified initial setup - no need for cleanup since we're using processedInitialData
-  useEffect(() => {
-    // Set local state to match processed initial data
-    setCountryValue(processedInitialData.country || '');
-    setStateValue(processedInitialData.state || '');
-  }, [processedInitialData]);
-
-  const debouncedSave = useCallback(() => {
-    // Clear existing timer
-    if (saveDebounceTimer) {
-      clearTimeout(saveDebounceTimer);
+  // Manual save
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      const formData = getValues();
+      await onSave(formData);
+      toast({
+        title: "Success",
+        description: "Contact information saved successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save contact information",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsDebouncing(true);
-
-    // Set new timer
-    const timer = setTimeout(async () => {
-      try {
-        // Get the current complete state including local dropdown values
-        const currentData = {
-          ...getValues(),
-          country: countryValue,
-          state: stateValue
-        };
-
-        // Additional validation before save
-        if (!currentData.fullName?.trim()) {
-          toast({
-            title: "Validation Error",
-            description: "Full name is required",
-            variant: "destructive",
-          });
-          setIsDebouncing(false);
-          return;
-        }
-
-        if (!currentData.email?.trim()) {
-          toast({
-            title: "Validation Error",
-            description: "Email is required",
-            variant: "destructive",
-          });
-          setIsDebouncing(false);
-          return;
-        }
-
-        await onSave(currentData);
-        toast({
-          title: "Success",
-          description: "Contact information saved successfully",
-        });
-
-      } catch (error) {
-        console.error('Save error:', error);
-        toast({
-          title: "Error",
-          description: error instanceof Error ? error.message : "Failed to save contact information",
-          variant: "destructive",
-        });
-      } finally {
-        setIsDebouncing(false);
-      }
-    }, 1000); // 1 second debounce
-
-    setSaveDebounceTimer(timer);
-  }, [saveDebounceTimer, getValues, countryValue, stateValue, onSave, toast]);
-
-  const onSubmit = async (data: ContactFormData): Promise<void> => {
-    debouncedSave(data);
   };
 
-  const handlePhoneChange = useCallback((e: ChangeEvent<HTMLInputElement>): void => {
-    const cleanValue = cleanPlaceholderValue(e.target.value);
-    const formatted: string = formatPhoneNumber(cleanValue);
-    setValue('phone', formatted, { shouldValidate: true });
-  }, [setValue]);
+  // Field handlers with auto-formatting
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(cleanValue(e.target.value));
+    setValue('phone', formatted);
+  };
 
-  const handleLinkedInChange = useCallback((e: ChangeEvent<HTMLInputElement>): void => {
-    const cleanValue = cleanPlaceholderValue(e.target.value);
-    const normalized = normalizeLinkedInUrl(cleanValue);
-    setValue('linkedin', normalized, { shouldValidate: true });
-  }, [setValue]);
+  const handleLinkedInChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatLinkedIn(e.target.value);
+    setValue('linkedin', formatted);
+  };
 
-  const handleFieldBlur = useCallback((fieldId: keyof ContactFormData) => (e: ChangeEvent<HTMLInputElement>): void => {
-    let cleanValue = cleanPlaceholderValue(e.target.value);
+  const handleWebsiteBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatWebsite(e.target.value);
+    setValue('website', formatted);
+  };
 
-    // Special handling for specific fields
-    if (fieldId === 'linkedin') {
-      cleanValue = normalizeLinkedInUrl(cleanValue);
-    } else if (fieldId === 'website') {
-      cleanValue = formatWebsiteUrl(cleanValue);
-    }
-
-    if (cleanValue !== e.target.value) {
-      setValue(fieldId, cleanValue, { shouldValidate: true });
-    }
-  }, [setValue]);
-
-  // Optimized country change handler
-  const handleCountryChange = useCallback((value: string) => {
-    setCountryValue(value);
-    setValue('country', value, { shouldValidate: true, shouldDirty: true });
-
-    // Clear state if country doesn't support states
+  const handleCountryChange = (value: string) => {
+    setValue('country', value);
     if (!isStateSelectionEnabled(value)) {
-      setStateValue('');
-      setValue('state', '', { shouldValidate: true, shouldDirty: true });
+      setValue('state', '');
     }
-  }, [setValue]);
-
-  // Optimized state change handler
-  const handleStateChange = useCallback((value: string) => {
-    setStateValue(value);
-    setValue('state', value, { shouldValidate: true, shouldDirty: true });
-  }, [setValue]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (saveDebounceTimer) {
-        clearTimeout(saveDebounceTimer);
-      }
-    };
-  }, [saveDebounceTimer]);
+  };
 
   return (
-    <div className={`bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 ${
-      (isSubmitting || isDebouncing) ? 'opacity-75 pointer-events-none' : ''
+    <div className={`relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${
+      isSaving 
+        ? 'opacity-75 pointer-events-none border-corporate-amber-300 dark:border-corporate-amber-600' 
+        : 'border-corporate-navy-200 dark:border-corporate-navy-700 hover:border-corporate-amber-300 dark:hover:border-corporate-amber-600/50'
     }`}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" aria-busy={isSubmitting || isDebouncing}>
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" aria-hidden="true" />
+      
+      {/* Subtle pattern overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.02),transparent_50%)]" aria-hidden="true" />
+      
+      <div className="relative bg-white/80 dark:bg-corporate-navy-900/90 backdrop-blur-sm p-6 md:p-8">
+        <form className="space-y-6" aria-busy={isSaving}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Row 1: Full Name & Email */}
-          <FormField
-            id="fullName"
-            label="Full name"
-            placeholder="Charles Bloomberg"
-            icon={null}
-            register={register}
-            errors={errors}
-            onBlur={handleFieldBlur('fullName')}
-            showToggle={false}
-            required={true}
-            disabled={isSubmitting || isDebouncing}
-          />
-          <FormField
-            id="email"
-            label="Email address"
-            placeholder="charlesbloomberg@wisc.edu"
-            type="email"
-            icon={Mail}
-            showToggle={false}
-            register={register}
-            errors={errors}
-            onBlur={handleFieldBlur('email')}
-            required={true}
-            disabled={isSubmitting || isDebouncing}
-          />
+          {/* Full Name */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+              Full name <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
+            </Label>
+            <div className={`
+              flex items-center rounded-lg border-2 transition-all duration-200
+              ${errors.fullName 
+                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+              }
+              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+            `}>
+              <Input
+                {...register('fullName', { 
+                  required: 'Full name is required',
+                  minLength: { value: 2, message: 'Name must be at least 2 characters' }
+                })}
+                placeholder="Charles Bloomberg"
+                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                disabled={isSaving}
+              />
+            </div>
+            {errors.fullName && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
+                {errors.fullName.message}
+              </p>
+            )}
+          </div>
 
-          {/* Row 2: Phone & LinkedIn */}
-          <FormField
-            id="phone"
-            label="Phone number"
-            placeholder="(621) 799-5548"
-            type="tel"
-            icon={Phone}
-            showToggle={false}
-            register={register}
-            errors={errors}
-            onChange={handlePhoneChange}
-            value={watch('phone')}
-            disabled={isSubmitting || isDebouncing}
-          />
-          <FormField
-            id="linkedin"
-            label="LinkedIn URL"
-            placeholder="bloomberg"
-            prefix="https://linkedin.com/in/"
-            icon={Linkedin}
-            showToggle={false}
-            register={register}
-            errors={errors}
-            onChange={handleLinkedInChange}
-            onBlur={handleFieldBlur('linkedin')}
-            value={watch('linkedin')}
-            disabled={isSubmitting || isDebouncing}
-          />
+          {/* Email */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+              Email address <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
+            </Label>
+            <div className={`
+              flex items-center rounded-lg border-2 transition-all duration-200 group
+              ${errors.email 
+                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+              }
+              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+            `}>
+              <Mail className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
+              <Input
+                {...register('email', { 
+                  required: 'Email is required',
+                  pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
+                })}
+                type="email"
+                placeholder="charlesbloomberg@wisc.edu"
+                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                disabled={isSaving}
+              />
+            </div>
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
 
-          {/* Row 3: Website & Country */}
-          <FormField
-            id="website"
-            label="Personal website or relevant link"
-            placeholder="https://www.charlesbloomberg.com"
-            type="url"
-            icon={Globe}
-            showToggle={false}
-            register={register}
-            errors={errors}
-            onBlur={handleFieldBlur('website')}
-            disabled={isSubmitting || isDebouncing}
-          />
+          {/* Phone */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+              Phone number
+            </Label>
+            <div className={`
+              flex items-center rounded-lg border-2 transition-all duration-200 group
+              ${errors.phone 
+                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+              }
+              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+            `}>
+              <Phone className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
+              <Input
+                {...register('phone')}
+                type="tel"
+                placeholder="(621) 799-5548"
+                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                onChange={handlePhoneChange}
+                disabled={isSaving}
+              />
+            </div>
+          </div>
 
+          {/* LinkedIn */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+              LinkedIn URL
+            </Label>
+            <div className={`
+              flex items-center rounded-lg border-2 transition-all duration-200 group
+              ${errors.linkedin 
+                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+              }
+              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+            `}>
+              <span className="py-2 text-base font-semibold text-corporate-navy-700 dark:text-gray-300 whitespace-nowrap pl-3 pr-0">
+                https://linkedin.com/in/
+              </span>
+              <Input
+                {...register('linkedin')}
+                placeholder="bloomberg"
+                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 pl-0 pr-3"
+                onChange={handleLinkedInChange}
+                disabled={isSaving}
+              />
+              <div className="h-5 w-5 text-corporate-navy-500 dark:text-corporate-amber-400/70 mr-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
+            </div>
+          </div>
+
+          {/* Website */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+              Personal website or relevant link
+            </Label>
+            <div className={`
+              flex items-center rounded-lg border-2 transition-all duration-200 group
+              ${errors.website 
+                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+              }
+              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+            `}>
+              <Globe className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
+              <Input
+                {...register('website')}
+                type="url"
+                placeholder="https://www.charlesbloomberg.com"
+                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                onBlur={handleWebsiteBlur}
+                disabled={isSaving}
+              />
+            </div>
+          </div>
+
+          {/* Country */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
                 Country
               </Label>
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500 dark:text-gray-400">Show on resume</span>
+                <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
                 <Switch
                   checked={watch('showCountry')}
-                  onCheckedChange={(checked: boolean) => setValue('showCountry', checked)}
-                  className="scale-75"
+                  onCheckedChange={(checked) => setValue('showCountry', checked)}
+                  className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
                 />
               </div>
             </div>
             <div className={`
-              rounded-md border-2 transition-colors
-              ${errors.country ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-gray-600'}
-              bg-white dark:bg-gray-800
+              rounded-lg border-2 transition-all duration-200 group
+              ${errors.country 
+                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+              }
+              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
             `}>
-              <Select value={countryValue} onValueChange={handleCountryChange} disabled={isSubmitting || isDebouncing}>
-                <SelectTrigger className="h-10 sm:h-12 border-0 bg-transparent focus:ring-0 text-base font-semibold">
+              <Select value={watch('country')} onValueChange={handleCountryChange} disabled={isSaving}>
+                <SelectTrigger className="h-10 sm:h-12 border-0 bg-transparent focus:ring-0 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 hover:bg-transparent">
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -437,41 +318,44 @@ function ContactForm({ initialData, onSave }: ContactFormProps): JSX.Element {
             </div>
           </div>
 
-          {/* Row 4: State/Province & City */}
+          {/* State */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {getStateLabel(countryValue)}
+              <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+                {getStateLabel(watch('country'))}
               </Label>
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500 dark:text-gray-400">Show on resume</span>
+                <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
                 <Switch
                   checked={watch('showState')}
-                  onCheckedChange={(checked: boolean) => setValue('showState', checked)}
-                  className="scale-75"
+                  onCheckedChange={(checked) => setValue('showState', checked)}
+                  className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
                 />
               </div>
             </div>
             <div className={`
-              rounded-md border-2 transition-colors
-              ${errors.state ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-gray-600'}
-              bg-white dark:bg-gray-800
-              ${!isStateSelectionEnabled(countryValue) ? 'opacity-50' : ''}
+              rounded-lg border-2 transition-all duration-200 group
+              ${errors.state 
+                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+              }
+              ${!isStateSelectionEnabled(watch('country')) ? 'opacity-50 cursor-not-allowed' : ''}
+              ${isSaving ? 'opacity-60' : ''}
             `}>
-              <Select
-                value={stateValue}
-                onValueChange={handleStateChange}
-                disabled={!isStateSelectionEnabled(countryValue) || isSubmitting || isDebouncing}
+              <Select 
+                value={watch('state')} 
+                onValueChange={(value) => setValue('state', value)}
+                disabled={!isStateSelectionEnabled(watch('country')) || isSaving}
               >
-                <SelectTrigger className="h-10 sm:h-12 border-0 bg-transparent focus:ring-0 text-base font-semibold">
+                <SelectTrigger className="h-10 sm:h-12 border-0 bg-transparent focus:ring-0 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 hover:bg-transparent">
                   <SelectValue placeholder={
-                    isStateSelectionEnabled(countryValue)
-                      ? `Select ${getStateLabel(countryValue).toLowerCase()}`
+                    isStateSelectionEnabled(watch('country'))
+                      ? `Select ${getStateLabel(watch('country')).toLowerCase()}`
                       : 'Select country first'
                   } />
                 </SelectTrigger>
                 <SelectContent>
-                  {getStateOptions(countryValue).map((state) => (
+                  {getStateOptions(watch('country')).map((state) => (
                     <SelectItem key={state.value} value={state.value}>
                       {state.label}
                     </SelectItem>
@@ -481,29 +365,61 @@ function ContactForm({ initialData, onSave }: ContactFormProps): JSX.Element {
             </div>
           </div>
 
-          <FormField
-            id="city"
-            label="City"
-            placeholder="New York City"
-            icon={MapPin}
-            showToggle={true}
-            toggleValue={watch('showCity')}
-            onToggleChange={(checked: boolean) => setValue('showCity', checked)}
-            register={register}
-            errors={errors}
-            onBlur={handleFieldBlur('city')}
-            disabled={isSubmitting || isDebouncing}
-          />
+          {/* City */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="city" className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+                City
+              </Label>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
+                <Switch
+                  checked={watch('showCity')}
+                  onCheckedChange={(checked) => setValue('showCity', checked)}
+                  className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
+                />
+              </div>
+            </div>
+            <div className={`
+              flex items-center rounded-lg border-2 transition-all duration-200 group
+              ${errors.city 
+                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
+                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+              }
+              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
+            `}>
+              <MapPin className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
+              <Input
+                id="city"
+                {...register('city', {
+                  validate: (value) => {
+                    if (watch('showCity') && !value?.trim()) {
+                      return 'City is required when choosing to show city on resume';
+                    }
+                    return true;
+                  }
+                })}
+                placeholder="New York City"
+                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                disabled={isSaving}
+              />
+            </div>
+            {errors.city && (
+              <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1 animate-fade-in">
+                {errors.city.message}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end">
+        {/* Save Button */}
+        <div className="flex justify-end pt-2">
           <Button
-            type="submit"
-            disabled={isSubmitting || isDebouncing}
-            className="w-full md:w-auto"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-full md:w-auto bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white font-semibold px-6 py-2.5 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
           >
-            {isSubmitting || isDebouncing ? (
+            {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
@@ -516,9 +432,8 @@ function ContactForm({ initialData, onSave }: ContactFormProps): JSX.Element {
             )}
           </Button>
         </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
-
-export default ContactForm;

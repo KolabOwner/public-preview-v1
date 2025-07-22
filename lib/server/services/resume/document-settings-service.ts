@@ -1,7 +1,5 @@
 // lib/server/services/resume/document-settings-service.ts
 
-'use client';
-
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase-config';
 import { DocumentSettings } from '@/components/features/dashboard/resume-header-bar';

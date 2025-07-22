@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/shared/theme-provider';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase-config';
 import UpgradeModal from '@/components/features/resume/modals/upgrade-modal';
-import { useToast } from '@/lib/client/hooks/ui/use-toast';
-import { Sun, Moon, Laptop, User, LogOut, Settings, LifeBuoy, Bell } from 'lucide-react';
+import { Sun, Moon, Laptop, LogOut, Settings, LifeBuoy, Bell } from 'lucide-react';
 
 interface DashboardNavProps {
   activeTab: 'resumes' | 'cover-letters';
@@ -23,8 +21,6 @@ export default function DashboardNav({ activeTab, showNotifications, onNotificat
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
-  const { toast } = useToast();
-  const router = useRouter();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -91,9 +87,6 @@ export default function DashboardNav({ activeTab, showNotifications, onNotificat
         <div className="flex items-center justify-between">
           {/* Logo and Navigation */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-corporate-gold-600 via-corporate-amber-500 to-corporate-gold-600 bg-clip-text text-transparent">
-              Kolab
-            </Link>
             <nav className="hidden md:flex items-center gap-2 bg-white dark:bg-corporate-navy-900 border border-corporate-navy-100 dark:border-corporate-navy-800 rounded-xl p-1 shadow-sm">
               <NavLink href="/dashboard/resumes" tabName="Resumes" currentTab={activeTab} />
               <NavLink href="/dashboard/cover-letters" tabName="Cover Letters" currentTab={activeTab} onClick={handleCoverLettersClick} />

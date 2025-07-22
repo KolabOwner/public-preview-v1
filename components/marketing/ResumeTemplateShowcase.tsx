@@ -39,6 +39,7 @@ interface ResumeTemplate {
   isPopular?: boolean;
   category?: 'modern' | 'professional' | 'creative' | 'minimal';
   features?: string[];
+  downloadUrl?: string;
 }
 
 interface TemplateImageProps {
@@ -122,7 +123,7 @@ const ResumeTemplateShowcase = () => {
       id: 'modern',
       name: 'Modern Resume Template',
       description: 'Our newest resume template developed with attractive colors, clean lines, and high content density. Kolab recommends this format for all users.',
-      imageSrc: '/images/modern-resume-template.png',
+      imageSrc: '/images/templates/ModernTemplate.png',
       downloadTypes: ['PDF'],
       isPopular: true,
       category: 'modern',
@@ -132,16 +133,17 @@ const ResumeTemplateShowcase = () => {
       id: 'standard',
       name: 'Standard Resume Template',
       description: 'Our classic resume template, trusted by over 100,000+ job seekers, is designed to get through ATS software and into the hands of real humans.',
-      imageSrc: '/images/standard-resume-template.png',
+      imageSrc: '/images/templates/StandardTemplate.png',
       downloadTypes: ['PDF', 'Microsoft Word', 'Google Drive'],
       category: 'professional',
-      features: ['ATS-Friendly', 'Multi-Format Export', 'Industry Standard']
+      features: ['ATS-Friendly', 'Multi-Format Export', 'Industry Standard'],
+      downloadUrl: '/images/standard-resume-template.pdf'
     },
     {
       id: 'compact',
       name: 'Compact Resume Template',
       description: 'Our clean resume template for experienced professionals is designed to fit 20% more content per page.',
-      imageSrc: '/images/compact-resume-template.png',
+      imageSrc: '/images/templates/CompactTemplate.png',
       downloadTypes: ['PDF', 'Microsoft Word', 'Google Drive'],
       category: 'professional',
       features: ['High Content Density', 'Space Efficient', 'Professional Layout']
@@ -150,7 +152,7 @@ const ResumeTemplateShowcase = () => {
       id: 'bold',
       name: 'Bold Resume Template',
       description: 'Make a statement with our bold template featuring strong typography and modern design elements.',
-      imageSrc: '/images/bold-resume-template.png',
+      imageSrc: '/images/templates/BoldTemplate.png',
       downloadTypes: ['PDF'],
       category: 'creative',
       features: ['Bold Typography', 'Creative Design', 'Eye-Catching']
@@ -159,7 +161,7 @@ const ResumeTemplateShowcase = () => {
       id: 'alternative',
       name: 'Alternative Resume Template',
       description: "We've created an alternative Kolab format that is designed to be printed and viewed on paper. Well suited for when you need modern resume templates.",
-      imageSrc: '/images/alternative-resume-template.png',
+      imageSrc: '/images/templates/AlternativeTemplate.png',
       downloadTypes: ['PDF'],
       category: 'minimal',
       features: ['Print-Optimized', 'Clean Design', 'Paper-Friendly']
@@ -181,6 +183,20 @@ const ResumeTemplateShowcase = () => {
   }, []);
 
   const currentTemplate = templates[currentIndex];
+
+  // Download handler function
+  const handleDownload = useCallback(() => {
+    if (currentTemplate.downloadUrl) {
+      // Create download link for PDF
+      const link = document.createElement('a');
+      link.href = currentTemplate.downloadUrl;
+      link.download = `${currentTemplate.name.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }, [currentTemplate]);
 
   // Animation variants
   const containerVariants = {
@@ -369,6 +385,8 @@ const ResumeTemplateShowcase = () => {
                     variant="outline" 
                     className="flex-1 bg-white border-corporate-navy-200 text-corporate-navy-700 hover:bg-corporate-navy-50 hover:border-corporate-navy-300 transition-colors duration-200"
                     size="lg"
+                    onClick={handleDownload}
+                    disabled={!currentTemplate.downloadUrl}
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download Sample

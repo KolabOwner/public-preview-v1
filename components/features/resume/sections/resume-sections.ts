@@ -165,9 +165,9 @@ export function getSectionTitle(
     },
     modern: {
       summary: 'Profile',
-      experience: 'Work Experience',
+      experience: 'Professional Experience',
       education: 'Education',
-      skills: 'Core Skills',
+      skills: 'Expert-Level Skills',
     },
     creative: {
       summary: 'About Me',
@@ -175,12 +175,24 @@ export function getSectionTitle(
       education: 'Learning Path',
       skills: 'What I Bring',
     },
+    minimal: {
+      summary: 'PROFESSIONAL SUMMARY',
+      experience: 'EXPERIENCE',
+      education: 'EDUCATION',
+      skills: 'EXPERT-LEVEL SKILLS',
+    },
     academic: {
       summary: 'Research Interests',
       experience: 'Academic Appointments',
       education: 'Educational Background',
       skills: 'Research Skills',
       publications: 'Selected Publications',
+    },
+    bold: {
+      summary: 'Professional Summary',
+      experience: 'Professional Experience',
+      education: 'Education',
+      skills: 'Skills',
     },
   };
 

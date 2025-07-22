@@ -45,18 +45,6 @@ const AppSidebarNav = () => {
       description: 'Your personal command center'
     },
     {
-      href: '/dashboard/job-search',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      ),
-      label: 'Job Search',
-      badge: 'New',
-      badgeColor: 'bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec]',
-      description: 'Find your dream position'
-    },
-    {
       href: '/dashboard/samples',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,23 +64,13 @@ const AppSidebarNav = () => {
       label: 'Resume Review',
       description: 'AI-powered feedback'
     },
-    {
-      href: '/dashboard/ai-interview',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
-      label: 'AI Interview',
-      description: 'Practice makes perfect'
-    }
   ];
 
   const gridPatternUrl = "data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cpattern id='grid' width='60' height='60' patternUnits='userSpaceOnUse'%3e%3cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3e%3c/pattern%3e%3c/defs%3e%3crect width='100%25' height='100%25' fill='url(%23grid)'/%3e%3c/svg%3e";
 
   const handleUpgrade = async (planId: string) => {
     console.log(`Processing upgrade to ${planId} plan`);
-    
+
     if (!user) {
       console.error('User not authenticated');
       return;
@@ -101,7 +79,7 @@ const AppSidebarNav = () => {
     try {
       // Get the correct price ID based on plan
       const priceId = planId === 'monthly' ? STRIPE_PRICE_IDS.monthly : STRIPE_PRICE_IDS.quarterly;
-      
+
       // Create checkout session
       const response = await fetch('/api/payments/create-checkout-session', {
         method: 'POST',
@@ -115,13 +93,13 @@ const AppSidebarNav = () => {
           interval: planId,
         }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const { sessionId } = await response.json();
-      
+
       if (sessionId) {
         // Redirect to Stripe checkout
         const stripe = await import('@stripe/stripe-js').then(m => m.loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!));
@@ -140,68 +118,65 @@ const AppSidebarNav = () => {
         className={`app-sidebar ${isResumeEditorRoute ? 'w-[72px]' : 'w-[280px]'} h-screen min-h-screen bg-white/80 dark:bg-navy-900/95 backdrop-blur-sm relative overflow-hidden flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200 dark:border-navy-700`}
         data-route={pathname}
       >
-        {/* Enhanced gradient background with moving gradients */}
+        {/* Enhanced gradient background with corporate theme */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-gray-100 dark:from-navy-950 dark:via-navy-900 dark:to-navy-800" />
+          <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" />
 
-          {/* Professional animated gradients like the example */}
+          {/* Corporate animated gradients */}
           <div className="absolute inset-0" style={{ '--size': '400px' } as React.CSSProperties}>
-            {/* Blue gradient */}
-            <div 
+            {/* Gold gradient */}
+            <div
               style={{
                 animationDuration: '40s',
-                background: 'radial-gradient(circle, rgb(18, 113, 255) 0px, rgba(18, 113, 255, 0) 50%) no-repeat',
+                background: 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0px, rgba(251, 191, 36, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-first opacity-100 mix-blend-normal !blur-3xl origin-[center_center]"
             />
-            
-            {/* Purple gradient */}
-            <div 
+
+            {/* Amber gradient */}
+            <div
               style={{
                 animationDuration: '30s',
-                background: 'radial-gradient(circle, rgb(140, 100, 255) 0px, rgba(140, 100, 255, 0) 50%) no-repeat',
+                background: 'radial-gradient(circle, rgba(245, 158, 11, 0.3) 0px, rgba(245, 158, 11, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-second opacity-100 mix-blend-normal !blur-3xl origin-[calc(26%)]"
             />
-            
-            {/* Cyan gradient */}
-            <div 
+
+            {/* Navy gradient */}
+            <div
               style={{
                 animationDuration: '60s',
-                background: 'radial-gradient(circle, rgb(100, 220, 255) 0px, rgba(100, 220, 255, 0) 50%) no-repeat',
+                background: 'radial-gradient(circle, rgba(30, 58, 138, 0.2) 0px, rgba(30, 58, 138, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-third opacity-100 mix-blend-normal !blur-3xl origin-[calc(100%)]"
             />
-            
-            {/* Red gradient */}
-            <div 
+
+            {/* Warm gold accent */}
+            <div
               style={{
                 animationDuration: '60s',
-                background: 'radial-gradient(circle, rgb(200, 50, 50) 0px, rgba(200, 50, 50, 0) 50%) no-repeat',
+                background: 'radial-gradient(circle, rgba(217, 119, 6, 0.25) 0px, rgba(217, 119, 6, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fourth opacity-70 mix-blend-normal !blur-3xl origin-[calc(10%-200px)]"
             />
-            
-            {/* Deep blue gradient */}
-            <div 
+
+            {/* Deep corporate navy */}
+            <div
               style={{
                 animationDuration: '30s',
-                background: 'radial-gradient(circle, rgb(50, 97, 180) 0px, rgba(50, 97, 180, 0) 50%) no-repeat',
+                background: 'radial-gradient(circle, rgba(15, 23, 42, 0.15) 0px, rgba(15, 23, 42, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fifth opacity-100 mix-blend-normal !blur-3xl origin-[calc(30%)_calc(30%)]"
             />
           </div>
 
-          {/* Subtle grid pattern */}
-          <div
-            className="absolute inset-0 opacity-50"
-            style={{ backgroundImage: `url("${gridPatternUrl}")` }}
-          />
+          {/* Subtle radial pattern overlay */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.02),transparent_50%)]" />
         </div>
 
         {/* Content */}
@@ -209,11 +184,11 @@ const AppSidebarNav = () => {
           {/* Logo */}
           <div className={`${isResumeEditorRoute ? 'mb-4' : 'mb-8'}`}>
             <div className={`flex items-center gap-3 ${isResumeEditorRoute ? 'justify-center' : ''}`}>
-              {/* Modern Logo Mark with blue gradient */}
+              {/* Modern Logo Mark with corporate theme */}
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl blur-xl opacity-60 group-hover:opacity-80 transition-all duration-300" />
-                <div className="relative bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-2xl shadow-xl shadow-blue-600/20">
-                  {/* Premium Modern H Logo */}
+                <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-xl opacity-60 group-hover:opacity-80 transition-all duration-300" />
+                <div className="relative bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 p-2.5 rounded-2xl shadow-xl shadow-corporate-gold-500/20">
+                  {/* Premium Modern K Logo */}
                   <svg className={`${isResumeEditorRoute ? 'w-5 h-5' : 'w-7 h-7'}`} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                       {/* Premium metallic gradient */}
@@ -222,53 +197,53 @@ const AppSidebarNav = () => {
                         <stop offset="50%" stopColor="#f3f4f6" />
                         <stop offset="100%" stopColor="#e5e7eb" />
                       </linearGradient>
-                      
+
                       {/* Accent gradient for depth */}
                       <linearGradient id="h-accent" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
                         <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
                       </linearGradient>
-                      
+
                       {/* Shadow gradient */}
                       <radialGradient id="h-shadow-grad">
                         <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
                         <stop offset="100%" stopColor="#1e40af" stopOpacity="0" />
                       </radialGradient>
-                      
+
                       {/* Mask for cut effect */}
                       <mask id="h-mask">
                         <rect width="40" height="40" fill="white" />
                         <path d="M12 18h16v4h-16z" fill="black" />
                       </mask>
                     </defs>
-                    
+
                     {/* Subtle shadow base */}
                     <ellipse cx="20" cy="38" rx="12" ry="2" fill="url(#h-shadow-grad)" />
-                    
-                    {/* Main H structure - modern geometric design */}
-                    <g mask="url(#h-mask)">
-                      {/* Left pillar */}
+
+                    {/* Main K structure - modern geometric design */}
+                    <g>
+                      {/* Left vertical pillar */}
                       <path
                         d="M8 8 Q8 6 10 6 L14 6 Q16 6 16 8 L16 32 Q16 34 14 34 L10 34 Q8 34 8 32 Z"
                         fill="url(#h-metal)"
                         filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
                       />
-                      
-                      {/* Right pillar */}
+
+                      {/* Upper diagonal arm */}
                       <path
-                        d="M24 8 Q24 6 26 6 L30 6 Q32 6 32 8 L32 32 Q32 34 30 34 L26 34 Q24 34 24 32 Z"
+                        d="M16 18 L26 8 Q27 7 28 7 L30 7 Q32 7 32 9 L32 11 Q32 12 31 13 L22 22 Q21 22 20 21 L17 19 Q16 18 16 18 Z"
+                        fill="url(#h-metal)"
+                        filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
+                      />
+
+                      {/* Lower diagonal arm */}
+                      <path
+                        d="M16 22 L20 19 Q21 18 22 18 L31 27 Q32 28 32 29 L32 31 Q32 33 30 33 L28 33 Q27 33 26 32 L16 22 Z"
                         fill="url(#h-metal)"
                         filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
                       />
                     </g>
-                    
-                    {/* Crossbar with elegant curve */}
-                    <path
-                      d="M8 18 Q8 16 10 16 L30 16 Q32 16 32 18 L32 22 Q32 24 30 24 L10 24 Q8 24 8 22 Z"
-                      fill="url(#h-metal)"
-                      filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                    />
-                    
+
                     {/* Premium highlights */}
                     <path
                       d="M10 8 Q10 7 11 7 L13 7 Q14 7 14 8 L14 10 Q14 11 13 11 L11 11 Q10 11 10 10 Z"
@@ -276,16 +251,16 @@ const AppSidebarNav = () => {
                       opacity="0.8"
                     />
                     <path
-                      d="M26 8 Q26 7 27 7 L29 7 Q30 7 30 8 L30 10 Q30 11 29 11 L27 11 Q26 11 26 10 Z"
+                      d="M28 8 Q28 7.5 28.5 7.5 L29.5 7.5 Q30 7.5 30 8 L30 9 Q30 9.5 29.5 9.5 L28.5 9.5 Q28 9.5 28 9 Z"
                       fill="url(#h-accent)"
                       opacity="0.8"
                     />
-                    
+
                     {/* Subtle inner stroke for definition */}
                     <g fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5">
                       <path d="M9 7 Q9 6.5 9.5 6.5 L14.5 6.5 Q15 6.5 15 7 L15 33 Q15 33.5 14.5 33.5 L9.5 33.5 Q9 33.5 9 33 Z" />
-                      <path d="M25 7 Q25 6.5 25.5 6.5 L30.5 6.5 Q31 6.5 31 7 L31 33 Q31 33.5 30.5 33.5 L25.5 33.5 Q25 33.5 25 33 Z" />
-                      <path d="M9 17 Q9 16.5 9.5 16.5 L30.5 16.5 Q31 16.5 31 17 L31 23 Q31 23.5 30.5 23.5 L9.5 23.5 Q9 23.5 9 23 Z" />
+                      <path d="M16.5 18.5 L26.5 8.5 Q27 8 27.5 8 L29.5 8 Q30.5 8 30.5 9 L30.5 10.5 Q30.5 11 30 11.5 L21.5 21.5" />
+                      <path d="M16.5 21.5 L21 18.5 Q21.5 18 22 18 L30 26.5 Q30.5 27 30.5 27.5 L30.5 30.5 Q30.5 31.5 29.5 31.5 L27.5 31.5 Q27 31.5 26.5 31 L16.5 21.5" />
                     </g>
                   </svg>
                 </div>
@@ -294,18 +269,18 @@ const AppSidebarNav = () => {
               {/* Company Name - Hidden in collapsed state */}
               {!isResumeEditorRoute && (
                 <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Kolab</span>
-                  <span className="text-2xl font-bold bg-gradient-to-r from-[#5b7cfd] to-[#4a6bec] text-transparent bg-clip-text ml-0.5">AI</span>
+                  <span className="text-2xl font-bold text-corporate-navy-900 dark:text-white tracking-tight">Kolab</span>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-transparent bg-clip-text ml-0.5">AI</span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Create Resume Button with blue gradient */}
+          {/* Create Resume Button with corporate theme */}
           {!isResumeEditorRoute && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-4 rounded-xl mb-6 w-full shadow-lg shadow-blue-500/30"
+              className="group relative overflow-hidden bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white font-semibold py-3 px-4 rounded-xl mb-6 w-full shadow-lg shadow-corporate-gold-500/30 transform hover:-translate-y-0.5 transition-all duration-200"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <span className="relative flex items-center justify-center gap-2">
@@ -326,22 +301,22 @@ const AppSidebarNav = () => {
                 <div key={item.href} className="relative">
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-3 ${isResumeEditorRoute ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden transition-colors duration-200 ${
+                    className={`group flex items-center gap-3 ${isResumeEditorRoute ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden transition-all duration-200 ${
                       isActive
-                        ? 'bg-slate-100 dark:bg-navy-800 text-slate-900 dark:text-white'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        ? 'bg-corporate-amber-50/50 dark:bg-corporate-navy-800/50 text-corporate-navy-900 dark:text-white backdrop-blur-sm border border-corporate-amber-200/30 dark:border-corporate-amber-600/30'
+                        : 'text-corporate-navy-600 dark:text-slate-400 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/30 dark:hover:bg-corporate-navy-800/30'
                     }`}
                     onMouseEnter={() => setHoveredItem(item.href)}
                     onMouseLeave={() => setHoveredItem(null)}
                   >
                     {/* Active indicator */}
                     {isActive && !isResumeEditorRoute && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-corporate-gold-500 to-corporate-amber-500 rounded-r-full" />
                     )}
 
                     {/* Icon */}
                     <span className={`sidebar-icon relative ${
-                      isActive ? 'text-blue-600 dark:text-blue-400' : ''
+                      isActive ? 'text-corporate-amber-600 dark:text-corporate-amber-400' : ''
                     } ${isResumeEditorRoute ? 'text-lg' : ''}`}>
                       {item.icon}
                     </span>
@@ -409,9 +384,9 @@ const AppSidebarNav = () => {
                 </div>
               </div>
               <div className="w-full">
-                <button 
-                  type="button" 
-                  data-busy="false" 
+                <button
+                  type="button"
+                  data-busy="false"
                   onClick={() => setShowUpgradeModal(true)}
                   className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full border-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white px-2 py-1 min-h-8 leading-4 rounded-md text-xs shadow-lg shadow-blue-500/30"
                 >

@@ -333,12 +333,12 @@ const FONT_CONFIGURATIONS: Record<string, Partial<PDFConfiguration>> = {
   },
   modern: {
     fonts: {
-      name: { family: 'merriweatherSans', size: 19, weight: 700 },
-      heading: { family: 'merriweatherSans', size: 12, weight: 600 },
-      subheading: { family: 'merriweatherSans', size: 11, weight: 600 },
-      body: { family: 'merriweatherSans', size: 10, weight: 400 },
-      accent: { family: 'merriweatherSans', size: 9, weight: 300 },
-      small: { family: 'merriweatherSans', size: 8, weight: 300 }
+      name: { family: 'inter', size: 19, weight: 700 },
+      heading: { family: 'inter', size: 12, weight: 600 },
+      subheading: { family: 'inter', size: 11, weight: 600 },
+      body: { family: 'inter', size: 10, weight: 400 },
+      accent: { family: 'inter', size: 9, weight: 300 },
+      small: { family: 'inter', size: 8, weight: 300 }
     }
   },
   classic: {
@@ -2237,26 +2237,52 @@ export class PDFGenerator {
 
   private parseBulletPoints(text: string): string[] {
     if (!text) return [];
+    
+    // Decode HTML entities (same as preview)
+    const decodedText = this.decodeHTMLEntities(text);
 
-    // Use the same logic as the preview page to avoid breaking hyphenated words
-    if (text.includes('\n')) {
-      const lines = text
-        .split('\n')
-        .map(line => line.replace(/^[•·\-*]\s*/, '').trim())
-        .filter(Boolean);
-      if (lines.length > 1) {
-        return lines;
-      }
+    // First try splitting by line breaks or bullet markers (same as preview)
+    let splitPoints = decodedText.split(/[\n•·▪]/g);
+    
+    // If no line breaks/bullets found, try splitting by sentences that end with periods followed by capital letters
+    if (splitPoints.length === 1) {
+      // Split on periods followed by capital letters (sentence boundaries)
+      splitPoints = decodedText.split(/\.(?=[A-Z])/g);
     }
-
-    if (text.includes('•') || text.includes('·')) {
-      return text
-        .split(/[•·]/)
-        .map(item => item.trim())
-        .filter(Boolean);
+    
+    const bulletPoints = splitPoints
+      .map((point: string) => point.trim())
+      .filter((point: string) => point.length > 0)
+      .map((point: string) => {
+        // Remove leading markers and ensure proper punctuation (same as preview)
+        let cleaned = point.replace(/^[•·▪?-]\s*/, '');
+        // Add period if it doesn't end with punctuation
+        if (cleaned && !/[.!?]$/.test(cleaned)) {
+          cleaned += '.';
+        }
+        return cleaned;
+      })
+      .filter((point: string) => point.length > 1); // Filter out single characters
+    
+    // Ensure at least one bullet point if text exists (same as preview)
+    if (bulletPoints.length === 0 && decodedText) {
+      return [decodedText];
     }
+    
+    return bulletPoints;
+  }
 
-    return [text];
+  private decodeHTMLEntities(text: string): string {
+    if (!text) return '';
+    // Basic HTML entity decoding for common cases
+    return text
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&#x2F;/g, '/')
+      .replace(/&nbsp;/g, ' ');
   }
 
   private formatDateRange(startDate?: string, endDate?: string, current?: boolean): string {
