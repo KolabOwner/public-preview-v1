@@ -181,11 +181,11 @@ export default function AboutPage() {
             </div>
             
             <div className="bg-gray-50 rounded-lg p-8">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">The Problem I'm Solving</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">The Problem I&apos;m Solving</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <span>90% of large companies use ATS systems, but most job seekers don't understand how they work</span>
+                  <span>90% of large companies use ATS systems, but most job seekers don&apos;t understand how they work</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
@@ -193,7 +193,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <span>Career advice is often outdated and doesn't reflect current hiring practices</span>
+                  <span>Career advice is often outdated and doesn&apos;t reflect current hiring practices</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>

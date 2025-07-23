@@ -390,7 +390,7 @@ export default function JobSearchPage() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Get Hired</h3>
-                <p className="text-gray-600">With better visibility and direct applications, you'll get more interviews and land your dream job faster.</p>
+                <p className="text-gray-600">With better visibility and direct applications, you&apos;ll get more interviews and land your dream job faster.</p>
               </div>
             </div>
           </div>

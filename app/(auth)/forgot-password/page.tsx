@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
           </h2>
 
           <p className="text-gray-400 mb-6">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we&apos;ll send you a link to reset your password.
           </p>
 
           {/* Success Message */}
@@ -117,7 +117,7 @@ export default function ForgotPasswordPage() {
               <Mail className="w-16 h-16 mx-auto mb-4 text-blue-400" />
               <h3 className="text-2xl font-bold text-white mb-2">Password Recovery</h3>
               <p className="text-gray-400 max-w-md">
-                We'll send you instructions on how to reset your password so you can get back to building your resume.
+                We&apos;ll send you instructions on how to reset your password so you can get back to building your resume.
               </p>
             </div>
           </div>

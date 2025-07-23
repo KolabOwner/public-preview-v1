@@ -197,7 +197,7 @@ export default function MyReviewsTab() {
       <div className="text-center py-12">
         <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No reviews yet</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">You haven't submitted any resumes for review.</p>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">You haven&apos;t submitted any resumes for review.</p>
         <Button
           onClick={() => window.location.href = '/dashboard/review?tab=review-options'}
           className="bg-blue-600 hover:bg-blue-500 text-white"

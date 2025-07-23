@@ -91,7 +91,7 @@ export default function ResumeContactPage() {
     return (
       <div className="p-6 bg-gray-50 rounded-lg">
         <h3 className="text-lg font-medium mb-2">Resume Not Found</h3>
-        <p>The resume you're looking for could not be found.</p>
+        <p>The resume you&apos;re looking for could not be found.</p>
       </div>
     );
   }

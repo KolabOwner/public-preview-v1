@@ -12,7 +12,7 @@ export default function ResumeSummaryPage() {
   const params = useParams();
   const router = useRouter();
   const resumeId = params.resumeId as string;
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>(&apos;&apos;);
 
   // Use error boundary to handle context not available
   try {
@@ -54,8 +54,8 @@ function ResumeSummaryContent({ resumeId, router, setError, error }: {
   useEffect(() => {
     if (resumeId && (!resumeData || resumeData.id !== resumeId)) {
       fetchResumeData(resumeId).catch(err => {
-        console.error('Failed to fetch resume:', err);
-        setError('Failed to load resume data');
+        console.error(&apos;Failed to fetch resume:&apos;, err);
+        setError(&apos;Failed to load resume data&apos;);
       });
     }
   }, [resumeId, resumeData, fetchResumeData]);
@@ -90,10 +90,10 @@ function ResumeSummaryContent({ resumeId, router, setError, error }: {
               Unable to Load Resume
             </h3>
             <p className="text-red-700 dark:text-red-300 mb-4">
-              {error || 'The resume could not be loaded. Please check the URL and try again.'}
+              {error || &apos;The resume could not be loaded. Please check the URL and try again.&apos;}
             </p>
             <button
-              onClick={() => router.push('/dashboard/resumes')}
+              onClick={() => router.push(&apos;/dashboard/resumes&apos;)}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
             >
               Back to Resumes

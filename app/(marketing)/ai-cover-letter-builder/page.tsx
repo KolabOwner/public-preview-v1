@@ -374,7 +374,7 @@ export default function AICoverLetterBuilderPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
               Job Seekers Love Using Our AI Cover Letter Builder
             </h2>
-            <p className="text-xl text-gray-600">We're pretty sure you'll love it too.</p>
+            <p className="text-xl text-gray-600">We&apos;re pretty sure you&apos;ll love it too.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">

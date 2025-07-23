@@ -170,7 +170,7 @@ export default function JobSearchPage() {
           </h2>
           
           <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-            We're building an intelligent job search platform that will revolutionize how you find and apply for jobs. 
+            We&apos;re building an intelligent job search platform that will revolutionize how you find and apply for jobs. 
             Our AI-powered system will match you with the perfect opportunities based on your skills, experience, and preferences.
           </p>
           

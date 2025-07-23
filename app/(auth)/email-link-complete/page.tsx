@@ -70,7 +70,7 @@ export default function EmailLinkCompletePage() {
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Sign in successful!</h1>
         <p className="text-gray-600">
-          You've been signed in successfully. Redirecting to your dashboard...
+          You&apos;ve been signed in successfully. Redirecting to your dashboard...
         </p>
       </div>
     );

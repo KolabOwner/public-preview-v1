@@ -243,7 +243,7 @@ export default function AIInterviewPage() {
           </h2>
           
           <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-            We're developing an advanced AI interview preparation platform that will provide realistic practice sessions, 
+            We&apos;re developing an advanced AI interview preparation platform that will provide realistic practice sessions, 
             detailed performance analysis, and personalized coaching to help you ace any interview.
           </p>
           

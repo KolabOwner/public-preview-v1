@@ -137,7 +137,7 @@ export default function SignOutPage() {
                 Successfully Signed Out
               </h1>
               <p className="text-slate-300 text-sm mb-6">
-                Your session has been securely terminated. You'll be redirected to the sign-in page shortly.
+                Your session has been securely terminated. You&apos;ll be redirected to the sign-in page shortly.
               </p>
               
               <div className="flex items-center justify-center gap-2 text-slate-400 text-xs">

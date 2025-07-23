@@ -27,14 +27,14 @@ export default function VerifyEmailPage() {
       </div>
       <h1 className="text-2xl font-bold text-gray-800 mb-2">Verify your email address</h1>
       <p className="text-gray-600 mb-6">
-        We've sent a verification link to{' '}
+        We&apos;ve sent a verification link to{' '}
         <span className="font-medium">{user?.email || 'your email address'}</span>.
         Please check your inbox and click the link to verify your email.
       </p>
       
       <div className="bg-amber-100 p-4 rounded-lg text-amber-800 mb-6 text-sm">
         <p>
-          <strong>Important:</strong> If you don't see the email, please check your spam or junk folder.
+          <strong>Important:</strong> If you don&apos;t see the email, please check your spam or junk folder.
         </p>
       </div>
       
