@@ -18,16 +18,66 @@ import CoverLetterPreview from "@/components/features/cover-letter/cover-letter-
 import { generateResumePDFAsync } from '@/lib/server/services/resume/pdf-generator';
 import { AlertCircle } from 'lucide-react';
 import UpgradeModal from '@/components/features/resume/modals/upgrade-modal';
-import {
-  generateCoverLetterFlow,
-  GenerateCoverLetterInput,
-  GenerateCoverLetterOutput
-} from "@/lib/ai/flows/cover-letter/generate";
+// Types for API communication
+interface GenerateCoverLetterInput {
+  resumeText: string;
+  resumeSummary?: string;
+  jobTitle: string;
+  companyName: string;
+  jobDescription?: string;
+  skillsHighlight?: string[];
+  educationHighlight?: string;
+  experienceHighlight?: string[];
+  tone?: 'professional' | 'enthusiastic' | 'confident' | 'friendly';
+  length?: 'concise' | 'standard' | 'detailed';
+  includeCallToAction?: boolean;
+  companyResearch?: string;
+  personalConnection?: string;
+  targetKeywords?: string[];
+}
 
+interface GenerateCoverLetterOutput {
+  coverLetter: string;
+  sections: {
+    salutation: string;
+    opening: string;
+    bodyParagraphs: string[];
+    closing: string;
+    signature: string;
+  };
+  highlights: Array<{
+    type: 'skill' | 'experience' | 'education' | 'achievement';
+    content: string;
+    relevance: string;
+  }>;
+  metadata: {
+    wordCount: number;
+    readingTime: number;
+    tone: string;
+    keywordsIncluded: string[];
+    strengthScore: number;
+  };
+  suggestions?: Array<{
+    type: 'improvement' | 'variation' | 'warning';
+    message: string;
+  }>;
+}
 
 export async function generateCoverLetter(input: GenerateCoverLetterInput): Promise<GenerateCoverLetterOutput> {
   try {
-    const result = await generateCoverLetterFlow(input);
+    const response = await fetch('/api/cover-letter/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
     return result;
   } catch (error) {
     console.error('Error generating cover letter:', error);

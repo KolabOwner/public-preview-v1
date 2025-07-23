@@ -94,11 +94,28 @@ const nextConfig = {
     return [];
   },
   webpack: (config, { isServer, dev }) => {
-    // Fix for canvas module in browser environment
+    // Fix for Node.js modules in browser environment
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         canvas: false,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+        path: false,
+        os: false,
+        stream: false,
+        util: false,
+        url: false,
+        querystring: false,
+        http: false,
+        https: false,
+        zlib: false,
+        http2: false,
+        dns: false,
+        child_process: false,
+        worker_threads: false,
       };
     }
     

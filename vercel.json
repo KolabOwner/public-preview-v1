@@ -3,11 +3,5 @@
     "app/api/resumes/parse/route.ts": {
       "maxDuration": 30
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cleanup-jobs",
-      "schedule": "0 */6 * * *"
-    }
-  ]
+  }
 }
