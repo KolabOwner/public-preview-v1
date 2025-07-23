@@ -130,7 +130,7 @@ const MainNavbar = () => {
                 {/* AI Tools Dropdown - Redesigned */}
                 <div 
                   className="relative"
-                  ref={(el) => dropdownRefs.current['ai-tools'] = el}
+                  ref={(el) => { dropdownRefs.current['ai-tools'] = el; }}
                 >
                   <button
                     className="group flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 transition-all duration-300"
@@ -284,7 +284,7 @@ const MainNavbar = () => {
                 {/* Templates Dropdown - Redesigned */}
                 <div 
                   className="relative"
-                  ref={(el) => dropdownRefs.current['templates'] = el}
+                  ref={(el) => { dropdownRefs.current['templates'] = el; }}
                 >
                   <button
                     className="group flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 transition-all duration-300"

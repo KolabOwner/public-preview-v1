@@ -79,7 +79,7 @@ export function FontLoadingProvider({
   }, [fonts]);
 
   // Preload a specific font
-  const preloadFont = useCallback(async (family: string, weight: string = '400') => {
+  const preloadFont = useCallback(async (family: string, weight = '400') => {
     if (typeof document === 'undefined' || !('fonts' in document)) return;
     
     try {

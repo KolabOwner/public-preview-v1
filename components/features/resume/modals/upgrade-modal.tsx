@@ -109,10 +109,10 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
       <style jsx>{`
         @keyframes float {
           0%, 100% {
-            transform: translateY(0px) rotate(var(--tw-rotate));
+            transform: translateY(0px) rotate(0deg);
           }
           50% {
-            transform: translateY(-20px) rotate(var(--tw-rotate));
+            transform: translateY(-20px) rotate(0deg);
           }
         }
         .animate-float {

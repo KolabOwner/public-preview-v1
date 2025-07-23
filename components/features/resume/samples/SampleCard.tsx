@@ -1,6 +1,12 @@
 // src/components/samples/SampleCard.tsx
 import React from 'react';
-import type { Sample } from '@/types/samples.d'; // Adjust path based on your project structure
+
+interface Sample {
+  resumeContent: string;
+  companyIcon: string;
+  title: string;
+  tag: string;
+}
 
 interface SampleCardProps {
   sample: Sample;

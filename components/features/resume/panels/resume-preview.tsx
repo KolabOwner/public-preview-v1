@@ -175,20 +175,13 @@ export default function ResumePreview({
         fontSize: getFontSize(documentSettings.fontSize), // strictly typed!
         parsedData: resumeData,
         rmsRawData: resumeData?.rmsRawData,
-        // Add comprehensive document settings for accurate PDF generation
+        // Add document settings for PDF generation (only supported properties)
         documentSettings: {
           fontFamily: documentSettings.fontFamily,
           fontSize: documentSettings.fontSize,
-          lineHeight: documentSettings.lineHeight,
-          sectionSpacing: documentSettings.sectionSpacing,
-          primaryColor: documentSettings.primaryColor,
-          textColor: documentSettings.textColor,
           margins: documentSettings.margins,
-          showDividers: documentSettings.showDividers,
-          useIndent: documentSettings.useIndent,
-          paperSize: documentSettings.paperSize,
+          paperSize: documentSettings.paperSize as "Letter" | "A4" | undefined,
         },
-        templateStyles: resumeStyles,
         sectionOrder: sectionOrder,
       };
   

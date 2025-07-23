@@ -271,16 +271,10 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
         });
 
         // Apply template
-        const success = await onTemplateChange(templateId);
-
-        if (success === false || success === undefined) {
-          throw new Error('Template application returned false');
-        }
+        await onTemplateChange(templateId);
 
         // Template persistence is now handled by the useResumeStyles hook
         // so we don't need to duplicate the Firestore save here
-
-        return success;
       },
       templateId,
       'template_gallery_selection'

@@ -253,7 +253,6 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
         startDate: data[`Rms_experience_${i}_dateBegin`] || data[`rms_experience_${i}_dateBegin`] || data[`rms_experience_${i}_datebegin`] || '',
         endDate: data[`Rms_experience_${i}_dateEnd`] || data[`rms_experience_${i}_dateEnd`] || data[`rms_experience_${i}_dateend`] || '',
         current: data[`Rms_experience_${i}_isCurrent`] || data[`rms_experience_${i}_isCurrent`] || data[`rms_experience_${i}_iscurrent`] || false,
-        description: description,
         bulletPoints: bulletPoints
       });
     }
@@ -289,8 +288,7 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
         minor: '',
         score: (data[`Rms_education_${i}_score`] || data[`rms_education_${i}_score`])?.toString() || '',
         scoreType: data[`Rms_education_${i}_scoreType`] || data[`rms_education_${i}_scoreType`] || '',
-        details: '',
-        isGraduate: data[`Rms_education_${i}_isGraduate`] || data[`rms_education_${i}_isGraduate`] || data[`rms_education_${i}_isgraduate`] || true
+        description: ''
       });
     }
   }
@@ -364,7 +362,7 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
         startDate: data[`rms_involvement_${i}_dateBegin`] || data[`rms_involvement_${i}_datebegin`] || data[`Rms_involvement_${i}_dateBegin`] || '',
         endDate: data[`rms_involvement_${i}_dateEnd`] || data[`rms_involvement_${i}_dateend`] || data[`Rms_involvement_${i}_dateEnd`] || '',
         current: false,
-        description: data[`rms_involvement_${i}_description`] || data[`Rms_involvement_${i}_description`] || ''
+        bulletPoints: []
       });
     }
   }
@@ -389,10 +387,7 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
         id: `cert_${i}`,
         name: data[`rms_certification_${i}_name`] || data[`Rms_certification_${i}_name`] || '',
         issuer: data[`rms_certification_${i}_department`] || data[`rms_certification_${i}_issuer`] || data[`Rms_certification_${i}_department`] || data[`Rms_certification_${i}_issuer`] || '',
-        date: data[`rms_certification_${i}_date`] || data[`Rms_certification_${i}_date`] || '',
-        expiryDate: '',
-        credentialId: '',
-        url: ''
+        date: data[`rms_certification_${i}_date`] || data[`Rms_certification_${i}_date`] || ''
       });
     }
   }
@@ -550,10 +545,7 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
     switch (section) {
       case 'summary':
         return (
-          <SummaryForm
-            initialData={resumeData.summary}
-            onSave={handleSummaryChange}
-          />
+          <SummaryForm />
         );
 
       case 'contact':
@@ -564,7 +556,6 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
           <ContactForm
             initialData={resumeData.contactInfo}
             onSave={handleContactChange}
-            autoSave={false}
           />
         );
 

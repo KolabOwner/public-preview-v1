@@ -20,7 +20,7 @@ export const InlineDraggableSection: React.FC<InlineDraggableSectionProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [showHandle, setShowHandle] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const dragNodeRef = useRef<HTMLDivElement>(null);
+  const dragNodeRef = useRef<HTMLLIElement>(null);
 
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
