@@ -120,7 +120,7 @@ import { RESUME_TEMPLATES } from '../templates/resume-templates';
 // Generate complete style configuration from document settings and template
 export function generateResumeStyles(
   settings: DocumentSettings,
-  templateId: string = 'professional'
+  templateId = 'professional'
 ): ResumeStyleConfig {
   const baseFontSize = settings.fontSize;
   const template = RESUME_TEMPLATES[templateId];
@@ -270,7 +270,7 @@ export function generateCSSVariables(styles: ResumeStyleConfig): string {
 }
 
 // Generate complete CSS stylesheet for resume
-export function generateResumeCSS(styles: ResumeStyleConfig, templateId: string = 'professional'): string {
+export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'professional'): string {
   // Helper function to get divider styles
   const getDividerStyle = (dividerType: string, color: string, templateId?: string) => {
     const thickness = templateId === 'minimal' ? '2px' : '1px';
@@ -505,7 +505,7 @@ export function pxToPt(px: number): number {
 }
 
 // Generate inline styles object for React components
-export function generateInlineStyles(styles: ResumeStyleConfig, templateId: string = 'professional') {
+export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'professional') {
   return {
     container: {
       fontFamily: styles.typography.fontFamily,

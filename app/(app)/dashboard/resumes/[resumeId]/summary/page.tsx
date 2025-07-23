@@ -14,31 +14,10 @@ export default function ResumeSummaryPage() {
   const resumeId = params.resumeId as string;
   const [error, setError] = useState<string>('');
 
-  // Try to use the context - this will fail if not wrapped
-  let contextAvailable = true;
-  let resumeDataHook: any = {};
-
+  // Use error boundary to handle context not available
   try {
-    resumeDataHook = useResumeData();
+    return <ResumeSummaryContent resumeId={resumeId} router={router} setError={setError} error={error} />;
   } catch (e) {
-    contextAvailable = false;
-    console.error('ResumeDataContext not available:', e);
-  }
-
-  const {
-    resumeData,
-    fetchResumeData,
-    loading,
-    processedData
-  } = contextAvailable ? resumeDataHook : {
-    resumeData: null,
-    fetchResumeData: async () => {},
-    loading: false,
-    processedData: null
-  };
-
-  // If context is not available, show error
-  if (!contextAvailable) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 py-8">
@@ -55,6 +34,21 @@ export default function ResumeSummaryPage() {
       </div>
     );
   }
+}
+
+function ResumeSummaryContent({ resumeId, router, setError, error }: { 
+  resumeId: string; 
+  router: any; 
+  setError: (error: string) => void;
+  error: string;
+}) {
+  // Always call hooks unconditionally
+  const {
+    resumeData,
+    fetchResumeData,
+    loading,
+    processedData
+  } = useResumeData();
 
   // Fetch resume data when needed
   useEffect(() => {

@@ -10,7 +10,7 @@ declare global {
 class RecaptchaClientService {
   private static instance: RecaptchaClientService;
   private siteKey: string;
-  private loaded: boolean = false;
+  private loaded = false;
   private loadPromise: Promise<void> | null = null;
 
   private constructor() {

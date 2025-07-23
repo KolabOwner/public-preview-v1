@@ -155,7 +155,7 @@ export const TemplateErrorRecovery = {
   // Attempt to recover from template application failure
   async recoverFromTemplateError(
     error: TemplateError,
-    fallbackTemplateId: string = 'professional'
+    fallbackTemplateId = 'professional'
   ): Promise<{ recovered: boolean; templateId: string; strategy: string }> {
     
     // Strategy 1: Use fallback template

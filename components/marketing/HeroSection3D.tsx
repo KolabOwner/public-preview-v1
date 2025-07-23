@@ -114,14 +114,14 @@ const HeroContent = memo(({ onCTAClick }: { onCTAClick: () => void }) => {
           Build your dream career with the{' '}
           <span className="relative inline-block">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-corporate-gold-600 via-corporate-amber-500 to-corporate-gold-600">
-              world's smartest resume builder
+              world&apos;s smartest resume builder
             </span>
             <div className="absolute -inset-2 bg-gradient-to-r from-corporate-gold-600/10 via-corporate-amber-500/10 to-corporate-gold-600/10 blur-xl opacity-60 -z-10" aria-hidden="true"></div>
           </span>
         </h1>
 
         <p className="text-lg md:text-xl text-corporate-navy-600 leading-relaxed max-w-2xl font-corporate-sans">
-          Join over 1.3M job seekers using Kolab's AI-powered platform to create resumes that get noticed.
+          Join over 1.3M job seekers using Kolab&apos;s AI-powered platform to create resumes that get noticed.
           Our technology automates everything: writing, editing, optimizing, and formatting.
         </p>
 

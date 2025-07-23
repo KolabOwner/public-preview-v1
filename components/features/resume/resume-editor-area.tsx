@@ -170,7 +170,7 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
   const unified = createDefaultResumeData();
 
   // Handle RMS raw data structure first (highest priority)
-  let data = legacyData.rmsRawData || legacyData.parsedData || legacyData;
+  const data = legacyData.rmsRawData || legacyData.parsedData || legacyData;
 
   // Parse contact info with priority for RMS format
   if (data.contactInfo) {
