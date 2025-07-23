@@ -28,28 +28,21 @@ import {
   Check,
   Target,
   Zap,
-  MapPin,
-  Mail,
-  Phone,
-  Linkedin,
   Sparkles,
   Eye,
   Star,
-  Award,
   Loader2,
   BarChart3,
   FileText,
-  Download
+  Download,
+  Settings,
+  ChevronDown
 } from 'lucide-react';
 
 import { Button } from '@/components/shared/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/card';
 import { Badge } from '@/components/shared/badge';
 
-interface ColorOption {
-  color: string;
-  name: string;
-}
 
 interface KeywordItem {
   text: string;
@@ -224,47 +217,47 @@ const KeywordsPanel3D = memo(({ keywords }: { keywords: KeywordItem[] }) => {
   return (
     <Card 
       className="bg-white/95 backdrop-blur-sm shadow-xl border-white/20 hover:shadow-2xl transition-all duration-250" 
-      style={{ width: '180px', height: 'fit-content' }}
+      style={{ width: '120px', height: 'fit-content' }}
       role="complementary" 
       aria-labelledby="keywords-panel-title"
     >
-      <CardHeader className="pb-2 px-3 pt-3">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-500 rounded-md flex items-center justify-center shadow-sm">
-            <Target className="w-3 h-3 text-white" aria-hidden="true" />
+      <CardHeader className="pb-1 px-2 pt-2">
+        <div className="flex items-center gap-1 mb-1">
+          <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-500 rounded-md flex items-center justify-center shadow-sm">
+            <Target className="w-2 h-2 text-white" aria-hidden="true" />
           </div>
-          <CardTitle id="keywords-panel-title" className="text-xs font-bold text-gray-900">
+          <CardTitle id="keywords-panel-title" className="text-[10px] font-bold text-gray-900">
             Keywords
           </CardTitle>
         </div>
-        <CardDescription className="text-[10px] text-gray-600">
+        <CardDescription className="text-[8px] text-gray-600">
           Matched: {keywords.filter(k => k.matched).length}/{keywords.length}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="px-3 pb-3 pt-0">
-        <div className="space-y-1.5 mb-3" role="list" aria-label="Matched keywords">
-          {keywords.filter(k => k.matched).slice(0, 5).map((keyword, index) => (
-            <div key={index} className="flex items-center gap-1.5 p-1.5 rounded-md hover:bg-gray-50 transition-colors" role="listitem">
-              <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
-                <Check className="w-1.5 h-1.5 text-white" aria-hidden="true" />
+      <CardContent className="px-2 pb-2 pt-0">
+        <div className="space-y-1 mb-2" role="list" aria-label="Matched keywords">
+          {keywords.filter(k => k.matched).slice(0, 4).map((keyword, index) => (
+            <div key={index} className="flex items-center gap-1 p-1 rounded-md hover:bg-gray-50 transition-colors" role="listitem">
+              <div className="w-2 h-2 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+                <Check className="w-1 h-1 text-white" aria-hidden="true" />
               </div>
-              <span className="font-medium text-gray-900 truncate text-[10px]">{keyword.text}</span>
+              <span className="font-medium text-gray-900 truncate text-[8px]">{keyword.text}</span>
             </div>
           ))}
         </div>
 
-        <div className="border-t pt-2">
-          <p className="text-[10px] text-gray-600 mb-1.5">
+        <div className="border-t pt-1">
+          <p className="text-[8px] text-gray-600 mb-1">
             Suggestions:
           </p>
           <div className="space-y-1" role="list" aria-label="Suggested keywords">
             {keywords.filter(k => !k.matched).slice(0, 2).map((keyword, index) => (
-              <div key={index} className="flex items-center gap-1.5 p-1.5 rounded-md opacity-70 hover:opacity-100 transition-opacity" role="listitem">
-                <div className="w-3 h-3 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
-                  <div className="w-1 h-1 bg-white rounded-full"></div>
+              <div key={index} className="flex items-center gap-1 p-1 rounded-md opacity-70 hover:opacity-100 transition-opacity" role="listitem">
+                <div className="w-2 h-2 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+                  <div className="w-0.5 h-0.5 bg-white rounded-full"></div>
                 </div>
-                <span className="font-medium text-gray-900 truncate text-[10px]">{keyword.text}</span>
+                <span className="font-medium text-gray-900 truncate text-[8px]">{keyword.text}</span>
               </div>
             ))}
           </div>
@@ -276,162 +269,318 @@ const KeywordsPanel3D = memo(({ keywords }: { keywords: KeywordItem[] }) => {
 
 KeywordsPanel3D.displayName = 'KeywordsPanel3D';
 
-// 3D Resume Preview Component - Professional Layout Based on Production Patterns
+// Collapsed Sidebar Mockup Component
+const CollapsedSidebarMockup = memo(() => {
+  const sidebarItems = [
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+      label: 'Dashboard',
+      active: true
+    },
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      label: 'Sample Library',
+      active: false
+    },
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      ),
+      label: 'Resume Review',
+      active: false
+    }
+  ];
+
+  return (
+    <div className="w-[55px] h-full min-h-full bg-white/95 backdrop-blur-sm shadow-xl border border-white/20 overflow-hidden flex flex-col" role="complementary" aria-label="Collapsed navigation sidebar">
+      {/* Logo */}
+      <div className="p-3 mb-3 border-b border-gray-200/50">
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-lg blur-sm opacity-60 group-hover:opacity-80 transition-all duration-300" />
+          <div className="relative bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 p-2 rounded-lg shadow-lg shadow-corporate-gold-500/20">
+            {/* Premium Modern K Logo */}
+            <svg className="w-4 h-4" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                {/* Premium metallic gradient */}
+                <linearGradient id="k-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ffffff" />
+                  <stop offset="50%" stopColor="#f3f4f6" />
+                  <stop offset="100%" stopColor="#e5e7eb" />
+                </linearGradient>
+                <linearGradient id="k-accent" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
+                </linearGradient>
+                <radialGradient id="k-shadow-grad">
+                  <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
+                  <stop offset="100%" stopColor="#1e40af" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+              <ellipse cx="20" cy="38" rx="12" ry="2" fill="url(#k-shadow-grad)" />
+              <g>
+                {/* Left vertical pillar */}
+                <path
+                  d="M8 8 Q8 6 10 6 L14 6 Q16 6 16 8 L16 32 Q16 34 14 34 L10 34 Q8 34 8 32 Z"
+                  fill="url(#k-metal)"
+                  filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
+                />
+                {/* Upper diagonal arm */}
+                <path
+                  d="M16 18 L26 8 Q27 7 28 7 L30 7 Q32 7 32 9 L32 11 Q32 12 31 13 L22 22 Q21 22 20 21 L17 19 Q16 18 16 18 Z"
+                  fill="url(#k-metal)"
+                  filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
+                />
+                {/* Lower diagonal arm */}
+                <path
+                  d="M16 22 L20 19 Q21 18 22 18 L31 27 Q32 28 32 29 L32 31 Q32 33 30 33 L28 33 Q27 33 26 32 L16 22 Z"
+                  fill="url(#k-metal)"
+                  filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
+                />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Items */}
+      <nav className="px-2 space-y-1 flex-1" role="navigation" aria-label="Main navigation">
+        {sidebarItems.map((item, index) => (
+          <div key={index} className="relative group">
+            <div
+              className={`flex items-center justify-center p-2.5 rounded-lg transition-all duration-200 ${
+                item.active
+                  ? 'bg-corporate-amber-50/50 text-corporate-navy-900 border border-corporate-amber-200/30'
+                  : 'text-corporate-navy-600 hover:text-corporate-navy-900 hover:bg-corporate-amber-50/30'
+              }`}
+              role="button"
+              tabIndex={0}
+              aria-label={item.label}
+            >
+              {/* Active indicator */}
+              {item.active && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-corporate-gold-500 to-corporate-amber-500 rounded-r-full" />
+              )}
+              <span className={`sidebar-icon relative ${
+                item.active ? 'text-corporate-amber-600' : ''
+              }`}>
+                {item.icon}
+              </span>
+            </div>
+
+            {/* Tooltip */}
+            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
+              <div className="bg-white text-slate-900 px-3 py-2 rounded-lg shadow-2xl shadow-slate-300/30 border border-slate-200">
+                <p className="font-medium text-sm whitespace-nowrap">{item.label}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* Upgrade Button */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+        <div className="group relative">
+          <div className="p-2 rounded-lg bg-gradient-to-r from-corporate-gold-600/20 to-corporate-amber-600/20 hover:from-corporate-gold-600/30 hover:to-corporate-amber-600/30 transition-all duration-200" role="button" tabIndex={0} aria-label="Upgrade to Pro">
+            <svg className="w-4 h-4 text-corporate-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+
+          {/* Tooltip */}
+          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
+            <div className="bg-white text-slate-900 px-3 py-2 rounded-lg shadow-2xl shadow-slate-300/30 border border-slate-200 whitespace-nowrap">
+              <p className="font-medium text-sm">Upgrade to Pro</p>
+              <p className="text-xs text-slate-600 mt-1">Unlock premium features</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+CollapsedSidebarMockup.displayName = 'CollapsedSidebarMockup';
+
+// Professional 3D Resume Preview Component with Improved Layout
 const ResumePreview3D = memo(({ resumeData, selectedColor, highlightKeywords }: {
   resumeData: ResumeData;
   selectedColor: string;
   highlightKeywords: (text: string) => React.ReactNode;
 }) => {
-  // Using professional proportions: 8.5x11 scaled up for better visibility
-  // Base size: 510px × 660px (8.5x11 ratio scaled 2.5x from original)
+  // Standard US Letter proportions: 8.5" x 11" = 612px x 792px at 72 DPI
+  // Scaled to fit viewport: 408px x 528px (2/3 scale for better fit)
+  const DOCUMENT_WIDTH = 408;
+  const DOCUMENT_HEIGHT = 528;
+
   return (
-    <div className="relative" style={{ width: '510px', height: '800px' }}>
-      {/* Resume Document Container */}
-      <div 
-        className="relative bg-white text-gray-900 border border-gray-300 shadow-lg overflow-hidden"
-        style={{ 
-          width: '510px', 
-          height: '660px',
-          fontFamily: 'Merriweather, serif',
-          fontSize: '15px',
-          lineHeight: '1.4',
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+    <div className="flex flex-col items-center" style={{ width: `${DOCUMENT_WIDTH}px` }}>
+      {/* Header Controls - Outside document */}
+      <div className="w-full bg-gray-100 border border-gray-300 rounded-t-lg p-2 mb-0">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1">
+            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          </div>
+          <div className="flex-1 text-center text-xs text-gray-600 font-medium">
+            Resume Preview
+          </div>
+        </div>
+      </div>
+
+      {/* Document Container with 3D Effect */}
+      <div
+        className="relative bg-white border-l border-r border-b border-gray-300 shadow-2xl"
+        style={{
+          width: `${DOCUMENT_WIDTH}px`,
+          height: `${DOCUMENT_HEIGHT}px`,
+          transform: 'perspective(1000px) rotateX(1deg)',
+          transformOrigin: 'center bottom',
+          boxShadow: '0 15px 30px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05)'
         }}
       >
-        {/* Document Content with Professional Padding */}
-        <div className="h-full w-full p-8 overflow-hidden">
-          {/* Header Section - Name and Contact */}
-          <div className="text-center mb-6">
-            <div 
-              className="font-bold uppercase tracking-wider mb-3"
-              style={{ 
-                fontSize: '20px', // Scaled up name
-                color: selectedColor 
+        {/* Document Content */}
+        <div
+          className="h-full w-full px-6 py-5 text-gray-900 overflow-hidden"
+          style={{
+            fontFamily: "'Times New Roman', serif",
+            fontSize: '7px',
+            lineHeight: '1.4'
+          }}
+        >
+          {/* Header Section */}
+          <header className="text-center border-b border-gray-400 pb-3 mb-4">
+            <h1
+              className="font-bold mb-1"
+              style={{
+                fontSize: '12px',
+                color: 'black',
+                lineHeight: '1.2'
               }}
             >
               {resumeData.name}
-            </div>
-            <div 
-              className="text-gray-600"
-              style={{ fontSize: '9px' }} // Scaled up contact
-            >
+            </h1>
+            <div className="text-gray-700" style={{ fontSize: '6px', lineHeight: '1.3' }}>
               {resumeData.location} • {resumeData.email} • {resumeData.phone}
             </div>
-          </div>
-          
-          {/* Section Divider */}
-          <div className="w-full border-b-2 border-gray-400 mb-4"></div>
-          
-          {/* Summary Section */}
-          <div className="mb-5">
-            <div 
-              className="font-bold uppercase tracking-wide mb-2 pb-1 border-b border-gray-300"
-              style={{ fontSize: '14px' }} // Scaled up section headers
+          </header>
+
+          {/* Professional Summary */}
+          <section className="mb-4">
+            <h2
+              className="font-bold uppercase tracking-wide border-b border-gray-300 pb-1 mb-1"
+              style={{ color: 'black', fontSize: '7px', lineHeight: '1.2' }}
             >
               Professional Summary
-            </div>
-            <div 
-              className="text-justify leading-relaxed"
-              style={{ fontSize: '10px' }} // Scaled up body text
-            >
-              {highlightKeywords(resumeData.summary.substring(0, 300) + '...')}
-            </div>
-          </div>
-          
-          {/* Experience Section */}
-          <div className="mb-5">
-            <div 
-              className="font-bold uppercase tracking-wide mb-2 pb-1 border-b border-gray-300"
-              style={{ fontSize: '14px' }}
+            </h2>
+            <p className="text-justify" style={{ fontSize: '6px', lineHeight: '1.5' }}>
+              {highlightKeywords(resumeData.summary.length > 400
+                ? resumeData.summary.substring(0, 400) + '...'
+                : resumeData.summary
+              )}
+            </p>
+          </section>
+
+          {/* Professional Experience */}
+          <section className="mb-4">
+            <h2
+              className="font-bold uppercase tracking-wide border-b border-gray-300 pb-1 mb-1"
+              style={{ color: 'black', fontSize: '7px', lineHeight: '1.2' }}
             >
               Professional Experience
-            </div>
+            </h2>
             <div className="space-y-3">
-              {resumeData.experience.slice(0, 2).map((exp, index) => (
+              {resumeData.experience.slice(0, 3).map((exp, index) => (
                 <div key={index}>
-                  <div 
-                    className="font-semibold"
-                    style={{ fontSize: '12px' }} // Scaled up job titles
-                  >
-                    {exp.title}
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="font-semibold" style={{ fontSize: '7px', lineHeight: '1.2' }}>{exp.title}</h3>
+                    <span className="text-gray-600" style={{ fontSize: '6px', lineHeight: '1.2' }}>{exp.duration}</span>
                   </div>
-                  <div 
-                    className="text-gray-700 mb-1"
-                    style={{ fontSize: '10px' }}
-                  >
-                    {exp.company} • {exp.duration}
+                  <div className="text-gray-700 mb-1 font-medium" style={{ fontSize: '6px', lineHeight: '1.2' }}>
+                    {exp.company}
                   </div>
-                  <ul className="ml-4 space-y-1">
-                    {exp.bullets.slice(0, 2).map((bullet, i) => (
-                      <li 
-                        key={i} 
-                        className="flex text-justify"
-                        style={{ fontSize: '10px' }}
-                      >
-                        <span className="mr-2 flex-shrink-0">•</span>
-                        <span>{highlightKeywords(bullet.substring(0, 140) + '...')}</span>
+                  <ul className="space-y-1 ml-2">
+                    {exp.bullets.slice(0, index === 0 ? 4 : index === 1 ? 3 : 2).map((bullet, i) => (
+                      <li key={i} className="flex" style={{ fontSize: '6px', lineHeight: '1.4' }}>
+                        <span className="mr-1 text-gray-400 flex-shrink-0" style={{ fontSize: '5px' }}>•</span>
+                        <span className="text-justify">
+                          {highlightKeywords(bullet.length > 100
+                            ? bullet.substring(0, 100) + '...'
+                            : bullet
+                          )}
+                        </span>
                       </li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
-          </div>
-          
-          {/* Education Section */}
-          <div className="mb-5">
-            <div 
-              className="font-bold uppercase tracking-wide mb-2 pb-1 border-b border-gray-300"
-              style={{ fontSize: '14px' }}
+          </section>
+
+          {/* Education */}
+          <section className="mb-4">
+            <h2
+              className="font-bold uppercase tracking-wide border-b border-gray-300 pb-1 mb-1"
+              style={{ color: 'black', fontSize: '7px', lineHeight: '1.2' }}
             >
               Education
+            </h2>
+            <div>
+              <h3 className="font-semibold" style={{ fontSize: '7px', lineHeight: '1.3' }}>{resumeData.education.degree}</h3>
+              <div className="text-gray-700" style={{ fontSize: '6px', lineHeight: '1.3' }}>{resumeData.education.school}</div>
+              <div className="text-gray-600" style={{ fontSize: '6px', lineHeight: '1.3' }}>{resumeData.education.year}</div>
             </div>
-            <div 
-              className="font-semibold"
-              style={{ fontSize: '12px' }}
+          </section>
+
+          {/* Skills */}
+          <section className="mb-4">
+            <h2
+              className="font-bold uppercase tracking-wide border-b border-gray-300 pb-1 mb-1"
+              style={{ color: 'black', fontSize: '7px', lineHeight: '1.2' }}
             >
-              {resumeData.education.degree}
-            </div>
-            <div 
-              className="text-gray-700"
-              style={{ fontSize: '10px' }}
-            >
-              {resumeData.education.school} • {resumeData.education.year}
-            </div>
-          </div>
-          
-          {/* Skills Section */}
-          <div>
-            <div 
-              className="font-bold uppercase tracking-wide mb-2 pb-1 border-b border-gray-300"
-              style={{ fontSize: '14px' }}
-            >
-              Core Competencies
-            </div>
+              Skills
+            </h2>
             <div className="space-y-1">
-              {resumeData.skills.slice(0, 2).map((skill, index) => (
-                <div key={index} style={{ fontSize: '10px' }}>
-                  <span className="font-semibold">{skill.category}:</span>{' '}
-                  <span>{highlightKeywords(skill.items.substring(0, 80) + '...')}</span>
+              {resumeData.skills.slice(0, 4).map((skill, index) => (
+                <div key={index}>
+                  <span className="font-semibold text-gray-800" style={{ fontSize: '6px', lineHeight: '1.3' }}>
+                    {skill.category}: </span>
+                  <span className="text-gray-700" style={{ fontSize: '6px', lineHeight: '1.4' }}>
+                    {highlightKeywords(skill.items.length > 80
+                      ? skill.items.substring(0, 80) + '...'
+                      : skill.items
+                    )}
+                  </span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         </div>
+
+        {/* Subtle Paper Texture Overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-3"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.02'%3E%3Ccircle cx='10' cy='10' r='1'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/svg%3E")`
+          }}
+        />
       </div>
-      
-      {/* Resume Footer Bar */}
-      <div className="absolute bottom-0 left-0 w-full">
-        <div className="flex items-center justify-between bg-slate-800 text-white px-6 py-4 rounded-b-lg">
-          <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6" />
-            <span className="text-sm font-medium">Professional Resume</span>
-          </div>
-          <div className="text-sm text-slate-300">
-            {Math.round(510 * 660 / 1000)}KB
-          </div>
-        </div>
-      </div>
+
+      {/* Page Shadow/Depth Effect */}
+      <div
+        className="w-full h-1 bg-gradient-to-b from-gray-300 to-transparent rounded-b-sm"
+        style={{ width: `${DOCUMENT_WIDTH - 6}px` }}
+      />
     </div>
   );
 });
@@ -449,34 +598,34 @@ const ATSScore3D = memo(({ atsScore, isAnimating }: { atsScore: number; isAnimat
   const scoreInfo = getScoreColor(atsScore);
 
   return (
-    <Card 
-      className="bg-white/95 backdrop-blur-sm shadow-xl border-white/20 hover:shadow-2xl transition-all duration-250" 
-      style={{ width: '180px', height: 'fit-content' }}
-      role="complementary" 
+    <Card
+      className="bg-white/95 backdrop-blur-sm shadow-xl border-white/20 hover:shadow-2xl transition-all duration-250"
+      style={{ width: '120px', height: 'fit-content' }}
+      role="complementary"
       aria-labelledby="ats-score-title"
     >
-      <CardHeader className="pb-2 px-3 pt-3">
+      <CardHeader className="pb-1 px-2 pt-2">
         <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-500 rounded-md flex items-center justify-center shadow-sm">
-              <Zap className="w-3 h-3 text-white" aria-hidden="true" />
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-4 bg-gradient-to-br from-green-500 to-emerald-500 rounded-md flex items-center justify-center shadow-sm">
+              <Zap className="w-2 h-2 text-white" aria-hidden="true" />
             </div>
-            <CardTitle id="ats-score-title" className="text-xs font-bold text-gray-900">
+            <CardTitle id="ats-score-title" className="text-[10px] font-bold text-gray-900">
               ATS Score
             </CardTitle>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" aria-hidden="true"></div>
-            <Badge variant="outline" className="text-[9px] px-1 py-0.5 border-green-200 text-green-700">
+            <Badge variant="outline" className="text-[8px] px-1 py-0.5 border-green-200 text-green-700">
               Live
             </Badge>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="px-3 pb-3 pt-0">
-        <div className="flex items-center justify-center mb-3">
-          <div className="relative w-16 h-16">
+      <CardContent className="px-2 pb-2 pt-0">
+        <div className="flex items-center justify-center mb-2">
+          <div className="relative w-12 h-12">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
               <path
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -496,10 +645,10 @@ const ATSScore3D = memo(({ atsScore, isAnimating }: { atsScore: number; isAnimat
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-lg font-bold text-gray-900" aria-label={`ATS Score: ${atsScore} out of 100`}>
+                <div className="text-sm font-bold text-gray-900" aria-label={`ATS Score: ${atsScore} out of 100`}>
                   {atsScore}
                 </div>
-                <div className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-gradient-to-r ${scoreInfo.bg} text-gray-700`}>
+                <div className={`text-[7px] font-semibold px-1 py-0.5 rounded-full bg-gradient-to-r ${scoreInfo.bg} text-gray-700`}>
                   {scoreInfo.label}
                 </div>
               </div>
@@ -507,19 +656,19 @@ const ATSScore3D = memo(({ atsScore, isAnimating }: { atsScore: number; isAnimat
           </div>
         </div>
 
-        <div className="space-y-1.5" role="list" aria-label="ATS score breakdown">
+        <div className="space-y-1" role="list" aria-label="ATS score breakdown">
           {[
             { label: 'Format', status: 'excellent', icon: Check },
             { label: 'Keywords', status: 'strong', icon: Check },
             { label: 'Structure', status: 'perfect', icon: Check }
           ].map((item, index) => (
-            <div key={index} className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-200" role="listitem">
-              <span className="text-[10px] font-medium text-gray-700">{item.label}</span>
+            <div key={index} className="flex justify-between items-center p-1 rounded-md bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-200" role="listitem">
+              <span className="text-[8px] font-medium text-gray-700">{item.label}</span>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full flex items-center justify-center bg-gradient-to-br from-green-400 to-green-500">
-                  <item.icon className="w-1.5 h-1.5 text-white" aria-hidden="true" />
+                <div className="w-2 h-2 rounded-full flex items-center justify-center bg-gradient-to-br from-green-400 to-green-500">
+                  <item.icon className="w-1 h-1 text-white" aria-hidden="true" />
                 </div>
-                <span className="text-[9px] font-semibold capitalize text-green-600">
+                <span className="text-[7px] font-semibold capitalize text-green-600">
                   {item.status}
                 </span>
               </div>
@@ -575,8 +724,8 @@ export default function HeroSection3D({
     { text: 'Blockchain', matched: false }
   ];
 
-  const resumeData: ResumeData = {
-    name: 'Sarah Chen',
+const resumeData: ResumeData = {
+    name: 'Alex Chen',
     location: 'San Francisco, CA',
     email: 'sarah.chen@email.com',
     phone: '(415) 555-0123',
@@ -591,7 +740,8 @@ export default function HeroSection3D({
         bullets: [
           'Led product strategy and roadmap for core platform serving 2.5M+ active users, resulting in 35% increase in user engagement and $8.2M additional annual revenue through feature optimization and user experience improvements.',
           'Collaborated with engineering, design, and marketing teams to launch 4 major product features, reducing customer churn by 28% and improving Net Promoter Score from 7.2 to 8.9 within 18 months.',
-          'Implemented data-driven product development process using advanced analytics tools, reducing time-to-market by 40% and increasing feature adoption rates by 65% through strategic A/B testing and user feedback integration.'
+          'Implemented data-driven product development process using advanced analytics tools, reducing time-to-market by 40% and increasing feature adoption rates by 65% through strategic A/B testing and user feedback integration.',
+          'Mentored 3 junior product managers and established product management best practices across the organization, improving team efficiency by 25% and reducing product defects by 18%.'
         ]
       },
       {
@@ -602,7 +752,20 @@ export default function HeroSection3D({
         bullets: [
           'Managed end-to-end product lifecycle for mobile application with 800K+ downloads, coordinating with stakeholders across 5 departments to deliver quarterly product releases and maintain 4.8-star app store rating.',
           'Developed comprehensive product strategy based on market research and competitive analysis, leading to successful product pivot that increased monthly active users by 120% and reduced customer acquisition costs by 45%.',
-          'Established product metrics framework and KPI tracking system, enabling data-driven decisions that improved conversion rates by 32% and customer lifetime value by $250 per user through optimized onboarding flows.'
+          'Established product metrics framework and KPI tracking system, enabling data-driven decisions that improved conversion rates by 32% and customer lifetime value by $250 per user through optimized onboarding flows.',
+          'Led user research initiatives including surveys, interviews, and usability testing with 500+ participants, informing product decisions that increased user satisfaction scores by 40%.'
+        ]
+      },
+      {
+        title: 'Associate Product Manager',
+        company: 'StartupTech Co',
+        duration: 'June 2018—February 2020',
+        location: 'San Francisco, CA',
+        bullets: [
+          'Supported product development for B2B SaaS platform serving 150+ enterprise clients, contributing to 85% customer retention rate and $2.1M in annual recurring revenue growth.',
+          'Conducted competitive analysis and market research to identify product opportunities, resulting in successful launch of 2 new feature sets that increased user engagement by 45%.',
+          'Collaborated with UX/UI designers to optimize user workflows and interface design, reducing customer support tickets by 30% and improving user onboarding completion rates by 55%.',
+          'Managed product backlog and sprint planning with engineering teams, consistently delivering projects on time and within scope while maintaining high code quality standards.'
         ]
       }
     ],
@@ -700,7 +863,7 @@ export default function HeroSection3D({
 
   return (
     <section
-      className={`relative bg-gradient-to-br from-slate-50 via-white to-slate-50 overflow-hidden ${className}`}
+      className={`relative bg-gradient-to-br from-slate-50 via-white to-slate-50 overflow-hidden min-h-screen ${className}`}
       role="main"
       aria-labelledby="main-heading"
       {...props}
@@ -710,9 +873,9 @@ export default function HeroSection3D({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(139,92,246,0.08),transparent_50%)]" aria-hidden="true"></div>
       <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_40%,rgba(59,130,246,0.02)_50%,transparent_60%)]" aria-hidden="true"></div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+      <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-12 lg:py-20">
         {/* Main Hero Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[500px] lg:min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center min-h-[500px] lg:min-h-[600px]">
           {/* Left Side - Hero Content */}
           <div className="order-2 lg:order-1">
             <HeroContent onCTAClick={handleCTAClick} />
@@ -720,9 +883,9 @@ export default function HeroSection3D({
 
           {/* Right Side - 3D Resume Showcase */}
           <div className="order-1 lg:order-2">
-            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden shadow-2xl p-6 lg:p-8" 
+            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden shadow-2xl p-4 lg:p-6"
                  style={{ minHeight: '420px' }}
-                 role="region" 
+                 role="region"
                  aria-label="3D Resume showcase demonstration">
               {/* Enhanced Background Effects */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-8" aria-hidden="true"></div>
@@ -731,7 +894,7 @@ export default function HeroSection3D({
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900/3 via-purple-900/3 to-indigo-900/3" aria-hidden="true"></div>
 
               {/* 3D Content Grid */}
-              <div className="relative z-10 flex items-center justify-center h-full">
+              <div className="relative z-10 flex items-center justify-center h-full w-full max-w-full">
                 {/* Mobile Layout */}
                 <div className="lg:hidden space-y-4">
                   {/* Mobile Resume Preview */}
@@ -746,7 +909,7 @@ export default function HeroSection3D({
                       </Suspense>
                     </div>
                   </div>
-                  
+
                   {/* Mobile Side Panels */}
                   <div className="flex justify-center">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-sm">
@@ -761,9 +924,9 @@ export default function HeroSection3D({
                 </div>
 
                 {/* Desktop Layout */}
-                <div className="hidden lg:flex gap-4 items-start justify-center">
+                <div className="hidden lg:flex gap-3 xl:gap-4 items-start justify-center w-full">
                   {/* Resume Preview - Center */}
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 min-w-0 mx-auto">
                     <Suspense fallback={<LoadingSpinner />}>
                       <ResumePreview3D
                         resumeData={resumeData}
@@ -773,8 +936,8 @@ export default function HeroSection3D({
                     </Suspense>
                   </div>
 
-                  {/* Side Panels */}
-                  <div className="flex flex-col space-y-3 w-45 flex-shrink-0">
+                  {/* Side Panels - Right */}
+                  <div className="flex flex-col space-y-2 w-32 flex-shrink-0 min-w-0">
                     <Suspense fallback={<LoadingSpinner />}>
                       <ATSScore3D atsScore={atsScore} isAnimating={isAnimating} />
                     </Suspense>

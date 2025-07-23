@@ -73,45 +73,15 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    quote: "Kolab transformed my job search. The AI-powered resume builder helped me land 3 interviews within a week. The platform is intuitive, powerful, and the results are undeniable. A must-have for any serious job seeker.",
-    author: "Sarah Thompson",
-    role: "Senior Product Manager",
+    quote: "As a recent graduate, I struggled to translate my academic experience into a compelling resume. Kolab's templates and AI suggestions were a game-changer. I secured a fantastic entry-level position at a top firm.",
+    author: "Samuel Polkenhorn",
+    role: "Junior Data Analyst",
     company: "Innovate Inc.",
     rating: 5,
-    avatar: "/images/avatars/sarah-thompson.jpg",
+    avatar: "/images/avatars/samuel-polkenhorn.png",
     linkedinUrl: "#",
     tags: ["Career Growth", "Tech Industry", "Resume Optimization"]
-  },
-  {
-    quote: "As a recent graduate, I struggled to translate my academic experience into a compelling resume. Kolab's templates and AI suggestions were a game-changer. I secured a fantastic entry-level position at a top firm.",
-    author: "Michael Chen",
-    role: "Junior Data Analyst",
-    company: "DataDriven Co.",
-    rating: 5,
-    avatar: "/images/avatars/michael-chen.jpg",
-    linkedinUrl: "#",
-    tags: ["First Job", "Entry-Level", "Data Science"]
-  },
-  {
-    quote: "Switching careers felt daunting, but Kolab made it seamless. It helped me highlight my transferable skills and craft a narrative that resonated with hiring managers in my new field. I couldn't have done it without this tool.",
-    author: "Jessica Rodriguez",
-    role: "Marketing Specialist",
-    company: "Creative Solutions",
-    rating: 5,
-    avatar: "/images/avatars/jessica-rodriguez.jpg",
-    linkedinUrl: "#",
-    tags: ["Career Change", "Marketing", "Transferable Skills"]
-  },
-  {
-    quote: "The best resume platform on the market. The insights on ATS optimization are worth their weight in gold. I've recommended it to my entire network.",
-    author: "David Lee",
-    role: "Lead Software Engineer",
-    company: "TechForward",
-    rating: 5,
-    avatar: "/images/avatars/david-lee.jpg",
-    linkedinUrl: "#",
-    tags: ["ATS-Friendly", "Software Engineering", "Job Search"]
-  },
+  }
 ];
 
 const TestimonialCard = ({ testimonial, isFeatured }: { testimonial: Testimonial; isFeatured: boolean }) => {

@@ -184,38 +184,6 @@ const ProfessionalSamples = () => {
             <CategoryRow key={category.category} category={category} />
           ))}
         </div>
-
-        {/* Value Proposition Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mt-24"
-        >
-          <h3 className="text-4xl font-bold text-corporate-navy-900 mb-4">Why Our Templates Work</h3>
-          <p className="text-xl text-corporate-navy-600 max-w-3xl mx-auto mb-12">
-            Each template is more than just a design; it's a strategic tool built for success.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl p-8 border border-corporate-navy-100 shadow-lg">
-              <Zap className="w-10 h-10 text-corporate-gold-500 mx-auto mb-4" />
-              <h4 className="text-xl font-semibold text-corporate-navy-900 mb-2">ATS-Optimized</h4>
-              <p className="text-corporate-navy-600">Formatted to sail through applicant tracking systems.</p>
-            </div>
-            <div className="bg-white rounded-2xl p-8 border border-corporate-navy-100 shadow-lg">
-              <Users className="w-10 h-10 text-corporate-gold-500 mx-auto mb-4" />
-              <h4 className="text-xl font-semibold text-corporate-navy-900 mb-2">Expert-Designed</h4>
-              <p className="text-corporate-navy-600">Crafted by recruiters and career experts.</p>
-            </div>
-            <div className="bg-white rounded-2xl p-8 border border-corporate-navy-100 shadow-lg">
-              <BarChart className="w-10 h-10 text-corporate-gold-500 mx-auto mb-4" />
-              <h4 className="text-xl font-semibold text-corporate-navy-900 mb-2">Proven Results</h4>
-              <p className="text-corporate-navy-600">Used by professionals to land jobs at top companies.</p>
-            </div>
-          </div>
-        </motion.div>
-
       </div>
 
       <script type="application/ld+json">
