@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume - Alex Chen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1f2937;
+      line-height: 1.4;
+      background: white;
+    }
+    
+    .resume-container {
+      width: 8.5in;
+      min-height: 11in;
+      margin: 0 auto;
+      padding: 0.5in 0.5in 0.5in 0.5in;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-radius: 0.25rem;
+      border: 10px solid black;
+    }
+    
+    .resume-name {
+      font-size: 18pt;
+      font-weight: 600;
+      color: #2563eb;
+      margin-bottom: 0.3rem;
+      text-align: left;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+    }
+    
+    .resume-contact {
+      font-size: 7pt;
+      color: #9ca3af;
+      text-align: left;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
+    
+    .resume-section-header {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #1f2937;
+      margin-top: 0.5rem;
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    
+    .resume-job-title,
+    .resume-degree-title,
+    .resume-project-title,
+    .resume-involvement-title {
+      font-size: 9pt;
+      font-weight: 600;
+      color: #3b82f6;
+      line-height: 1.2;
+    }
+    
+    .resume-job-title .company-name,
+    .resume-degree-title .institution-name {
+      color: #1f2937;
+    }
+    
+    .resume-company {
+      font-size: 8pt;
+      font-style: italic;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+    
+    .resume-school-info {
+      font-size: 8pt;
+      font-style: normal;
+      color: #1f2937;
+      line-height: 1.4;
+    }
+    
+    .resume-summary,
+    .resume-body-text {
+      font-size: 8pt;
+      line-height: 1.4;
+      color: #1f2937;
+    }
+    
+    .resume-detail-text,
+    .resume-date {
+      font-size: 7pt;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+    
+    .resume-date {
+      font-style: italic;
+      float: right;
+    }
+    
+    .resume-bullet-list {
+      margin-left: 1.25rem;
+      list-style: none;
+    }
+    
+    .resume-bullet-list li {
+      position: relative;
+      margin-bottom: 0.3rem;
+      font-size: 8pt;
+      line-height: 1.4;
+      color: #1f2937;
+    }
+    
+    .resume-bullet-list li:before {
+      content: "•";
+      position: absolute;
+      left: -0.75rem;
+      color: #2563eb;
+      font-weight: bold;
+      font-size: 0.8em;
+    }
+    
+    .resume-experience-block,
+    .resume-education-block,
+    .resume-project-block,
+    .resume-involvement-block {
+      margin-bottom: 0.5rem;
+    }
+    
+    .resume-skills-category {
+      font-size: 8pt;
+      line-height: 1.4;
+      margin-bottom: 0.3rem;
+    }
+    
+    .resume-skills-title {
+      font-weight: 600;
+      color: #3b82f6;
+    }
+    
+    .section-margin {
+      margin-bottom: 1rem;
+    }
+    
+    .block-spacing {
+      margin-bottom: 0.05rem;
+    }
+    
+    .date-location {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    
+    @media print {
+      body { 
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+      }
+      .resume-container {
+        box-shadow: none;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div class="resume-container">
+        <!-- Contact Information -->
+        <header>
+            <h1 class="resume-name">Alex Chen</h1>
+            <div class="resume-contact">
+                San Francisco, CA • 
+                alex.chen@email.com • 
+                (555) 789-0123 • 
+                linkedin.com/in/alex-chen-engineer
+            </div>
+        </header>
+
+        <!-- Professional Summary -->
+        
+        <section class="section-margin">
+            <h2 class="resume-section-header">Professional Summary</h2>
+            <p class="resume-summary">Senior Software Engineer with 8+ years of experience building scalable systems and leading high-performing teams. Expert in full-stack development, cloud architecture, and DevOps practices. Proven track record of delivering mission-critical applications, mentoring junior engineers, and driving technical excellence across organizations.</p>
+        </section>
+        
+
+        <!-- Experience -->
+        
+        <section class="section-margin">
+            <h2 class="resume-section-header">Professional Experience</h2>
+            
+                <div class="resume-experience-block">
+                    <div class="block-spacing">
+                        <h3 class="resume-job-title">Senior Software Engineer | <span class="company-name">CloudScale Technologies</span></h3>
+                    </div>
+                    <div class="resume-company">
+                        Feb 2022 - Present • San Francisco, CA
+                    </div>
+                    
+                        <ul class="resume-bullet-list">
+                            <li>Lead development of microservices architecture serving 10M+ daily users, improving system performance by 40% and reducing infrastructure costs by $2M annually.</li><li>Architect and implement distributed systems using Kubernetes, Docker, and AWS, ensuring 99.9% uptime for mission-critical applications.</li><li>Mentor team of 6 junior engineers, establishing code review standards and technical best practices that reduced bug reports by 35% and improved deployment velocity by 50%.</li><li>Drive architectural decisions for scalable backend systems, implementing event-driven architecture that handles 1B+ daily transactions with sub-100ms latency.</li>
+                        </ul>
+                    
+                </div>
+            
+                <div class="resume-experience-block">
+                    <div class="block-spacing">
+                        <h3 class="resume-job-title">Software Engineer | <span class="company-name">DataFlow Systems</span></h3>
+                    </div>
+                    <div class="resume-company">
+                        May 2019 - Feb 2022 • San Francisco, CA
+                    </div>
+                    
+                        <ul class="resume-bullet-list">
+                            <li>Developed scalable data processing pipelines handling 500TB+ daily throughput using Python, Apache Spark, and Kafka, enabling real-time analytics for enterprise clients.</li><li>Built RESTful APIs and GraphQL services used by 50+ internal applications, implementing authentication, rate limiting, and comprehensive monitoring solutions.</li><li>Led migration from monolithic architecture to microservices, reducing deployment time from 2 hours to 15 minutes and improving system reliability.</li><li>Collaborated with product managers and designers to deliver user-facing features for web and mobile applications, serving over 1M active users.</li><li>Implemented automated testing frameworks achieving 95% code coverage and reducing production incidents by 60%.</li>
+                        </ul>
+                    
+                </div>
+            
+                <div class="resume-experience-block">
+                    <div class="block-spacing">
+                        <h3 class="resume-job-title">Software Engineer | <span class="company-name">TechStart Inc</span></h3>
+                    </div>
+                    <div class="resume-company">
+                        Jan 2017 - May 2019 • Palo Alto, CA
+                    </div>
+                    
+                        <ul class="resume-bullet-list">
+                            <li>Developed full-stack applications using React, Node.js, and PostgreSQL, delivering core product features that increased user engagement by 25%.</li><li>Implemented automated testing frameworks and CI/CD pipelines, reducing manual testing time by 60% and achieving 95% code coverage across all modules.</li><li>Optimized database queries and application performance, reducing page load times by 45% and improving overall user experience metrics.</li><li>Contributed to open-source projects and maintained internal development tools used by 20+ engineers across the organization.</li>
+                        </ul>
+                    
+                </div>
+            
+        </section>
+        
+
+        <!-- Education -->
+        
+        <section class="section-margin">
+            <h2 class="resume-section-header">Education</h2>
+            
+                <div class="resume-education-block">
+                    <div class="resume-degree-title">
+                        Bachelor of Science in Computer Science | <span class="institution-name">Stanford University</span><span class="resume-school-info"> | Stanford, CA | 2016</span>
+                    </div>
+                    
+                        <div class="resume-school-info">GPA: 3.8/4.0</div>
+                    
+                </div>
+            
+        </section>
+        
+
+
+        <!-- Skills -->
+        
+        <section class="section-margin">
+            <h2 class="resume-section-header">Expert-Level Skills</h2>
+            
+                <div class="resume-skills-category">
+                    <span class="resume-skills-title">Programming Languages:</span>
+                    <span> Python, JavaScript, TypeScript, Java, Go, SQL, GraphQL</span>
+                </div>
+            
+                <div class="resume-skills-category">
+                    <span class="resume-skills-title">Frameworks & Libraries:</span>
+                    <span> React, Node.js, Django, FastAPI, Spring Boot, Express.js</span>
+                </div>
+            
+                <div class="resume-skills-category">
+                    <span class="resume-skills-title">Cloud & DevOps:</span>
+                    <span> AWS, Docker, Kubernetes, Terraform, CI/CD, Jenkins, GitHub Actions</span>
+                </div>
+            
+                <div class="resume-skills-category">
+                    <span class="resume-skills-title">Databases & Tools:</span>
+                    <span> PostgreSQL, MongoDB, Redis, Apache Kafka, Elasticsearch, Git</span>
+                </div>
+            
+                <div class="resume-skills-category">
+                    <span class="resume-skills-title">Leadership & Architecture:</span>
+                    <span> Technical Leadership, System Design, Code Review, Mentoring</span>
+                </div>
+            
+        </section>
+        
+    </div>
+</body>
+</html>
+  
