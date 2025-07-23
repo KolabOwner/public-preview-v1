@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthToken } from "@/lib/server/auth/middleware";
 import { listUsers } from '@/lib/server/auth/firebase-admin';
 
+export const dynamic = 'force-dynamic';
+
 // List all users (admin only)
 export async function GET(request: NextRequest) {
   try {
