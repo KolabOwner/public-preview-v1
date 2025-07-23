@@ -3,10 +3,14 @@ import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { updateUserSubscription } from '@/lib/server/auth/user-service';
 
-export async function POST(request: NextRequest) {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2025-06-30.basil',
   });
+}
+
+export async function POST(request: NextRequest) {
+  const stripe = getStripe();
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
   const body = await request.text();
   const headersList = headers();
@@ -133,6 +137,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   // Handle successful recurring payment
   if ((invoice as any).subscription) {
+    const stripe = getStripe();
     const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
     await handleSubscriptionUpdated(subscription);
   }
