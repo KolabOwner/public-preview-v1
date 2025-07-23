@@ -388,7 +388,7 @@ const AppSidebarNav = () => {
                   type="button"
                   data-busy="false"
                   onClick={() => setShowUpgradeModal(true)}
-                  className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full border-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white px-2 py-1 min-h-8 leading-4 rounded-md text-xs shadow-lg shadow-blue-500/30"
+                  className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full border-0 bg-gradient-to-r from-corporate-gold-600 to-corporate-amber-600 hover:from-corporate-gold-700 hover:to-corporate-amber-700 active:from-corporate-gold-800 active:to-corporate-amber-800 text-white px-2 py-1 min-h-8 leading-4 rounded-md text-xs shadow-lg shadow-corporate-gold-500/30"
                 >
                   <i className="fad fa-circle-arrow-up !flex items-center justify-center !leading-[0] flex-none text-sm w-[18px] h-[18px] mr-1" aria-hidden="true"></i>
                   <span className="px-1">UPGRADE</span>
@@ -402,10 +402,10 @@ const AppSidebarNav = () => {
             <div className="mt-auto mb-2">
               <button
                 onClick={() => setShowUpgradeModal(true)}
-                className="p-2 rounded-lg bg-gradient-to-r from-blue-600/20 to-indigo-600/20 group relative"
+                className="p-2 rounded-lg bg-gradient-to-r from-corporate-gold-600/20 to-corporate-amber-600/20 group relative"
                 aria-label="Upgrade to Pro"
               >
-                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-corporate-gold-600 dark:text-corporate-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
 

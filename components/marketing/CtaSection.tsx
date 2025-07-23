@@ -105,18 +105,14 @@ const CtaSection: React.FC<CtaSectionProps> = ({
                 transition={{ delay: 0.6, duration: 0.6 }}
                 className="pt-4"
               >
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="relative inline-block"
-                >
+                <div className="relative inline-block">
                   {/* Button Glow */}
                   <div className="absolute inset-0 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-md opacity-30 scale-105"></div>
                   
                   <Button 
                     asChild 
                     size="lg"
-                    className="relative bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 font-bold px-12 py-6 text-xl rounded-2xl shadow-xl hover:shadow-2xl border-2 border-corporate-gold-400/50 transition-all duration-250"
+                    className="relative bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 font-bold px-12 py-6 text-xl rounded-2xl shadow-xl border-2 border-corporate-gold-400/50"
                   >
                     <a 
                       href={ctaUrl}
@@ -132,7 +128,7 @@ const CtaSection: React.FC<CtaSectionProps> = ({
                       </motion.div>
                     </a>
                   </Button>
-                </motion.div>
+                </div>
               </motion.div>
 
               {/* Trust Indicator */}

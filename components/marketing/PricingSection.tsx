@@ -21,13 +21,12 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Star, Shield, Zap, Info, DollarSign, Users, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shared/card';
 import { Button } from '@/components/shared/button';
 import { Badge } from '@/components/shared/badge';
-import { Switch } from '@/components/shared/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/shared/tooltip';
 import { Separator } from '@/components/shared/separator';
 
@@ -42,7 +41,6 @@ interface PricingPlan {
   name: string;
   description: string;
   monthlyPrice: number;
-  yearlyPrice: number;
   period: string;
   features: PricingFeature[];
   cta: string;
@@ -50,11 +48,9 @@ interface PricingPlan {
   icon: React.ReactNode;
   badge?: string;
   maxUsers?: number;
-  savings?: number;
 }
 
 const PricingSection = () => {
-  const [isYearly, setIsYearly] = useState(false);
 
   const plans: PricingPlan[] = useMemo(() => [
     {
@@ -62,7 +58,6 @@ const PricingSection = () => {
       name: "Free",
       description: "Perfect for getting started with basic resume building",
       monthlyPrice: 0,
-      yearlyPrice: 0,
       period: "forever",
       features: [
         { name: "1 Resume", included: true },
@@ -83,8 +78,7 @@ const PricingSection = () => {
       name: "Pro",
       description: "Everything you need for professional resume optimization",
       monthlyPrice: 19,
-      yearlyPrice: 15,
-      period: isYearly ? "per month, billed yearly" : "per month",
+      period: "per month",
       features: [
         { name: "Unlimited Resumes", included: true },
         { name: "All Premium Templates", tooltip: "Access to 50+ professionally designed templates", included: true },
@@ -98,16 +92,14 @@ const PricingSection = () => {
       popular: true,
       icon: <Zap className="w-5 h-5" />,
       badge: "Most Popular",
-      maxUsers: 1,
-      savings: isYearly ? 21 : 0
+      maxUsers: 1
     },
     {
       id: 'teams',
       name: "Teams",
       description: "Designed for organizations and recruitment teams",
       monthlyPrice: 49,
-      yearlyPrice: 39,
-      period: isYearly ? "per month, billed yearly" : "per month",
+      period: "per month",
       features: [
         { name: "Everything in Pro", included: true },
         { name: "5 Team Members", included: true },
@@ -120,15 +112,13 @@ const PricingSection = () => {
       cta: "Contact Sales",
       popular: false,
       icon: <Shield className="w-5 h-5" />,
-      maxUsers: 5,
-      savings: isYearly ? 20 : 0
+      maxUsers: 5
     }
-  ], [isYearly]);
+  ], []);
 
   const formatPrice = (plan: PricingPlan) => {
     if (plan.monthlyPrice === 0) return "$0";
-    const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
-    return `$${price}`;
+    return `$${plan.monthlyPrice}`;
   };
 
   const containerVariants = {
@@ -199,36 +189,6 @@ const PricingSection = () => {
               Professional-grade tools designed to accelerate your career advancement and maximize your earning potential
             </p>
 
-            {/* Premium Billing Toggle */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-              className="flex items-center justify-center gap-6 bg-corporate-navy-800/40 backdrop-blur-xl border border-corporate-gold-500/20 rounded-2xl p-4 max-w-md mx-auto"
-            >
-              <span className={`text-sm font-medium transition-colors ${!isYearly ? 'text-professional-50' : 'text-corporate-gold-300/60'}`}>
-                Monthly
-              </span>
-              <Switch
-                checked={isYearly}
-                onCheckedChange={setIsYearly}
-                aria-label="Toggle between monthly and yearly billing"
-                className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
-              />
-              <span className={`text-sm font-medium transition-colors ${isYearly ? 'text-professional-50' : 'text-corporate-gold-300/60'}`}>
-                Yearly
-              </span>
-              {isYearly && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 px-3 py-1 rounded-full text-xs font-bold"
-                >
-                  Save up to 21%
-                </motion.div>
-              )}
-            </motion.div>
           </motion.div>
 
           {/* Pricing Cards */}
@@ -263,10 +223,10 @@ const PricingSection = () => {
                   )}
                 </AnimatePresence>
 
-                <div className={`h-full bg-white/95 backdrop-blur-sm border rounded-3xl transition-all duration-500 hover:scale-[1.02] ${
+                <div className={`h-full bg-white/95 backdrop-blur-sm border rounded-3xl ${
                   plan.popular 
                     ? 'border-2 border-corporate-gold-400/50 shadow-2xl bg-gradient-to-b from-white to-corporate-gold-50/30' 
-                    : 'border-corporate-navy-100 hover:border-corporate-gold-300/50 hover:shadow-xl'
+                    : 'border-corporate-navy-100'
                 } overflow-hidden`}>
                   
                   {/* Card Header */}
@@ -295,10 +255,7 @@ const PricingSection = () => {
                     {/* Premium Pricing Display */}
                     <div className="space-y-3">
                       <div className="flex items-end justify-center gap-1">
-                        <motion.span
-                          key={`${plan.id}-${isYearly}`}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
+                        <span
                           className={`text-5xl font-bold ${
                             plan.popular 
                               ? 'bg-gradient-to-r from-corporate-navy-900 to-corporate-navy-700 bg-clip-text text-transparent'
@@ -306,10 +263,10 @@ const PricingSection = () => {
                           }`}
                         >
                           {formatPrice(plan)}
-                        </motion.span>
+                        </span>
                         {plan.monthlyPrice > 0 && (
                           <span className="text-corporate-navy-500 text-lg mb-2">
-                            /{isYearly ? 'mo' : 'month'}
+                            /month
                           </span>
                         )}
                       </div>
@@ -324,15 +281,6 @@ const PricingSection = () => {
                         )}
                       </div>
 
-                      {plan.savings && plan.savings > 0 && isYearly && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="inline-flex items-center gap-1 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 px-3 py-1 rounded-full text-xs font-bold"
-                        >
-                          Save {plan.savings}% yearly
-                        </motion.div>
-                      )}
                     </div>
                   </div>
 
@@ -359,7 +307,7 @@ const PricingSection = () => {
                           {feature.tooltip && feature.included && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Info className="w-4 h-4 text-corporate-navy-400 hover:text-corporate-navy-600 cursor-help" />
+                                <Info className="w-4 h-4 text-corporate-navy-400 cursor-help" />
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="max-w-xs">{feature.tooltip}</p>
@@ -374,10 +322,10 @@ const PricingSection = () => {
                   {/* CTA Button */}
                   <div className="p-8 pt-0">
                     <Button
-                      className={`w-full py-6 text-base font-bold transition-all duration-300 rounded-2xl ${
+                      className={`w-full py-6 text-base font-bold rounded-2xl ${
                         plan.popular
-                          ? 'bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 shadow-xl hover:shadow-lg hover:scale-102'
-                          : 'bg-corporate-navy-50 hover:bg-corporate-navy-100 text-corporate-navy-900 border-2 border-corporate-navy-100 hover:border-corporate-gold-300'
+                          ? 'bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 shadow-xl'
+                          : 'bg-corporate-navy-50 text-corporate-navy-900 border-2 border-corporate-navy-100'
                       }`}
                       size="lg"
                       aria-label={`${plan.cta} for ${plan.name} plan`}
@@ -390,29 +338,19 @@ const PricingSection = () => {
             ))}
           </motion.div>
 
-          {/* Bottom CTA and Guarantee */}
+          {/* Bottom CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-16 lg:mt-20 text-center space-y-6"
+            className="mt-16 lg:mt-20 text-center"
           >
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-2xl mx-auto shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                Risk-Free Guarantee
-              </h3>
-              <p className="text-slate-600 leading-relaxed">
-                All plans include a <span className="font-semibold text-slate-900">14-day money-back guarantee</span>. 
-                Try any plan risk-free and see the difference professional resume optimization makes.
-              </p>
-            </div>
-            
-            <p className="text-slate-600">
+            <p className="text-corporate-gold-200/80">
               Need a custom solution for your enterprise? {' '}
               <Button 
                 variant="link" 
-                className="p-0 h-auto text-blue-600 hover:text-blue-700 font-semibold"
+                className="p-0 h-auto text-corporate-gold-400 font-semibold"
                 aria-label="Contact our sales team for custom enterprise solutions"
               >
                 Contact our sales team →

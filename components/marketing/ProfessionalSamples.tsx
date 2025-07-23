@@ -33,10 +33,10 @@ const sampleData: SampleCategory[] = [
     category: 'Technology',
     description: 'For developers, engineers, and IT professionals.',
     samples: [
-      { title: 'Senior Software Engineer', imageUrl: '/images/samples/tech-1.png', tags: ['React', 'Node.js', 'AWS'] },
-      { title: 'Frontend Developer', imageUrl: '/images/samples/tech-2.png', tags: ['TypeScript', 'Next.js', 'Vercel'] },
-      { title: 'DevOps Engineer', imageUrl: '/images/samples/tech-3.png', tags: ['Docker', 'Kubernetes', 'CI/CD'] },
-      { title: 'Data Scientist', imageUrl: '/images/samples/tech-4.png', tags: ['Python', 'TensorFlow', 'Scikit-learn'] },
+      { title: 'Backend Software Engineer', imageUrl: '/images/samples/tech-1.png', tags: ['Java', 'Spring Boot', 'AWS'] },
+      { title: 'Frontend Developer', imageUrl: '/images/samples/tech-2.png', tags: ['React', 'TypeScript', 'Tailwind'] },
+      { title: 'DevOps Engineer', imageUrl: '/images/samples/tech-3.png', tags: ['Docker', 'Kubernetes', 'Terraform'] },
+      { title: 'Data Scientist', imageUrl: '/images/samples/tech-4.png', tags: ['Python', 'TensorFlow', 'Tableau'] },
     ],
   },
   {

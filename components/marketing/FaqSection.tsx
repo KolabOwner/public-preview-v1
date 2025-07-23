@@ -137,7 +137,7 @@ const FaqSection = () => {
             return (
               <div
                 key={index}
-                className="group relative bg-white border border-corporate-navy-100 rounded-2xl p-6 hover:border-corporate-gold-300 hover:shadow-lg transition-all duration-500 hover:scale-[1.02]"
+                className="group relative bg-white border border-corporate-navy-100 rounded-2xl p-6"
               >
 
                 <button
@@ -146,10 +146,10 @@ const FaqSection = () => {
                   aria-expanded={isOpen}
                 >
                   <div className="flex items-start justify-between gap-4 mb-4">
-                    <h3 className={`text-lg font-semibold leading-relaxed transition-colors duration-300 ${
+                    <h3 className={`text-lg font-semibold leading-relaxed ${
                       isOpen
                         ? 'text-corporate-navy-800'
-                        : 'text-corporate-navy-900 group-hover:text-corporate-navy-700'
+                        : 'text-corporate-navy-900'
                     }`}>
                       {faq.question}
                     </h3>
@@ -157,7 +157,7 @@ const FaqSection = () => {
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                         isOpen
                           ? 'bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white rotate-180'
-                          : 'bg-corporate-navy-50 text-corporate-gold-600 group-hover:bg-corporate-gold-50'
+                          : 'bg-corporate-navy-50 text-corporate-gold-600'
                       }`}>
                         <ChevronDown className="w-4 h-4" />
                       </div>
@@ -169,7 +169,7 @@ const FaqSection = () => {
                   isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                 }`}>
                   <div className="pb-2">
-                    <p className={`leading-relaxed transition-colors duration-300 ${
+                    <p className={`leading-relaxed ${
                       isOpen
                         ? 'text-corporate-navy-700'
                         : 'text-corporate-navy-600'

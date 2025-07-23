@@ -1,333 +1,16 @@
-/*
-=== PRODUCTION FEATURES STATUS ===
-✅ Responsive Design (Mobile/Desktop/Tablet)
-✅ Accessibility (ARIA labels, keyboard navigation, screen readers)
-✅ Error Handling & Loading States
-✅ TypeScript Integration & Type Safety
-✅ Performance Optimization (lazy loading, memoization, code splitting)
-✅ Cross-browser Compatibility
-✅ Security Implementation (XSS protection, input sanitization)
-✅ SEO Metadata Integration
-✅ Analytics Ready
-✅ Component Reusability & Modularity
-✅ Production Build Optimization
-✅ Core Web Vitals Compliance
-✅ Site Speed Optimization (image compression, bundle splitting)
-✅ Proper Heading Structure (H1, H2, H3 hierarchy)
-✅ Schema Markup Implementation
-✅ XML Sitemap Ready
-✅ Shared Component Utilization (@/components/shared)
-*/
-
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  FileText,
-  Plus,
-  Search,
-  Filter,
-  Grid3X3,
-  List,
-  Star,
-  Download,
-  Share2,
-  MoreHorizontal,
-  Zap,
-  TrendingUp,
-  Users,
-  CheckCircle
-} from 'lucide-react';
-import { Button } from '@/components/shared/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/card';
-import { Badge } from '@/components/shared/badge';
-
-// Enhanced TypeScript interfaces
-interface DashboardStats {
-  totalResumes: number;
-  applicationsSubmitted: number;
-  interviewsScheduled: number;
-  successRate: number;
-}
-
-interface ResumeItem {
-  id: string;
-  name: string;
-  status: 'draft' | 'active' | 'archived';
-  lastModified: string;
-  applicationsCount: number;
-  template: string;
-  isStarred: boolean;
-}
-
-interface ViewMode {
-  type: 'grid' | 'list';
-  label: string;
-}
-
-// Mock data with enhanced structure
-const mockStats: DashboardStats = {
-  totalResumes: 12,
-  applicationsSubmitted: 47,
-  interviewsScheduled: 8,
-  successRate: 23
-};
-
-const mockResumes: ResumeItem[] = [
-  {
-    id: '1',
-    name: 'Software Engineer Resume',
-    status: 'active',
-    lastModified: '2 hours ago',
-    applicationsCount: 12,
-    template: 'Modern',
-    isStarred: true
-  },
-  {
-    id: '2',
-    name: 'Product Manager Resume',
-    status: 'draft',
-    lastModified: '1 day ago',
-    applicationsCount: 0,
-    template: 'Professional',
-    isStarred: false
-  },
-  {
-    id: '3',
-    name: 'Marketing Specialist Resume',
-    status: 'active',
-    lastModified: '3 days ago',
-    applicationsCount: 8,
-    template: 'Creative',
-    isStarred: true
-  },
-  {
-    id: '4',
-    name: 'Data Analyst Resume',
-    status: 'archived',
-    lastModified: '1 week ago',
-    applicationsCount: 15,
-    template: 'Minimal',
-    isStarred: false
-  },
-  {
-    id: '5',
-    name: 'UX Designer Resume',
-    status: 'draft',
-    lastModified: '2 days ago',
-    applicationsCount: 0,
-    template: 'Creative',
-    isStarred: false
-  },
-  {
-    id: '6',
-    name: 'DevOps Engineer Resume',
-    status: 'active',
-    lastModified: '5 days ago',
-    applicationsCount: 6,
-    template: 'Technical',
-    isStarred: true
-  }
-];
-
-// Stat Card Component
-const StatCard = React.memo(({ icon: Icon, title, value, subtitle, color = 'blue' }: {
-  icon: React.ElementType;
-  title: string;
-  value: string | number;
-  subtitle: string;
-  color?: string;
-}) => (
-  <Card className="hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-corporate-navy-100">
-    <CardContent className="p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-corporate-navy-600 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-corporate-navy-900">{value}</p>
-          <p className="text-xs text-corporate-navy-500 mt-1">{subtitle}</p>
-        </div>
-        <div className="p-3 rounded-xl bg-gradient-to-br from-corporate-gold-100 to-corporate-amber-100">
-          <Icon className="w-6 h-6 text-corporate-gold-600" />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-));
-
-StatCard.displayName = 'StatCard';
-
-// Resume Card Component
-const ResumeCard = React.memo(({ resume, viewMode }: { resume: ResumeItem; viewMode: ViewMode['type'] }) => {
-  const statusColors = {
-    active: 'bg-corporate-gold-100 text-corporate-gold-800',
-    draft: 'bg-corporate-amber-100 text-corporate-amber-800',
-    archived: 'bg-corporate-navy-100 text-corporate-navy-600'
-  };
-
-  if (viewMode === 'list') {
-    return (
-      <Card className="hover:shadow-lg transition-all duration-300 hover:scale-[1.01] border-corporate-navy-100">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-16 bg-gradient-to-br from-corporate-gold-50 to-corporate-amber-50 rounded-lg flex items-center justify-center border border-corporate-gold-200">
-                <FileText className="w-6 h-6 text-corporate-gold-600" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-corporate-navy-900">{resume.name}</h3>
-                  {resume.isStarred && <Star className="w-4 h-4 text-corporate-gold-500 fill-current" />}
-                </div>
-                <p className="text-sm text-corporate-navy-600">{resume.template} template • {resume.lastModified}</p>
-                <div className="flex items-center gap-4 mt-1">
-                  <Badge variant="secondary" className={statusColors[resume.status]}>
-                    {resume.status.charAt(0).toUpperCase() + resume.status.slice(1)}
-                  </Badge>
-                  <span className="text-xs text-corporate-navy-500">{resume.applicationsCount} applications</span>
-                </div>
-              </div>
-            </div>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal className="w-4 h-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group border-corporate-navy-100">
-      <CardHeader className="p-4 pb-2">
-        <div className="flex items-start justify-between">
-          <Badge variant="secondary" className={statusColors[resume.status]}>
-            {resume.status.charAt(0).toUpperCase() + resume.status.slice(1)}
-          </Badge>
-          <div className="flex items-center gap-1">
-            {resume.isStarred && <Star className="w-4 h-4 text-corporate-gold-500 fill-current" />}
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <div className="aspect-[3/4] bg-gradient-to-br from-corporate-navy-50 to-corporate-gold-50 rounded-lg mb-4 flex items-center justify-center border border-corporate-navy-200 group-hover:border-corporate-gold-300 transition-colors">
-          <div className="text-center">
-            <FileText className="w-8 h-8 text-corporate-navy-400 mx-auto mb-2" />
-            <p className="text-xs text-corporate-navy-500">{resume.template}</p>
-          </div>
-        </div>
-        <CardTitle className="text-sm font-semibold text-corporate-navy-900 mb-2 line-clamp-2">
-          {resume.name}
-        </CardTitle>
-        <div className="space-y-2">
-          <p className="text-xs text-corporate-navy-600">{resume.lastModified}</p>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-corporate-navy-500">{resume.applicationsCount} applications</span>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Share2 className="w-3 h-3" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Download className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
-
-ResumeCard.displayName = 'ResumeCard';
-
-// Mock cover letters data
-const mockCoverLetters: ResumeItem[] = [
-  {
-    id: '7',
-    name: 'Software Engineer Cover Letter',
-    status: 'active',
-    lastModified: '1 hour ago',
-    applicationsCount: 8,
-    template: 'Modern',
-    isStarred: true
-  },
-  {
-    id: '8',
-    name: 'Product Manager Cover Letter',
-    status: 'draft',
-    lastModified: '2 days ago',
-    applicationsCount: 0,
-    template: 'Professional',
-    isStarred: false
-  },
-  {
-    id: '9',
-    name: 'Marketing Specialist Cover Letter',
-    status: 'active',
-    lastModified: '4 days ago',
-    applicationsCount: 5,
-    template: 'Creative',
-    isStarred: false
-  },
-  {
-    id: '10',
-    name: 'Data Analyst Cover Letter',
-    status: 'archived',
-    lastModified: '2 weeks ago',
-    applicationsCount: 10,
-    template: 'Minimal',
-    isStarred: true
-  }
-];
+import React, { useState } from 'react';
 
 // Main Component
 const DashboardMockup = () => {
-  const [activeTab, setActiveTab] = useState<'resumes' | 'coverLetters'>('resumes');
-  const [viewMode, setViewMode] = useState<ViewMode['type']>('grid');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'draft' | 'archived'>('all');
-
-  // Get current data based on active tab
-  const currentData = activeTab === 'resumes' ? mockResumes : mockCoverLetters;
-
-  // Filtered items based on search and filter
-  const filteredItems = useMemo(() => {
-    return currentData.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = filterStatus === 'all' || item.status === filterStatus;
-      return matchesSearch && matchesFilter;
-    });
-  }, [currentData, searchQuery, filterStatus]);
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.4, ease: "easeOut" }
-    }
-  };
+  const [keepExpanded, setKeepExpanded] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
+  const [sortBy, setSortBy] = useState('updated');
 
   return (
-    <section
-      className="py-24 bg-gradient-to-br from-corporate-navy-950 to-corporate-charcoal-900 relative overflow-hidden"
-      aria-label="Dashboard mockup showcase"
-    >
+    <section className="py-24 bg-white relative overflow-hidden">
       {/* Corporate Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 w-96 h-96 bg-corporate-gold-500/8 rounded-full blur-3xl animate-pulse"></div>
@@ -338,18 +21,13 @@ const DashboardMockup = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12 lg:mb-16"
-        >
-          <div className="inline-flex items-center gap-3 bg-corporate-navy-800/50 backdrop-blur-sm border border-corporate-gold-500/20 rounded-full px-6 py-3 mb-8">
-            <div className="w-2 h-2 bg-corporate-gold-400 rounded-full animate-ping"></div>
-            <span className="text-corporate-gold-200 font-medium">Smart Dashboard</span>
+        <div className="text-center mb-12 lg:mb-16">
+          <div className="inline-flex items-center gap-3 bg-gray-100 backdrop-blur-sm border border-gray-300 rounded-full px-6 py-3 mb-8">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+            <span className="text-gray-700 font-medium">Smart Dashboard</span>
           </div>
           <h2 className="text-5xl md:text-7xl font-bold leading-tight mb-8">
-            <span className="block text-professional-50">Your Resume & Cover Letter</span>
+            <span className="block text-gray-900">Your Resume & Cover Letter</span>
             <span className="block bg-gradient-to-r from-corporate-gold-400 via-corporate-amber-400 to-corporate-gold-500 bg-clip-text text-transparent">
               Command Center
             </span>
@@ -357,177 +35,486 @@ const DashboardMockup = () => {
           <p className="text-xl text-corporate-gold-200/80 max-w-3xl mx-auto leading-relaxed">
             Manage all your resumes, track applications, and optimize your job search from one powerful dashboard
           </p>
-        </motion.div>
+        </div>
 
-        {/* Dashboard Container */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-corporate-gold-300/20 overflow-hidden max-w-6xl mx-auto"
-        >
-          {/* Dashboard Header */}
-          <motion.div variants={itemVariants} className="border-b border-corporate-gold-200/50 p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-xl font-bold text-corporate-navy-900">
-                  Your {activeTab === 'resumes' ? 'Resumes' : 'Cover Letters'}
-                </h3>
-                <p className="text-sm text-corporate-navy-600">Manage and optimize your professional documents</p>
-              </div>
+        <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-lg shadow-2xl max-w-7xl mx-auto flex overflow-hidden min-h-[800px] transition-colors duration-300`}>
+          {/* Mockup Sidebar */}
+          <aside className={`w-[280px] min-h-full ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-r border-gray-700' : 'bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200'} flex flex-col transition-colors duration-300`}>
+            {/* Logo Section */}
+            <div className="p-6">
               <div className="flex items-center gap-3">
-                <Button size="sm" className="bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 font-bold shadow-lg hover:shadow-xl">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New {activeTab === 'resumes' ? 'Resume' : 'Cover Letter'}
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Tab Navigation */}
-          <motion.div variants={itemVariants} className="border-b border-corporate-gold-200/50 px-6">
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setActiveTab('resumes')}
-                className={`px-4 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${
-                  activeTab === 'resumes'
-                    ? 'text-corporate-navy-900 border-corporate-gold-500 bg-corporate-gold-50/50'
-                    : 'text-corporate-navy-600 hover:text-corporate-navy-900 border-transparent hover:border-corporate-gold-300'
-                }`}
-              >
-                Resumes
-              </button>
-              <button
-                onClick={() => setActiveTab('coverLetters')}
-                className={`px-4 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${
-                  activeTab === 'coverLetters'
-                    ? 'text-corporate-navy-900 border-corporate-gold-500 bg-corporate-gold-50/50'
-                    : 'text-corporate-navy-600 hover:text-corporate-navy-900 border-transparent hover:border-corporate-gold-300'
-                }`}
-              >
-                Cover Letters
-              </button>
-            </div>
-          </motion.div>
-
-
-          {/* Controls Section */}
-          <motion.div variants={itemVariants} className="p-6 border-b border-corporate-gold-200/50">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="flex flex-col sm:flex-row gap-3 flex-1">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search resumes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-corporate-navy-200 rounded-lg focus:ring-2 focus:ring-corporate-gold-500 focus:border-transparent text-sm"
-                  />
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-xl opacity-60"></div>
+                  <div className="relative bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 p-2.5 rounded-2xl shadow-xl shadow-corporate-gold-500/20">
+                    <div className="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
+                      <span className="text-corporate-gold-600 font-bold text-sm">K</span>
+                    </div>
+                  </div>
                 </div>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as any)}
-                  className="px-3 py-2 border border-corporate-navy-200 rounded-lg text-sm focus:ring-2 focus:ring-corporate-gold-500 focus:border-transparent"
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="draft">Draft</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
+                <div className="flex items-baseline">
+                  <span className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-corporate-navy-900'} transition-colors duration-300 tracking-tight`}>Kolab</span>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-transparent bg-clip-text ml-0.5">AI</span>
+                </div>
               </div>
             </div>
-          </motion.div>
 
-          {/* Resumes Grid/List */}
-          <motion.div variants={itemVariants} className="p-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`${activeTab}-${viewMode}-${filterStatus}-${searchQuery}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className={
-                  viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
-                    : 'space-y-3'
-                }
-              >
-                {filteredItems.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ResumeCard resume={item} viewMode={viewMode} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
+            {/* Create Button */}
+            <div className="px-6 mb-6">
+              <button className="w-full bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-corporate-gold-500/30">
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create New Resume
+                </span>
+              </button>
+            </div>
 
-            {filteredItems.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-12"
-              >
-                <FileText className="w-12 h-12 text-corporate-navy-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-corporate-navy-900 mb-2">
-                  No {activeTab === 'resumes' ? 'resumes' : 'cover letters'} found
-                </h3>
-                <p className="text-corporate-navy-600 mb-4">
-                  {searchQuery || filterStatus !== 'all'
-                    ? 'Try adjusting your search or filter criteria.'
-                    : `Create your first ${activeTab === 'resumes' ? 'resume' : 'cover letter'} to get started.`
-                  }
-                </p>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New {activeTab === 'resumes' ? 'Resume' : 'Cover Letter'}
-                </Button>
-              </motion.div>
+            {/* Navigation */}
+            <nav className="flex-1 px-6 space-y-1">
+              <div className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl ${isDarkMode ? 'bg-corporate-amber-900/50 text-corporate-amber-300 border border-corporate-amber-600/30' : 'bg-corporate-amber-50/50 text-corporate-navy-900 border border-corporate-amber-200/30'} transition-colors duration-300`}>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-corporate-gold-500 to-corporate-amber-500 rounded-r-full"></div>
+                <svg className={`w-5 h-5 ${isDarkMode ? 'text-corporate-amber-400' : 'text-corporate-amber-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span className="font-medium text-sm">Dashboard</span>
+              </div>
+              
+              <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl ${isDarkMode ? 'text-slate-400' : 'text-corporate-navy-600'} transition-colors duration-300`}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="font-medium text-sm">Sample Library</span>
+              </div>
+              
+              <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl ${isDarkMode ? 'text-slate-400' : 'text-corporate-navy-600'} transition-colors duration-300`}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span className="font-medium text-sm">Resume Review</span>
+              </div>
+            </nav>
+
+            {/* Usage Stats */}
+            <div className="px-6 pb-6">
+              <div className={`${isDarkMode ? 'bg-gray-800/60 border-gray-600' : 'bg-white/60 border-gray-200'} backdrop-blur-sm border rounded-xl p-4 transition-colors duration-300`}>
+                <div className="flex flex-col gap-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <svg className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} transition-colors duration-300`}>AI GENERATIONS</span>
+                    </div>
+                    <span className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} transition-colors duration-300`}>5 / 10</span>
+                  </div>
+                </div>
+                <button className="w-full mt-3 bg-gradient-to-r from-corporate-gold-600 to-corporate-amber-600 text-white font-bold text-xs uppercase px-2 py-2 rounded-lg shadow-lg shadow-corporate-gold-500/30">
+                  <span className="flex items-center justify-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    UPGRADE
+                  </span>
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Dashboard Content */}
+          <main className="flex-1 p-12">
+      <div className="flex justify-between">
+        {/* Tab Navigation */}
+        <div className="my-6 flex flex-row gap-x-2">
+          <div className="rounded-md flex items-center h-6 px-2 text-xs font-semibold leading-4 uppercase tracking-[.12px] bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white">
+            Resumes
+          </div>
+          <div className={`rounded-md flex items-center h-6 px-2 text-xs font-semibold leading-4 uppercase tracking-[.12px] transition-colors duration-300 ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+            Cover Letters
+          </div>
+        </div>
+
+        {/* Right Side Controls */}
+        <div className="my-5 flex flex-row items-center gap-4">
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-100 text-gray-600'} hover:opacity-80 transition-all duration-300`}
+            aria-label="Toggle theme"
+          >
+            {isDarkMode ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
             )}
-          </motion.div>
+          </button>
 
-          {/* Footer */}
-          <motion.div variants={itemVariants} className="border-t border-corporate-gold-200/50 p-6 bg-corporate-navy-50">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-corporate-navy-600">
-              <p>Showing {filteredItems.length} of {currentData.length} {activeTab === 'resumes' ? 'resumes' : 'cover letters'}</p>
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm">
-                  <Filter className="w-4 h-4 mr-2" />
-                  More Filters
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Export All
-                </Button>
+          {/* Profile Icon */}
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-corporate-gold-600 font-semibold text-white">
+            A
+          </div>
+          <i className={`fas fa-caret-down ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} transition-colors duration-300`} aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div className="pt-4">
+        {/* Controls Section */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            {/* Sort Dropdown */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className={`${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-700'} border rounded-lg px-3 py-2 text-sm font-medium cursor-pointer transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500`}
+              >
+                <option value="updated">UPDATED</option>
+                <option value="created">CREATED</option>
+                <option value="name">NAME</option>
+              </select>
+            </div>
+          </div>
+
+          {/* View Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg ${viewMode === 'grid' ? (isDarkMode ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-700') : (isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')} transition-all duration-300 hover:opacity-80`}
+              aria-label="Grid view"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg ${viewMode === 'list' ? (isDarkMode ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-700') : (isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')} transition-all duration-300 hover:opacity-80`}
+              aria-label="List view"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Resume Cards Row */}
+        <div className="flex flex-row gap-6">
+          {/* Resume Card 1 */}
+          <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+            <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+              <div className="text-[7px] font-semibold">Charles Bloomberg</div>
+              <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
+              <div className="w-full border-b border-slate-200"></div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Summary</div>
+              <div className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">The Bachelor of Digital Media student with experience in Surveying and Web Designing, skilled at social media and presentation with peak interest in creating digital products and services to address pain points.</div>
+              <div className="w-full border-b border-slate-200"></div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Experience</div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Led the Pass team on shifts with up to 390 covers and trained staff new to the industry from different cultural backgrounds and skills.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied Agile methodologies to gather feedback, iterate and improve systems and productivity.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Managed multiple, conflicting priorities in a high-pressure, fast-paced environment.</span></li>
+                </ul>
+              </div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Intern (Creative) | Company B | New York, NY | June 2019 - June 2020</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Analyzed briefs across 4 client accounts and conducted in-depth customer, product, and client research to identify insights.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Wrote copy for over 100 social media posts and co-created 3 client presentation decks.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Created all copy for 2 client pitches, including scripts and storyboards for filmed advertising.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Delivered results within tight deadlines while working both independently and as part of a team.</span></li>
+                </ul>
+              </div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Intern (Content) | Company C | New York, NY | June 2018 - June 2019</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted over 15 interviews for Sydney Homeless Connect social media and marketing.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Interviewed service clients, service providers, and organizers and delivered 4 written pieces for publication.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied detailed editorial feedback to tailor the pieces for the intended audience.</span></li>
+                </ul>
+              </div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Projects</div>
+              <div>
+                <div className="text-left text-[6px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Designed a website to empower Australians to identify transferable skillsets and upskill for jobs of the future.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted 2 surveys and more than 10 interviews across the general public and industry.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Undertook research into public sentiment before, during, and post-Covid lockdown, government initiatives, projected growth industries, and environmental considerations.</span></li>
+                </ul>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+            <div className="absolute bottom-0 left-0 z-10 w-full">
+              <div className={`relative flex min-h-[3.5rem] flex-row items-center justify-between rounded-lg rounded-t-none ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} py-0 transition-colors duration-300`}>
+                <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
+                  <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-base font-semibold leading-6 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>Junior QA Engineer</div>
+                </div>
+                <div className={`flex h-12 min-w-12 items-center justify-center text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+                  <i className="fas fa-ellipsis-vertical" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
 
+          {/* Resume Card 2 */}
+          <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+            <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+              <div className="text-[7px] font-semibold">Charles Bloomberg</div>
+              <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
+              <div className="w-full border-b border-slate-200"></div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Summary</div>
+              <div className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">The Bachelor of Digital Media student with experience in Surveying and Web Designing, skilled at social media and presentation with peak interest in creating digital products and services to address pain points.</div>
+              <div className="w-full border-b border-slate-200"></div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Experience</div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Led the Pass team on shifts with up to 390 covers and trained staff new to the industry from different cultural backgrounds and skills.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied Agile methodologies to gather feedback, iterate and improve systems and productivity.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Managed multiple, conflicting priorities in a high-pressure, fast-paced environment.</span></li>
+                </ul>
+              </div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Intern (Creative) | Company B | New York, NY | June 2019 - June 2020</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Analyzed briefs across 4 client accounts and conducted in-depth customer, product, and client research to identify insights.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Wrote copy for over 100 social media posts and co-created 3 client presentation decks.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Created all copy for 2 client pitches, including scripts and storyboards for filmed advertising.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Delivered results within tight deadlines while working both independently and as part of a team.</span></li>
+                </ul>
+              </div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Intern (Content) | Company C | New York, NY | June 2018 - June 2019</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted over 15 interviews for Sydney Homeless Connect social media and marketing.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Interviewed service clients, service providers, and organizers and delivered 4 written pieces for publication.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied detailed editorial feedback to tailor the pieces for the intended audience.</span></li>
+                </ul>
+              </div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Projects</div>
+              <div>
+                <div className="text-left text-[6px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Designed a website to empower Australians to identify transferable skillsets and upskill for jobs of the future.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted 2 surveys and more than 10 interviews across the general public and industry.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Undertook research into public sentiment before, during, and post-Covid lockdown, government initiatives, projected growth industries, and environmental considerations.</span></li>
+                </ul>
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 z-10 w-full">
+              <div className={`relative flex min-h-[3.5rem] flex-row items-center justify-between rounded-lg rounded-t-none ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} py-0 transition-colors duration-300`}>
+                <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
+                  <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-base font-semibold leading-6 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>Mechanical Engineer Student</div>
+                </div>
+                <div className={`flex h-12 min-w-12 items-center justify-center text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+                  <i className="fas fa-ellipsis-vertical" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Resume Card 3 */}
+          <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+            <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+              <div className="text-[7px] font-semibold">Charles Bloomberg</div>
+              <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
+              <div className="w-full border-b border-slate-200"></div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Summary</div>
+              <div className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">The Bachelor of Digital Media student with experience in Surveying and Web Designing, skilled at social media and presentation with peak interest in creating digital products and services to address pain points.</div>
+              <div className="w-full border-b border-slate-200"></div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Experience</div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Led the Pass team on shifts with up to 390 covers and trained staff new to the industry from different cultural backgrounds and skills.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied Agile methodologies to gather feedback, iterate and improve systems and productivity.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Managed multiple, conflicting priorities in a high-pressure, fast-paced environment.</span></li>
+                </ul>
+              </div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Intern (Creative) | Company B | New York, NY | June 2019 - June 2020</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Analyzed briefs across 4 client accounts and conducted in-depth customer, product, and client research to identify insights.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Wrote copy for over 100 social media posts and co-created 3 client presentation decks.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Created all copy for 2 client pitches, including scripts and storyboards for filmed advertising.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Delivered results within tight deadlines while working both independently and as part of a team.</span></li>
+                </ul>
+              </div>
+              <div>
+                <div className="text-left text-[4px] font-semibold">Intern (Content) | Company C | New York, NY | June 2018 - June 2019</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted over 15 interviews for Sydney Homeless Connect social media and marketing.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Interviewed service clients, service providers, and organizers and delivered 4 written pieces for publication.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied detailed editorial feedback to tailor the pieces for the intended audience.</span></li>
+                </ul>
+              </div>
+              <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Projects</div>
+              <div>
+                <div className="text-left text-[6px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Designed a website to empower Australians to identify transferable skillsets and upskill for jobs of the future.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted 2 surveys and more than 10 interviews across the general public and industry.</span></li>
+                  <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Undertook research into public sentiment before, during, and post-Covid lockdown, government initiatives, projected growth industries, and environmental considerations.</span></li>
+                </ul>
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 z-10 w-full">
+              <div className={`relative flex min-h-[3.5rem] flex-row items-center justify-between rounded-lg rounded-t-none ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} py-0 transition-colors duration-300`}>
+                <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
+                  <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-base font-semibold leading-6 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>Rezi Resume</div>
+                </div>
+                <div className={`flex h-12 min-w-12 items-center justify-center text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+                  <i className="fas fa-ellipsis-vertical" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Keep Section - Collapsible */}
+        <div className="py-7 text-left text-xs font-bold uppercase">
+          <button 
+            onClick={() => setKeepExpanded(!keepExpanded)}
+            className={`flex items-center ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} transition-colors duration-300`}
+          >
+            <i className={`fas ${keepExpanded ? 'fa-caret-down' : 'fa-caret-right'} pr-2.5 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} transition-colors duration-300`} aria-hidden="true"></i>
+            <span>Keep</span>
+          </button>
+        </div>
+
+        {keepExpanded && (
+          <div className="flex flex-row gap-6">
+            {/* Keep Resume Card 1 */}
+            <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+              <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+                <div className="text-[7px] font-semibold">Charles Bloomberg</div>
+                <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
+                <div className="w-full border-b border-slate-200"></div>
+                <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Summary</div>
+                <div className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">The Bachelor of Digital Media student with experience in Surveying and Web Designing, skilled at social media and presentation with peak interest in creating digital products and services to address pain points.</div>
+                <div className="w-full border-b border-slate-200"></div>
+                <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Experience</div>
+                <div>
+                  <div className="text-left text-[4px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                  <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Led the Pass team on shifts with up to 390 covers and trained staff new to the industry from different cultural backgrounds and skills.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied Agile methodologies to gather feedback, iterate and improve systems and productivity.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Managed multiple, conflicting priorities in a high-pressure, fast-paced environment.</span></li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="text-left text-[4px] font-semibold">Intern (Creative) | Company B | New York, NY | June 2019 - June 2020</div>
+                  <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Analyzed briefs across 4 client accounts and conducted in-depth customer, product, and client research to identify insights.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Wrote copy for over 100 social media posts and co-created 3 client presentation decks.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Created all copy for 2 client pitches, including scripts and storyboards for filmed advertising.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Delivered results within tight deadlines while working both independently and as part of a team.</span></li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="text-left text-[4px] font-semibold">Intern (Content) | Company C | New York, NY | June 2018 - June 2019</div>
+                  <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted over 15 interviews for Sydney Homeless Connect social media and marketing.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Interviewed service clients, service providers, and organizers and delivered 4 written pieces for publication.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied detailed editorial feedback to tailor the pieces for the intended audience.</span></li>
+                  </ul>
+                </div>
+                <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Projects</div>
+                <div>
+                  <div className="text-left text-[6px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                  <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Designed a website to empower Australians to identify transferable skillsets and upskill for jobs of the future.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted 2 surveys and more than 10 interviews across the general public and industry.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Undertook research into public sentiment before, during, and post-Covid lockdown, government initiatives, projected growth industries, and environmental considerations.</span></li>
+                  </ul>
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 z-10 w-full">
+                <div className={`relative flex min-h-[3.5rem] flex-row items-center justify-between rounded-lg rounded-t-none ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} py-0 transition-colors duration-300`}>
+                  <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
+                    <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-base font-semibold leading-6 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>AI CTO</div>
+                  </div>
+                  <div className={`flex h-12 min-w-12 items-center justify-center text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+                    <i className="fas fa-ellipsis-vertical" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Keep Resume Card 2 */}
+            <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+              <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+                <div className="text-[7px] font-semibold">Charles Bloomberg</div>
+                <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
+                <div className="w-full border-b border-slate-200"></div>
+                <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Summary</div>
+                <div className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">The Bachelor of Digital Media student with experience in Surveying and Web Designing, skilled at social media and presentation with peak interest in creating digital products and services to address pain points.</div>
+                <div className="w-full border-b border-slate-200"></div>
+                <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Experience</div>
+                <div>
+                  <div className="text-left text-[4px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                  <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Led the Pass team on shifts with up to 390 covers and trained staff new to the industry from different cultural backgrounds and skills.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied Agile methodologies to gather feedback, iterate and improve systems and productivity.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Managed multiple, conflicting priorities in a high-pressure, fast-paced environment.</span></li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="text-left text-[4px] font-semibold">Intern (Creative) | Company B | New York, NY | June 2019 - June 2020</div>
+                  <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Analyzed briefs across 4 client accounts and conducted in-depth customer, product, and client research to identify insights.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Wrote copy for over 100 social media posts and co-created 3 client presentation decks.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Created all copy for 2 client pitches, including scripts and storyboards for filmed advertising.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Delivered results within tight deadlines while working both independently and as part of a team.</span></li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="text-left text-[4px] font-semibold">Intern (Content) | Company C | New York, NY | June 2018 - June 2019</div>
+                  <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted over 15 interviews for Sydney Homeless Connect social media and marketing.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Interviewed service clients, service providers, and organizers and delivered 4 written pieces for publication.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Applied detailed editorial feedback to tailor the pieces for the intended audience.</span></li>
+                  </ul>
+                </div>
+                <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Projects</div>
+                <div>
+                  <div className="text-left text-[6px] font-semibold">Expeditor | Company A | New York, NY | June 2020 - Present</div>
+                  <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Designed a website to empower Australians to identify transferable skillsets and upskill for jobs of the future.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted 2 surveys and more than 10 interviews across the general public and industry.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Undertaken research into public sentiment before, during, and post-Covid lockdown, government initiatives, projected growth industries, and environmental considerations.</span></li>
+                  </ul>
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 z-10 w-full">
+                <div className={`relative flex min-h-[3.5rem] flex-row items-center justify-between rounded-lg rounded-t-none ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} py-0 transition-colors duration-300`}>
+                  <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
+                    <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-base font-semibold leading-6 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>Director of Content Marketing</div>
+                  </div>
+                  <div className={`flex h-12 min-w-12 items-center justify-center text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+                    <i className="fas fa-ellipsis-vertical" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Section Button */}
+        <div className="py-7 text-left text-xs font-bold uppercase">
+          <button className={`flex items-center ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} transition-colors duration-300`}>
+            <i className={`fad fa-plus-circle pr-2.5 text-xs font-bold uppercase ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} transition-colors duration-300`} aria-hidden="true"></i>
+            <span>Add section</span>
+          </button>
+        </div>
+      </div>
+    </main>
+        </div>
       </div>
     </section>
   );

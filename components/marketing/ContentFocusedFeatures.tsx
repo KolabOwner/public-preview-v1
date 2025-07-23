@@ -34,7 +34,7 @@ const features = [
       'Real-time optimization suggestions',
       'Industry-specific keyword database',
     ],
-    image: '/images/feature-ats.png',
+    image: '/images/features/feature-ats.png',
   },
   {
     title: 'Real-Time Content Analysis',
@@ -45,7 +45,7 @@ const features = [
       'Action verb enhancement',
       'Achievement quantification suggestions',
     ],
-    image: '/images/feature-analysis.png',
+    image: '/images/features/feature-analysis.png',
   },
   {
     title: 'The Kolab Score',
@@ -56,7 +56,7 @@ const features = [
       'Industry benchmark comparison',
       'Personalized improvement roadmap',
     ],
-    image: '/images/feature-score.png',
+    image: '/images/features/feature-score.png',
   },
 ];
 

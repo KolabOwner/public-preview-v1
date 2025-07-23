@@ -22,87 +22,87 @@ const path = require('path');
 // Comprehensive resume data that follows the application's data structure
 const STANDARD_RESUME_DATA = {
   contact: {
-    fullName: "Alexandra Johnson",
-    firstName: "Alexandra",
-    lastName: "Johnson",
-    email: "alexandra.johnson@email.com",
-    phone: "(555) 123-4567",
-    city: "San Francisco",
-    state: "CA",
+    fullName: "Alex Chen",
+    firstName: "Alex",
+    lastName: "Chen",
+    email: "alex.chen@email.com",
+    phone: "(555) 987-6543",
+    city: "Austin",
+    state: "TX",
     country: "United States",
-    linkedin: "linkedin.com/in/alexandra-johnson"
+    linkedin: "linkedin.com/in/alex-chen-cfo"
   },
 
-  summary: "Results-driven Software Engineer with 5+ years of experience developing scalable web applications and leading cross-functional teams. Proven track record of delivering high-quality software solutions that improve user experience and business efficiency. Passionate about clean code, agile methodologies, and mentoring junior developers.",
+  summary: "Accomplished Chief Financial Officer with 8+ years of progressive finance leadership experience driving strategic growth, operational excellence, and shareholder value creation. Former corporate finance manager who built expertise across financial planning, investor relations, and organizational transformation. Proven track record of leading companies through scaling challenges, fundraising processes, and complex business transitions while maintaining strong financial controls and governance.",
 
   experiences: [
     {
       id: "exp1",
-      position: "Senior Software Engineer",
-      company: "TechFlow Solutions",
-      location: "San Francisco, CA",
-      dateBegin: "2022-03-01",
+      position: "Chief Financial Officer",
+      company: "GreenTech Solutions",
+      location: "Austin, TX",
+      dateBegin: "2021-11-01",
       dateEnd: "Present",
-      description: "Lead development of microservices architecture serving 2+ million daily active users, ensuring 99.9% uptime and optimal performance across distributed systems. • Architected and implemented RESTful APIs using Node.js and Express framework, resulting in 40% reduction in average response times and improved overall system efficiency. • Mentored and supervised a team of 4 junior developers through comprehensive code reviews, pair programming sessions, and technical guidance, leading to 60% improvement in code quality metrics and development velocity. • Designed and implemented automated CI/CD pipelines using Jenkins and Docker, reducing deployment time from 2 hours to 15 minutes while maintaining zero-downtime deployments."
+      description: "Lead all financial operations for $50M revenue clean energy company, overseeing accounting, FP&A, treasury, and investor relations while driving strategic initiatives that doubled company valuation to $200M. • Successfully raised $25M Series B funding round by developing comprehensive financial models, investor presentations, and due diligence materials, enabling aggressive expansion into 5 new markets. • Implemented advanced financial planning and budgeting processes that improved forecast accuracy by 40% and reduced month-end close time from 15 days to 5 days. • Led acquisition integration of two competitor companies totaling $12M, managing due diligence, deal structuring, and post-merger financial consolidation that achieved 95% of projected synergies. • Built finance team from 3 to 12 professionals, establishing scalable processes and systems that supported 150% revenue growth while maintaining operating margins above 20%. • Developed board reporting and governance frameworks, presenting quarterly financial results to board of directors and key investors while ensuring SOX compliance and audit readiness."
     },
     {
       id: "exp2", 
-      position: "Software Engineer",
-      company: "InnovateX Corp",
-      location: "Palo Alto, CA",
-      dateBegin: "2020-06-01",
-      dateEnd: "2022-02-28",
-      description: "Developed and maintained enterprise-scale React-based web applications using TypeScript and Redux for state management, serving over 500,000 monthly active users across multiple business verticals. • Built responsive and accessible user interfaces following modern design principles and WCAG guidelines, ensuring optimal user experience across desktop, tablet, and mobile platforms. • Implemented comprehensive automated testing suites using Jest for unit testing and Cypress for end-to-end testing, achieving 95% code coverage and reducing production bugs by 70%. • Optimized application performance through code splitting, lazy loading, and efficient state management patterns, resulting in 35% reduction in initial page load times and improved Core Web Vitals scores. • Participated in architecture decisions and technical planning sessions, contributing to the migration from legacy jQuery codebase to modern React ecosystem while maintaining feature parity and user experience."
+      position: "Finance Director",
+      company: "Austin Manufacturing Corp",
+      location: "Austin, TX",
+      dateBegin: "2019-06-01",
+      dateEnd: "2021-10-31",
+      description: "Managed financial planning, analysis, and reporting for $200M industrial manufacturing company, leading strategic initiatives that improved EBITDA margins by 5% and reduced working capital by $8M. • Developed comprehensive 3-year strategic plan and annual budgets, working closely with operations leadership to identify growth opportunities and cost optimization initiatives. • Led implementation of new ERP system (SAP) across 4 manufacturing facilities, managing $2M project budget and ensuring seamless transition that improved financial reporting accuracy and operational visibility. • Restructured debt portfolio and banking relationships, negotiating new $15M credit facility with improved terms that reduced interest expenses by $400K annually. • Established cost accounting and profitability analysis frameworks that identified unprofitable product lines, leading to strategic decisions that improved overall margins by 8%. • Managed team of 8 finance professionals across accounting, FP&A, and treasury functions, implementing performance management systems that reduced staff turnover by 30%."
     },
     {
       id: "exp3",
-      position: "Junior Software Developer",
-      company: "StartupHub Technologies",
-      location: "Mountain View, CA", 
-      dateBegin: "2019-01-01",
-      dateEnd: "2020-05-31",
-      description: "Contributed to full-stack web application development using the MEAN stack (MongoDB, Express.js, Angular, Node.js), working on both client-side and server-side implementations for startup clients. • Developed and maintained RESTful APIs and designed efficient database schemas for user authentication, data management, and business logic systems, supporting applications with 10,000+ registered users. • Actively participated in agile development processes including daily standups, sprint planning, retrospectives, and story estimation sessions, contributing to consistent delivery of features within planned timelines. • Assisted in deployment and monitoring of applications using AWS services including EC2, S3, and RDS, while implementing basic DevOps practices such as environment configuration and application logging. • Collaborated with senior developers on code reviews and best practices implementation, gaining experience in Git workflows, testing methodologies, and software design patterns while contributing to codebase documentation and knowledge sharing initiatives."
+      position: "Corporate Finance Manager",
+      company: "Regional Investment Bank",
+      location: "Dallas, TX", 
+      dateBegin: "2017-03-01",
+      dateEnd: "2019-05-31",
+      description: "Performed financial analysis and strategic advisory services for middle-market clients while developing expertise in M&A transactions, capital raising, and financial restructuring. • Executed 15+ M&A transactions totaling $300M+ in deal value, managing financial due diligence, valuation analysis, and deal structuring for both buy-side and sell-side engagements. • Prepared detailed financial models and investment memoranda for private equity and strategic acquirers, achieving successful transaction completion rate of 85% above industry average. • Led capital raising initiatives for client companies, including debt refinancing and equity investments ranging from $5M to $50M, helping clients optimize capital structure and reduce cost of capital. • Conducted comprehensive financial and operational assessments for distressed companies, developing turnaround strategies that restored profitability for 80% of engagements. • Built strong relationships with institutional investors, lenders, and strategic partners, creating valuable network that supported successful deal execution and client value creation."
     }
   ],
 
   education: [
     {
       id: "edu1",
-      qualification: "Bachelor of Science",
-      fieldOfStudy: "Computer Science",
-      institution: "University of California, Berkeley",
-      location: "Berkeley, CA",
-      date: "2018-05-01",
+      qualification: "Master of Business Administration",
+      fieldOfStudy: "Finance",
+      institution: "University of Texas at Austin",
+      location: "Austin, TX",
+      date: "2016-12-01",
       dateFormat: "YYYY",
-      gpa: "3.8/4.0"
+      gpa: "3.9/4.0"
     }
   ],
 
   skills: [
     {
       id: "skill1",
-      category: "Programming Languages",
-      keywords: "JavaScript, TypeScript, Python, Java, C++, SQL"
+      category: "Financial Leadership",
+      keywords: "Strategic Planning, Financial Modeling, Investor Relations, Board Reporting, Fundraising"
     },
     {
       id: "skill2", 
-      category: "Frontend Technologies",
-      keywords: "React, Vue.js, Angular, HTML5, CSS3, Sass, Redux, Material-UI"
+      category: "Corporate Finance",
+      keywords: "M&A, Capital Structure, Debt & Equity Financing, Valuation, Due Diligence"
     },
     {
       id: "skill3",
-      category: "Backend & Database",
-      keywords: "Node.js, Express, Django, PostgreSQL, MongoDB, Redis, GraphQL"
+      category: "Operations & Systems",
+      keywords: "ERP Implementation, Financial Controls, SOX Compliance, Process Optimization"
     },
     {
       id: "skill4",
-      category: "DevOps & Tools",
-      keywords: "AWS, Docker, Kubernetes, Jenkins, Git, Webpack, Jira, Figma"
+      category: "Team Leadership",
+      keywords: "Organizational Development, Performance Management, Change Management, Talent Acquisition"
     },
     {
       id: "skill5",
-      category: "Methodologies",
-      keywords: "Agile, Scrum, Test-Driven Development, CI/CD, Code Reviews"
+      category: "Technical Skills",
+      keywords: "Advanced Excel, SAP, QuickBooks, Tableau, Financial Reporting, GAAP"
     }
   ],
 
@@ -593,7 +593,7 @@ async function generateResumeTemplate() {
     });
     
     // Save PNG
-    const pngPath = path.join(__dirname, 'StandardTemplate.png');
+    const pngPath = path.join(__dirname, 'business-4.png');
     await fs.writeFile(pngPath, screenshotBuffer);
     console.log(`✅ PNG saved to: ${pngPath}`);
     

@@ -40,11 +40,11 @@ export interface TemplateGallerySidebarProps {
 // Template image mapping
 const TEMPLATE_IMAGES: Record<string, string> = {
   modern: "/images/templates/ModernTemplate.png",
-  professional: "/images/templates/StandardTemplate.png",
+  professional: "/images/templates/creative-1.png",
   creative: "/images/templates/BoldTemplate.png",
   minimal: "/images/templates/CompactTemplate.png",
   executive: "/images/templates/AlternativeTemplate.png",
-  academic: "/images/templates/StandardTemplate.png",
+  academic: "/images/templates/creative-1.png",
   technical: "/images/templates/ModernTemplate.png",
   bold: "/images/templates/BoldTemplate.png"
 };
@@ -134,7 +134,7 @@ const TemplateCard = memo<{
           >
             <div className="relative h-[400px] w-full">
               <Image
-                src={TEMPLATE_IMAGES[template.id] || "/images/templates/StandardTemplate.png"}
+                src={TEMPLATE_IMAGES[template.id] || "/images/templates/creative-1.png"}
                 alt={`${template.name} Template Preview`}
                 fill
                 className="object-contain object-top transition-transform duration-300 group-hover:scale-105"
