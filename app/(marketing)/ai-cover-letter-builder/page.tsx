@@ -295,7 +295,7 @@ export default function AICoverLetterBuilderPage() {
               </h3>
               <p className="text-lg text-gray-600 mb-6">
                 Create a job-winning cover letter online that reads well and looks beautifully simple. 
-                Your cover letter's design is automatically formatted into an optimized layout that meets industry standards.
+                Your cover letter&apos;s design is automatically formatted into an optimized layout that meets industry standards.
               </p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
