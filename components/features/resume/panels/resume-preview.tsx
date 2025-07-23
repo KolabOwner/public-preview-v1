@@ -329,7 +329,7 @@ export default function ResumePreview({
   // Early return if no data
   if (!resumeData) {
     return (
-      <div className={`w-full max-w-4xl mx-auto p-8 ${className}`}>
+      <div className={`w-full max-w-4xl xl:max-w-5xl mx-auto p-8 ${className}`}>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div>
@@ -887,13 +887,13 @@ export default function ResumePreview({
         className="p-4 lg:p-8 rounded-xl"
         style={{
           backgroundColor: theme.background,
-          minHeight: `calc(${paperDimensions.height}px * ${Math.min(documentSettings.zoom / 100, 1)} + 4rem)`
+          minHeight: `calc(${paperDimensions.height}px * ${documentSettings.zoom / 100} + 4rem)`
         }}
       >
         <div
           className="shadow-2xl overflow-hidden max-w-full bg-white"
           style={{
-            transform: `scale(${Math.min(documentSettings.zoom / 100, 1)})`,
+            transform: `scale(${documentSettings.zoom / 100})`,
             transformOrigin: 'top center',
             width: `${paperDimensions.width}px`,
             height: `${paperDimensions.height}px`,
@@ -958,13 +958,13 @@ export default function ResumePreview({
             className={`p-4 lg:p-8 rounded-xl transition-all duration-300 ${isReady ? 'opacity-100' : 'opacity-75'}`}
             style={{
               backgroundColor: theme.background,
-              minHeight: `calc(${paperDimensions.height}px * ${Math.min(documentSettings.zoom / 100, 1)} + 4rem)`
+              minHeight: `calc(${paperDimensions.height}px * ${documentSettings.zoom / 100} + 4rem)`
             }}
           >
             <div
               className="shadow-2xl overflow-hidden transition-all duration-300 max-w-full"
               style={{
-                transform: `scale(${Math.min(documentSettings.zoom / 100, 1)})`,
+                transform: `scale(${documentSettings.zoom / 100})`,
                 transformOrigin: 'top center',
                 width: `${paperDimensions.width}px`,
                 height: `${paperDimensions.height}px`,
@@ -1030,7 +1030,7 @@ export default function ResumePreview({
           <div className="flex-1 min-w-0">
             {resumePreviewContent}
           </div>
-          <div className="w-full lg:w-72 lg:flex-shrink-0">
+          <div className="w-full lg:w-64 lg:flex-shrink-0">
             <div className="space-y-6">
               <ATSScorePanel
                 resumeData={resumeData}
@@ -1049,5 +1049,5 @@ export default function ResumePreview({
     );
   }
 
-  return <div className={`w-full max-w-4xl mx-auto ${className}`}>{resumePreviewContent}</div>;
+  return <div className={`w-full max-w-4xl xl:max-w-5xl mx-auto ${className}`}>{resumePreviewContent}</div>;
 }
