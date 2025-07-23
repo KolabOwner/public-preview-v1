@@ -125,7 +125,7 @@ export default function AboutPage() {
               </span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              I'm solving the career
+              I&apos;m solving the career
               <span className="text-blue-600 block">advancement problem.</span>
             </h1>
             <div className="space-y-6 text-lg text-gray-600 mb-8">
@@ -136,7 +136,7 @@ export default function AboutPage() {
                 strategically.
               </p>
               <p>
-                As a developer and entrepreneur, I realized that most job seekers aren't equipped with the right tools 
+                As a developer and entrepreneur, I realized that most job seekers aren&apos;t equipped with the right tools 
                 to create compelling, ATS-optimized resumes. The traditional approach was broken—generic templates, 
                 outdated advice, and no understanding of how modern hiring systems actually work.
               </p>
@@ -173,7 +173,7 @@ export default function AboutPage() {
                   out qualified candidates.
                 </p>
                 <p>
-                  This research became the foundation for Kolab AI. I didn't just want to create another 
+                  This research became the foundation for Kolab AI. I didn&apos;t just want to create another 
                   resume builder—I wanted to build an intelligent system that understands modern hiring 
                   practices and gives every job seeker a fighting chance.
                 </p>
@@ -258,7 +258,7 @@ export default function AboutPage() {
                 the world.
               </p>
               <p className="text-lg text-blue-100">
-                Through Kolab AI, I'm building that future—one where artificial intelligence serves as 
+                Through Kolab AI, I&apos;m building that future—one where artificial intelligence serves as 
                 a career coach, resume optimizer, and strategic advisor for everyone, regardless of their 
                 background or budget.
               </p>
@@ -292,7 +292,7 @@ export default function AboutPage() {
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Continuous Learning</h3>
               <p className="text-gray-600 mb-4">
-                I'm constantly studying hiring trends, AI advancements, and user behavior to ensure 
+                I&apos;m constantly studying hiring trends, AI advancements, and user behavior to ensure 
                 Kolab AI stays at the forefront of career technology.
               </p>
               <p className="text-gray-600">
@@ -312,7 +312,7 @@ export default function AboutPage() {
           </h2>
           <p className="text-xl text-blue-100 mb-8">
             Every user who finds success with Kolab AI validates this mission. Your career advancement 
-            is not just a business metric—it's the reason I built this platform.
+            is not just a business metric—it&apos;s the reason I built this platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors">

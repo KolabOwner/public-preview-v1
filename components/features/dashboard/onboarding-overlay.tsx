@@ -318,7 +318,7 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                   From Resume Sample
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  If it's the first time you're writing a resume, a sample is a good way to see best practices for inspiration
+                  If it&apos;s the first time you&apos;re writing a resume, a sample is a good way to see best practices for inspiration
                 </p>
               </div>
               <div
@@ -329,7 +329,7 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                   Import your resume
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  While we can't guarantee perfect results, we're constantly working to improve importing for a better user experience.
+                  While we can&apos;t guarantee perfect results, we&apos;re constantly working to improve importing for a better user experience.
                 </p>
               </div>
               <div
@@ -367,10 +367,10 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Let's get your information from your own resume
+                Let&apos;s get your information from your own resume
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Upload your existing resume and we'll help you improve it
+                Upload your existing resume and we&apos;ll help you improve it
               </p>
             </div>
             

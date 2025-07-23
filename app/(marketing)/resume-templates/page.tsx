@@ -132,7 +132,7 @@ export default function ResumeTemplatesPage() {
             <div>
               <div className="mb-4">
                 <span className="text-blue-600 font-semibold text-sm uppercase tracking-wide">
-                  You do you, a template won't get in the way
+                  You do you, a template won&apos;t get in the way
                 </span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">

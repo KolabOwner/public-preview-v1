@@ -34,9 +34,7 @@ import {
   Loader2,
   BarChart3,
   FileText,
-  Download,
-  Settings,
-  ChevronDown
+  Download
 } from 'lucide-react';
 
 import { Button } from '@/components/shared/button';
@@ -98,7 +96,7 @@ interface AccessibleProps {
 }
 
 // Left Side Hero Content Component
-const HeroContent = memo(({ onCTAClick }: { onCTAClick: () => void }) => {
+const HeroContent = memo(() => {
   return (
     <div className="flex flex-col justify-center h-full space-y-8" role="banner">
       <div className="space-y-6">
@@ -129,7 +127,6 @@ const HeroContent = memo(({ onCTAClick }: { onCTAClick: () => void }) => {
           <Button
             size="lg"
             className="group bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white px-8 py-6 rounded-2xl text-lg font-semibold font-corporate-sans shadow-xl hover:shadow-lg transition-all duration-250"
-            onClick={onCTAClick}
             aria-label="Create your resume for free"
           >
             <Sparkles className="w-6 h-6 mr-2" aria-hidden="true" />
@@ -695,7 +692,6 @@ LoadingSpinner.displayName = 'LoadingSpinner';
 // Main 3D Hero Section Component
 export default function HeroSection3D({
   seoProps = {},
-  onAnalyticsEvent = () => {},
   className = '',
   ...props
 }: {
@@ -781,15 +777,6 @@ const resumeData: ResumeData = {
       { category: 'Technical Skills', items: 'Agile/Scrum, API Integration, Mobile App Development, Web Development, Data Analysis, User Experience Design' },
       { category: 'Leadership & Communication', items: 'Cross-functional Team Leadership, Stakeholder Management, Executive Presentations, Strategic Planning, Project Management' }
     ]
-  };
-
-  // Event handlers with analytics
-  const handleCTAClick = () => {
-    onAnalyticsEvent({
-      action: 'click',
-      category: 'CTA',
-      label: 'Create Resume Free',
-    });
   };
 
   // Enhanced useEffect with error handling
@@ -878,7 +865,7 @@ const resumeData: ResumeData = {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center min-h-[500px] lg:min-h-[600px]">
           {/* Left Side - Hero Content */}
           <div className="order-2 lg:order-1">
-            <HeroContent onCTAClick={handleCTAClick} />
+            <HeroContent />
           </div>
 
           {/* Right Side - 3D Resume Showcase */}

@@ -337,7 +337,7 @@ export default function ResumeBulletPointGenerator() {
                 <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-semibold text-gray-900">Use action verbs</h4>
-                  <p className="text-gray-600">Start with strong verbs like "managed," "developed," "increased"</p>
+                  <p className="text-gray-600">Start with strong verbs like &quot;managed,&quot; &quot;developed,&quot; &quot;increased&quot;</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

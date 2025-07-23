@@ -115,7 +115,7 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
       {!currentResumeId && !resumeId && (
         <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
           <p className="text-sm text-yellow-800 dark:text-yellow-200">
-            No resume selected. Please ensure you're on a resume page to analyze job keywords.
+            No resume selected. Please ensure you&apos;re on a resume page to analyze job keywords.
           </p>
         </div>
       )}

@@ -147,7 +147,7 @@ export default function LegalPage() {
                   <li>Use the materials for any commercial purpose or for any public display (commercial or non-commercial);</li>
                   <li>Attempt to decompile or reverse engineer any software contained on our website;</li>
                   <li>Remove any copyright or other proprietary notations from the materials; or</li>
-                  <li>Transfer the materials to another person or "mirror" the materials on any other server.</li>
+                  <li>Transfer the materials to another person or &quot;mirror&quot; the materials on any other server.</li>
                 </ul>
                 <p className="mt-4">
                   This license shall automatically terminate if you violate any of these restrictions and may be 
@@ -160,7 +160,7 @@ export default function LegalPage() {
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">3. Service Disclaimer</h3>
                 <p>
-                  The materials on our website are provided on an 'as is' basis. We make no warranties, expressed or 
+                  The materials on our website are provided on an &apos;as is&apos; basis. We make no warranties, expressed or 
                   implied, and hereby disclaim and negate all other warranties including, without limitation, implied 
                   warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement 
                   of intellectual property or other violation of rights.
@@ -199,7 +199,7 @@ export default function LegalPage() {
                 <p>
                   We have not reviewed all of the sites linked to our website and are not responsible for the contents 
                   of any such linked site. The inclusion of any link does not imply endorsement by us of the site. Use 
-                  of any such linked website is at the user's own risk.
+                  of any such linked website is at the user&apos;s own risk.
                 </p>
               </div>
 
@@ -247,7 +247,7 @@ export default function LegalPage() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Who We Are and What This Policy Covers</h3>
                 <p>
                   This Privacy Policy applies to information that Kolab AI collects about you when you use our website, 
-                  mobile applications, and related services (collectively, our "Services").
+                  mobile applications, and related services (collectively, our &quot;Services&quot;).
                 </p>
               </div>
 
@@ -337,7 +337,7 @@ export default function LegalPage() {
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Sharing Information</h3>
                 <p>
-                  We do not sell our users' private personal information. We share information about you in the limited 
+                  We do not sell our users&apos; private personal information. We share information about you in the limited 
                   circumstances spelled out below and with appropriate safeguards on your privacy:
                 </p>
                 <ul className="list-disc ml-6 mt-2 space-y-2">
@@ -404,7 +404,7 @@ export default function LegalPage() {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Children's Privacy</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Children&apos;s Privacy</h3>
                 <p>
                   Our Services are not directed to children under 13 years of age. We do not knowingly collect personal 
                   information from children under 13. If you are a parent or guardian and believe that your child has 
@@ -416,7 +416,7 @@ export default function LegalPage() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Changes to This Privacy Policy</h3>
                 <p>
                   We may update this Privacy Policy from time to time. We will notify you of any changes by posting 
-                  the new Privacy Policy on this page and updating the "Last Updated" date at the top of this Privacy Policy.
+                  the new Privacy Policy on this page and updating the &quot;Last Updated&quot; date at the top of this Privacy Policy.
                 </p>
               </div>
 

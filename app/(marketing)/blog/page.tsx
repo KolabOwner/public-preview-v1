@@ -315,7 +315,7 @@ export default function BlogPage() {
                 
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors">
                   <Link href="/posts/how-to-tell-your-boss-youre-quitting">
-                    How to Tell Your Boss You're Quitting & What to Say
+                    How to Tell Your Boss You&apos;re Quitting & What to Say
                   </Link>
                 </h3>
                 
@@ -423,7 +423,7 @@ export default function BlogPage() {
             Ready to Build Your Professional Resume?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Apply what you've learned from our blog and create a resume that gets results.
+            Apply what you&apos;ve learned from our blog and create a resume that gets results.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/ai-resume-builder" className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">

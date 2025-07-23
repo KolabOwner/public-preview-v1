@@ -124,11 +124,11 @@ export default function JobSearchPage() {
               <span className="text-blue-600 block">get hired fast</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Use Kolab's new job search tool. Find the right opportunity, create a perfect resume, track your application
+              Use Kolab&apos;s new job search tool. Find the right opportunity, create a perfect resume, track your application
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors">
-                Get Started—It's free
+                Get Started—It&apos;s free
               </button>
             </div>
           </div>
@@ -191,9 +191,9 @@ export default function JobSearchPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
-              This is not a job board. We've got over{' '}
+              This is not a job board. We&apos;ve got over{' '}
               <span className="text-blue-600">1.3M jobs</span> sourced directly from company websites—not those{' '}
-              <span className="text-red-600">"resume black holes"</span> like LinkedIn or Indeed
+              <span className="text-red-600">&quot;resume black holes&quot;</span> like LinkedIn or Indeed
             </h2>
           </div>
         </div>
@@ -207,7 +207,7 @@ export default function JobSearchPage() {
               Why Kolab Job Search is Different
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We've revolutionized job searching by connecting you directly with real opportunities from company websites.
+              We&apos;ve revolutionized job searching by connecting you directly with real opportunities from company websites.
             </p>
           </div>
 
@@ -404,7 +404,7 @@ export default function JobSearchPage() {
             Ready to Find Your Dream Job?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of job seekers who have found better opportunities with Kolab's job search tool.
+            Join thousands of job seekers who have found better opportunities with Kolab&apos;s job search tool.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors">

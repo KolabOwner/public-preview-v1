@@ -72,7 +72,7 @@ export default function AICoverLetterBuilderPage() {
           <div className="text-center mb-16">
             <span className="text-orange-600 font-semibold text-sm uppercase tracking-wide">How it works</span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
-              Here's how Kolab AI Cover Letter Writer works
+              Here&apos;s how Kolab AI Cover Letter Writer works
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Writing a tailored cover letter for each position is the biggest pain of the entire job searching process. 
@@ -103,8 +103,8 @@ export default function AICoverLetterBuilderPage() {
                 </label>
                 <div className="bg-gray-50 p-4 rounded border border-gray-200 h-32">
                   <p className="text-sm text-gray-600">
-                    "We are seeking a Senior Marketing Manager with experience in digital campaigns, 
-                    analytics, and team leadership..."
+                    &quot;We are seeking a Senior Marketing Manager with experience in digital campaigns, 
+                    analytics, and team leadership...&quot;
                   </p>
                 </div>
               </div>
@@ -225,7 +225,7 @@ export default function AICoverLetterBuilderPage() {
               </h3>
               <p className="text-lg text-gray-600 mb-6">
                 Need another opinion? No problem. You have multiple options with Kolab to ensure you get 
-                the review you need to build a cover letter that's top candidate material.
+                the review you need to build a cover letter that&apos;s top candidate material.
               </p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
@@ -385,8 +385,8 @@ export default function AICoverLetterBuilderPage() {
                 ))}
               </div>
               <p className="text-gray-700 mb-6 text-lg">
-                "Kolab AI is an awesome AI-based cover letter builder that includes templates to help you design 
-                a cover letter that is sure to check the boxes when it comes to applicant tracking systems."
+                &quot;Kolab AI is an awesome AI-based cover letter builder that includes templates to help you design 
+                a cover letter that is sure to check the boxes when it comes to applicant tracking systems.&quot;
               </p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
@@ -406,8 +406,8 @@ export default function AICoverLetterBuilderPage() {
                 ))}
               </div>
               <p className="text-gray-700 mb-6 text-lg">
-                "For some reason, I struggled a lot with choosing a format for my cover letter. With Kolab, 
-                I was able to simply input data, check out the preview, and know that it will be formatted correctly."
+                &quot;For some reason, I struggled a lot with choosing a format for my cover letter. With Kolab, 
+                I was able to simply input data, check out the preview, and know that it will be formatted correctly.&quot;
               </p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
@@ -432,7 +432,7 @@ export default function AICoverLetterBuilderPage() {
               Frequently Asked Questions (FAQs)
             </h2>
             <p className="text-lg text-gray-600">
-              Everything you need to know about using Kolab's AI Writer.
+              Everything you need to know about using Kolab&apos;s AI Writer.
             </p>
           </div>
 
@@ -453,7 +453,7 @@ export default function AICoverLetterBuilderPage() {
               </h3>
               <p className="text-gray-600">
                 Kolab uses advanced neural networks trained on successful cover letters and best practices. 
-                We've integrated this AI to transfer expert-quality cover letter writing at almost no cost.
+                We&apos;ve integrated this AI to transfer expert-quality cover letter writing at almost no cost.
               </p>
             </div>
 

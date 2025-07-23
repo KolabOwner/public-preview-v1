@@ -190,12 +190,12 @@ export default function EditorialProcessPage() {
                 evidence-based guidance.
               </p>
               <p>
-                As a solo founder, I'm committed to providing unbiased, practical career resources 
-                that help job seekers navigate today's competitive market. My AI-powered platform combines 
+                As a solo founder, I&apos;m committed to providing unbiased, practical career resources 
+                that help job seekers navigate today&apos;s competitive market. My AI-powered platform combines 
                 advanced technology with my direct experience to deliver personalized career solutions.
               </p>
               <p>
-                I don't just build tools—I create pathways to professional success. Every feature, every piece 
+                I don&apos;t just build tools—I create pathways to professional success. Every feature, every piece 
                 of content, and every recommendation is designed to give you a competitive edge in your career journey.
               </p>
             </div>
@@ -255,13 +255,13 @@ export default function EditorialProcessPage() {
             </h2>
             <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
               <p>
-                As a solo founder, I operate with complete editorial freedom. I'm not 
+                As a solo founder, I operate with complete editorial freedom. I&apos;m not 
                 influenced by corporate partnerships or advertising revenue—my sole focus is providing you 
                 with the most effective career advancement tools and strategies.
               </p>
               <p>
                 My content creation process begins with identifying genuine user needs through data analysis, 
-                feedback collection, and market research. I don't guess what job seekers want—I listen, 
+                feedback collection, and market research. I don&apos;t guess what job seekers want—I listen, 
                 analyze, and respond with precision.
               </p>
               <p>
@@ -332,7 +332,7 @@ export default function EditorialProcessPage() {
                   improvement cycle.
                 </p>
                 <p className="text-blue-100">
-                  Whether you're sharing a success story, suggesting new features, or providing feedback 
+                  Whether you&apos;re sharing a success story, suggesting new features, or providing feedback 
                   on my content, your input directly influences how I serve the job seeker community.
                 </p>
               </div>

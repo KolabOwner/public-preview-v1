@@ -136,9 +136,9 @@ export default function ResumeDocsPage() {
             </h1>
             <div className="max-w-4xl mx-auto">
               <p className="text-xl text-gray-600 mb-8">
-                Welcome to Kolab User Guides! Whether you're creating your first resume, optimizing your current one, 
-                or exploring advanced AI features, we've got you covered. Our comprehensive guides will help you navigate 
-                Kolab's tools effortlessly—from understanding your Kolab Score to maximizing your AI Credits. 
+                Welcome to Kolab User Guides! Whether you&apos;re creating your first resume, optimizing your current one, 
+                or exploring advanced AI features, we&apos;ve got you covered. Our comprehensive guides will help you navigate 
+                Kolab&apos;s tools effortlessly—from understanding your Kolab Score to maximizing your AI Credits. 
                 Unlock the full potential of our platform and create professional, ATS-optimized resumes with ease. 
                 Dive into the guides below to get started!
               </p>
@@ -243,10 +243,10 @@ export default function ResumeDocsPage() {
               <Book className="w-8 h-8 text-blue-600" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Can't Find What You're Looking For?
+              Can&apos;t Find What You&apos;re Looking For?
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Our support team is here to help you make the most of Kolab AI's features.
+              Our support team is here to help you make the most of Kolab AI&apos;s features.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/contact" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">

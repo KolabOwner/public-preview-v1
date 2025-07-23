@@ -344,7 +344,7 @@ export default function DashboardMockup({ mounted = false }: { mounted?: boolean
                   </h3>
                 </div>
               </div>
-              <span className="inline-block py-2 text-left text-[11px] leading-4 text-gray-400">Great work! You're ranking well for these keywords in the job description:</span>
+              <span className="inline-block py-2 text-left text-[11px] leading-4 text-gray-400">Great work! You&apos;re ranking well for these keywords in the job description:</span>
               <ul className="space-y-1">
                 {features.slice(0, 10).map((feature, index) => (
                   <li key={index} className="flex justify-between items-center py-0.5">

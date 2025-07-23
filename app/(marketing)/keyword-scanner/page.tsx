@@ -90,7 +90,7 @@ export default function KeywordScannerPage() {
                 <h3 className="text-2xl font-bold text-gray-900">Input Job Description</h3>
               </div>
               <p className="text-lg text-gray-600 mb-6">
-                Paste the job posting you're targeting. Our AI analyzes the requirements,
+                Paste the job posting you&apos;re targeting. Our AI analyzes the requirements,
                 skills, and keywords that matter most to recruiters and ATS systems.
               </p>
               <ul className="space-y-3">
@@ -115,10 +115,10 @@ export default function KeywordScannerPage() {
                 </label>
                 <div className="bg-gray-50 p-4 rounded border border-gray-200">
                   <p className="text-sm text-gray-600 leading-relaxed">
-                    "We are seeking a Senior Product Manager with experience in agile methodologies,
+                    &quot;We are seeking a Senior Product Manager with experience in agile methodologies,
                     data analytics, and stakeholder management. The ideal candidate will have 5+ years
                     of experience in SaaS products, strong SQL skills, and proven track record of
-                    launching successful features..."
+                    launching successful features...&quot;
                   </p>
                 </div>
               </div>
@@ -180,7 +180,7 @@ export default function KeywordScannerPage() {
                 <h3 className="text-2xl font-bold text-gray-900">Get Optimization Insights</h3>
               </div>
               <p className="text-lg text-gray-600 mb-6">
-                Receive a detailed analysis showing which keywords you're missing and where
+                Receive a detailed analysis showing which keywords you&apos;re missing and where
                 to add them. Our scanner provides actionable recommendations to improve your match rate.
               </p>
               <ul className="space-y-3">
@@ -293,9 +293,9 @@ export default function KeywordScannerPage() {
             </div>
             <blockquote className="text-center">
               <p className="text-2xl font-semibold text-gray-900 mb-8">
-                "The keyword scanner was eye-opening. I realized I was missing critical terms
+                &quot;The keyword scanner was eye-opening. I realized I was missing critical terms
                 that recruiters were looking for. After optimization, I went from zero responses
-                to 5 interviews in two weeks."
+                to 5 interviews in two weeks.&quot;
               </p>
               <footer>
                 <div className="font-semibold text-gray-900 mb-1">David Thompson</div>
@@ -374,11 +374,11 @@ export default function KeywordScannerPage() {
             Stop Getting Filtered Out by ATS Systems
           </h2>
           <p className="text-xl text-green-100 mb-8">
-            Join thousands of job seekers who've improved their response rates with our scanner.
+            Join thousands of job seekers who&apos;ve improved their response rates with our scanner.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-              Scan Resume Now - It's Free
+              Scan Resume Now - It&apos;s Free
             </button>
             <button className="bg-transparent text-white px-8 py-4 rounded-lg font-semibold text-lg border border-white hover:bg-white hover:text-green-600 transition-colors">
               Learn More
