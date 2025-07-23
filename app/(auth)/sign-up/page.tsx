@@ -42,7 +42,7 @@ import { AccessibleFormField, LiveRegion, ScreenReaderOnly } from "@/components/
 import { debounce } from 'lodash';
 
 
-export class EmailValidator {
+class EmailValidator {
   // Common email domains for typo suggestions
   private static commonDomains = [
     'gmail.com',
