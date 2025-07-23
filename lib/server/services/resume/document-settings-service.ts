@@ -167,20 +167,20 @@ export class DocumentSettingsService {
     }
 
     if (!migratedSettings.fontFamily || typeof migratedSettings.fontFamily !== 'string') {
-      migratedSettings.fontFamily = 'Merriweather';
+      (migratedSettings as any).fontFamily = 'Merriweather';
     }
 
     if (typeof migratedSettings.fontSize !== 'number' || migratedSettings.fontSize < 6 || migratedSettings.fontSize > 16) {
-      migratedSettings.fontSize = 11;
+      (migratedSettings as any).fontSize = 11;
     }
 
     if (typeof migratedSettings.zoom !== 'number' || migratedSettings.zoom < 50 || migratedSettings.zoom > 200) {
-      migratedSettings.zoom = 120;
+      (migratedSettings as any).zoom = 120;
     }
 
     // Validate margins
     if (!migratedSettings.margins || typeof migratedSettings.margins !== 'object') {
-      migratedSettings.margins = defaultSettings.margins;
+      (migratedSettings as any).margins = defaultSettings.margins;
     } else {
       const { top, right, bottom, left } = migratedSettings.margins;
       if (typeof top !== 'number' || top < 0 || top > 2) migratedSettings.margins.top = 0.75;

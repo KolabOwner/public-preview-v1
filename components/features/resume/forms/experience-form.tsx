@@ -63,7 +63,7 @@ const cleanDataForFirestore = (entry: any) => {
     current: entry.current || false,
     description: entry.description || '',
     bulletPoints: Array.isArray(entry.bulletPoints) 
-      ? entry.bulletPoints.filter(bp => bp && typeof bp === 'string' && bp.trim().length > 0)
+      ? entry.bulletPoints.filter((bp: any) => bp && typeof bp === 'string' && bp.trim().length > 0)
       : [],
   };
 };

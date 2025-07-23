@@ -99,10 +99,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({
-      uid: updatedUser.uid,
-      email: updatedUser.email,
-      displayName: updatedUser.displayName,
-      photoURL: updatedUser.photoURL,
+      uid: updatedUser?.uid,
+      email: updatedUser?.email,
+      displayName: updatedUser?.displayName,
+      photoURL: updatedUser?.photoURL,
       ...firestoreUpdates,
     });
   } catch (error) {

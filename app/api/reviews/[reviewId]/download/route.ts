@@ -30,7 +30,7 @@ export async function GET(
     const reviewData = reviewDoc.data();
     
     // Ensure user owns this review
-    if (reviewData.userId !== session.user.uid) {
+    if (reviewData?.userId !== session.user.uid) {
       return NextResponse.json(
         { error: 'Review not found' },
         { status: 404 }
@@ -38,7 +38,7 @@ export async function GET(
     }
     
     // Fetch associated resume data
-    const resumeDoc = await adminDb.collection('resumes').doc(reviewData.resumeId).get();
+    const resumeDoc = await adminDb.collection('resumes').doc(reviewData?.resumeId).get();
     const resumeData = resumeDoc.exists ? resumeDoc.data() : null;
     
     const review = {
@@ -57,7 +57,7 @@ export async function GET(
       );
     }
 
-    if (review.status !== 'COMPLETED') {
+    if ((review as any).status !== 'COMPLETED') {
       return NextResponse.json(
         { error: 'Review not completed yet' },
         { status: 400 }
@@ -97,7 +97,7 @@ export async function GET(
     yPosition -= 30;
 
     // Overall score
-    page.drawText(`Overall Score: ${review.overallScore}/10`, {
+    page.drawText(`Overall Score: ${(review as any).overallScore}/10`, {
       x: margin,
       y: yPosition,
       size: 16,
@@ -116,7 +116,7 @@ export async function GET(
     });
     yPosition -= lineHeight;
 
-    const summaryLines = wrapText(review.summary, 70);
+    const summaryLines = wrapText((review as any).summary, 70);
     for (const line of summaryLines) {
       page.drawText(line, {
         x: margin,
@@ -139,7 +139,7 @@ export async function GET(
     });
     yPosition -= lineHeight;
 
-    for (const strength of review.strengths) {
+    for (const strength of (review as any).strengths || []) {
       const strengthLines = wrapText(`• ${strength}`, 70);
       for (const line of strengthLines) {
         page.drawText(line, {
@@ -164,7 +164,7 @@ export async function GET(
     });
     yPosition -= lineHeight;
 
-    for (const weakness of review.weaknesses) {
+    for (const weakness of (review as any).weaknesses || []) {
       const weaknessLines = wrapText(`• ${weakness}`, 70);
       for (const line of weaknessLines) {
         page.drawText(line, {
@@ -190,7 +190,7 @@ export async function GET(
       });
       yPosition -= lineHeight;
 
-      for (const rec of review.recommendations.slice(0, 3)) { // Limit to first 3 for space
+      for (const rec of ((review as any).recommendations || []).slice(0, 3)) { // Limit to first 3 for space
         const recText = `${rec.category} (${rec.priority}): ${rec.description}`;
         const recLines = wrapText(`• ${recText}`, 70);
         for (const line of recLines) {

@@ -668,9 +668,9 @@ export function applyTemplateToSettings(
 
   // Preserve critical user preferences if requested
   if (preserveUserPreferences) {
-    newSettings.zoom = currentSettings.zoom;
-    newSettings.paperSize = currentSettings.paperSize;
-    newSettings.viewAsPages = currentSettings.viewAsPages;
+    (newSettings as any).zoom = currentSettings.zoom;
+    (newSettings as any).paperSize = currentSettings.paperSize;
+    (newSettings as any).viewAsPages = currentSettings.viewAsPages;
     
     // Preserve margins if user has customized them significantly
     const defaultMargins = { top: 0.75, right: 0.75, bottom: 0.75, left: 0.75 };
@@ -679,7 +679,7 @@ export function applyTemplateToSettings(
     );
     
     if (hasCustomMargins) {
-      newSettings.margins = currentSettings.margins;
+      (newSettings as any).margins = currentSettings.margins;
       if (logChanges) {
         console.log('Preserving custom margins:', currentSettings.margins);
       }

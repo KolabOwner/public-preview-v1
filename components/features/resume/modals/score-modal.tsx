@@ -238,7 +238,7 @@ const AuditItem = ({ audit }: { audit: AuditResult }) => {
             {audit.items.map((item, index) => (
               <div key={index} className="inline-block text-base font-semibold leading-6 text-blue-600 dark:text-blue-400">
                 {item}
-                {index < audit.items.length - 1 && <span className="ml-3">•</span>}
+                {index < (audit.items?.length || 0) - 1 && <span className="ml-3">•</span>}
               </div>
             ))}
           </div>

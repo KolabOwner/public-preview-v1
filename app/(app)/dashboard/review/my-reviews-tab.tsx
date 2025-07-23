@@ -117,7 +117,7 @@ export default function MyReviewsTab() {
       console.error('Error downloading review:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to download review. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to download review. Please try again.',
         variant: 'destructive',
       });
     }
@@ -158,7 +158,7 @@ export default function MyReviewsTab() {
       console.error('Error loading review:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to load review. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to load review. Please try again.',
         variant: 'destructive',
       });
     }

@@ -23,7 +23,7 @@ export function useStripeUpgrade(options?: UseStripeUpgradeOptions) {
       const priceIdMap: Record<string, string> = {
         monthly: STRIPE_PRICE_IDS.monthly,
         quarterly: STRIPE_PRICE_IDS.quarterly,
-        lifetime: STRIPE_PRICE_IDS.lifetime,
+        lifetime: (STRIPE_PRICE_IDS as any).lifetime,
       };
 
       const priceId = priceIdMap[planId];

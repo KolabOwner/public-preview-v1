@@ -117,7 +117,7 @@ export default function ReviewOptionsTab() {
       console.error('Error submitting review:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to submit resume for review. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to submit resume for review. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -176,7 +176,7 @@ export default function ReviewOptionsTab() {
               <Checkbox
                 id="preserve-formatting"
                 checked={preserveFormatting}
-                onCheckedChange={setPreserveFormatting}
+                onCheckedChange={(checked) => setPreserveFormatting(checked === true)}
                 className="w-6 h-6 border-2 border-gray-200 dark:border-gray-600"
               />
               <Label htmlFor="preserve-formatting" className="text-base font-normal text-gray-900 dark:text-gray-100">

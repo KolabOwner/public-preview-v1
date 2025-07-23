@@ -69,7 +69,7 @@ const cleanDataForFirestore = (entry: any) => {
     url: entry.url || '',
     description: entry.description || '',
     bulletPoints: Array.isArray(entry.bulletPoints) 
-      ? entry.bulletPoints.filter(bp => bp && typeof bp === 'string' && bp.trim().length > 0)
+      ? entry.bulletPoints.filter((bp: any) => bp && typeof bp === 'string' && bp.trim().length > 0)
       : [],
   };
 };
@@ -105,7 +105,7 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
               endDate: cleanValue(p.endDate || p.end) || "",
               url: cleanValue(p.url || p.projectUrl || p.link) || "",
               description: cleanValue(p.description) || "",
-              bulletPoints: bulletPoints.length > 0 ? bulletPoints.map(bp => ({ value: bp })) : [{ value: '' }],
+              bulletPoints: bulletPoints.length > 0 ? bulletPoints.map((bp: any) => ({ value: bp })) : [{ value: '' }],
             };
           })
         : [{

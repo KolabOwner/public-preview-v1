@@ -11,7 +11,9 @@ interface ResumeData {
   id: string;
   title: string;
   userId: string;
+  data: any;
   parsedData?: any;
+  rmsRawData?: any;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,6 +60,7 @@ export default function ResumeExperiencePage() {
         setResume({
           ...resumeData,
           id: resumeSnap.id,
+          data: resumeData.parsedData || resumeData.data || {},
           // Merge rmsRawData directly so parseToUnifiedFormat can access it
           ...resumeData.rmsRawData
         });

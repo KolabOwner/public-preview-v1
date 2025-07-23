@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { updateUserSubscription } from '@/lib/server/auth/user-service';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-06-30.basil',
 });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -91,8 +91,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     subscriptionId: subscription.id,
     status: subscription.status as any,
     plan: plan,
-    startDate: new Date(subscription.current_period_start * 1000) as any,
-    endDate: new Date(subscription.current_period_end * 1000) as any,
+    startDate: new Date((subscription as any).current_period_start * 1000) as any,
+    endDate: new Date((subscription as any).current_period_end * 1000) as any,
   });
 }
 
@@ -110,8 +110,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     subscriptionId: subscription.id,
     status: subscription.status as any,
     plan: plan,
-    startDate: new Date(subscription.current_period_start * 1000) as any,
-    endDate: new Date(subscription.current_period_end * 1000) as any,
+    startDate: new Date((subscription as any).current_period_start * 1000) as any,
+    endDate: new Date((subscription as any).current_period_end * 1000) as any,
   });
 }
 
@@ -127,15 +127,15 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     subscriptionId: subscription.id,
     status: 'cancelled',
     plan: 'free',
-    startDate: new Date(subscription.current_period_start * 1000) as any,
-    endDate: new Date(subscription.current_period_end * 1000) as any,
+    startDate: new Date((subscription as any).current_period_start * 1000) as any,
+    endDate: new Date((subscription as any).current_period_end * 1000) as any,
   });
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   // Handle successful recurring payment
-  if (invoice.subscription) {
-    const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+  if ((invoice as any).subscription) {
+    const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
     await handleSubscriptionUpdated(subscription);
   }
 }

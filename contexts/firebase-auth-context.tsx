@@ -32,7 +32,7 @@ interface AuthContextType {
   error: string | null;
   // Authentication methods
   login: (email: string, password: string, remember?: boolean) => Promise<void>;
-  register: (email: string, password: string, displayName?: string) => Promise<void>;
+  register: (email: string, password: string, recaptchaToken: string) => Promise<void>;
   logout: () => Promise<void>;
   // Social login
   signInWithGoogle: () => Promise<void>;

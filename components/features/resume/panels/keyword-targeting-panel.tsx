@@ -135,7 +135,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
     currentResumeId,
     analyzeResume,
     updateJobInfo,
-    isEnterpriseMode,
+    // isEnterpriseMode,
     isLoading,
     error: contextError
   } = useJobInfo();
@@ -174,14 +174,14 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   // Extract keywords and analysis data from jobInfo
   const { allKeywords, matchedCount, missingCount } = useMemo(() => {
     // Get extractedKeywords or fall back to empty array
-    const extractedKeywords = jobInfo.extractedKeywords || [];
+    const extractedKeywords = jobInfo?.extractedKeywords || [];
     
     if (extractedKeywords.length === 0) {
       return { allKeywords: [], matchedCount: 0, missingCount: 0 };
     }
 
     // Get matched keywords from the analysis (keywords found in both resume and job)
-    const matchedKeywords = jobInfo.matchedKeywords || [];
+    const matchedKeywords = jobInfo?.matchedKeywords || [];
     const matchedKeywordSet = new Set(
       matchedKeywords.map(k => k.keyword.toLowerCase())
     );
@@ -192,7 +192,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
       
       // Check if this keyword was found in the resume
       const isMatched = matchedKeywordSet.has(keywordLower) || 
-        (kw.variations || []).some(v => matchedKeywordSet.has(v.toLowerCase()));
+        (kw.variations || []).some((v: any) => matchedKeywordSet.has(v.toLowerCase()));
 
       return {
         keyword: kw.keyword,
@@ -220,8 +220,8 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
         return a.isMatching ? 1 : -1;
       }
       // Then by importance
-      const aImportance = importanceOrder[a.importance] || 999;
-      const bImportance = importanceOrder[b.importance] || 999;
+      const aImportance = (importanceOrder as any)[a.importance] || 999;
+      const bImportance = (importanceOrder as any)[b.importance] || 999;
       return aImportance - bImportance;
     });
 
@@ -233,7 +233,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
       matchedCount, 
       missingCount 
     };
-  }, [jobInfo.extractedKeywords, jobInfo.matchedKeywords]);
+  }, [jobInfo?.extractedKeywords, jobInfo?.matchedKeywords]);
 
   // Determine how many keywords to display
   const displayedKeywords = useMemo(() => {
@@ -276,7 +276,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
 
   // Perform ATS analysis
   const performAnalysis = useCallback(async () => {
-    if (!currentResumeId || !user?.uid || !jobInfo.title) return;
+    if (!currentResumeId || !user?.uid || !jobInfo?.title) return;
 
     const startTime = Date.now();
 
@@ -287,7 +287,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
 
       await analyzeResume({
         includeRecommendations: false,
-        targetScore: 80
+        targetATSScore: 80
       });
 
       console.log('Keyword analysis completed');
@@ -299,7 +299,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
       const elapsed = Date.now() - startTime;
       console.log(`Keyword analysis completed in ${elapsed}ms`);
     }
-  }, [currentResumeId, user?.uid, jobInfo.title, analyzeResume]);
+  }, [currentResumeId, user?.uid, jobInfo?.title, analyzeResume]);
 
   const handleJobUpdate = useCallback(() => {
     setIsJobUpdateModalOpen(true);
@@ -353,7 +353,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
     );
   }
 
-  if (contextError && !jobInfo.extractedKeywords) {
+  if (contextError && !jobInfo?.extractedKeywords) {
     return (
       <div className={containerClasses}>
         <div className="p-6">

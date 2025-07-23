@@ -1977,11 +1977,11 @@ export class PDFGenerator {
       }
 
       // Apply sectionSpacing from documentSettings to match preview spacing
-      if (documentSettings.sectionSpacing) {
+      if ((documentSettings as any).sectionSpacing) {
         // Convert rem to points (assuming 1rem = 16pt base)
         const remToPoints = 16;
-        baseConfig.spacing.sectionGap = documentSettings.sectionSpacing * remToPoints;
-        baseConfig.spacing.itemGap = (documentSettings.sectionSpacing * 0.5) * remToPoints;
+        baseConfig.spacing.sectionGap = (documentSettings as any).sectionSpacing * remToPoints;
+        baseConfig.spacing.itemGap = ((documentSettings as any).sectionSpacing * 0.5) * remToPoints;
       }
     }
 

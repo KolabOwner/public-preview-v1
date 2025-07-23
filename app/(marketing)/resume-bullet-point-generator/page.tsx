@@ -8,7 +8,7 @@ export default function ResumeBulletPointGenerator() {
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
   const [responsibility, setResponsibility] = useState('');
-  const [generatedBullets, setGeneratedBullets] = useState([]);
+  const [generatedBullets, setGeneratedBullets] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const bulletExamples = [
@@ -103,7 +103,7 @@ export default function ResumeBulletPointGenerator() {
     setIsGenerating(false);
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 

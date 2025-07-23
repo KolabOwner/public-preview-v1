@@ -273,7 +273,7 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
         // Apply template
         const success = await onTemplateChange(templateId);
 
-        if (success === false) {
+        if (success === false || success === undefined) {
           throw new Error('Template application returned false');
         }
 

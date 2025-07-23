@@ -69,7 +69,7 @@ const cleanDataForFirestore = (entry: any) => {
     current: entry.current || false,
     description: entry.description || '',
     bulletPoints: Array.isArray(entry.bulletPoints) 
-      ? entry.bulletPoints.filter(bp => bp && typeof bp === 'string' && bp.trim().length > 0)
+      ? entry.bulletPoints.filter((bp: any) => bp && typeof bp === 'string' && bp.trim().length > 0)
       : [],
   };
 };
@@ -105,7 +105,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
               startDate: cleanValue(inv.startDate) || "",
               endDate: cleanValue(inv.endDate) || "",
               description: cleanValue(inv.description || inv.activities) || "",
-              bulletPoints: bulletPoints.length > 0 ? bulletPoints.map(bp => ({ value: bp })) : [{ value: '' }],
+              bulletPoints: bulletPoints.length > 0 ? bulletPoints.map((bp: any) => ({ value: bp })) : [{ value: '' }],
             };
           })
         : [{
@@ -144,7 +144,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
       const processedEntries = formData.entries.map(entry => {
         const cleaned = cleanDataForFirestore({
           ...entry,
-          bulletPoints: entry.bulletPoints ? entry.bulletPoints.map(bp => bp.value).filter(v => v && v.trim()) : [],
+          bulletPoints: entry.bulletPoints ? entry.bulletPoints.map((bp: any) => bp.value).filter(v => v && v.trim()) : [],
         });
         return cleaned;
       });

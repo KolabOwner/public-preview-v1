@@ -237,6 +237,8 @@ class UserService {
 
     await this.updateUserDocument(uid, {
       subscription: {
+        plan: "free" as const,
+        status: "active" as const,
         ...user.subscription,
         ...subscription,
       },

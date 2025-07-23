@@ -37,14 +37,14 @@ export async function GET(
       const reviewData = { ...doc.data(), id: doc.id };
       
       // Fetch associated resume data
-      const resumeDoc = await adminDb.collection('resumes').doc(reviewData.resumeId).get();
+      const resumeDoc = await adminDb.collection('resumes').doc((reviewData as any).resumeId).get();
       if (resumeDoc.exists) {
         const resumeData = resumeDoc.data();
         reviews.push({
           ...reviewData,
           resume: {
-            name: resumeData.name,
-            lastModified: resumeData.lastModified,
+            name: resumeData?.name,
+            lastModified: resumeData?.lastModified,
           },
         });
       }
@@ -54,12 +54,12 @@ export async function GET(
     const transformedReviews = reviews.map(review => ({
       id: review.id,
       resumeName: review.resume.name,
-      submittedDate: review.createdAt.toDate().toISOString(),
-      status: review.status,
-      reviewerNotes: review.reviewerNotes,
-      completedDate: review.completedAt?.toDate().toISOString(),
-      overallScore: review.overallScore,
-      commentsCount: review.recommendations?.length || 0,
+      submittedDate: (review as any).createdAt?.toDate().toISOString(),
+      status: (review as any).status,
+      reviewerNotes: (review as any).reviewerNotes,
+      completedDate: (review as any).completedAt?.toDate().toISOString(),
+      overallScore: (review as any).overallScore,
+      commentsCount: (review as any).recommendations?.length || 0,
     }));
 
     return createCachedResponse({

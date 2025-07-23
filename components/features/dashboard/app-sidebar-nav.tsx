@@ -326,9 +326,9 @@ const AppSidebarNav = () => {
                       <div className="flex-1 relative">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-sm">{item.label}</span>
-                          {item.badge && (
-                            <span className={`${item.badgeColor} text-white text-xs font-semibold px-2 py-0.5 rounded-full`}>
-                              {item.badge}
+                          {(item as any).badge && (
+                            <span className={`${(item as any).badgeColor} text-white text-xs font-semibold px-2 py-0.5 rounded-full`}>
+                              {(item as any).badge}
                             </span>
                           )}
                         </div>
@@ -341,9 +341,9 @@ const AppSidebarNav = () => {
                     <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50">
                       <div className="bg-white dark:bg-navy-800 text-slate-900 dark:text-white px-3 py-2 rounded-lg shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 border border-slate-200 dark:border-navy-700">
                         <p className="font-medium text-sm whitespace-nowrap">{item.label}</p>
-                        {item.badge && (
-                          <span className={`${item.badgeColor} text-white text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block`}>
-                            {item.badge}
+                        {(item as any).badge && (
+                          <span className={`${(item as any).badgeColor} text-white text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block`}>
+                            {(item as any).badge}
                           </span>
                         )}
                       </div>

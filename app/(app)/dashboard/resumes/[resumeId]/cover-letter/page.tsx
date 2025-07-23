@@ -318,7 +318,7 @@ function CoverLetterBuilderContent() {
         
         // Parse the content back into cover letter structure
         const lines = data.content.split('\n');
-        const salutationIndex = lines.findIndex(line => line.trim() !== '');
+        const salutationIndex = lines.findIndex((line: string) => line.trim() !== '');
         const salutation = lines[salutationIndex] || '';
         
         // Find opening (first non-empty line after salutation)
@@ -551,8 +551,7 @@ function CoverLetterBuilderContent() {
           setTimeout(() => {
             toast({
               title: "Improvement Suggestions",
-              description: improvementSuggestions.map(s => s.message).join('\n'),
-              duration: 8000
+              description: improvementSuggestions.map(s => s.message).join('\n')
             });
           }, 2000);
         }
@@ -597,11 +596,14 @@ function CoverLetterBuilderContent() {
       ].join('\n');
 
       // Create a temporary document for PDF generation
+      const fontStyle: 'professional' | 'elegant' = settings.fontFamily === 'Times New Roman' ? 'professional' : 'elegant';
+      const fontSize: 'small' | 'medium' | 'large' = settings.fontSize < 11 ? 'small' : settings.fontSize > 13 ? 'large' : 'medium';
+      
       const coverLetterDoc = {
         title: `Cover Letter - ${recipientInfo?.positionTitle || 'Position'} at ${recipientInfo?.companyName || 'Company'}`,
         template: settings.template.toLowerCase(),
-        fontStyle: settings.fontFamily === 'Times New Roman' ? 'professional' : 'elegant',
-        fontSize: settings.fontSize < 11 ? 'small' : settings.fontSize > 13 ? 'large' : 'medium',
+        fontStyle,
+        fontSize,
         documentSettings: {
           fontFamily: settings.fontFamily,
           fontSize: settings.fontSize,
@@ -609,7 +611,7 @@ function CoverLetterBuilderContent() {
           textColor: settings.textColor,
           primaryColor: '#2563eb',
           sectionSpacing: 1,
-          paperSize: 'Letter',
+          paperSize: 'Letter' as const,
           margins: { top: 1, right: 1, bottom: 1, left: 1 },
           showIcons: false,
           showDividers: false,
@@ -804,7 +806,7 @@ export default function CoverLetterBuilderPage() {
   }
 
   return (
-    <JobInfoProvider resumeId={resumeId} userId={user.uid}>
+    <JobInfoProvider initialResumeId={resumeId}>
       <CoverLetterBuilderContent />
     </JobInfoProvider>
   );
