@@ -49,6 +49,3 @@ pids
 # Temporary folders
 tmp/
 temp/
-
-# Scripts
-scripts/
