@@ -12,6 +12,7 @@ interface ResumeData {
   title: string;
   userId: string;
   parsedData?: any;
+  rmsRawData?: any;
   createdAt: string;
   updatedAt: string;
 }
