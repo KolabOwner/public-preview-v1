@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/shared/theme-provider";
 import { FontLoadingProvider } from "@/contexts/font-loading-context";
 import { JobInfoProvider } from "@/contexts/job-info-context";
 import { ResumeDataProvider } from "@/contexts/resume-data-context";
+import { QueryProvider } from "@/lib/client/providers/query-provider";
 
 function ProvidersWithAuth({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth();
@@ -32,12 +33,14 @@ function ProvidersWithAuth({ children }: { children: React.ReactNode }) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="theme">
-      <FirebaseAuthProvider>
-        <ProvidersWithAuth>
-          {children}
-        </ProvidersWithAuth>
-      </FirebaseAuthProvider>
-    </ThemeProvider>
+    <QueryProvider>
+      <ThemeProvider defaultTheme="system" storageKey="theme">
+        <FirebaseAuthProvider>
+          <ProvidersWithAuth>
+            {children}
+          </ProvidersWithAuth>
+        </FirebaseAuthProvider>
+      </ThemeProvider>
+    </QueryProvider>
   );
 }

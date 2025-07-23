@@ -60,7 +60,7 @@ const GaugeChart = ({ score, animated = true }: { score: number; animated?: bool
           </svg>
         </div>
         <div 
-          className="absolute top-0 transition-transform duration-[1.2s] ease-in-out" 
+          className="absolute top-0 transition-transform duration-1000 ease-in-out" 
           style={{ 
             transform: `rotate(${rotation}deg)`,
             width: '236px', 

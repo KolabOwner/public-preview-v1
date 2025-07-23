@@ -22,7 +22,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, FileText, Download, Check, Star, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Check, Star, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { Button } from '@/components/shared/button';
@@ -39,7 +39,6 @@ interface ResumeTemplate {
   isPopular?: boolean;
   category?: 'modern' | 'professional' | 'creative' | 'minimal';
   features?: string[];
-  downloadUrl?: string;
 }
 
 interface TemplateImageProps {
@@ -136,8 +135,7 @@ const ResumeTemplateShowcase = () => {
       imageSrc: '/images/templates/StandardTemplate.png',
       downloadTypes: ['PDF', 'Microsoft Word', 'Google Drive'],
       category: 'professional',
-      features: ['ATS-Friendly', 'Multi-Format Export', 'Industry Standard'],
-      downloadUrl: '/images/standard-resume-template.pdf'
+      features: ['ATS-Friendly', 'Multi-Format Export', 'Industry Standard']
     },
     {
       id: 'compact',
@@ -184,19 +182,6 @@ const ResumeTemplateShowcase = () => {
 
   const currentTemplate = templates[currentIndex];
 
-  // Download handler function
-  const handleDownload = useCallback(() => {
-    if (currentTemplate.downloadUrl) {
-      // Create download link for PDF
-      const link = document.createElement('a');
-      link.href = currentTemplate.downloadUrl;
-      link.download = `${currentTemplate.name.replace(/\s+/g, '-').toLowerCase()}.pdf`;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }, [currentTemplate]);
 
   // Animation variants
   const containerVariants = {
@@ -374,22 +359,12 @@ const ResumeTemplateShowcase = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <div className="pt-4">
                   <Button 
-                    className="flex-1 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 font-bold shadow-xl hover:shadow-lg transition-all duration-250"
+                    className="w-full bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 font-bold shadow-xl hover:shadow-lg transition-all duration-250"
                     size="lg"
                   >
                     Use This Template
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex-1 bg-white border-corporate-navy-200 text-corporate-navy-700 hover:bg-corporate-navy-50 hover:border-corporate-navy-300 transition-colors duration-200"
-                    size="lg"
-                    onClick={handleDownload}
-                    disabled={!currentTemplate.downloadUrl}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Sample
                   </Button>
                 </div>
               </motion.div>

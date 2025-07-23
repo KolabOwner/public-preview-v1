@@ -49,6 +49,8 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@stripe/stripe-js": "^7.4.0",
     "@tailwindcss/line-clamp": "^0.4.4",
+    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-query-devtools": "^5.83.0",
     "@types/lodash": "^4.17.19",
     "autoprefixer": "^10.4.17",
     "axios": "^1.6.7",

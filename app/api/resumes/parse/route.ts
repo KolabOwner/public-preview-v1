@@ -11,7 +11,7 @@ import {
 
 
 // Increase timeout for API route
-export const maxDuration = 300; // 5-minute timeout
+export const maxDuration = 30; // 30-second timeout
 export const dynamic = 'force-dynamic';
 
 // Handle CORS preflight requests
@@ -74,51 +74,16 @@ async function handleFileUpload(request: NextRequest, startTime: number) {
 
     console.log(`Processing uploaded PDF: ${file.name} (${file.size} bytes) for user: ${userId} using Gemini AI`);
     
-    try {
-      // Use the new Gemini-based PDF parser directly for immediate processing
-      const result = await parsePDFWithGenkit(file, { userId });
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to parse PDF');
-      }
-      
-      const elapsed = Date.now() - startTime;
-      console.log(`PDF processing completed in ${elapsed}ms using Gemini AI`);
-      
-      return NextResponse.json({
-        success: true,
-        data: result.data,
-        parseTime: result.parseTime,
-        model: result.model,
-        timestamp: result.timestamp,
-        elapsed,
-        message: 'PDF processed successfully with Gemini AI'
-      });
-    } catch (error: any) {
-      console.error('Gemini PDF processing error:', error);
-      
-      // Fallback to background processing with PDFProcessor if Gemini fails
-      console.log('Falling back to background processing pipeline...');
-      
-      const resumeId = await PDFProcessor.createResume({
-        userId,
-        title: title || file.name,
-        initialStatus: FileStatus.PROCESSING
-      });
-      
-      // Start processing in the background as fallback
-      PDFProcessor.processPDF(file, resumeId, { userId, title })
-        .catch(error => console.error('Background processing error:', error));
-      
-      // Return the fallback response
-      return NextResponse.json({
-        success: true,
-        resumeId,
-        message: 'Resume processing started (fallback mode)',
-        elapsed: Date.now() - startTime,
-        fallbackMode: true
-      });
-    }
+    // Queue the job for background processing
+    const { jobQueue } = await import('@/lib/server/queue/job-queue');
+    const jobId = await jobQueue.enqueue('pdf-parse', { file, options: { userId } });
+    
+    return NextResponse.json({
+      success: true,
+      jobId,
+      message: 'PDF processing started in background',
+      elapsed: Date.now() - startTime
+    });
   } catch (error: any) {
     console.error('File upload error:', error);
     return NextResponse.json(

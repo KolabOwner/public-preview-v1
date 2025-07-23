@@ -18,6 +18,11 @@ const nextConfig = {
     optimizeServerReact: true,
     serverMinification: true,
   },
+  // Vercel optimizations
+  outputFileTracing: true,
+  compress: true,
+  poweredByHeader: false,
+  generateEtags: true,
   images: {
     remotePatterns: [
       {
@@ -71,7 +76,7 @@ const nextConfig = {
               style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
               font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:;
               img-src 'self' data: blob: https://firebasestorage.googleapis.com https://www.google.com https://www.gstatic.com https://lh3.googleusercontent.com https://cdn.prod.website-files.com;
-              connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseapp.com https://firebaseio.com wss://*.firebaseio.com https://www.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://firebasestorage.googleapis.com https://api.stripe.com https://firebaseinstallations.googleapis.com;
+              connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseapp.com https://firebaseio.com wss://*.firebaseio.com https://www.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://firebasestorage.googleapis.com https://api.stripe.com https://firebaseinstallations.googleapis.com https://content-firebaseappcheck.googleapis.com;
               frame-src 'self' https://www.google.com https://recaptcha.google.com https://my-rms-validator.firebaseapp.com;
               object-src 'none';
               base-uri 'self';

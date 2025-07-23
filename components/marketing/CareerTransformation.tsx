@@ -24,19 +24,9 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  TrendingUp,
-  Target,
   Clock,
-  Award,
-  Users,
   CheckCircle2,
-  ArrowRight,
-  BarChart3,
-  Zap,
-  FileText,
-  Eye,
-  Download,
-  Star
+  ArrowRight
 } from 'lucide-react';
 
 interface TransformationScenario {
