@@ -62,7 +62,7 @@ export default function CourseworkForm({ initialData, onSave }: CourseworkFormPr
   const form = useForm<CourseworkFormData>({
     resolver: zodResolver(courseworkSchema),
     defaultValues: {
-      entries: initialData.length > 0 
+      entries: (initialData && initialData.length > 0) 
         ? initialData.map((course: any) => ({
             ...course,
             courseName: cleanValue(course.courseName || course.name || course.title) || "",

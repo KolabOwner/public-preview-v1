@@ -81,7 +81,7 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
   const form = useForm<ExperienceFormData>({
     resolver: zodResolver(experienceSchema),
     defaultValues: {
-      entries: initialData.length > 0 
+      entries: (initialData && initialData.length > 0) 
         ? initialData.map(e => ({
             ...e,
             title: cleanValue(e.title),

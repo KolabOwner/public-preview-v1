@@ -82,7 +82,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
   const form = useForm<InvolvementFormData>({
     resolver: zodResolver(involvementSchema),
     defaultValues: {
-      entries: initialData.length > 0 
+      entries: (initialData && initialData.length > 0) 
         ? initialData.map((inv: any) => {
             // Parse bullet points from description if bulletPoints array is empty
             let bulletPoints = inv.bulletPoints?.filter(Boolean) || [];

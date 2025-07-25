@@ -81,7 +81,7 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
   const form = useForm<EducationFormData>({
     resolver: zodResolver(educationSchema),
     defaultValues: {
-      entries: initialData.length > 0 
+      entries: (initialData && initialData.length > 0) 
         ? initialData.map(e => {
             const institutionRaw = cleanValue(e.institution || e.school);
             const { institution, location: extractedLocation } = extractInstitutionAndLocation(institutionRaw);

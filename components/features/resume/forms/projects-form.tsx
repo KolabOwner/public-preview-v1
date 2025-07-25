@@ -82,7 +82,7 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
-      entries: initialData.length > 0 
+      entries: (initialData && initialData.length > 0) 
         ? initialData.map((p: any) => {
             // Parse bullet points from description if bulletPoints array is empty
             let bulletPoints = p.bulletPoints?.filter(Boolean) || [];

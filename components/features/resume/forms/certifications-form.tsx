@@ -60,7 +60,7 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
   const form = useForm<CertificationsFormData>({
     resolver: zodResolver(certificationsSchema),
     defaultValues: {
-      entries: initialData.length > 0 
+      entries: (initialData && initialData.length > 0) 
         ? initialData.map((cert: any) => ({
             ...cert,
             name: cleanValue(cert.name || cert.title || cert.certificationName) || "",

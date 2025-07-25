@@ -56,7 +56,7 @@ export default function SkillsForm({ initialData, onSave }: SkillsFormProps) {
   const form = useForm<SkillsFormData>({
     resolver: zodResolver(skillsSchema),
     defaultValues: {
-      entries: initialData.length > 0 
+      entries: (initialData && initialData.length > 0) 
         ? initialData.map((skill: any) => ({
             ...skill,
             category: cleanValue(skill.category || skill.skillCategory || skill.name) || "",
