@@ -35,6 +35,7 @@ import {
 import { onAuthStateChange } from "@/lib/client/api/auth-client";
 import { userService } from "@/lib/server/auth/user-service";
 import { useAuth } from "@/contexts/auth-context";
+import { recaptchaEnterprise } from "@/lib/client/recaptcha-enterprise";
 
 
 export default function LoginPage() {
@@ -83,6 +84,16 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // Execute reCAPTCHA Enterprise assessment
+      const assessment = await recaptchaEnterprise.executeSignIn({ 
+        email, 
+        password: password.substring(0, 4) + '***' // Only send partial password for privacy
+      });
+      
+      if (!assessment.success) {
+        throw new Error(`Security verification failed: ${assessment.assessment.reason}`);
+      }
+
       await login(email, password, rememberMe);
 
       // Wait for auth state to update

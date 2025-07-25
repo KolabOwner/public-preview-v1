@@ -32,11 +32,10 @@ import {
   AlertCircle,
   Loader2,
   Shield,
-  ArrowRight,
-  UserPlus
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from "@/contexts/auth-context";
-import { recaptcha } from "@/lib/client/recaptcha";
+import { recaptchaEnterprise } from "@/lib/client/recaptcha-enterprise";
 import { PasswordStrengthIndicator } from "@/components/features/auth/password-strength-indicator";
 import { AccessibleFormField, LiveRegion, ScreenReaderOnly } from "@/components/features/auth/accessible-form-field";
 import { debounce } from 'lodash';
@@ -244,9 +243,9 @@ export default function SignUpPage() {
     return () => clearError();
   }, [clearError]);
 
-  // Load reCAPTCHA on mount
+  // Load reCAPTCHA Enterprise on mount
   useEffect(() => {
-    recaptcha.load().catch(console.error);
+    recaptchaEnterprise.load().catch(console.error);
   }, []);
 
   // Debounced email validation - use useMemo to create the debounced function
@@ -307,14 +306,18 @@ export default function SignUpPage() {
     setFormAnnouncement('Creating your account...');
 
     try {
-      // Execute reCAPTCHA
-      const recaptchaToken = await recaptcha.execute('signup');
-      if (!recaptchaToken) {
-        throw new Error('Could not get reCAPTCHA token.');
+      // Execute reCAPTCHA Enterprise assessment
+      const assessment = await recaptchaEnterprise.executeSignUp({ 
+        email, 
+        password: password.substring(0, 4) + '***' // Only send partial password for privacy
+      });
+      
+      if (!assessment.success) {
+        throw new Error(`Security verification failed: ${assessment.assessment.reason}`);
       }
 
-      // Register with reCAPTCHA token
-      await register(email, password, recaptchaToken);
+      // Register with reCAPTCHA validation passed
+      await register(email, password);
       setFormAnnouncement('Account created successfully! Redirecting...');
 
     } catch (err: any) {

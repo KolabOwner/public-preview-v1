@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -10,11 +11,10 @@ import {
   X,
   ChevronDown,
   Upload,
-  Linkedin,
-  Info,
   AlertCircle,
   FileText
 } from 'lucide-react';
+
 interface ResumeData {
   id: string;
   title: string;

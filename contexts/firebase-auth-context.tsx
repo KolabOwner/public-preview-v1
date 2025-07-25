@@ -32,7 +32,7 @@ interface AuthContextType {
   error: string | null;
   // Authentication methods
   login: (email: string, password: string, remember?: boolean) => Promise<void>;
-  register: (email: string, password: string, recaptchaToken: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   // Social login
   signInWithGoogle: () => Promise<void>;
@@ -62,7 +62,7 @@ interface AuthContextType {
   error: string | null;
   // Authentication methods
   login: (email: string, password: string, remember?: boolean) => Promise<void>;
-  register: (email: string, password: string, recaptchaToken: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   // Social login
   signInWithGoogle: () => Promise<void>;
@@ -139,13 +139,13 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  const register = async (email: string, password: string, recaptchaToken: string) => {
+  const register = async (email: string, password: string) => {
     try {
       setError(null);
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, recaptchaToken }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();

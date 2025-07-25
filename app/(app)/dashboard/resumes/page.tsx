@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useUserUsage } from '@/lib/client/hooks/auth/use-user-usage';
 import { JobInfoProvider } from '@/contexts/job-info-context';
@@ -95,10 +95,10 @@ function ResumesPageContent() {
     fetchResumes();
   }, [user, sortBy]);
 
-  const toggleSortBy = () => {
-    const newSortBy = sortBy === 'created' ? 'updated' : 'created';
+  const handleStateChange = useCallback(({ sortBy: newSortBy, viewMode: newViewMode }: { sortBy: 'created' | 'updated'; viewMode: 'grid' | 'list' }) => {
     setSortBy(newSortBy);
-  };
+    setViewMode(newViewMode);
+  }, []);
 
   // Create resume card component
   const CreateResumeCard = () => {
@@ -160,10 +160,9 @@ function ResumesPageContent() {
           <div className="flex-start flex self-stretch">
             <div className="w-full">
               <ViewControls
-                sortBy={sortBy}
-                viewMode={viewMode}
-                onSortToggle={toggleSortBy}
-                onViewModeChange={(mode) => setViewMode(mode)}
+                initialSortBy={sortBy}
+                initialViewMode={viewMode}
+                onStateChange={handleStateChange}
               />
 
               {/* Resume Grid/List View */}

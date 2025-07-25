@@ -59,7 +59,7 @@ class UserService {
   private readonly USERS_COLLECTION = 'users';
 
   /**
-   * Creates a new user document in Firestore
+   * Creates a new user document in Firestore (client-side)
    */
   async createUserDocument(
     user: FirebaseUser,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
@@ -28,7 +28,6 @@ export default function CoverLettersPage() {
   const [sortBy, setSortBy] = useState<'created' | 'updated'>('created');
   const { user } = useAuth();
   const router = useRouter();
-
 
   // Fetch user's saved cover letters
   const fetchCoverLetters = async () => {
@@ -65,7 +64,7 @@ export default function CoverLettersPage() {
       coverLettersList.sort((a, b) => {
         const dateA = sortBy === 'created' ? a.createdAt : a.updatedAt;
         const dateB = sortBy === 'created' ? b.createdAt : b.updatedAt;
-        
+
         // Handle different date formats
         const getTime = (date: any) => {
           if (!date) return 0;
@@ -74,7 +73,7 @@ export default function CoverLettersPage() {
           if (date instanceof Date) return date.getTime(); // Already a Date object
           return new Date(date).getTime(); // Try to parse as string
         };
-        
+
         return getTime(dateB) - getTime(dateA);
       });
 
@@ -90,10 +89,11 @@ export default function CoverLettersPage() {
     fetchCoverLetters();
   }, [user, sortBy]);
 
-  const toggleSortBy = () => {
-    setSortBy(sortBy === 'created' ? 'updated' : 'created');
-  };
-
+  // Handle state changes from ViewControls component
+  const handleStateChange = useCallback(({ sortBy: newSortBy, viewMode: newViewMode }: { sortBy: 'created' | 'updated'; viewMode: 'grid' | 'list' }) => {
+    setSortBy(newSortBy);
+    setViewMode(newViewMode);
+  }, []);
 
   if (isLoading) {
     return (
@@ -112,11 +112,10 @@ export default function CoverLettersPage() {
           {/* Main content */}
           <div className="flex-start flex self-stretch">
             <div className="w-full">
-              <ViewControls 
-                sortBy={sortBy}
-                viewMode={viewMode}
-                onSortToggle={toggleSortBy}
-                onViewModeChange={(mode) => setViewMode(mode)}
+              <ViewControls
+                initialSortBy={sortBy}
+                initialViewMode={viewMode}
+                onStateChange={handleStateChange}
               />
 
               {/* Cover Letters Grid/List */}

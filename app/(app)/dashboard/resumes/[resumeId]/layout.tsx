@@ -146,14 +146,16 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
         const resumeDoc = await getDoc(doc(db, 'resumes', resumeId));
         if (resumeDoc.exists()) {
           const data = resumeDoc.data();
+          
           setCurrentResume({
             id: resumeDoc.id,
             title: data.title || 'Untitled Resume',
             isTargeted: data.isTargeted || false,
           });
 
-          // Set resume data for content detection
-          setResumeData(data.parsedData || {});
+          // Set resume data for content detection - try multiple data sources
+          const resumeDataToSet = data.parsedData || data.data || data.rmsRawData || {};
+          setResumeData(resumeDataToSet);
         }
       } catch (error) {
         console.error('Error fetching current resume:', error);

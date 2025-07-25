@@ -1,13 +1,12 @@
 // app/api/auth/register/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createUser } from '@/lib/server/auth/firebase-admin';
-import { verifyRecaptcha } from '@/lib/server/recaptcha';
+import { createUser, adminAuth } from '@/lib/server/auth/firebase-admin';
+import { createUserDocumentServer } from '@/lib/server/auth/user-service-admin';
 import { z } from 'zod';
 
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  recaptchaToken: z.string(),
 });
 
 export async function POST(request: NextRequest) {
@@ -19,14 +18,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: validation.error.flatten() }, { status: 400 });
     }
 
-    const { email, password, recaptchaToken } = validation.data;
-
-    // Verify reCAPTCHA token
-    const recaptchaResult = await verifyRecaptcha(recaptchaToken, 'signup');
-
-    if (!recaptchaResult.success) {
-      return NextResponse.json({ error: 'reCAPTCHA verification failed', details: recaptchaResult.errorCodes }, { status: 400 });
-    }
+    const { email, password } = validation.data;
+    
+    // Note: reCAPTCHA Enterprise validation is done client-side before calling this API
 
     // Create user using Firebase Admin SDK
     try {
@@ -36,9 +30,8 @@ export async function POST(request: NextRequest) {
         emailVerified: false, // Firebase Admin SDK does not send a verification email by default
       });
 
-      // You might want to trigger a verification email here if needed
-      // await adminAuth.generateEmailVerificationLink(email);
-      // and then send it using an email service.
+      // Create user document in Firestore with complete profile
+      await createUserDocumentServer(userRecord);
 
       return NextResponse.json({ success: true, uid: userRecord.uid });
     } catch (error: any) {

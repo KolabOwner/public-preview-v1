@@ -19,35 +19,35 @@ export type { CourseworkEntry } from './forms/coursework-form';
 export type { CertificationEntry } from './forms/certifications-form';
 
 // Dynamic imports for all form components - no loading UI to prevent flash
-const ContactForm = dynamic(() => import('./forms/contact-form').then(mod => ({ default: mod.default })), {
+const ContactForm = dynamic(() => import('./forms/contact-form'), {
   ssr: false
 });
 
-const ExperienceForm = dynamic(() => import('./forms/experience-form').then(mod => ({ default: mod.default })), {
+const ExperienceForm = dynamic(() => import('./forms/experience-form'), {
   ssr: false
 });
 
-const EducationForm = dynamic(() => import('./forms/education-form').then(mod => ({ default: mod.default })), {
+const EducationForm = dynamic(() => import('./forms/education-form'), {
   ssr: false
 });
 
-const SkillsForm = dynamic(() => import('./forms/skills-form').then(mod => ({ default: mod.default })), {
+const SkillsForm = dynamic(() => import('./forms/skills-form'), {
   ssr: false
 });
 
-const ProjectsForm = dynamic(() => import('./forms/projects-form').then(mod => ({ default: mod.default })), {
+const ProjectsForm = dynamic(() => import('./forms/projects-form'), {
   ssr: false
 });
 
-const InvolvementForm = dynamic(() => import('./forms/involvement-form').then(mod => ({ default: mod.default })), {
+const InvolvementForm = dynamic(() => import('./forms/involvement-form'), {
   ssr: false
 });
 
-const CourseworkForm = dynamic(() => import('./forms/coursework-form').then(mod => ({ default: mod.default })), {
+const CourseworkForm = dynamic(() => import('./forms/coursework-form'), {
   ssr: false
 });
 
-const CertificationsForm = dynamic(() => import('./forms/certifications-form').then(mod => ({ default: mod.default })), {
+const CertificationsForm = dynamic(() => import('./forms/certifications-form'), {
   ssr: false
 });
 
@@ -112,6 +112,8 @@ interface ResumeDocument {
   data: UnifiedResumeData;
   createdAt: string;
   updatedAt: string;
+  rmsRawData?: any;
+  parsedData?: any;
 }
 
 interface ResumeEditorAreaProps {
@@ -441,10 +443,19 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
 
   // Initialize with unified format
   const [resumeData, setResumeData] = useState<UnifiedResumeData>(() => {
-    if (resume?.data) {
+    // Check if data field has actual content (more than just empty object)
+    const hasDataContent = resume?.data && Object.keys(resume.data).length > 0;
+    
+    if (hasDataContent) {
       return resume.data;
     }
-    // Handle legacy format
+    
+    // If data is empty but we have rmsRawData, parse it
+    if (resume?.rmsRawData && Object.keys(resume.rmsRawData).length > 0) {
+      return parseToUnifiedFormat(resume);
+    }
+    
+    // Fallback to legacy parsing
     return parseToUnifiedFormat(resume);
   });
 
