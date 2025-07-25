@@ -30,18 +30,18 @@ let appCheckInstance = null;
 
 if (typeof window !== 'undefined') {
   // Development mode: use debug token
-  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN) {
+  if (process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN) {
     // @ts-ignore
     window.FIREBASE_APPCHECK_DEBUG_TOKEN = process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN;
   }
   
-  // Initialize App Check with reCAPTCHA provider
-  if (process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_RECAPTCHA_SITE_KEY) {
-    appCheckInstance = initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_RECAPTCHA_SITE_KEY),
-      isTokenAutoRefreshEnabled: true
-    });
-  }
+  // Initialize App Check with reCAPTCHA provider - DISABLED due to throttling
+  // if (process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_RECAPTCHA_SITE_KEY) {
+  //   appCheckInstance = initializeAppCheck(app, {
+  //     provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_RECAPTCHA_SITE_KEY),
+  //     isTokenAutoRefreshEnabled: true
+  //   });
+  // }
 }
 
 export const appCheck = appCheckInstance;
