@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthToken } from '@/lib/server/auth/middleware';
 import { getUserByUid, updateUser as updateFirebaseUser } from '@/lib/server/auth/firebase-admin';
-import { userService } from '@/lib/server/auth/user-service';
+import { updateUserDocumentServer } from '@/lib/server/auth/user-service-admin';
 import { connectionPool } from '@/lib/server/cache/connection-pool';
 import { createCachedResponse, withCache } from '@/lib/server/cache/route-cache';
 
@@ -95,7 +95,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update Firestore user document if needed
     if (Object.keys(firestoreUpdates).length > 0) {
-      await userService.updateUserDocument(user.uid, firestoreUpdates);
+      await updateUserDocumentServer(user.uid, firestoreUpdates);
     }
 
     return NextResponse.json({
