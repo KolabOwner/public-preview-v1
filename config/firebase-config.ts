@@ -35,13 +35,18 @@ if (typeof window !== 'undefined') {
     window.FIREBASE_APPCHECK_DEBUG_TOKEN = process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN;
   }
   
-  // Initialize App Check with reCAPTCHA provider - DISABLED due to throttling
-  // if (process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_RECAPTCHA_SITE_KEY) {
-  //   appCheckInstance = initializeAppCheck(app, {
-  //     provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_RECAPTCHA_SITE_KEY),
-  //     isTokenAutoRefreshEnabled: true
-  //   });
-  // }
+  // Initialize App Check - use debug token to bypass ReCAPTCHA throttling
+  if (process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN) {
+    // Debug token will be used instead of ReCAPTCHA
+    try {
+      appCheckInstance = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider('6LeJQI0rAAAAAJZXTrFZ_x5UPEMiR_Tklu3OGHs3'), // Fallback, debug token takes precedence
+        isTokenAutoRefreshEnabled: true
+      });
+    } catch (error) {
+      console.warn('AppCheck initialization failed:', error);
+    }
+  }
 }
 
 export const appCheck = appCheckInstance;
