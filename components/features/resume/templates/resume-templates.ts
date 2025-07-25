@@ -1,7 +1,5 @@
 // lib/features/resume/templates/resume-templates.ts
-
 import { DocumentSettings } from '@/components/features/dashboard/resume-header-bar';
-
 export interface ResumeTemplate {
   id: string;
   name: string;
@@ -58,7 +56,6 @@ export interface ResumeTemplate {
     };
   };
 }
-
 export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
   professional: {
     id: 'professional',
@@ -581,29 +578,24 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
     },
   },
 };
-
 // Template validation interface
 export interface TemplateValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
 }
-
 // Validate template configuration
 export function validateTemplate(template: ResumeTemplate): TemplateValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
-
   // Check required fields
   if (!template.id) errors.push('Template missing id');
   if (!template.name) errors.push('Template missing name');
   if (!template.description) errors.push('Template missing description');
-
   // Validate font scales
   const scales = template.styles.fontScales;
   if (!scales.name || scales.name <= 0) errors.push('Invalid name font scale');
   if (!scales.body || scales.body <= 0) errors.push('Invalid body font scale');
-
   // Validate colors
   const colors = template.styles.colors;
   const colorFields = ['primary', 'secondary', 'text', 'muted', 'accent'];
@@ -613,18 +605,15 @@ export function validateTemplate(template: ResumeTemplate): TemplateValidationRe
       errors.push(`Invalid ${field} color: ${color}`);
     }
   });
-
   // Check for potential issues
   if (scales.name > 2) warnings.push('Name font scale unusually large');
   if (scales.body < 0.5) warnings.push('Body font scale potentially too small');
-
   return {
     isValid: errors.length === 0,
     errors,
     warnings
   };
 }
-
 // Enhanced template application function
 export function applyTemplateToSettings(
   templateId: string,
@@ -640,14 +629,12 @@ export function applyTemplateToSettings(
     validateTemplate: shouldValidateTemplate = true,
     logChanges = false
   } = options;
-
   // Get template
   const template = RESUME_TEMPLATES[templateId];
   if (!template) {
     console.error(`Template ${templateId} not found. Available templates:`, Object.keys(RESUME_TEMPLATES));
     return currentSettings;
   }
-
   // Validate template if requested
   if (shouldValidateTemplate) {
     const validation = validateTemplate(template);
@@ -659,25 +646,21 @@ export function applyTemplateToSettings(
       console.warn(`Template ${templateId} validation warnings:`, validation.warnings);
     }
   }
-
   // Build new settings
   const newSettings: DocumentSettings = {
     ...currentSettings,
     ...template.defaults,
   };
-
   // Preserve critical user preferences if requested
   if (preserveUserPreferences) {
     (newSettings as any).zoom = currentSettings.zoom;
     (newSettings as any).paperSize = currentSettings.paperSize;
     (newSettings as any).viewAsPages = currentSettings.viewAsPages;
-    
     // Preserve margins if user has customized them significantly
     const defaultMargins = { top: 0.75, right: 0.75, bottom: 0.75, left: 0.75 };
     const hasCustomMargins = Object.values(currentSettings.margins).some(
       (value, index) => Math.abs(value - Object.values(defaultMargins)[index]) > 0.1
     );
-    
     if (hasCustomMargins) {
       (newSettings as any).margins = currentSettings.margins;
       if (logChanges) {
@@ -685,7 +668,6 @@ export function applyTemplateToSettings(
       }
     }
   }
-
   // Log changes if requested
   if (logChanges) {
     const changes: Record<string, any> = {};
@@ -696,20 +678,15 @@ export function applyTemplateToSettings(
         changes[key] = { from: oldValue, to: newValue };
       }
     });
-    
     if (Object.keys(changes).length > 0) {
-      console.log(`Template "${template.name}" applied changes:`, changes);
     }
   }
-
   return newSettings;
 }
-
 // Helper function to get template metadata
 export function getTemplateMetadata(templateId: string) {
   const template = RESUME_TEMPLATES[templateId];
   if (!template) return null;
-
   return {
     id: template.id,
     name: template.name,
@@ -726,16 +703,13 @@ export function getTemplateMetadata(templateId: string) {
     }
   };
 }
-
 // Helper function to compare templates
 export function compareTemplates(templateId1: string, templateId2: string) {
   const template1 = RESUME_TEMPLATES[templateId1];
   const template2 = RESUME_TEMPLATES[templateId2];
-  
   if (!template1 || !template2) {
     return null;
   }
-
   return {
     fontScaleDifference: {
       name: template2.styles.fontScales.name - template1.styles.fontScales.name,

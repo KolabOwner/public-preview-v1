@@ -50,6 +50,7 @@ function ResumesPageContent() {
     if (!user) return;
 
     try {
+      // Always use updatedAt for ordering since it's guaranteed to exist
       const resumesQuery = query(
         collection(db, 'resumes'),
         where('userId', '==', user.uid),
@@ -65,12 +66,24 @@ function ResumesPageContent() {
           id: doc.id,
           title: data.title || 'Untitled Resume',
           lastUpdated: data.updatedAt,
-          createdAt: data.createdAt,
+          createdAt: data.createdAt || data.updatedAt, // fallback to updatedAt if createdAt doesn't exist
           isTargeted: data.isTargeted || false,
         });
       });
 
-      setResumes(resumeData);
+      // Sort client-side based on the selected sort option
+      const sortedResumes = resumeData.sort((a, b) => {
+        const dateA = sortBy === 'created' ? a.createdAt : a.lastUpdated;
+        const dateB = sortBy === 'created' ? b.createdAt : b.lastUpdated;
+        
+        // Handle case where dates might be Timestamp objects or strings
+        const timeA = dateA?.toDate ? dateA.toDate().getTime() : new Date(dateA).getTime();
+        const timeB = dateB?.toDate ? dateB.toDate().getTime() : new Date(dateB).getTime();
+        
+        return timeB - timeA; // desc order
+      });
+
+      setResumes(sortedResumes);
     } catch (error) {
       console.error('Error fetching resumes:', error);
     } finally {
@@ -80,10 +93,11 @@ function ResumesPageContent() {
 
   useEffect(() => {
     fetchResumes();
-  }, [user]);
+  }, [user, sortBy]);
 
   const toggleSortBy = () => {
-    setSortBy(sortBy === 'created' ? 'updated' : 'created');
+    const newSortBy = sortBy === 'created' ? 'updated' : 'created';
+    setSortBy(newSortBy);
   };
 
   // Create resume card component
@@ -133,9 +147,9 @@ function ResumesPageContent() {
   }
 
   return (
-    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-navy-950 dark:via-navy-900 dark:to-slate-900">
-      <div className="relative w-full max-w-full gap-4 flex min-h-[calc(100dvh_-_64px)] w-full flex-col justify-start gap-4 px-4 md:px-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8" id="layout_full_screen">
-        <main className="sm:h-full lg:h-auto">
+    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16">
+      <div className="relative w-full max-w-full flex flex-col justify-start gap-4 px-4 md:px-6 lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8" id="layout_full_screen">
+        <main>
           <DashboardNav
             activeTab="resumes"
             showNotifications={true}

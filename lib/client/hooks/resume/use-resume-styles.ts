@@ -137,7 +137,6 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
           const parsedCache = JSON.parse(cached);
           // Check if cache is recent (within 1 hour)
           if (parsedCache.timestamp && Date.now() - parsedCache.timestamp < 3600000) {
-            console.log('Loading from fast cache for resume', resumeId);
             return {
               settings: parsedCache.settings || {},
               template: parsedCache.template || 'professional',

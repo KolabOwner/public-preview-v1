@@ -1,5 +1,4 @@
 'use server';
-
 /**
  * @fileOverview Gemini Multimodal PDF Resume Data Extraction Flow
  *
@@ -22,7 +21,6 @@
  * @exports ExtractResumeDataInput - Input schema requiring PDF data URI
  * @exports ExtractResumeDataOutput - Structured output following RMS schema
  */
-
 import { ai } from '@/lib/ai/genkit';
 import { z } from 'genkit';
 
@@ -34,9 +32,7 @@ const ExtractResumeDataInputSchema = z.object({
       'The resume PDF file, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'
     ),
 });
-
 export type ExtractResumeDataInput = z.infer<typeof ExtractResumeDataInputSchema>;
-
 const ExtractResumeDataOutputSchema = z.object({
   contactInformation: z.object({
     name: z.string().optional().describe('The full name of the resume owner.'),
@@ -75,29 +71,24 @@ const ExtractResumeDataOutputSchema = z.object({
     date: z.string().optional().describe('The date the certification was awarded.'),
   })).optional().describe('Certifications held by the resume owner.'),
 });
-
 export type ExtractResumeDataOutput = z.infer<typeof ExtractResumeDataOutputSchema>;
-
 export async function extractResumeData(input: ExtractResumeDataInput): Promise<ExtractResumeDataOutput> {
   console.log('🔍 Starting Gemini multimodal PDF extraction');
-  
   // Validate input data URI format
   if (!input.resumeDataUri.startsWith('data:')) {
     throw new Error('Invalid data URI format. Expected data URI with MIME type and base64 encoding');
   }
-  
   // Extract MIME type to ensure we're processing a PDF
   const mimeMatch = input.resumeDataUri.match(/^data:([^;]+);base64,/);
   if (!mimeMatch) {
     throw new Error('Invalid data URI format. Missing MIME type');
   }
-  
   const mimeType = mimeMatch[1];
   if (mimeType !== 'application/pdf') {
     console.warn(`⚠️ Unexpected MIME type: ${mimeType}. Expected application/pdf`);
   }
   
-  console.log(`📄 Processing PDF with MIME type: ${mimeType}`);
+
   
   try {
     const result = await extractResumeDataFlow(input);
@@ -108,20 +99,17 @@ export async function extractResumeData(input: ExtractResumeDataInput): Promise<
     throw error;
   }
 }
-
 const extractResumeDataPrompt = ai.definePrompt({
   name: 'extractResumeDataPrompt',
   input: {schema: ExtractResumeDataInputSchema},
   output: {schema: ExtractResumeDataOutputSchema},
   prompt: `You are an expert AI resume parser. Extract ALL information from this PDF resume.
-
 **CRITICAL BUG FIX INSTRUCTIONS:**
 1. Phone numbers should be extracted EXACTLY as shown - no extra whitespace or newlines
 2. If you see repeated newlines or whitespace, clean them to a single space
 3. MUST extract ALL experience entries - do not return experience_count: 0
 4. MUST extract ALL education entries - do not return education_count: 0
 5. MUST extract ALL skills - do not return skill_count: 0
-
 **STEP-BY-STEP PARSING APPROACH:**
 1. First, scan the ENTIRE document to identify all sections
 2. Look for section headers like: EXPERIENCE, EDUCATION, SKILLS, PROJECTS, etc.
@@ -129,34 +117,28 @@ const extractResumeDataPrompt = ai.definePrompt({
 4. For each experience entry, extract: company, role/title, dates, ALL bullet points as description
 5. For each education entry, extract: institution, degree, dates, GPA if present
 6. Extract ALL skills mentioned anywhere in the document
-
 **CONTACT INFO EXTRACTION:**
 - Name: Extract the full name (usually at the top in larger font)
 - Email: Look for @ symbol
 - Phone: Extract digits only, format as (XXX) XXX-XXXX if possible
 - LinkedIn: Look for linkedin.com URLs
 - IMPORTANT: If phone appears with extra spaces/newlines, clean it to just the number
-
 **EXPERIENCE EXTRACTION:**
 Look for variations of experience sections:
 - "EXPERIENCE", "WORK EXPERIENCE", "PROFESSIONAL EXPERIENCE", "EMPLOYMENT"
 - Each entry typically has: Company Name, Job Title, Dates, Location, Bullet points
 - INCLUDE ALL BULLET POINTS in the description field
 - Example format: "• Managed team of 5. • Increased sales by 20%. • Implemented new CRM system."
-
 **EDUCATION EXTRACTION:**
 Look for variations of education sections:
 - "EDUCATION", "ACADEMIC BACKGROUND", "QUALIFICATIONS"
 - Each entry has: School Name, Degree Type, Major/Field, Graduation Date, GPA (optional)
-
 **SKILLS EXTRACTION:**
 Look for variations of skills sections:
 - "SKILLS", "TECHNICAL SKILLS", "CORE COMPETENCIES"
 - Extract as array of individual skills
 - Include skills mentioned in experience descriptions too
-
 **PDF INPUT:** {{media url=resumeDataUri}}
-
 **VALIDATION CHECKLIST:**
 Before returning results, verify:
 ✓ Phone number is clean (no repeated newlines)
@@ -165,10 +147,8 @@ Before returning results, verify:
 ✓ Skills count > 0 if skills are mentioned
 ✓ All bullet points are captured in descriptions
 ✓ No truncated or missing sections
-
 Return complete extraction following the schema.`,
 });
-
 const extractResumeDataFlow = ai.defineFlow(
   {
     name: 'extractResumeDataFlow',

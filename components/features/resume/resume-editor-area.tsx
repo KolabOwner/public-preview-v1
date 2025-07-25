@@ -549,9 +549,6 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
         );
 
       case 'contact':
-        console.log('Resume data:', resume);
-        console.log('Parsed resumeData:', resumeData);
-        console.log('Contact info being passed to form:', resumeData.contactInfo);
         return (
           <ContactForm
             initialData={resumeData.contactInfo}

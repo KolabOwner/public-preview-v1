@@ -654,45 +654,89 @@
    ================================================================= */
 .app-sidebar {
   transition: all var(--transition-smooth);
+}
 
-  /* Collapsed state for resume editor routes */
-  &[data-route*="/dashboard/resumes/"] {
-    &[data-route*="/summary"],
-    &[data-route*="/contact"],
-    &[data-route*="/experience"],
-    &[data-route*="/education"],
-    &[data-route*="/skills"],
-    &[data-route*="/projects"],
-    &[data-route*="/involvement"],
-    &[data-route*="/coursework"],
-    &[data-route*="/preview"] {
-      width: var(--sidebar-collapsed);
-      min-width: var(--sidebar-collapsed);
+/* Collapsed state for resume editor routes */
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/education"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/skills"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/projects"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"],
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] {
+  width: var(--sidebar-collapsed);
+  min-width: var(--sidebar-collapsed);
+}
 
-      .sidebar-content {
-        @apply items-center px-2;
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/education"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/skills"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/projects"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content {
+  @apply items-center px-2;
+}
 
-        /* Hide non-essential elements */
-        > *:not(nav):not(:first-child) {
-          @apply hidden;
-        }
-      }
+/* Hide non-essential elements in collapsed state */
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/education"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/skills"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/projects"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content > *:not(nav):not(:first-child) {
+  @apply hidden;
+}
 
-      /* Navigation adjustments */
-      nav {
-        @apply flex flex-col items-center;
+/* Navigation adjustments for collapsed state */
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/education"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/skills"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/projects"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav {
+  @apply flex flex-col items-center;
+}
 
-        a {
-          @apply w-12 h-12 justify-center rounded-xl;
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/education"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/skills"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/projects"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav a,
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a {
+  @apply w-12 h-12 justify-center rounded-xl;
+}
 
-          /* Hide labels, keep icons */
-          > *:not(.sidebar-icon) {
-            @apply hidden;
-          }
-        }
-      }
-    }
-  }
+/* Hide labels, keep icons in collapsed state */
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/education"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/skills"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/projects"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a > *:not(.sidebar-icon) {
+  @apply hidden;
 }
 
 /* =================================================================

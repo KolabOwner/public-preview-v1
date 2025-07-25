@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -27,7 +26,6 @@ import {
   TemplateError
 } from "@/lib/client/utils/template-errors";
 import { DocumentSettingsClient } from "@/lib/client/services/resume/document-settings-client";
-
 export interface TemplateGallerySidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -36,7 +34,6 @@ export interface TemplateGallerySidebarProps {
   disabled?: boolean;
   resumeId?: string;
 }
-
 // Template image mapping
 const TEMPLATE_IMAGES: Record<string, string> = {
   modern: "/images/templates/ModernTemplate.png",
@@ -48,14 +45,11 @@ const TEMPLATE_IMAGES: Record<string, string> = {
   technical: "/images/templates/ModernTemplate.png",
   bold: "/images/templates/BoldTemplate.png"
 };
-
 // Featured/Recommended templates (most popular ones)
 const RECOMMENDED_TEMPLATE_IDS = ["professional", "modern", "minimal", "bold"];
-
 // Get recommended and other templates from the actual template data
 const RECOMMENDED_TEMPLATES = RECOMMENDED_TEMPLATE_IDS.map(id => RESUME_TEMPLATES[id]).filter(Boolean);
 const OTHER_TEMPLATE = RESUME_TEMPLATES["executive"]; // Just show the Alternative/Executive template
-
 const TemplateCard = memo<{
   template: any;
   isSelected: boolean;
@@ -77,7 +71,6 @@ const TemplateCard = memo<{
           ? 'border-corporate-gold-500 shadow-xl shadow-corporate-gold-500/20 scale-105'
           : 'border-corporate-navy-200 hover:border-corporate-gold-300 hover:shadow-lg'
       }`}>
-
         {/* Header */}
         <div className="p-6 pb-4">
           <div className="flex items-center justify-between mb-3">
@@ -95,7 +88,6 @@ const TemplateCard = memo<{
                 )}
               </div>
             </div>
-
             {isSelected && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -107,11 +99,9 @@ const TemplateCard = memo<{
               </motion.div>
             )}
           </div>
-
           <p className="text-corporate-navy-600 text-sm leading-relaxed mb-4">
             {template.description}
           </p>
-
           {/* Features */}
           <div className="flex items-center gap-4 mb-4">
             <div className="flex items-center gap-1">
@@ -124,7 +114,6 @@ const TemplateCard = memo<{
             </div>
           </div>
         </div>
-
         {/* Template Preview */}
         <div className="px-6 pb-4">
           <button
@@ -140,14 +129,12 @@ const TemplateCard = memo<{
                 className="object-contain object-top transition-transform duration-300 group-hover:scale-105"
                 sizes="(max-width: 600px) 100vw, 600px"
               />
-
               {/* Overlay on hover */}
               <div className="absolute inset-0 bg-gradient-to-t from-corporate-navy-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <div className="bg-white/95 backdrop-blur-sm rounded-full p-3 transform scale-0 group-hover:scale-100 transition-transform duration-300">
                   <ArrowRight className="w-6 h-6 text-corporate-navy-900" />
                 </div>
               </div>
-
               {/* Selection indicator */}
               {isSelected && (
                 <motion.div
@@ -156,7 +143,6 @@ const TemplateCard = memo<{
                   className="absolute inset-0 border-4 border-corporate-gold-500 rounded-xl pointer-events-none"
                 />
               )}
-
               {/* Premium badge for locked templates */}
               {!canAccess && (
                 <div className="absolute top-3 right-3 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 px-2 py-1 rounded-full text-xs font-bold">
@@ -166,7 +152,6 @@ const TemplateCard = memo<{
             </div>
           </button>
         </div>
-
         {/* Action Buttons */}
         <div className="px-6 pb-6">
           <div className="flex gap-2">
@@ -199,7 +184,6 @@ const TemplateCard = memo<{
             </Button>
           </div>
         </div>
-
         {/* Loading overlay */}
         {isLoading && (
           <motion.div
@@ -217,9 +201,7 @@ const TemplateCard = memo<{
     </motion.div>
   );
 });
-
 TemplateCard.displayName = "TemplateCard";
-
 const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
   isOpen,
   onClose,
@@ -232,15 +214,11 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
   const [isLoading, setIsLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const { subscription, canAccessTemplate } = useSubscription();
-
   const handleTemplateSelect = useCallback(async (templateId: string) => {
     if (!onTemplateChange || disabled || isLoading) return;
-
     // Clear any previous errors
     setError(null);
-
     // Validate template exists
     const template = RESUME_TEMPLATES[templateId];
     if (!template) {
@@ -249,7 +227,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
       console.error(errorMessage, { availableTemplates: Object.keys(RESUME_TEMPLATES) });
       return;
     }
-
     // Check subscription access
     if (!canAccessTemplate(templateId)) {
       if (templateId !== 'professional') {
@@ -257,49 +234,40 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
         return;
       }
     }
-
     // Use safe template operation wrapper
     const result = await TemplateErrorHandler.safeTemplateOperation(
       async () => {
         setIsLoading(true);
-
         console.log(`Applying template: ${template.name}`, {
           templateId,
           category: template.category,
           hasCustomColors: template.styles.colors.primary !== '#000000',
           hasDecorations: template.styles.decorations.useShadows || template.styles.decorations.useRoundedCorners,
         });
-
         // Apply template
         await onTemplateChange(templateId);
-
         // Template persistence is now handled by the useResumeStyles hook
         // so we don't need to duplicate the Firestore save here
       },
       templateId,
       'template_gallery_selection'
     );
-
     // Handle result
     if (TemplateErrorHandler.validateOperationResult(result)) {
-      console.log(`Template "${template.name}" applied successfully`);
       setError(null);
     } else {
       // Handle error with recovery
       const { error: templateError } = result;
       const userMessage = TemplateErrorRecovery.getUserFriendlyMessage(templateError);
       setError(userMessage);
-
       // Attempt recovery for critical errors
       if (templateError instanceof TemplateError && templateError.code === 'TEMPLATE_APPLICATION_ERROR') {
         const recovery = await TemplateErrorRecovery.recoverFromTemplateError(templateError);
-
         if (recovery.recovered && recovery.templateId !== templateId) {
           console.log(`Attempting recovery with template: ${recovery.templateId}`);
           // Could attempt to apply fallback template here
         }
       }
-
       // Log detailed error in development
       if (process.env.NODE_ENV === 'development') {
         console.error('Template selection failed:', {
@@ -309,12 +277,9 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
         });
       }
     }
-
     setIsLoading(false);
   }, [onTemplateChange, disabled, isLoading, canAccessTemplate]);
-
   if (!isOpen) return null;
-
   return (
     <motion.div
       initial={{ x: 600, opacity: 0 }}
@@ -329,7 +294,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
         <div className="absolute bottom-20 left-10 w-48 h-48 bg-corporate-amber-400/8 rounded-full blur-2xl animate-pulse delay-1000"></div>
         <div className="absolute inset-0 bg-grid-black opacity-[0.02]"></div>
       </div>
-
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between p-8 border-b border-corporate-navy-200/50 bg-white/80 backdrop-blur-sm">
         <div>
@@ -340,7 +304,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
             Choose your perfect professional format
           </p>
         </div>
-
         <Button
           onClick={onClose}
           variant="ghost"
@@ -351,7 +314,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
           <X size={20} />
         </Button>
       </div>
-
       {/* Tab Navigation */}
       <div className="relative z-10 flex bg-white/60 backdrop-blur-sm border-b border-corporate-navy-200/50">
         <button
@@ -374,7 +336,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
             />
           )}
         </button>
-
         <button
           onClick={() => setActiveTab("other")}
           className={`flex-1 py-4 px-8 text-sm font-semibold transition-all duration-300 relative ${
@@ -396,7 +357,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
           )}
         </button>
       </div>
-
       {/* Error Display */}
       <AnimatePresence>
         {error && (
@@ -423,7 +383,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
           </motion.div>
         )}
       </AnimatePresence>
-
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto relative z-10">
         <div className="p-8 space-y-8">
@@ -472,7 +431,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
           </AnimatePresence>
         </div>
       </div>
-
       {/* Chat Support Button */}
       <motion.div
         initial={{ scale: 0 }}
@@ -488,7 +446,6 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
           <MessageCircle size={24} />
         </Button>
       </motion.div>
-
       {/* Upgrade Modal */}
       <UpgradeModal
         isOpen={showUpgradeModal}
@@ -497,6 +454,5 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
     </motion.div>
   );
 });
-
 TemplateGallerySidebar.displayName = "TemplateGallerySidebar";
 export default TemplateGallerySidebar;

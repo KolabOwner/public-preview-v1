@@ -45,12 +45,6 @@ export class DocumentSettingsClient {
         updatedAt: new Date().toISOString(),
       });
 
-      console.log(`Document settings saved for resume ${resumeId}`, {
-        template,
-        fontSize: settings.fontSize,
-        fontFamily: settings.fontFamily,
-        primaryColor: settings.primaryColor,
-      });
 
       return true;
     } catch (error) {

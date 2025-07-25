@@ -1,6 +1,5 @@
 // app/api/resume/parse/route.ts
 // API route for parsing resumes from PDF or text
-
 import { NextRequest, NextResponse } from 'next/server';
 import {
   FileStatus,
@@ -13,20 +12,15 @@ import {
 // Increase timeout for API route
 export const maxDuration = 30; // 30-second timeout
 export const dynamic = 'force-dynamic';
-
 // Handle CORS preflight requests
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, { status: 200 });
 }
-
 export async function POST(request: NextRequest) {
-  console.log('=== Parse Resume API Called ===');
   const startTime = Date.now();
-
   try {
     // Check if the request is multipart/form-data (file upload) or JSON (text parsing)
     const contentType = request.headers.get('content-type') || '';
-    
     if (contentType.includes('multipart/form-data')) {
       return handleFileUpload(request, startTime);
     } else {
@@ -35,7 +29,6 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Parse endpoint error:', error);
     const elapsed = Date.now() - startTime;
-
     return NextResponse.json(
       {
         success: false,
@@ -46,7 +39,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 /**
  * Handle file upload requests
  */
@@ -56,14 +48,12 @@ async function handleFileUpload(request: NextRequest, startTime: number) {
     const file = formData.get('file') as File;
     const userId = formData.get('userId') as string || 'anonymous';
     const title = formData.get('title') as string || '';
-    
     if (!file) {
       return NextResponse.json(
         { success: false, error: 'No file provided' },
         { status: 400 }
       );
     }
-
     // Check file type
     if (!file.type.includes('pdf')) {
       return NextResponse.json(
@@ -72,12 +62,11 @@ async function handleFileUpload(request: NextRequest, startTime: number) {
       );
     }
 
-    console.log(`Processing uploaded PDF: ${file.name} (${file.size} bytes) for user: ${userId} using Gemini AI`);
+
     
     // Queue the job for background processing
     const { jobQueue } = await import('@/lib/server/queue/job-queue');
     const jobId = await jobQueue.enqueue('pdf-parse', { file, options: { userId } });
-    
     return NextResponse.json({
       success: true,
       jobId,
@@ -92,7 +81,6 @@ async function handleFileUpload(request: NextRequest, startTime: number) {
     );
   }
 }
-
 /**
  * Handle text parsing requests
  */
@@ -100,30 +88,24 @@ async function handleTextParsing(request: NextRequest, startTime: number) {
   try {
     const body = await request.json();
     const { resumeText, userId = 'anonymous', saveToFirebase = true } = body;
-
     if (!resumeText) {
       return NextResponse.json(
         { success: false, error: 'Resume text is required' },
         { status: 400 }
       );
     }
-
     if (resumeText.length > 100000) {
       return NextResponse.json(
         { success: false, error: 'Resume text too long. Maximum 100,000 characters.' },
         { status: 400 }
       );
     }
-
     console.log(`Parsing resume text (${resumeText.length} characters) for user: ${userId} using Genkit AI`);
-
     // Use the new Genkit-based parser instead of the old Ollama parser
     const result = await parseResumeTextWithGenkit(resumeText, { userId, saveToFirebase });
-
     if (!result || !result.success) {
       throw new Error(result?.error || 'Failed to parse resume');
     }
-    
     // Add parsing metadata
     const elapsed = Date.now() - startTime;
     return NextResponse.json({
@@ -139,29 +121,24 @@ async function handleTextParsing(request: NextRequest, startTime: number) {
     );
   }
 }
-
 // GET request for checking the status of a resume processing job
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const resumeId = url.searchParams.get('resumeId');
-    
     if (!resumeId) {
       return NextResponse.json(
         { success: false, error: 'Resume ID is required' },
         { status: 400 }
       );
     }
-    
     const resume = await PDFProcessor.getResume(resumeId);
-    
     if (!resume) {
       return NextResponse.json(
         { success: false, error: 'Resume not found' },
         { status: 404 }
       );
     }
-    
     return NextResponse.json({
       success: true,
       resumeId,

@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
@@ -14,12 +13,10 @@ import {
   Upload,
   Info
 } from 'lucide-react';
-
 interface CreateResumeModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
 export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResumeModalProps) {
   const [title, setTitle] = useState('');
   const [experience, setExperience] = useState('');
@@ -32,16 +29,13 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
   const [isDragging, setIsDragging] = useState(false);
   const [resumeId, setResumeId] = useState<string | null>(null);
   const [processingResult, setProcessingResult] = useState<ProcessingResult | null>(null);
-  
   // Job targeting fields
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const router = useRouter();
   const { usage, loading: usageLoading, incrementPdfDownload, canDownloadPdf } = useUserUsage();
-
   // Create onClose function from the prop
   const onClose = () => {
     // Reset all state when closing
@@ -63,7 +57,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
     }
     onOpenChange(false);
   };
-
   // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
@@ -86,10 +79,8 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
       }
     }
   }, [isOpen]);
-
   // Early return if modal is not open
   if (!isOpen) return null;
-
   const experienceOptions = [
     'Entry Level (0-2 years)',
     'Mid Level (3-5 years)',
@@ -97,103 +88,83 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
     'Expert Level (10+ years)',
     'Student/New Graduate'
   ];
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
-
     // Reset any previous state
     setError('');
     setResumeId(null);
     setProcessingResult(null);
-
     // Check if file is PDF
     if (!selectedFile.type.includes('pdf')) {
       setError('Please upload a PDF file');
       return;
     }
-
     // Check file size (10MB limit)
     if (selectedFile.size > 10 * 1024 * 1024) {
       setError('File size exceeds 10MB limit');
       return;
     }
-
     setFile(selectedFile);
     setShowImportDropdown(true);
   };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
   };
-
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
   };
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-
     // Reset any previous state
     setError('');
     setResumeId(null);
     setProcessingResult(null);
-
     const droppedFile = e.dataTransfer.files[0];
     if (!droppedFile) return;
-
     // Check if file is PDF
     if (!droppedFile.type.includes('pdf')) {
       setError('Please upload a PDF file');
       return;
     }
-
     // Check file size (10MB limit)
     if (droppedFile.size > 10 * 1024 * 1024) {
       setError('File size exceeds 10MB limit');
       return;
     }
-
     setFile(droppedFile);
     setShowImportDropdown(true);
   };
 
 
   const handleProcessingComplete = (resumeData: any) => {
-    console.log('Processing completed:', resumeData);
     // This will be called when the ResumeProcessingStatus component
     // detects that processing is complete
   };
-
   const handleSubmit = async () => {
     if (!title.trim()) {
       setError('Please enter a resume name');
       return;
     }
-
     if (!user) {
       setError('You must be logged in to create a resume');
       return;
     }
-
     // Check if usage is still loading
     if (usageLoading) {
       setError('Loading your usage information...');
       return;
     }
-
     // Check PDF generation limit for file uploads
     if (file && !canDownloadPdf()) {
       setError(`You've reached your PDF generation limit (${usage.pdfGenerations}/${usage.maxPdfGenerations}). Please upgrade your plan.`);
       return;
     }
-
     setIsUploading(true);
     setError('');
-
     try {
       // If no file is uploaded, create a blank resume
       if (!file) {
@@ -206,7 +177,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
           updatedAt: serverTimestamp(),
           status: FileStatus.UPLOADED
         };
-        
         // If targeted and job info provided, save it
         if (isTargeted && jobTitle && jobDescription) {
           resumeData.job_info = {
@@ -217,20 +187,16 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
             created_at: new Date().toISOString()
           };
         }
-
         // Create resume document in Firestore
         const docRef = await addDoc(collection(db, 'resumes'), resumeData);
-
         // No need to update resume count anymore
-
         // Redirect to the resume editor
         router.push(`/dashboard/resumes/${docRef.id}`);
         onClose();
         return;
       }
-
       // For file uploads, create a resume and process it with PDFProcessor
-      console.log(`Processing PDF file: ${file.name} (${file.size} bytes)`);
+
 
       // Create a new resume record in Firestore
       const newResumeId = await PDFProcessor.createResume({
@@ -238,20 +204,16 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
         title: title || file.name.replace(/\.pdf$/i, ''),
         initialStatus: FileStatus.UPLOADED
       });
-
       setResumeId(newResumeId);
-
       // Process the PDF
       const result = await PDFProcessor.processPDF(file, newResumeId, {
         userId: user.uid,
         saveToFirebase: true,
         title: title || file.name.replace(/\.pdf$/i, '')
       });
-
       setProcessingResult(result);
-
       if (result.success) {
-        console.log('PDF processing completed successfully:', result);
+
 
         // Update the resume with additional metadata and job info if targeted
         const resumeRef = doc(db, 'resumes', newResumeId);
@@ -260,7 +222,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
           isTargeted,
           updatedAt: serverTimestamp()
         };
-        
         // If targeted and job info provided, save it
         if (isTargeted && jobTitle && jobDescription) {
           updateData.job_info = {
@@ -271,12 +232,9 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
             created_at: new Date().toISOString()
           };
         }
-        
         await updateDoc(resumeRef, updateData);
-
         // Increment PDF generation count for uploaded PDFs
         await incrementPdfDownload();
-
         // Redirect to the resume edit page after successful processing
         setTimeout(() => {
           router.push(`/dashboard/resumes/${newResumeId}`);
@@ -293,7 +251,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
       setIsUploading(false);
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-white/95 dark:bg-corporate-navy-800 backdrop-blur-sm rounded-lg w-full max-w-md shadow-2xl border border-corporate-navy-200 dark:border-corporate-navy-600">
@@ -307,7 +264,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
             <X className="w-6 h-6" />
           </button>
         </div>
-
         {/* Content */}
         <div className="p-6 space-y-6">
           {error && (
@@ -315,7 +271,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
               {error}
             </div>
           )}
-
           {/* Resume Name */}
           <div>
             <label className="block text-sm font-medium text-corporate-navy-700 dark:text-gray-300 mb-2">
@@ -329,7 +284,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
               className="w-full px-4 py-3 bg-white dark:bg-corporate-navy-700 border border-corporate-navy-300 dark:border-corporate-navy-600 rounded-md text-corporate-navy-900 dark:text-white placeholder-corporate-navy-500 dark:placeholder-gray-400 focus:outline-none focus:border-corporate-amber-500 focus:ring-2 focus:ring-corporate-amber-500/20 transition-colors"
             />
           </div>
-
           {/* Experience */}
           <div className="relative">
             <label className="block text-sm font-medium text-corporate-navy-700 dark:text-gray-300 mb-2">
@@ -344,7 +298,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
               </span>
               <ChevronDown className={`w-5 h-5 transition-transform ${showExperienceDropdown ? 'rotate-180' : ''}`} />
             </button>
-
             {showExperienceDropdown && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-corporate-navy-700 border border-corporate-navy-300 dark:border-corporate-navy-600 rounded-md shadow-lg z-10 overflow-hidden backdrop-blur-sm">
                 {experienceOptions.map((option) => (
@@ -373,7 +326,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
               <span>IMPORT YOUR EXISTING RESUME</span>
               <ChevronDown className={`w-5 h-5 transition-transform ${showImportDropdown ? 'rotate-180' : ''}`} />
             </button>
-
             {showImportDropdown && (
               <div className="mt-2">
                 {!resumeId ? (
@@ -421,7 +373,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                         </div>
                       </div>
                     </div>
-
                     <ResumeProcessingStatus
                       resumeId={resumeId}
                       onProcessingComplete={handleProcessingComplete}
@@ -430,7 +381,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                     />
                   </div>
                 )}
-
                 <div className="mt-2 flex items-start gap-2">
                   <Info className="w-4 h-4 text-corporate-navy-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-corporate-navy-600 dark:text-gray-500">
@@ -440,7 +390,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
               </div>
             )}
           </div>
-
           {/* Target Resume Toggle */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -460,7 +409,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                 />
               </button>
             </div>
-
             <div className="flex items-start gap-2">
               <div className="w-4 h-4 mt-0.5 flex-shrink-0 rounded-full bg-corporate-amber-500 flex items-center justify-center">
                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -473,7 +421,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                 you make it clear you have the experience required for the job.
               </p>
             </div>
-            
             {/* Job Details when targeted is enabled */}
             {isTargeted && (
               <div className="mt-4 space-y-3 p-4 bg-corporate-navy-50 dark:bg-corporate-navy-700 rounded-md border border-corporate-navy-200 dark:border-corporate-navy-600">
@@ -489,7 +436,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                     className="w-full px-3 py-2 bg-white dark:bg-corporate-navy-600 border border-corporate-navy-300 dark:border-corporate-navy-500 rounded-md text-corporate-navy-900 dark:text-white placeholder-corporate-navy-500 dark:placeholder-gray-400 focus:outline-none focus:border-corporate-amber-500 focus:ring-2 focus:ring-corporate-amber-500/20 transition-colors text-sm"
                   />
                 </div>
-                
                 <div>
                   <label className="block text-xs font-medium text-corporate-navy-600 dark:text-gray-400 mb-1">
                     JOB DESCRIPTION (Optional)
@@ -502,7 +448,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
                     className="w-full px-3 py-2 bg-white dark:bg-corporate-navy-600 border border-corporate-navy-300 dark:border-corporate-navy-500 rounded-md text-corporate-navy-900 dark:text-white placeholder-corporate-navy-500 dark:placeholder-gray-400 focus:outline-none focus:border-corporate-amber-500 focus:ring-2 focus:ring-corporate-amber-500/20 transition-colors text-sm resize-none"
                   />
                 </div>
-                
                 <p className="text-xs text-corporate-navy-500 dark:text-gray-400 italic">
                   Adding job details now will allow immediate keyword analysis after upload
                 </p>
@@ -510,7 +455,6 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
             )}
           </div>
         </div>
-
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-corporate-navy-200 dark:border-corporate-navy-600">
           <button

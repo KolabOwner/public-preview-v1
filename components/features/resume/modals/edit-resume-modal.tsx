@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -16,7 +15,6 @@ import {
   AlertCircle,
   FileText
 } from 'lucide-react';
-
 interface ResumeData {
   id: string;
   title: string;
@@ -28,14 +26,12 @@ interface ResumeData {
     description?: string;
   };
 }
-
 interface EditResumeModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   resumeData: ResumeData;
   onUpdateComplete?: (updatedData: ResumeData) => void;
 }
-
 export default function EditResumeModal({ 
   isOpen, 
   onOpenChange, 
@@ -49,12 +45,10 @@ export default function EditResumeModal({
   const [showLinkedInDropdown, setShowLinkedInDropdown] = useState(false);
   const [showImportDropdown, setShowImportDropdown] = useState(false);
   const [isTargeted, setIsTargeted] = useState(resumeData.isTargeted || false);
-  
   // Job targeting fields
   const [jobTitle, setJobTitle] = useState(resumeData.job_info?.title || '');
   const [companyName, setCompanyName] = useState(resumeData.job_info?.company || '');
   const [jobDescription, setJobDescription] = useState(resumeData.job_info?.description || '');
-
   // File upload state
   const [file, setFile] = useState<File | null>(null);
   const [linkedinFile, setLinkedinFile] = useState<File | null>(null);
@@ -63,12 +57,10 @@ export default function EditResumeModal({
   const [isDragging, setIsDragging] = useState(false);
   const [processingResult, setProcessingResult] = useState<ProcessingResult | null>(null);
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const linkedinFileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { usage, loading: usageLoading, incrementPdfDownload, canDownloadPdf } = useUserUsage();
-
   // Reset form to original values when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -85,7 +77,6 @@ export default function EditResumeModal({
       setIsProcessingPdf(false);
     }
   }, [isOpen, resumeData]);
-
   const onClose = () => {
     // Reset all state when closing
     setTitle(resumeData.title);
@@ -104,17 +95,13 @@ export default function EditResumeModal({
     setIsDragging(false);
     setProcessingResult(null);
     setIsProcessingPdf(false);
-    
     // Clear file inputs
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (linkedinFileInputRef.current) linkedinFileInputRef.current.value = '';
-    
     onOpenChange(false);
   };
-
   // Early return if modal is not open
   if (!isOpen) return null;
-
   const experienceOptions = [
     'Internship',
     'Entry level',
@@ -124,14 +111,11 @@ export default function EditResumeModal({
     'Director',
     'Executive'
   ];
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'pdf' | 'linkedin') => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
-
     setError('');
     setProcessingResult(null);
-
     // Validate file type based on type
     if (type === 'pdf') {
       if (!selectedFile.type.includes('pdf')) {
@@ -149,94 +133,75 @@ export default function EditResumeModal({
       setLinkedinFile(selectedFile);
       setShowLinkedInDropdown(true);
     }
-
     // Check file size (10MB limit)
     if (selectedFile.size > 10 * 1024 * 1024) {
       setError('File size exceeds 10MB limit');
       return;
     }
   };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
   };
-
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
   };
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     setError('');
     setProcessingResult(null);
-
     const droppedFile = e.dataTransfer.files[0];
     if (!droppedFile) return;
-
     if (!droppedFile.type.includes('pdf')) {
       setError('Please upload a PDF file');
       return;
     }
-
     if (droppedFile.size > 10 * 1024 * 1024) {
       setError('File size exceeds 10MB limit');
       return;
     }
-
     setFile(droppedFile);
     setShowImportDropdown(true);
   };
-
   const handleProcessingComplete = (updatedResumeData: any) => {
     console.log('PDF processing completed:', updatedResumeData);
     setIsProcessingPdf(false);
     // The resume data has been updated in Firestore by the PDFProcessor
     // We can close the modal or show success message
   };
-
   const handleSubmit = async () => {
     if (!title.trim()) {
       setError('Please enter a resume name');
       return;
     }
-
     if (!user) {
       setError('You must be logged in to update this resume');
       return;
     }
-
     // Check if usage is still loading
     if (usageLoading) {
       setError('Loading your usage information...');
       return;
     }
-
     // Check PDF generation limit for file uploads
     if ((file || linkedinFile) && !canDownloadPdf()) {
       setError(`You've reached your PDF generation limit (${usage.pdfGenerations}/${usage.maxPdfGenerations}). Please upgrade your plan.`);
       return;
     }
-
     setIsUploading(true);
     setError('');
-
     try {
       // If a new PDF file is uploaded, process it
       if (file) {
-        console.log(`Processing new PDF file: ${file.name} (${file.size} bytes)`);
         setIsProcessingPdf(true);
-
         const result = await PDFProcessor.processPDF(file, resumeData.id, {
           userId: user.uid,
           saveToFirebase: true,
           title: title
         });
-
         setProcessingResult(result);
-
         if (!result.success) {
           console.error('PDF processing failed:', result.error);
           setError(result.error || 'Failed to process PDF');
@@ -244,18 +209,15 @@ export default function EditResumeModal({
           setIsUploading(false);
           return;
         }
-
         // Increment PDF generation count for uploaded PDFs
         await incrementPdfDownload();
       }
-
       // Handle LinkedIn file upload
       if (linkedinFile) {
         // TODO: Implement LinkedIn .resume file processing
         console.log('Processing LinkedIn .resume file:', linkedinFile.name);
         // For now, just acknowledge the file
       }
-
       // Update resume metadata in Firestore
       const resumeRef = doc(db, 'resumes', resumeData.id);
       const updateData: any = {
@@ -264,7 +226,6 @@ export default function EditResumeModal({
         isTargeted,
         updatedAt: serverTimestamp()
       };
-
       // Update job targeting info if enabled
       if (isTargeted) {
         updateData.job_info = {
@@ -277,9 +238,7 @@ export default function EditResumeModal({
         // Remove job_info if targeting is disabled
         updateData.job_info = null;
       }
-
       await updateDoc(resumeRef, updateData);
-
       // Create updated resume data for callback
       const updatedResumeData: ResumeData = {
         ...resumeData,
@@ -292,12 +251,10 @@ export default function EditResumeModal({
           description: jobDescription.trim()
         } : undefined
       };
-
       // Call the completion callback
       if (onUpdateComplete) {
         onUpdateComplete(updatedResumeData);
       }
-
       // Close modal after successful update
       if (!isProcessingPdf) {
         onClose();
@@ -311,7 +268,6 @@ export default function EditResumeModal({
       }
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-white/95 dark:bg-gray-800 backdrop-blur-sm rounded-lg w-full max-w-md shadow-2xl border border-slate-200 dark:border-gray-600 max-h-[90vh] overflow-y-auto">
@@ -325,7 +281,6 @@ export default function EditResumeModal({
             <X className="w-6 h-6" />
           </button>
         </div>
-
         {/* Content */}
         <div className="p-6 space-y-6">
           {error && (
@@ -334,7 +289,6 @@ export default function EditResumeModal({
               <span>{error}</span>
             </div>
           )}
-
           {/* Resume Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase">
@@ -348,7 +302,6 @@ export default function EditResumeModal({
               className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-slate-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors font-semibold"
             />
           </div>
-
           {/* Experience */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase">
@@ -363,7 +316,6 @@ export default function EditResumeModal({
               </span>
               <ChevronDown className={`w-5 h-5 transition-transform text-gray-600 dark:text-gray-400 ${showExperienceDropdown ? 'rotate-180' : ''}`} />
             </button>
-
             {showExperienceDropdown && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md shadow-lg z-20 overflow-hidden backdrop-blur-sm">
                 {experienceOptions.map((option) => (
@@ -381,7 +333,6 @@ export default function EditResumeModal({
               </div>
             )}
           </div>
-
           {/* Import from LinkedIn */}
           <div>
             <button
@@ -391,7 +342,6 @@ export default function EditResumeModal({
               <span className="text-sm font-medium uppercase">Import your resume from linkedin</span>
               <ChevronDown className={`w-5 h-5 transition-transform text-gray-600 dark:text-gray-400 ${showLinkedInDropdown ? 'rotate-180' : 'rotate-[-90deg]'}`} />
             </button>
-
             {showLinkedInDropdown && (
               <div className="mt-2 space-y-2">
                 <div
@@ -412,7 +362,6 @@ export default function EditResumeModal({
                     <FileText className="w-5 h-5 text-gray-400" />
                   </div>
                 </div>
-                
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -431,7 +380,6 @@ export default function EditResumeModal({
               </div>
             )}
           </div>
-
           {/* Import Existing Resume */}
           <div>
             <button
@@ -441,7 +389,6 @@ export default function EditResumeModal({
               <span className="text-sm font-medium uppercase">Import your existing resume</span>
               <ChevronDown className={`w-5 h-5 transition-transform text-gray-600 dark:text-gray-400 ${showImportDropdown ? 'rotate-180' : ''}`} />
             </button>
-
             {showImportDropdown && (
               <div className="mt-2 space-y-2">
                 {!isProcessingPdf ? (
@@ -483,7 +430,6 @@ export default function EditResumeModal({
                         </div>
                       </div>
                     </div>
-
                     <ResumeProcessingStatus
                       resumeId={resumeData.id}
                       onProcessingComplete={handleProcessingComplete}
@@ -492,7 +438,6 @@ export default function EditResumeModal({
                     />
                   </div>
                 )}
-
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -502,10 +447,8 @@ export default function EditResumeModal({
               </div>
             )}
           </div>
-
           {/* Divider */}
           <div className="border-t border-slate-200 dark:border-gray-600 my-4" />
-
           {/* Target Resume Toggle */}
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -525,7 +468,6 @@ export default function EditResumeModal({
                 />
               </button>
             </div>
-            
             {/* Job Details when targeted is enabled */}
             {isTargeted && (
               <div className="space-y-4">
@@ -541,7 +483,6 @@ export default function EditResumeModal({
                     className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-slate-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors font-semibold"
                   />
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase">
                     Company name
@@ -554,7 +495,6 @@ export default function EditResumeModal({
                     className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-slate-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors font-semibold"
                   />
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase">
                     Job Description
@@ -572,7 +512,6 @@ export default function EditResumeModal({
             )}
           </div>
         </div>
-
         {/* Footer */}
         <div className="flex items-center justify-end gap-4 px-6 py-4 border-t border-slate-200 dark:border-gray-600 sticky bottom-0 bg-white/95 dark:bg-gray-800 backdrop-blur-sm">
           <button

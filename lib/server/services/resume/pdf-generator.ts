@@ -7,12 +7,10 @@ import { jsPDF } from 'jspdf';
 import { db, storage } from "@/config/firebase-config";
 import { extractResumeData } from '@/lib/ai/flows/resume/generate';
 import type { ExtractResumeDataOutput } from '@/lib/ai/flows/resume/generate';
-
 // Configure PDF.js worker
 if (typeof window !== 'undefined' && 'pdfjsLib' in window) {
   (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${(window as any).pdfjsLib.version}/pdf.worker.min.js`;
 }
-
 /**
  * Status of a file in the processing pipeline
  */
@@ -22,7 +20,6 @@ export enum FileStatus {
   PROCESSED = 'processed',
   ERROR = 'error'
 }
-
 export interface ParseResultResponse {
   success: boolean;
   data?: Record<string, string | number | boolean>; // RMS format
@@ -34,7 +31,6 @@ export interface ParseResultResponse {
   sectionsFound?: string[]; // List of sections that were found
   totalFields?: number; // Total number of RMS fields generated
 }
-
 export interface ParseOptions {
   userId?: string;
   saveToFirebase?: boolean;
@@ -42,7 +38,6 @@ export interface ParseOptions {
   includeRawData?: boolean;
   model?: 'gemini-1.5-flash' | 'gemini-1.5-pro';
 }
-
 /**
  * RMS Metadata Standard Schema using Zod
  */
@@ -64,48 +59,34 @@ const RMSContactSchema = z.object({
   rms_contact_twitter: z.string().optional(),
   rms_contact_portfolio: z.string().optional()
 });
-
 const RMSMetadataSchema = z.object({
   // Contact Information
   ...RMSContactSchema.shape,
-
   // Summary
   rms_summary: z.string().optional(),
   rms_objective: z.string().optional(),
-
   // Experience
   rms_experience_count: z.union([z.string(), z.number()]).optional(),
-
   // Education
   rms_education_count: z.union([z.string(), z.number()]).optional(),
-
   // Skills
   rms_skill_count: z.union([z.string(), z.number()]).optional(),
-
   // Projects
   rms_project_count: z.union([z.string(), z.number()]).optional(),
-
   // Certifications
   rms_certification_count: z.union([z.string(), z.number()]).optional(),
-
   // Involvements
   rms_involvement_count: z.union([z.string(), z.number()]).optional(),
-
   // Coursework
   rms_coursework_count: z.union([z.string(), z.number()]).optional(),
-
   // Publications
   rms_publication_count: z.union([z.string(), z.number()]).optional(),
-
   // Awards
   rms_award_count: z.union([z.string(), z.number()]).optional(),
-
   // Languages
   rms_language_count: z.union([z.string(), z.number()]).optional()
 }).catchall(z.any());
-
 export type RMSMetadata = z.infer<typeof RMSMetadataSchema>;
-
 /**
  * Interface for processing options
  */
@@ -116,7 +97,6 @@ export interface ProcessingOptions {
   title?: string;
   validateRMS?: boolean;
 }
-
 /**
  * Interface for processing results
  */
@@ -129,7 +109,6 @@ export interface ProcessingResult {
   status: FileStatus;
   validationErrors?: z.ZodError;
 }
-
 /**
  * Interface for batch processing
  */
@@ -140,7 +119,6 @@ export interface BatchProcessingOptions {
   continueOnError?: boolean;
   validateRMS?: boolean;
 }
-
 /**
  * Parsed resume data structure
  */
@@ -257,7 +235,6 @@ interface ParsedData {
     description?: string;
   }>;
 }
-
 /**
  * Resume data interface for PDF generation
  */
@@ -276,21 +253,18 @@ export interface ResumeData {
     margins?: { top: number; right: number; bottom: number; left: number };
   };
 }
-
 interface FontDefinition {
   family: string;
   size: number;
   weight: number;
   style?: 'normal' | 'bold' | 'italic';
 }
-
 interface PDFColors {
   text: { r: number; g: number; b: number };
   black: { r: number; g: number; b: number };
   gray: { r: number; g: number; b: number };
   accent: { r: number; g: number; b: number };
 }
-
 interface PDFConfiguration {
   colors: PDFColors;
   margins: { top: number; right: number; bottom: number; left: number };
@@ -308,7 +282,6 @@ interface PDFConfiguration {
     lineHeight: number;
   };
 }
-
 // Font configurations for different styles
 const FONT_CONFIGURATIONS: Record<string, Partial<PDFConfiguration>> = {
   professional: {
@@ -352,7 +325,6 @@ const FONT_CONFIGURATIONS: Record<string, Partial<PDFConfiguration>> = {
     }
   }
 };
-
 // Default configuration
 const DEFAULT_CONFIG: PDFConfiguration = {
   colors: {
@@ -369,7 +341,6 @@ const DEFAULT_CONFIG: PDFConfiguration = {
     lineHeight: 1.2
   }
 };
-
 // Font URLs from Google Fonts CDN - Updated to latest working URLs
 export const FONT_URLS = {
   merriweather: {
@@ -386,7 +357,6 @@ export const FONT_URLS = {
     bold: 'https://fonts.gstatic.com/s/merriweathersans/v26/2-cO9IRs1JiJN1FRAMjTN5zd9vgsFF_NbMQTb6hZ2JKZ.woff2'
   }
 };
-
 // Font family definitions
 export const FONT_FAMILIES = {
   merriweather: {
@@ -422,30 +392,23 @@ export const FONT_FAMILIES = {
     }
   }
 };
-
 // Font loading cache
 const fontCache = new Map<string, ArrayBuffer>();
-
 /**
  * Load font from URL and cache it
  */
 async function loadFontFromUrl(url: string): Promise<ArrayBuffer> {
   console.log(`[PDF] Attempting to load font from: ${url}`);
-  
   if (fontCache.has(url)) {
     console.log(`[PDF] Font found in cache for: ${url}`);
     return fontCache.get(url)!;
   }
-
   try {
-    console.log(`[PDF] Fetching font from URL: ${url}`);
     const response = await fetch(url);
     console.log(`[PDF] Fetch response status: ${response.status} ${response.statusText} for: ${url}`);
-    
     if (!response.ok) {
       throw new Error(`Failed to load font from ${url}: ${response.status} ${response.statusText}`);
     }
-
     const arrayBuffer = await response.arrayBuffer();
     console.log(`[PDF] Font loaded successfully, size: ${arrayBuffer.byteLength} bytes from: ${url}`);
     fontCache.set(url, arrayBuffer);
@@ -455,7 +418,6 @@ async function loadFontFromUrl(url: string): Promise<ArrayBuffer> {
     throw error;
   }
 }
-
 /**
  * Convert ArrayBuffer to base64
  */
@@ -465,33 +427,27 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   bytes.forEach(byte => binary += String.fromCharCode(byte));
   return btoa(binary);
 }
-
 /**
  * Add custom fonts to jsPDF instance
  */
 export async function addCustomFonts(doc: jsPDF, fontFamily: 'merriweather' | 'merriweatherSans' | 'openSans' = 'merriweather') {
   console.log(`[PDF] Starting font loading for: ${fontFamily}`);
-  
   // Production-ready approach: Skip external font loading to avoid reliability issues
   // Google Fonts URLs are unreliable for PDF generation and require WOFF2 conversion
   // Instead, ensure consistent rendering by using Times serif as a Merriweather substitute
   console.log(`[PDF] Using production-ready font strategy: Times serif fallback for reliable rendering`);
   console.log(`[PDF] This ensures consistent PDF output without external dependencies`);
-  
   // Return false to trigger Times fallback, which closely matches Merriweather's serif appearance
   return false;
 }
-
 /**
  * Get font name for jsPDF based on family, weight and style
  */
 export function getFontName(family: string, weight = 400, style: 'normal' | 'italic' = 'normal'): string {
   const fontFamily = FONT_FAMILIES[family as keyof typeof FONT_FAMILIES];
-
   if (!fontFamily) {
     return 'helvetica'; // Fallback
   }
-
   const weightDef = fontFamily.weights[weight as keyof typeof fontFamily.weights];
   if (!weightDef) {
     // Find closest weight
@@ -501,59 +457,49 @@ export function getFontName(family: string, weight = 400, style: 'normal' | 'ita
     );
     const closestWeightDef = fontFamily.weights[closest as keyof typeof fontFamily.weights];
     if (!closestWeightDef) return 'helvetica';
-
     if (typeof closestWeightDef === 'object' && style in closestWeightDef) {
       return closestWeightDef[style as keyof typeof closestWeightDef] || 'helvetica';
     }
     return (typeof closestWeightDef === 'object' && 'normal' in closestWeightDef) ? closestWeightDef.normal : 'helvetica';
   }
-
   if (typeof weightDef === 'object' && style in weightDef) {
     return weightDef[style as keyof typeof weightDef] || 'helvetica';
   }
   return (typeof weightDef === 'object' && 'normal' in weightDef) ? weightDef.normal : 'helvetica';
 }
-
 /**
  * Main class for processing PDF resumes with RMS compliance
  */
 export class PDFProcessor {
   private static pdfJsLoaded = false;
   private static RMS_VERSION = '2.0';
-
   /**
    * Initialize PDF.js library
    */
   private static async initializePdfJs(): Promise<void> {
     if (this.pdfJsLoaded) return;
-
     try {
       // Dynamically import PDF.js if not already loaded
       if (typeof window !== 'undefined' && !('pdfjsLib' in window)) {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-
         await new Promise<void>((resolve, reject) => {
           script.onload = () => resolve();
           script.onerror = () => reject(new Error('Failed to load PDF.js'));
           document.head.appendChild(script);
         });
-
         // Load worker
         const workerScript = document.createElement('script');
         workerScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
         await new Promise<void>((resolve, reject) => {
           workerScript.onload = () => resolve();
           workerScript.onerror = () => reject(new Error('Failed to load PDF.js worker'));
           document.head.appendChild(workerScript);
         });
       }
-
       // Configure worker
       const pdfjsLib = (window as any).pdfjsLib;
       pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-
       this.pdfJsLoaded = true;
       console.log('PDF.js initialized successfully');
     } catch (error) {
@@ -561,7 +507,6 @@ export class PDFProcessor {
       throw error;
     }
   }
-
   /**
    * Validate RMS data against schema
    */
@@ -580,7 +525,6 @@ export class PDFProcessor {
       throw error;
     }
   }
-
   /**
    * Create a new resume record in Firestore
    */
@@ -600,17 +544,14 @@ export class PDFProcessor {
         fileUrl: null,
         rmsVersion: this.RMS_VERSION
       };
-
       const docRef = await addDoc(collection(db, 'resumes'), resumeData);
       console.log(`Created new resume document with ID: ${docRef.id}`);
-
       return docRef.id;
     } catch (error) {
       console.error('Error creating resume document:', error);
       throw error;
     }
   }
-
   /**
    * Process a PDF file by uploading it, extracting text, and parsing it
    */
@@ -620,40 +561,32 @@ export class PDFProcessor {
     options: ProcessingOptions
   ): Promise<ProcessingResult> {
     const startTime = Date.now();
-
     try {
-      console.log(`Processing PDF for resume: ${resumeId}`);
+
 
       // Validate file
       this.validatePDFFile(file);
-
       // First, update the resume status to processing
       await this.updateResumeStatus(resumeId, FileStatus.PROCESSING);
-
       // Upload the PDF to Firebase Storage
       const fileUrl = await this.uploadPDFToStorage(file, options.userId, resumeId);
       console.log(`Uploaded PDF to: ${fileUrl}`);
-
       // Try to extract RMS metadata using ExifTool API first
       let exifRMSMetadata = null;
       try {
         console.log('Calling ExifTool API to extract RMS metadata...');
-
         // Create FormData with the PDF file
         const formData = new FormData();
         formData.append('file', file);
         formData.append('action', 'extract');
-
         const response = await fetch('/api/resumes/rms', {
           method: 'POST',
           body: formData,
         });
-
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data && result.data.hasRMSData && result.data.metadata) {
             exifRMSMetadata = result.data.metadata;
-            console.log(`Successfully extracted RMS metadata with ${result.data.fieldCount} fields via API`);
           } else {
             console.log('No RMS metadata found in PDF');
           }
@@ -664,26 +597,21 @@ export class PDFProcessor {
       } catch (error) {
         console.warn('Failed to extract RMS metadata via API:', error);
       }
-
       let rmsData: any;
       let validationErrors: any;
-
       // Debug RMS metadata before completeness check
       console.log('RMS metadata check:', {
         hasExifRMSMetadata: !!exifRMSMetadata,
         fieldCount: exifRMSMetadata ? Object.keys(exifRMSMetadata).length : 0,
         sampleFields: exifRMSMetadata ? Object.keys(exifRMSMetadata).slice(0, 5) : []
       });
-
       // Check if we have complete RMS metadata - if so, skip expensive AI parsing
       if (exifRMSMetadata && this.isCompleteRMSData(exifRMSMetadata)) {
         const fastPathStartTime = Date.now();
         console.log('🚀 Complete RMS metadata detected - using FAST PATH (skipping AI parsing)');
-
         // Use the existing RMS metadata directly
         rmsData = exifRMSMetadata;
         validationErrors = null;
-
         console.log('Fast Path - RMS Data contains:', {
           hasContactInfo: !!(rmsData.rms_contact_email || rmsData.Rms_contact_email),
           fullName: rmsData.rms_contact_fullName || rmsData.Rms_contact_fullName ||
@@ -691,32 +619,26 @@ export class PDFProcessor {
           email: rmsData.rms_contact_email || rmsData.Rms_contact_email,
           experienceCount: rmsData.rms_experience_count || rmsData.Rms_experience_count || 0
         });
-
         const fastPathTime = Date.now() - fastPathStartTime;
         console.log(`✅ RMS Fast Path completed in ${fastPathTime}ms (typical AI parsing: 10,000-60,000ms)`);
         console.log(`💰 Performance gain: ~${Math.round(30000/fastPathTime)}x faster processing`);
       } else {
         console.log('Incomplete or no RMS metadata - proceeding with Gemini multimodal PDF parsing');
-
         // Extract text from the PDF for AI parsing
         const pdfText = await this.extractTextFromPDF(file);
         console.log(`Extracted ${pdfText.length} characters of text`);
-
         if (!pdfText || pdfText.length < 100) {
           throw new Error('PDF text extraction failed or resulted in too little text');
         }
-
         // Use Gemini multimodal PDF parsing instead of text extraction + AI parsing
         try {
           const pdfBuffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file;
           const parseResult = await this.parseWithGeminiMultimodal(pdfBuffer, options.userId, options.validateRMS, true);
           rmsData = parseResult.rmsData;
           validationErrors = parseResult.validationErrors;
-
           console.log('Parsed resume data successfully using Gemini multimodal PDF capabilities');
         } catch (geminiError) {
           console.warn('Gemini multimodal parsing failed, falling back to text extraction + AI parsing:', geminiError);
-
           // Fallback to the old text-based approach
           const parseResult = await this.parseResumeText(
             pdfText,
@@ -725,21 +647,17 @@ export class PDFProcessor {
           );
           rmsData = parseResult.rmsData;
           validationErrors = parseResult.validationErrors;
-
           console.log('Parsed resume data successfully using fallback AI text parsing');
         }
-
         // Merge ExifTool RMS metadata with AI-parsed data if available
         if (exifRMSMetadata && rmsData) {
           console.log('Merging ExifTool RMS metadata with AI-parsed data...');
           rmsData = this.mergeRMSMetadata(exifRMSMetadata, rmsData);
         }
       }
-
       // Extract title from RMS data if not provided
       const rmsFullName = rmsData.rms_contact_fullName || rmsData.Rms_contact_fullName || '';
       const title = options.title || rmsFullName || 'Untitled Resume';
-
       // Save the results to Firebase
       if (options.saveToFirebase !== false) {
         await this.saveResultsToFirebase(resumeId, {
@@ -751,13 +669,10 @@ export class PDFProcessor {
         });
         console.log('Saved results to Firebase');
       }
-
       // Update the resume status to processed
       await this.updateResumeStatus(resumeId, FileStatus.PROCESSED);
-
       const processingTime = Date.now() - startTime;
       console.log(`PDF processing completed in ${processingTime}ms`);
-
       return {
         success: true,
         resumeId,
@@ -768,13 +683,11 @@ export class PDFProcessor {
       };
     } catch (error: any) {
       console.error('Error processing PDF:', error);
-
       // Update status to error
       await this.updateResumeStatus(resumeId, FileStatus.ERROR, {
         error: error.message || 'Unknown error occurred',
         errorTime: new Date().toISOString()
       });
-
       return {
         success: false,
         resumeId,
@@ -783,7 +696,6 @@ export class PDFProcessor {
       };
     }
   }
-
   /**
    * Get a resume by ID
    */
@@ -791,12 +703,10 @@ export class PDFProcessor {
     try {
       const resumeRef = doc(db, 'resumes', resumeId);
       const resumeSnap = await getDoc(resumeRef);
-
       if (!resumeSnap.exists()) {
         console.log(`Resume with ID ${resumeId} not found`);
         return null;
       }
-
       return {
         id: resumeSnap.id,
         ...resumeSnap.data()
@@ -806,7 +716,6 @@ export class PDFProcessor {
       throw error;
     }
   }
-
   /**
    * Validate PDF file
    */
@@ -815,19 +724,16 @@ export class PDFProcessor {
     if (!file.type || !file.type.includes('pdf')) {
       throw new Error('File must be a PDF');
     }
-
     // Check file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       throw new Error('File size must be less than 10MB');
     }
-
     // Check file name
     if (!file.name || file.name.length === 0) {
       throw new Error('File must have a valid name');
     }
   }
-
   /**
    * Upload a PDF file to Firebase Storage
    */
@@ -840,11 +746,8 @@ export class PDFProcessor {
     const safeFileName = file.name.replace(/[^a-zA-Z0-9-_.]/g, '_');
     const filename = `${timestamp}-${safeFileName}`;
     const storagePath = `resumes/${userId}/${resumeId}/${filename}`;
-
     console.log(`Uploading file to storage path: ${storagePath}`);
-
     const storageRef = ref(storage, storagePath);
-
     try {
       // Set metadata for the file
       const metadata = {
@@ -857,77 +760,62 @@ export class PDFProcessor {
           rmsVersion: this.RMS_VERSION
         }
       };
-
       // Upload the file with metadata
       const uploadResult = await uploadBytes(storageRef, file, metadata);
       console.log('Upload successful:', uploadResult);
-
       // Get the download URL
       const downloadUrl = await getDownloadURL(storageRef);
-
       return downloadUrl;
     } catch (error) {
       console.error('Error uploading file to Firebase Storage:', error);
       throw new Error(`Failed to upload PDF: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-
   /**
    * Extract text from a PDF file
    * Uses pdf.js or the PDF API endpoint
    */
   private static async extractTextFromPDF(file: File): Promise<string> {
     console.log('Extracting text from PDF');
-
     // First try the API endpoint
     try {
       const formData = new FormData();
       formData.append('file', file);
-
       console.log('Calling PDF extraction API...');
       const response = await fetch('/api/resumes/parse', {
         method: 'POST',
         body: formData,
       });
-
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`API error (${response.status}): ${errorText}`);
       }
-
       const result = await response.json();
-
       if (result.success && result.text) {
         console.log('Successfully extracted text via API');
         return result.text;
       }
-
       if (result.useClientSide) {
         console.log('API suggests using client-side extraction');
         return this.extractTextWithPdfJs(file);
       }
-
       throw new Error(result.error || 'Failed to extract text from PDF');
     } catch (error) {
       console.error('API extraction failed, falling back to client-side:', error);
       return this.extractTextWithPdfJs(file);
     }
   }
-
   /**
    * Extract text from a PDF file using PDF.js
    * This is a client-side extraction method
    */
   private static async extractTextWithPdfJs(file: File): Promise<string> {
     console.log('Using PDF.js for text extraction');
-
     try {
       // Initialize PDF.js if needed
       await this.initializePdfJs();
-
       // Convert file to ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
-
       // Load the PDF document
       const pdfjsLib = (window as any).pdfjsLib;
       const loadingTask = pdfjsLib.getDocument({
@@ -935,17 +823,13 @@ export class PDFProcessor {
         cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
         cMapPacked: true,
       });
-
       const pdf = await loadingTask.promise;
       console.log(`PDF loaded with ${pdf.numPages} pages`);
-
       let fullText = '';
-
       // Extract text from each page
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const textContent = await page.getTextContent();
-
         // Process text items
         const pageText = textContent.items
           .map((item: any) => {
@@ -956,21 +840,18 @@ export class PDFProcessor {
             return '';
           })
           .join(' ');
-
         fullText += pageText + '\n\n';
       }
-
       // Clean up the text
       fullText = this.cleanExtractedText(fullText);
 
-      console.log(`Successfully extracted ${fullText.length} characters from PDF`);
+
       return fullText;
     } catch (error) {
       console.error('PDF.js extraction error:', error);
       throw new Error(`Failed to extract text with PDF.js: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-
   /**
    * Clean extracted text from PDF
    */
@@ -993,7 +874,6 @@ export class PDFProcessor {
       .join('\n')
       .trim();
   }
-
   /**
    * Parse resume using Gemini multimodal PDF capabilities
    */
@@ -1008,19 +888,14 @@ export class PDFProcessor {
   }> {
     try {
       console.log('🚀 Using Gemini multimodal PDF parsing capabilities');
-
       // Convert PDF buffer to data URI for Gemini
       const resumeDataUri = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
-
       // Use Gemini's multimodal PDF extraction
       const extractionResult = await extractResumeData({ resumeDataUri });
-
       if (!extractionResult || Object.keys(extractionResult).length === 0) {
         throw new Error('Failed to extract resume data using Gemini multimodal PDF parsing');
       }
-
       console.log('✅ Gemini multimodal extraction completed successfully');
-
       // Convert to RMS format using enhanced or basic method
       let rmsData: Record<string, string | number | boolean>;
       if (useEnhancedFormatting) {
@@ -1031,7 +906,6 @@ export class PDFProcessor {
         console.log('[PDF] Using basic RMS formatting');
         rmsData = this.formatToRms(extractionResult);
       }
-
       // Validate RMS data if requested
       let validationErrors: z.ZodError | undefined = undefined;
       if (validateRMS) {
@@ -1042,7 +916,7 @@ export class PDFProcessor {
         }
       }
 
-      console.log('📊 Generated RMS data with fields:', Object.keys(rmsData).length);
+
 
       return { rmsData, validationErrors };
     } catch (error: any) {
@@ -1050,7 +924,6 @@ export class PDFProcessor {
       throw new Error(`Failed to parse resume with Gemini multimodal: ${error.message}`);
     }
   }
-
   /**
    * Enhanced resume text parser using Genkit AI with complete internal RMS support
    */
@@ -1065,19 +938,14 @@ export class PDFProcessor {
       includeRawData = false,
       model = 'gemini-1.5-flash'
     } = options;
-
     console.log(`[Genkit Parser] Parsing resume text using ${model} (${resumeText.length} chars)`);
-
     try {
       const startTime = Date.now();
-
       // Convert text to base64 data URI for Genkit
       const textAsBase64 = Buffer.from(resumeText).toString('base64');
       const resumeDataUri = `data:text/plain;base64,${textAsBase64}`;
-
       // Use Genkit's extractResumeData flow
       const extractionResult: ExtractResumeDataOutput = await extractResumeData({ resumeDataUri });
-
       if (!extractionResult || Object.keys(extractionResult).length === 0) {
         console.error('[Genkit Parser] Failed to extract resume data - empty result');
         return {
@@ -1085,13 +953,10 @@ export class PDFProcessor {
           error: 'Failed to extract resume data'
         };
       }
-
       // Analyze sections found
       const { sectionsFound, totalFields } = this.analyzeSections(extractionResult);
-
       // Choose formatting method
       let rmsData: Record<string, string | number | boolean>;
-
       if (useEnhancedFormatting) {
         console.log('[Genkit Parser] Using enhanced RMS formatting');
         const parsedData = this.convertExtractToParsedData(extractionResult);
@@ -1100,12 +965,9 @@ export class PDFProcessor {
         console.log('[Genkit Parser] Using basic RMS formatting');
         rmsData = this.formatToRms(extractionResult);
       }
-
       const parseTime = Date.now() - startTime;
-      console.log(`[Genkit Parser] Successfully parsed resume in ${parseTime}ms`);
       console.log(`[Genkit Parser] Sections found: ${sectionsFound.join(', ')}`);
       console.log(`[Genkit Parser] Generated ${Object.keys(rmsData).length} RMS fields`);
-
       const result: ParseResultResponse = {
         success: true,
         data: rmsData,
@@ -1115,13 +977,10 @@ export class PDFProcessor {
         sectionsFound,
         totalFields: Object.keys(rmsData).length
       };
-
       if (includeRawData) {
         result.extractedData = extractionResult;
       }
-
       return result;
-
     } catch (error) {
       console.error('[Genkit Parser] Error in parseResumeTextWithGenkit:', error);
       return {
@@ -1130,7 +989,6 @@ export class PDFProcessor {
       };
     }
   }
-
   /**
    * Enhanced PDF parser using Genkit AI with complete internal RMS support
    */
@@ -1144,12 +1002,9 @@ export class PDFProcessor {
       includeRawData = false,
       model = 'gemini-1.5-flash'
     } = options;
-
     console.log(`[Genkit Parser] Parsing PDF resume using ${model}`);
-
     try {
       const startTime = Date.now();
-
       // Convert PDF to base64 data URI
       let buffer: Buffer;
       if (pdfFile instanceof File) {
@@ -1158,13 +1013,10 @@ export class PDFProcessor {
       } else {
         buffer = pdfFile;
       }
-
       const resumeDataUri = `data:application/pdf;base64,${buffer.toString('base64')}`;
       console.log(`[Genkit Parser] PDF converted to base64 (${buffer.length} bytes)`);
-
       // Use Genkit's extractResumeData flow which handles PDFs
       const extractionResult: ExtractResumeDataOutput = await extractResumeData({ resumeDataUri });
-
       if (!extractionResult || Object.keys(extractionResult).length === 0) {
         console.error('[Genkit Parser] Failed to extract resume data from PDF - empty result');
         return {
@@ -1172,13 +1024,10 @@ export class PDFProcessor {
           error: 'Failed to extract resume data from PDF'
         };
       }
-
       // Analyze sections found
       const { sectionsFound, totalFields } = this.analyzeSections(extractionResult);
-
       // Choose formatting method
       let rmsData: Record<string, string | number | boolean>;
-
       if (useEnhancedFormatting) {
         console.log('[Genkit Parser] Using enhanced RMS formatting');
         const parsedData = this.convertExtractToParsedData(extractionResult);
@@ -1187,12 +1036,9 @@ export class PDFProcessor {
         console.log('[Genkit Parser] Using basic RMS formatting');
         rmsData = this.formatToRms(extractionResult);
       }
-
       const parseTime = Date.now() - startTime;
-      console.log(`[Genkit Parser] Successfully parsed PDF resume in ${parseTime}ms`);
       console.log(`[Genkit Parser] Sections found: ${sectionsFound.join(', ')}`);
       console.log(`[Genkit Parser] Generated ${Object.keys(rmsData).length} RMS fields`);
-
       const result: ParseResultResponse = {
         success: true,
         data: rmsData,
@@ -1202,13 +1048,10 @@ export class PDFProcessor {
         sectionsFound,
         totalFields: Object.keys(rmsData).length
       };
-
       if (includeRawData) {
         result.extractedData = extractionResult;
       }
-
       return result;
-
     } catch (error) {
       console.error('[Genkit Parser] Error in parsePDFWithGenkit:', error);
       return {
@@ -1217,7 +1060,6 @@ export class PDFProcessor {
       };
     }
   }
-
   /**
    * Utility function to validate RMS data structure
    */
@@ -1228,36 +1070,29 @@ export class PDFProcessor {
   } {
     const errors: string[] = [];
     const warnings: string[] = [];
-
     // Check required fields
     if (!rmsData.Producer) {
       errors.push('Missing Producer field');
     }
-
     if (!rmsData.Rms_contact_fullName || rmsData.Rms_contact_fullName === 'n/a') {
       warnings.push('No contact name found');
     }
-
     if (!rmsData.Rms_contact_email || rmsData.Rms_contact_email === 'n/a') {
       warnings.push('No contact email found');
     }
-
     // Check if we have any substantial content
     const experienceCount = Number(rmsData.Rms_experience_count) || 0;
     const educationCount = Number(rmsData.Rms_education_count) || 0;
     const skillCount = Number(rmsData.Rms_skill_count) || 0;
-
     if (experienceCount === 0 && educationCount === 0 && skillCount === 0) {
       warnings.push('Resume appears to have minimal content');
     }
-
     return {
       isValid: errors.length === 0,
       errors,
       warnings
     };
   }
-
   /**
    * Utility function to convert basic RMS data to enhanced format
    * Useful for upgrading existing RMS data
@@ -1267,7 +1102,6 @@ export class PDFProcessor {
     // For now, return as-is since we're generating enhanced directly
     return { ...basicRmsData };
   }
-
   /**
    * Parse resume text using the resume parsing API
    */
@@ -1281,7 +1115,6 @@ export class PDFProcessor {
   }> {
     try {
       console.log('Calling resume parsing API...');
-
       const response = await fetch('/api/resumes/parse', {
         method: 'POST',
         headers: {
@@ -1293,20 +1126,15 @@ export class PDFProcessor {
           saveToFirebase: false, // We'll handle this ourselves
         }),
       });
-
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`API error (${response.status}): ${errorText}`);
       }
-
       const result = await response.json();
-
       if (!result.success) {
         throw new Error(result.error || 'Failed to parse resume');
       }
-
       console.log('Resume parsing completed successfully');
-
       // Validate RMS data if requested
       let validationErrors: z.ZodError | undefined = undefined;
       if (validateRMS) {
@@ -1317,7 +1145,7 @@ export class PDFProcessor {
         }
       }
 
-      console.log('📊 Received RMS data with fields:', Object.keys(result.data).length);
+
 
       return { rmsData: result.data, validationErrors };
     } catch (error: any) {
@@ -1325,7 +1153,6 @@ export class PDFProcessor {
       throw new Error(`Failed to parse resume: ${error.message}`);
     }
   }
-
   /**
    * Update the status of a resume in Firestore
    */
@@ -1336,22 +1163,18 @@ export class PDFProcessor {
   ): Promise<void> {
     try {
       console.log(`Updating resume ${resumeId} status to ${status}`);
-
       const resumeRef = doc(db, 'resumes', resumeId);
-
       await updateDoc(resumeRef, {
         status,
         updatedAt: serverTimestamp(),
         ...additionalData
       });
-
       console.log(`Status updated successfully`);
     } catch (error) {
       console.error('Error updating resume status:', error);
       // Don't throw here, as this shouldn't fail the whole process
     }
   }
-
   /**
    * Save processing results to Firebase
    */
@@ -1367,9 +1190,7 @@ export class PDFProcessor {
   ): Promise<void> {
     try {
       console.log(`Saving processing results to Firebase for resume ${resumeId}`);
-
       const resumeRef = doc(db, 'resumes', resumeId);
-
       // Clean data to avoid Firebase undefined value errors
       const cleanData: any = {
         updatedAt: serverTimestamp(),
@@ -1379,7 +1200,6 @@ export class PDFProcessor {
         exifToolExtracted: data.exifToolExtracted || false,
         usedRMSFastPath: data.usedRMSFastPath || false
       };
-
       console.log('Data values before filtering:', {
         fileUrl: data.fileUrl,
         hasFileUrl: data.fileUrl !== undefined,
@@ -1389,11 +1209,9 @@ export class PDFProcessor {
         hasTitle: data.title !== undefined,
         usedRMSFastPath: data.usedRMSFastPath
       });
-
       if (data.fileUrl !== undefined) cleanData.fileUrl = data.fileUrl;
       if (data.rmsData !== undefined) cleanData.rmsRawData = data.rmsData;
       if (data.title !== undefined) cleanData.title = data.title;
-
       // Recursively remove all undefined values
       const removeUndefined = (obj: any): any => {
         if (Array.isArray(obj)) {
@@ -1412,21 +1230,18 @@ export class PDFProcessor {
         }
         return obj;
       };
-
       // Clean all data recursively
       const finalCleanData = removeUndefined(cleanData);
 
-      console.log('Final clean data keys:', Object.keys(finalCleanData));
+
 
       await updateDoc(resumeRef, finalCleanData);
-
       console.log('Results saved successfully');
     } catch (error) {
       console.error('Error saving results to Firebase:', error);
       throw error;
     }
   }
-
   /**
    * Internal function: Convert ExtractResumeDataOutput to ParsedData format
    */
@@ -1486,7 +1301,6 @@ export class PDFProcessor {
       }))
     };
   }
-
   /**
    * Internal function: Enhanced RMS formatting that handles all resume sections
    */
@@ -1496,14 +1310,12 @@ export class PDFProcessor {
       Producer: "rms_v2.0.1",
       Rms_schema_details: "https://github.com/rezi-io/resume-standard"
     };
-
     // Process Contact Information
     const contactInfo = parsedData.contactInfo || {};
     rmsData['Rms_contact_fullName'] = contactInfo.fullName || 'n/a';
     rmsData['Rms_contact_email'] = contactInfo.email || 'n/a';
     rmsData['Rms_contact_phone'] = contactInfo.phone || 'n/a';
     rmsData['Rms_contact_linkedin'] = contactInfo.linkedin || 'n/a';
-
     // Process Experience
     const experiences = parsedData.experiences || [];
     rmsData['Rms_experience_count'] = experiences.length;
@@ -1516,7 +1328,6 @@ export class PDFProcessor {
       rmsData[`Rms_experience_${index}_isCurrent`] = exp.current || false;
       rmsData[`Rms_experience_${index}_location`] = exp.location || '';
     });
-
     // Process Education
     const education = parsedData.education || [];
     rmsData['Rms_education_count'] = education.length;
@@ -1532,7 +1343,6 @@ export class PDFProcessor {
       rmsData[`Rms_education_${index}_gpa`] = edu.gpa || edu.score || '';
       rmsData[`Rms_education_${index}_location`] = edu.location || '';
     });
-
     // Process Skills
     const skillCategories = parsedData.skillCategories || [];
     if (skillCategories.length > 0) {
@@ -1547,7 +1357,6 @@ export class PDFProcessor {
     } else {
       rmsData['Rms_skill_count'] = 0;
     }
-
     // Process Projects
     const projects = parsedData.projects || [];
     rmsData['Rms_project_count'] = projects.length;
@@ -1561,7 +1370,6 @@ export class PDFProcessor {
         proj.technologies.join(', ') : (proj.technologies || '');
       rmsData[`Rms_project_${index}_url`] = '';
     });
-
     // Process Involvement
     const involvements = parsedData.involvements || [];
     rmsData['Rms_involvement_count'] = involvements.length;
@@ -1573,7 +1381,6 @@ export class PDFProcessor {
       rmsData[`Rms_involvement_${index}_description`] = inv.description || '';
       rmsData[`Rms_involvement_${index}_location`] = inv.location || '';
     });
-
     // Process Certifications
     const certifications = parsedData.certifications || [];
     rmsData['Rms_certification_count'] = certifications.length;
@@ -1584,7 +1391,6 @@ export class PDFProcessor {
       rmsData[`Rms_certification_${index}_credentialId`] = cert.credentialId || '';
       rmsData[`Rms_certification_${index}_url`] = cert.url || '';
     });
-
     // Process Awards
     const awards = parsedData.awards || [];
     rmsData['Rms_award_count'] = awards.length;
@@ -1594,7 +1400,6 @@ export class PDFProcessor {
       rmsData[`Rms_award_${index}_date`] = award.date || '';
       rmsData[`Rms_award_${index}_description`] = award.description || '';
     });
-
     // Process Coursework
     const coursework = parsedData.coursework || [];
     rmsData['Rms_coursework_count'] = coursework.length;
@@ -1602,7 +1407,6 @@ export class PDFProcessor {
       rmsData[`Rms_coursework_${index}_name`] = course.name || '';
       rmsData[`Rms_coursework_${index}_department`] = course.department || '';
     });
-
     // Process Publications
     const publications = parsedData.publications || [];
     rmsData['Rms_publication_count'] = publications.length;
@@ -1614,7 +1418,6 @@ export class PDFProcessor {
       rmsData[`Rms_publication_${index}_description`] = pub.description || '';
       rmsData[`Rms_publication_${index}_url`] = pub.url || '';
     });
-
     // Process References
     const references = parsedData.references || [];
     rmsData['Rms_reference_count'] = references.length;
@@ -1625,7 +1428,6 @@ export class PDFProcessor {
       rmsData[`Rms_reference_${index}_email`] = ref.email || '';
       rmsData[`Rms_reference_${index}_phone`] = ref.phone || '';
     });
-
     // Process Languages
     const languages = parsedData.languages || [];
     rmsData['Rms_language_count'] = languages.length;
@@ -1633,7 +1435,6 @@ export class PDFProcessor {
       rmsData[`Rms_language_${index}_name`] = lang.name || '';
       rmsData[`Rms_language_${index}_proficiency`] = lang.proficiency || '';
     });
-
     // Process Volunteer Experience
     const volunteer = parsedData.volunteer || [];
     rmsData['Rms_volunteer_count'] = volunteer.length;
@@ -1645,10 +1446,8 @@ export class PDFProcessor {
       rmsData[`Rms_volunteer_${index}_dateEnd`] = vol.endDate || (vol.current ? 'Present' : '');
       rmsData[`Rms_volunteer_${index}_description`] = vol.description || '';
     });
-
     return rmsData;
   }
-
   /**
    * Internal function: Analyze extracted data to determine sections found
    */
@@ -1658,45 +1457,36 @@ export class PDFProcessor {
   } {
     const sections: string[] = [];
     let fieldCount = 0;
-
     if (extractResult.contactInformation?.name) {
       sections.push('contact');
       fieldCount += Object.keys(extractResult.contactInformation).length;
     }
-
     if (extractResult.experience?.length) {
       sections.push('experience');
       fieldCount += extractResult.experience.length * 6; // Avg fields per experience
     }
-
     if (extractResult.education?.length) {
       sections.push('education');
       fieldCount += extractResult.education.length * 8; // Avg fields per education
     }
-
     if (extractResult.skills?.length) {
       sections.push('skills');
       fieldCount += 3; // Skills are grouped
     }
-
     if (extractResult.projects?.length) {
       sections.push('projects');
       fieldCount += extractResult.projects.length * 5;
     }
-
     if (extractResult.involvement?.length) {
       sections.push('involvement');
       fieldCount += extractResult.involvement.length * 5;
     }
-
     if (extractResult.certifications?.length) {
       sections.push('certifications');
       fieldCount += extractResult.certifications.length * 4;
     }
-
     return { sectionsFound: sections, totalFields: fieldCount };
   }
-
   /**
    * Check if RMS metadata contains enough information to skip AI parsing
    */
@@ -1706,7 +1496,6 @@ export class PDFProcessor {
       key.toLowerCase().includes('contact') || key.toLowerCase().includes('name')
     );
     console.log('RMS contact fields found:', contactFields);
-
     // Check for essential fields that indicate complete resume data
     const hasContact = rmsMetadata.rms_contact_fullName || rmsMetadata.Rms_contact_fullName ||
                       rmsMetadata.rms_contact_fullname || rmsMetadata.Rms_contact_fullname ||
@@ -1715,16 +1504,13 @@ export class PDFProcessor {
                       rmsMetadata.rms_contact_lastName || rmsMetadata.Rms_contact_lastName ||
                       rmsMetadata.rms_contact_lastname || rmsMetadata.Rms_contact_lastname;
     const hasEmail = rmsMetadata.rms_contact_email || rmsMetadata.Rms_contact_email;
-
     // Check for at least one substantial section
     const hasExperience = (rmsMetadata.rms_experience_count || rmsMetadata.Rms_experience_count) > 0;
     const hasEducation = (rmsMetadata.rms_education_count || rmsMetadata.Rms_education_count) > 0;
     const hasSkills = (rmsMetadata.rms_skill_count || rmsMetadata.Rms_skill_count) > 0;
-
     // Check for RMS version compliance
     const hasVersion = rmsMetadata.rms_version || rmsMetadata.Rms_version ||
                       (rmsMetadata.producer && rmsMetadata.producer.includes('rms_v'));
-
     // Detect and exclude test/default/fallback data patterns
     const email = hasEmail ? (rmsMetadata.rms_contact_email || rmsMetadata.Rms_contact_email) : '';
     const fullName = hasContact ? (rmsMetadata.rms_contact_fullName || rmsMetadata.Rms_contact_fullName ||
@@ -1733,7 +1519,6 @@ export class PDFProcessor {
                                       rmsMetadata.rms_contact_givennames || rmsMetadata.Rms_contact_givennames || ''} ${
                                       rmsMetadata.rms_contact_lastName || rmsMetadata.Rms_contact_lastName ||
                                       rmsMetadata.rms_contact_lastname || rmsMetadata.Rms_contact_lastname || ''}`.trim()) : '';
-
     const testDataPatterns = [
       'john.doe@example.com',
       'test@example.com',
@@ -1744,19 +1529,15 @@ export class PDFProcessor {
       'sample user',
       'jane doe'
     ];
-
     const isTestData = testDataPatterns.some(pattern =>
       email.toLowerCase().includes(pattern) ||
       fullName.toLowerCase().includes(pattern)
     );
-
     if (isTestData) {
       console.log('❌ Detected test/default data - will not use Fast Path');
       return false;
     }
-
     const isComplete = hasContact && hasEmail && hasVersion && (hasExperience || hasEducation || hasSkills);
-
     if (isComplete) {
       console.log('RMS metadata is complete - contains contact info, version, and substantial content');
     } else {
@@ -1769,16 +1550,13 @@ export class PDFProcessor {
         hasSkills
       });
     }
-
     return isComplete;
   }
-
   /**
    * Merge RMS metadata from ExifTool with parsed data
    */
   private static mergeRMSMetadata(exifMetadata: any, parsedData: any): any {
     const merged = { ...parsedData };
-
     // Override contact info if ExifTool has better data
     if (exifMetadata.rms_contact_fullName && (!merged.rms_contact_fullName || merged.rms_contact_fullName === 'n/a')) {
       merged.rms_contact_fullName = exifMetadata.rms_contact_fullName;
@@ -1786,23 +1564,19 @@ export class PDFProcessor {
     if (exifMetadata.rms_contact_email && (!merged.rms_contact_email || merged.rms_contact_email === 'n/a')) {
       merged.rms_contact_email = exifMetadata.rms_contact_email;
     }
-
     // Merge all RMS fields that aren't already in parsed data
     Object.keys(exifMetadata).forEach(key => {
       if (key.startsWith('rms_') && (!merged[key] || merged[key] === 'n/a')) {
         merged[key] = exifMetadata[key];
       }
     });
-
     // Update producer info
     if (exifMetadata.producer) {
       merged.Producer = exifMetadata.producer;
     }
-
     console.log('RMS metadata merged successfully');
     return merged;
   }
-
   /**
    * Formats the structured resume data into a flat key-value pair object
    * according to the Resume Resume Metadata Standard (RMS) style.
@@ -1814,20 +1588,16 @@ export class PDFProcessor {
     const rmsData: Record<string, string | number | boolean> = {
       Producer: "rms_v2.0.1",
     };
-
     // Process Contact Information with proper RMS field names
     const contactInfo = data.contactInformation || {};
-
     // Map to proper RMS contact field names
     rmsData['Rms_contact_fullName'] = contactInfo.name || 'n/a';
     rmsData['Rms_contact_email'] = contactInfo.email || 'n/a';
     rmsData['Rms_contact_phone'] = contactInfo.phone || 'n/a';
     rmsData['Rms_contact_linkedin'] = contactInfo.linkedin || 'n/a';
-
     // Process Experience with proper RMS field mapping
     const experiences = data.experience || [];
     rmsData['Rms_experience_count'] = experiences.length;
-
     experiences.forEach((exp, index) => {
       rmsData[`Rms_experience_${index}_company`] = exp.company || '';
       rmsData[`Rms_experience_${index}_role`] = exp.title || ''; // Map title -> role
@@ -1835,11 +1605,9 @@ export class PDFProcessor {
       rmsData[`Rms_experience_${index}_description`] = exp.description || '';
       rmsData[`Rms_experience_${index}_isCurrent`] = false; // Default to false for Gemini parsing
     });
-
     // Process Education with proper RMS field mapping
     const education = data.education || [];
     rmsData['Rms_education_count'] = education.length;
-
     education.forEach((edu, index) => {
       rmsData[`Rms_education_${index}_institution`] = edu.institution || '';
       rmsData[`Rms_education_${index}_qualification`] = edu.degree || ''; // Map degree -> qualification
@@ -1847,39 +1615,32 @@ export class PDFProcessor {
       rmsData[`Rms_education_${index}_description`] = edu.description || '';
       rmsData[`Rms_education_${index}_isGraduate`] = true; // Default to true
     });
-
     // Process Projects with proper RMS field mapping
     const projects = data.projects || [];
     rmsData['Rms_project_count'] = projects.length;
-
     projects.forEach((proj, index) => {
       rmsData[`Rms_project_${index}_title`] = proj.title || '';
       rmsData[`Rms_project_${index}_dateBegin`] = proj.dates || '';
       rmsData[`Rms_project_${index}_description`] = proj.description || '';
       rmsData[`Rms_project_${index}_url`] = proj.url || '';
     });
-
     // Process Involvement with proper RMS field mapping
     const involvement = data.involvement || [];
     rmsData['Rms_involvement_count'] = involvement.length;
-
     involvement.forEach((inv, index) => {
       rmsData[`Rms_involvement_${index}_organization`] = inv.organization || '';
       rmsData[`Rms_involvement_${index}_role`] = inv.role || '';
       rmsData[`Rms_involvement_${index}_dateBegin`] = inv.dates || '';
       rmsData[`Rms_involvement_${index}_description`] = inv.description || '';
     });
-
     // Process Certifications with proper RMS field mapping
     const certifications = data.certifications || [];
     rmsData['Rms_certification_count'] = certifications.length;
-
     certifications.forEach((cert, index) => {
       rmsData[`Rms_certification_${index}_name`] = cert.name || '';
       rmsData[`Rms_certification_${index}_issuer`] = cert.issuer || '';
       rmsData[`Rms_certification_${index}_date`] = cert.date || '';
     });
-
     // Handle skills with proper RMS format
     const skills = data.skills || [];
     if (skills.length > 0) {
@@ -1890,18 +1651,15 @@ export class PDFProcessor {
     } else {
       rmsData['Rms_skill_count'] = 0;
     }
-
     // Add additional RMS metadata fields to match ExifTool format
     rmsData['Rms_award_count'] = 0;
     rmsData['Rms_coursework_count'] = 0;
     rmsData['Rms_publication_count'] = 0;
     rmsData['Rms_reference_count'] = 0;
     rmsData['Rms_schema_details'] = "https://github.com/rezi-io/resume-standard";
-
     return rmsData;
   }
 }
-
 /**
  * PDF Generator class for creating PDFs from resume data
  */
@@ -1913,7 +1671,6 @@ export class PDFGenerator {
   private pageHeight: number;
   private contentWidth: number;
   private yPosition: number;
-
   constructor(resumeData: ResumeData) {
     // Create PDF document
     this.doc = new jsPDF({
@@ -1923,30 +1680,24 @@ export class PDFGenerator {
       compress: true,
       putOnlyUsedFonts: true,
     });
-
     // Initialize configuration
     this.config = this.createConfiguration(resumeData);
-
     // Set page dimensions
     this.pageWidth = this.doc.internal.pageSize.width;
     this.pageHeight = this.doc.internal.pageSize.height;
     this.contentWidth = this.pageWidth - this.config.margins.left - this.config.margins.right;
     this.yPosition = this.config.margins.top;
   }
-
   private createConfiguration(resumeData: ResumeData): PDFConfiguration {
     const style = resumeData.fontStyle || 'professional';
     const baseConfig = { ...DEFAULT_CONFIG };
-
     // Apply style-specific configuration
     if (FONT_CONFIGURATIONS[style]) {
       Object.assign(baseConfig, FONT_CONFIGURATIONS[style]);
     }
-
     // Apply document settings overrides to match preview exactly
     if (resumeData.documentSettings) {
       const { documentSettings } = resumeData;
-
       // Convert margins from inches to points (1 inch = 72 points)
       if (documentSettings.margins) {
         baseConfig.margins = {
@@ -1956,15 +1707,12 @@ export class PDFGenerator {
           left: documentSettings.margins.left * 72
         };
       }
-
       // Apply template-based font scaling to match preview exactly
       if (documentSettings.fontSize) {
         const baseFontSize = documentSettings.fontSize;
         const template = resumeData.template || 'professional';
-
         // Get template-specific font scales (same as preview uses)
         const fontScales = this.getTemplateFontScales(template);
-
         // Apply the same scaling logic as the preview - PRESERVE font family from style!
         baseConfig.fonts = {
           name: { family: baseConfig.fonts.name.family, size: baseFontSize * fontScales.name, weight: 700 },
@@ -1975,7 +1723,6 @@ export class PDFGenerator {
           small: { family: baseConfig.fonts.small.family, size: baseFontSize * fontScales.contact, weight: 400 }
         };
       }
-
       // Apply sectionSpacing from documentSettings to match preview spacing
       if ((documentSettings as any).sectionSpacing) {
         // Convert rem to points (assuming 1rem = 16pt base)
@@ -1984,10 +1731,8 @@ export class PDFGenerator {
         baseConfig.spacing.itemGap = ((documentSettings as any).sectionSpacing * 0.5) * remToPoints;
       }
     }
-
     return baseConfig;
   }
-
   // Template font scales matching the preview system exactly
   private getTemplateFontScales(template: string) {
     const fontScales: Record<string, any> = {
@@ -2048,36 +1793,28 @@ export class PDFGenerator {
         detail: 0.7,
       }
     };
-
     return fontScales[template] || fontScales.professional;
   }
-
   private async loadCustomFonts(): Promise<boolean> {
     const fontFamily = this.config.fonts.body.family;
-
     if (fontFamily === 'merriweather' || fontFamily === 'merriweatherSans') {
       try {
         console.log(`[PDF] Loading custom fonts: ${fontFamily}`);
-        
         // Try to load custom fonts with longer timeout for better success
         const timeoutPromise = new Promise<boolean>((_, reject) =>
           setTimeout(() => reject(new Error('Font loading timeout')), 8000)
         );
-
         const loadPromise = addCustomFonts(this.doc, fontFamily);
-
         this.customFontsLoaded = await Promise.race([loadPromise, timeoutPromise]).catch(() => {
           console.warn(`[PDF] Font loading failed for ${fontFamily}`);
           return false;
         }) ?? false;
-
         if (!this.customFontsLoaded) {
           console.warn(`[PDF] Custom fonts ${fontFamily} not available, using Times as fallback`);
           this.fallbackToStandardFonts();
         } else {
           console.log(`[PDF] Custom fonts ${fontFamily} loaded successfully`);
         }
-
         return this.customFontsLoaded;
       } catch (error) {
         console.warn('[PDF] Failed to load custom fonts, using fallback:', error);
@@ -2085,19 +1822,15 @@ export class PDFGenerator {
         return false;
       }
     }
-
     return true; // Standard fonts don't need loading
   }
-
   private fallbackToStandardFonts(): void {
     // Convert custom font families to Times (serif) instead of Helvetica to better match Merriweather
     console.log('[PDF] Using Times fallback fonts to match serif appearance of Merriweather');
-    
     const fontMapping: Record<string, string> = {
       'merriweather': 'times',
       'merriweatherSans': 'helvetica'
     };
-
     Object.keys(this.config.fonts).forEach(key => {
       const fontKey = key as keyof typeof this.config.fonts;
       const currentFamily = this.config.fonts[fontKey].family;
@@ -2107,16 +1840,13 @@ export class PDFGenerator {
       }
     });
   }
-
   private setFont(fontDef: FontDefinition): void {
     this.doc.setFontSize(fontDef.size);
-
     // Check if custom fonts are loaded and the requested font is Merriweather
     if (this.customFontsLoaded && fontDef.family === 'merriweather') {
         const familyInfo = FONT_FAMILIES.merriweather;
         const weight = fontDef.weight || 400;
         const style = fontDef.style || 'normal';
-
         // Determine the correct font style string for jsPDF
         let finalStyle = '';
         if (weight >= 700) {
@@ -2128,7 +1858,6 @@ export class PDFGenerator {
         if (finalStyle === '') {
             finalStyle = 'normal';
         }
-
         // Set the font using the proper family name (e.g., 'Merriweather') and style
         this.doc.setFont(familyInfo.name, finalStyle);
     } else {
@@ -2137,7 +1866,6 @@ export class PDFGenerator {
         this.doc.setFont(fontDef.family, style);
     }
   }
-
   private addText(
     text: string,
     x: number,
@@ -2151,20 +1879,16 @@ export class PDFGenerator {
   ): number {
     const font = options.font || this.config.fonts.body;
     const color = options.color || this.config.colors.text;
-
     this.setFont(font);
     this.doc.setTextColor(color.r, color.g, color.b);
-
     if (options.maxWidth) {
       const lines = this.splitTextToLines(text, options.maxWidth);
       const lineHeight = font.size * this.config.spacing.lineHeight;
-
       lines.forEach((line, index) => {
         const alignOptions: any = {};
         if (options.align) alignOptions.align = options.align;
         this.doc.text(line, x, y + (index * lineHeight), alignOptions);
       });
-
       return y + (lines.length * lineHeight);
     } else {
       const alignOptions: any = {};
@@ -2173,16 +1897,13 @@ export class PDFGenerator {
       return y + font.size * this.config.spacing.lineHeight;
     }
   }
-
   private splitTextToLines(text: string, maxWidth: number): string[] {
     const lines: string[] = [];
     const words = text.split(' ');
     let currentLine = '';
-
     for (const word of words) {
       const testLine = currentLine ? `${currentLine} ${word}` : word;
       const testWidth = this.doc.getTextWidth(testLine);
-
       if (testWidth > maxWidth && currentLine) {
         lines.push(currentLine);
         currentLine = word;
@@ -2190,66 +1911,51 @@ export class PDFGenerator {
         currentLine = testLine;
       }
     }
-
     if (currentLine) {
       lines.push(currentLine);
     }
-
     return lines;
   }
-
   private checkPageOverflow(requiredSpace = 60): void {
     if (this.yPosition > this.pageHeight - this.config.margins.bottom - requiredSpace) {
       this.doc.addPage();
       this.yPosition = this.config.margins.top;
     }
   }
-
   private addSectionHeading(heading: string): void {
     this.checkPageOverflow(30);
-
     // Add space before the section
     this.yPosition += this.config.spacing.sectionGap;
-
     // Store the baseline for drawing the text and the line
     const baselineY = this.yPosition;
-
     // Draw the text and get the Y position for the *next* line of text.
     const yAfterText = this.addText(heading.toUpperCase(), this.config.margins.left, baselineY, {
         font: this.config.fonts.heading,
         color: this.config.colors.black
     });
-
     // Draw the underline slightly below the baseline of the text we just drew.
     const underlineY = baselineY + 3; // 3pt below baseline should be safe
     this.doc.setLineWidth(0.75);
     this.doc.setDrawColor(this.config.colors.black.r, this.config.colors.black.g, this.config.colors.black.b);
     this.doc.line(this.config.margins.left, underlineY, this.pageWidth - this.config.margins.right, underlineY);
-
     // Set the position for the next element to be based on where the text ended.
     // This ensures the full line height of the heading is respected.
     this.yPosition = yAfterText;
   }
-
   private formatLocation(...parts: (string | undefined)[]): string {
     return parts.filter(Boolean).join(', ');
   }
-
   private parseBulletPoints(text: string): string[] {
     if (!text) return [];
-    
     // Decode HTML entities (same as preview)
     const decodedText = this.decodeHTMLEntities(text);
-
     // First try splitting by line breaks or bullet markers (same as preview)
     let splitPoints = decodedText.split(/[\n•·▪]/g);
-    
     // If no line breaks/bullets found, try splitting by sentences that end with periods followed by capital letters
     if (splitPoints.length === 1) {
       // Split on periods followed by capital letters (sentence boundaries)
       splitPoints = decodedText.split(/\.(?=[A-Z])/g);
     }
-    
     const bulletPoints = splitPoints
       .map((point: string) => point.trim())
       .filter((point: string) => point.length > 0)
@@ -2263,15 +1969,12 @@ export class PDFGenerator {
         return cleaned;
       })
       .filter((point: string) => point.length > 1); // Filter out single characters
-    
     // Ensure at least one bullet point if text exists (same as preview)
     if (bulletPoints.length === 0 && decodedText) {
       return [decodedText];
     }
-    
     return bulletPoints;
   }
-
   private decodeHTMLEntities(text: string): string {
     if (!text) return '';
     // Basic HTML entity decoding for common cases
@@ -2284,7 +1987,6 @@ export class PDFGenerator {
       .replace(/&#x2F;/g, '/')
       .replace(/&nbsp;/g, ' ');
   }
-
   private formatDateRange(startDate?: string, endDate?: string, current?: boolean): string {
     const dateRange = [];
     if (startDate) dateRange.push(startDate);
@@ -2295,7 +1997,6 @@ export class PDFGenerator {
     }
     return dateRange.join(' – ');
   }
-
   private renderHeader(contactInfo: any): void {
     // Name (centered)
     const name = contactInfo.fullName || 'YOUR NAME';
@@ -2304,9 +2005,7 @@ export class PDFGenerator {
       color: this.config.colors.black,
       align: 'center'
     });
-
     this.yPosition += 2;
-
     // Contact info (centered)
     const contactItems = [];
     const location = this.formatLocation(
@@ -2315,7 +2014,6 @@ export class PDFGenerator {
       contactInfo.state,
       contactInfo.country
     );
-
     if (location) contactItems.push(location);
     if (contactInfo.email) contactItems.push(contactInfo.email);
     if (contactInfo.phone) contactItems.push(contactInfo.phone);
@@ -2324,7 +2022,6 @@ export class PDFGenerator {
       contactItems.push(`linkedin.com/in/${linkedinHandle}`);
     }
     if (contactInfo.website) contactItems.push(contactInfo.website);
-
     if (contactItems.length > 0) {
       const contactText = contactItems.join(' • ');
       this.yPosition = this.addText(contactText, this.pageWidth / 2, this.yPosition, {
@@ -2333,13 +2030,10 @@ export class PDFGenerator {
         align: 'center'
       });
     }
-
     this.yPosition += this.config.spacing.sectionGap;
   }
-
   private renderSummary(summary: string): void {
     if (!summary) return;
-
     this.addSectionHeading('PROFESSIONAL SUMMARY');
     this.yPosition = this.addText(summary, this.config.margins.left, this.yPosition, {
       font: this.config.fonts.body,
@@ -2348,36 +2042,28 @@ export class PDFGenerator {
     });
     this.yPosition += this.config.spacing.itemGap;
   }
-
   private renderExperience(experiences: any[]): void {
     if (!experiences || experiences.length === 0) return;
-
     this.addSectionHeading('PROFESSIONAL EXPERIENCE');
-
     experiences.forEach((exp, index) => {
       this.checkPageOverflow(80);
-
       // Job title
       this.yPosition = this.addText(exp.title || exp.role || '', this.config.margins.left, this.yPosition, {
         font: this.config.fonts.subheading,
         color: this.config.colors.black
       });
-
       // Company and dates
       const companyInfo = [];
       if (exp.company) companyInfo.push(exp.company);
       if (exp.location) companyInfo.push(exp.location);
-
       const leftText = companyInfo.join(', ');
       const rightText = this.formatDateRange(exp.startDate, exp.endDate, exp.current);
-
       if (leftText) {
         this.addText(leftText, this.config.margins.left, this.yPosition, {
           font: this.config.fonts.body,
           color: this.config.colors.text
         });
       }
-
       if (rightText) {
         this.setFont(this.config.fonts.accent);
         const textWidth = this.doc.getTextWidth(rightText);
@@ -2386,49 +2072,39 @@ export class PDFGenerator {
           color: this.config.colors.gray
         });
       }
-
       this.yPosition += this.config.fonts.body.size * this.config.spacing.lineHeight + 4;
-
       // Description bullets - match preview styling
       if (exp.description) {
         const bullets = this.parseBulletPoints(exp.description);
         const bulletIndent = 12; // 0.75rem = 12pt (matches preview)
         const bulletSpacing = 4; // Match preview bullet spacing
-
         bullets.forEach((bullet, bulletIndex) => {
           this.checkPageOverflow(30);
-
           // Add bullet point - positioned at margin (like preview where bullet is at -0.75rem from list)
           this.addText('•', this.config.margins.left, this.yPosition, {
             font: this.config.fonts.body,
             color: this.config.colors.text
           });
-
           // Add bullet text - starts at bulletIndent from margin (matches preview)
           this.yPosition = this.addText(bullet, this.config.margins.left + bulletIndent, this.yPosition, {
             font: this.config.fonts.body,
             color: this.config.colors.text,
             maxWidth: this.contentWidth - bulletIndent - 8
           });
-
           // Add spacing between bullets (except last one)
           if (bulletIndex < bullets.length - 1) {
             this.yPosition += bulletSpacing;
           }
         });
       }
-
       if (index < experiences.length - 1) {
         this.yPosition += this.config.spacing.itemGap;
       }
     });
   }
-
   private renderEducation(education: any[]): void {
     if (!education || education.length === 0) return;
-
     this.addSectionHeading('EDUCATION');
-
     education.forEach((edu, index) => {
       // Degree/qualification first (to match preview format)
       const degreeParts = [];
@@ -2437,18 +2113,15 @@ export class PDFGenerator {
       } else if (edu.qualification || edu.degree) {
         degreeParts.push(edu.qualification || edu.degree);
       }
-
       if (degreeParts.length > 0) {
         this.yPosition = this.addText(degreeParts[0], this.config.margins.left, this.yPosition, {
           font: this.config.fonts.subheading,
           color: this.config.colors.black
         });
       }
-
       // Parse institution name to extract location if present (to match preview logic)
       let institutionName = edu.institution || edu.school || '';
       let location = edu.location;
-      
       // Check if institution contains comma (indicating embedded location)
       if (institutionName.includes(',') && !location) {
         const parts = institutionName.split(',');
@@ -2459,7 +2132,6 @@ export class PDFGenerator {
         const parts = institutionName.split(',');
         institutionName = parts[0].trim();
       }
-
       // School info line (institution • location • date)
       const schoolInfoParts = [];
       if (institutionName) {
@@ -2472,14 +2144,12 @@ export class PDFGenerator {
         const dateString = edu.date || edu.endDate || edu.graduationDate;
         schoolInfoParts.push(dateString);
       }
-
       if (schoolInfoParts.length > 0) {
         this.yPosition = this.addText(schoolInfoParts.join(' • '), this.config.margins.left, this.yPosition, {
           font: this.config.fonts.body,
           color: this.config.colors.text
         });
       }
-
       // GPA if present
       if (edu.gpa) {
         this.yPosition = this.addText(`GPA: ${edu.gpa}`, this.config.margins.left, this.yPosition, {
@@ -2487,18 +2157,14 @@ export class PDFGenerator {
           color: this.config.colors.gray
         });
       }
-
       if (index < education.length - 1) {
         this.yPosition += this.config.spacing.itemGap;
       }
     });
   }
-
   private renderSkills(skillCategories: any[]): void {
     if (!skillCategories || skillCategories.length === 0) return;
-
     this.addSectionHeading('SKILLS');
-
     skillCategories.forEach(category => {
       // Handle different skill data formats
       let skillNames = '';
@@ -2512,15 +2178,12 @@ export class PDFGenerator {
         // Fallback: just the category name if no skills found
         skillNames = '';
       }
-
       const categoryName = category.category || category.name || 'Skills';
-
       if (categoryName && categoryName !== 'Skills' && skillNames) {
         this.setFont({ ...this.config.fonts.body, weight: 700 });
         const categoryWidth = this.doc.getTextWidth(categoryName + ': ');
         this.doc.setTextColor(this.config.colors.black.r, this.config.colors.black.g, this.config.colors.black.b);
         this.doc.text(categoryName + ': ', this.config.margins.left, this.yPosition);
-
         this.yPosition = this.addText(skillNames, this.config.margins.left + categoryWidth, this.yPosition, {
           font: this.config.fonts.body,
           color: this.config.colors.text,
@@ -2533,22 +2196,17 @@ export class PDFGenerator {
           maxWidth: this.contentWidth
         });
       }
-
       this.yPosition += 4;
     });
   }
-
   private renderProjects(projects: any[]): void {
     if (!projects || projects.length === 0) return;
-
     this.addSectionHeading('PROJECTS');
-
     projects.forEach((project, index) => {
       this.yPosition = this.addText(project.title || '', this.config.margins.left, this.yPosition, {
         font: this.config.fonts.subheading,
         color: this.config.colors.black
       });
-
       if (project.description) {
         this.yPosition = this.addText(project.description, this.config.margins.left, this.yPosition, {
           font: this.config.fonts.body,
@@ -2556,7 +2214,6 @@ export class PDFGenerator {
           maxWidth: this.contentWidth
         });
       }
-
       if (project.technologies && project.technologies.length > 0) {
         const techText = `Technologies: ${Array.isArray(project.technologies) ? project.technologies.join(', ') : project.technologies}`;
         this.yPosition = this.addText(techText, this.config.margins.left, this.yPosition, {
@@ -2565,53 +2222,42 @@ export class PDFGenerator {
           maxWidth: this.contentWidth
         });
       }
-
       if (index < projects.length - 1) {
         this.yPosition += this.config.spacing.itemGap;
       }
     });
   }
-
   private renderCertifications(certifications: any[]): void {
     if (!certifications || certifications.length === 0) return;
-
     this.addSectionHeading('CERTIFICATIONS');
-
     certifications.forEach((cert, index) => {
       this.yPosition = this.addText(cert.name || cert.title || '', this.config.margins.left, this.yPosition, {
         font: this.config.fonts.subheading,
         color: this.config.colors.black
       });
-
       const details = [];
       if (cert.issuer) details.push(cert.issuer);
       if (cert.date) details.push(cert.date);
-
       if (details.length > 0) {
         this.yPosition = this.addText(details.join(' • '), this.config.margins.left, this.yPosition, {
           font: this.config.fonts.body,
           color: this.config.colors.gray
         });
       }
-
       if (index < certifications.length - 1) {
         this.yPosition += this.config.spacing.itemGap;
       }
     });
   }
-
   private renderInvolvement(involvement: any[]): void {
     if (!involvement || involvement.length === 0) return;
-
     this.addSectionHeading('INVOLVEMENT');
-
     involvement.forEach((inv, index) => {
       // Role title
       this.yPosition = this.addText(inv.role || '', this.config.margins.left, this.yPosition, {
         font: this.config.fonts.subheading,
         color: this.config.colors.black
       });
-
       // Location • Organization • Dates on same line with bullet separators (to match preview)
       const involvementInfoParts = [];
       if (inv.location) {
@@ -2626,71 +2272,58 @@ export class PDFGenerator {
           involvementInfoParts.push(dateRange);
         }
       }
-
       if (involvementInfoParts.length > 0) {
         this.yPosition = this.addText(involvementInfoParts.join(' • '), this.config.margins.left, this.yPosition, {
           font: this.config.fonts.body,
           color: this.config.colors.text
         });
       }
-
       // Description as bullet points (to match preview)
       if (inv.description) {
         const bullets = this.parseBulletPoints(inv.description);
         const bulletIndent = 12; // 0.75rem = 12pt (matches preview)
         const bulletSpacing = 4; // Match preview bullet spacing
-
         bullets.forEach((bullet, bulletIndex) => {
           this.checkPageOverflow(30);
-
           // Add bullet point - positioned at margin (like preview where bullet is at -0.75rem from list)
           this.addText('•', this.config.margins.left, this.yPosition, {
             font: this.config.fonts.body,
             color: this.config.colors.text
           });
-
           // Add bullet text - starts at bulletIndent from margin (matches preview)
           this.yPosition = this.addText(bullet, this.config.margins.left + bulletIndent, this.yPosition, {
             font: this.config.fonts.body,
             color: this.config.colors.text,
             maxWidth: this.contentWidth - bulletIndent - 8
           });
-
           // Add spacing between bullets (except last one)
           if (bulletIndex < bullets.length - 1) {
             this.yPosition += bulletSpacing;
           }
         });
       }
-
       if (index < involvement.length - 1) {
         this.yPosition += this.config.spacing.itemGap;
       }
     });
   }
-
   private renderAwards(awards: any[]): void {
     if (!awards || awards.length === 0) return;
-
     this.addSectionHeading('AWARDS');
-
     awards.forEach((award, index) => {
       this.yPosition = this.addText(award.title || award.name || '', this.config.margins.left, this.yPosition, {
         font: this.config.fonts.subheading,
         color: this.config.colors.black
       });
-
       const details = [];
       if (award.issuer || award.organization) details.push(award.issuer || award.organization);
       if (award.date) details.push(award.date);
-
       if (details.length > 0) {
         this.yPosition = this.addText(details.join(' • '), this.config.margins.left, this.yPosition, {
           font: this.config.fonts.body,
           color: this.config.colors.gray
         });
       }
-
       if (award.description) {
         this.yPosition = this.addText(award.description, this.config.margins.left, this.yPosition, {
           font: this.config.fonts.body,
@@ -2698,38 +2331,30 @@ export class PDFGenerator {
           maxWidth: this.contentWidth
         });
       }
-
       if (index < awards.length - 1) {
         this.yPosition += this.config.spacing.itemGap;
       }
     });
   }
-
   private renderVolunteer(volunteer: any[]): void {
     if (!volunteer || volunteer.length === 0) return;
-
     this.addSectionHeading('VOLUNTEER EXPERIENCE');
-
     volunteer.forEach((vol, index) => {
       this.yPosition = this.addText(vol.role || vol.title || '', this.config.margins.left, this.yPosition, {
         font: this.config.fonts.subheading,
         color: this.config.colors.black
       });
-
       const orgInfo = [];
       if (vol.organization) orgInfo.push(vol.organization);
       if (vol.location) orgInfo.push(vol.location);
-
       const leftText = orgInfo.join(', ');
       const rightText = this.formatDateRange(vol.startDate, vol.endDate, vol.current);
-
       if (leftText) {
         this.addText(leftText, this.config.margins.left, this.yPosition, {
           font: this.config.fonts.body,
           color: this.config.colors.text
         });
       }
-
       if (rightText) {
         this.setFont(this.config.fonts.accent);
         const textWidth = this.doc.getTextWidth(rightText);
@@ -2738,9 +2363,7 @@ export class PDFGenerator {
           color: this.config.colors.gray
         });
       }
-
       this.yPosition += this.config.fonts.body.size * this.config.spacing.lineHeight;
-
       if (vol.description) {
         const bullets = this.parseBulletPoints(vol.description);
         bullets.forEach(bullet => {
@@ -2748,60 +2371,46 @@ export class PDFGenerator {
             font: this.config.fonts.body,
             color: this.config.colors.text
           });
-
           this.yPosition = this.addText(bullet, this.config.margins.left + 20, this.yPosition, {
             font: this.config.fonts.body,
             color: this.config.colors.text,
             maxWidth: this.contentWidth - 20
           });
-
           this.yPosition += 2;
         });
       }
-
       if (index < volunteer.length - 1) {
         this.yPosition += this.config.spacing.itemGap;
       }
     });
   }
-
   public async generate(resumeData: ResumeData): Promise<Blob> {
     console.log('[PDF] Starting unified PDF generation');
-
     // Load custom fonts if needed
     await this.loadCustomFonts();
-
     return this.renderDocument(resumeData);
   }
-
   public generateSync(resumeData: ResumeData): Blob {
     console.log('[PDF] Starting unified PDF generation (sync)');
     console.warn('[PDF] Custom fonts cannot be loaded in sync mode. PDF may not render correctly if fonts are not standard.');
-    
     // In sync mode, we cannot load fonts, so we proceed without them and without fallbacks.
     this.customFontsLoaded = false;
-    
     return this.renderDocument(resumeData);
   }
-
   private renderDocument(resumeData: ResumeData): Blob {
-    console.log('[PDF] Resume data structure:', JSON.stringify(resumeData, null, 2));
+
 
     // Normalize data structure - handle both parsedData and direct resume data
     const normalizedData = this.normalizeResumeData(resumeData);
     console.log('[PDF] Normalized data:', JSON.stringify(normalizedData, null, 2));
-
     // Always render header first
     this.renderHeader(normalizedData.contactInfo);
-
     // Use dynamic section order if provided, otherwise use default order
     const sectionOrder = resumeData.sectionOrder || [
       'summary', 'experience', 'education', 'skills', 'projects',
       'certifications', 'involvement', 'awards', 'volunteer'
     ];
-
     console.log('[PDF] Using section order:', sectionOrder);
-
     // Map section IDs to render functions
     const sectionRenderers: Record<string, () => void> = {
       summary: () => this.renderSummary(normalizedData.summary),
@@ -2814,7 +2423,6 @@ export class PDFGenerator {
       awards: () => this.renderAwards(normalizedData.awards),
       volunteer: () => this.renderVolunteer(normalizedData.volunteer)
     };
-
     // Render sections in the specified order
     sectionOrder.forEach(sectionId => {
       const renderer = sectionRenderers[sectionId];
@@ -2824,7 +2432,6 @@ export class PDFGenerator {
         console.warn(`[PDF] Unknown section ID: ${sectionId}`);
       }
     });
-
     // Set document properties
     this.doc.setProperties({
       title: resumeData.title || 'Resume',
@@ -2832,21 +2439,17 @@ export class PDFGenerator {
       creator: 'Resume Builder Pro with RMS',
       keywords: 'resume, cv, professional',
     });
-
     console.log('[PDF] Unified PDF generation complete');
     return this.doc.output('blob');
   }
-
   private normalizeResumeData(resumeData: ResumeData): any {
     // If it already has parsedData, use that
     if (resumeData.parsedData && typeof resumeData.parsedData === 'object') {
       const parsed = resumeData.parsedData;
-
       // Check if it's already in the expected format
       if (parsed.contactInfo || parsed.experiences) {
         return parsed;
       }
-
       // Otherwise normalize the structure
       return {
         contactInfo: parsed.contact || parsed.contactInfo || {},
@@ -2861,7 +2464,6 @@ export class PDFGenerator {
         volunteer: parsed.volunteer || []
       };
     }
-
     // Fallback: assume the data is directly available
     const data = resumeData.parsedData || resumeData;
     return {
@@ -2878,7 +2480,6 @@ export class PDFGenerator {
     };
   }
 }
-
 /**
  * Unified PDF generator that combines the best of custom fonts and vector fonts
  * Automatically handles font loading, fallbacks, and optimal typography
@@ -2887,7 +2488,6 @@ export async function generateResumePDF(resumeData: ResumeData): Promise<Blob> {
   const generator = new PDFGenerator(resumeData);
   return await generator.generate(resumeData);
 }
-
 /**
  * Synchronous PDF generation (uses fallback fonts)
  */
@@ -2895,14 +2495,12 @@ export function generateResumePDFSync(resumeData: ResumeData): Blob {
   const generator = new PDFGenerator(resumeData);
   return generator.generateSync(resumeData);
 }
-
 /**
  * Legacy compatibility function
  */
 export async function generateResumePDFAsync(resumeData: ResumeData): Promise<Blob> {
   return generateResumePDF(resumeData);
 }
-
 // Export enhanced parsing functions for external use
 export const parseResumeTextWithGenkit = PDFProcessor.parseResumeTextWithGenkit.bind(PDFProcessor);
 export const parsePDFWithGenkit = PDFProcessor.parsePDFWithGenkit.bind(PDFProcessor);

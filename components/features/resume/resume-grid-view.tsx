@@ -125,24 +125,6 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
         if (resumeDoc.exists()) {
           const data = resumeDoc.data();
 
-          // Debug logging to see the actual data structure
-          console.log('Resume data structure for', resume.id, ':', {
-            hasContactInfo: !!data.contactInfo,
-            hasParsedData: !!data.parsedData,
-            hasRmsRawData: !!data.rmsRawData,
-            contactInfo: data.contactInfo,
-            parsedDataContactInfo: data.parsedData?.contactInfo,
-            rmsContactData: {
-              Rms_contact_fullName: data.rmsRawData?.Rms_contact_fullName,
-              rms_contact_fullName: data.rmsRawData?.rms_contact_fullName,
-              direct_Rms_contact_fullName: data.Rms_contact_fullName,
-              direct_rms_contact_fullName: data.rms_contact_fullName
-            },
-            // Check all possible fields where contact info might be stored
-            allRmsData: data.rmsRawData,
-            allDirectFields: Object.keys(data).filter(key => key.includes('contact') || key.includes('Contact')),
-            topLevelData: data
-          });
 
           // Set edit resume data for the modal
           setEditResumeData({

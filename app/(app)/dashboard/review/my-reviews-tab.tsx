@@ -1,6 +1,5 @@
 // File: components/dashboard/review/my-reviews-tab.tsx
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/card';
@@ -9,7 +8,6 @@ import { Badge } from '@/components/shared/badge';
 import { FileText, Calendar, Clock, CheckCircle, AlertCircle, Download, Eye } from 'lucide-react';
 import { toast } from '@/lib/client/hooks/ui/use-toast';
 import { useAuth } from '@/contexts/firebase-auth-context';
-
 interface Review {
   id: string;
   resumeName: string;
@@ -20,33 +18,27 @@ interface Review {
   overallScore?: number;
   commentsCount?: number;
 }
-
 const statusColors = {
   PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   PROCESSING: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   COMPLETED: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   FAILED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 };
-
 const statusLabels = {
   PENDING: 'Pending',
   PROCESSING: 'Processing',
   COMPLETED: 'Completed',
   FAILED: 'Failed',
 };
-
 export default function MyReviewsTab() {
   const { user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     loadUserReviews();
   }, [user]);
-
   const loadUserReviews = async () => {
     if (!user) return;
-    
     setLoading(true);
     try {
       const token = await user.getIdToken();
@@ -56,11 +48,9 @@ export default function MyReviewsTab() {
           'Content-Type': 'application/json',
         },
       });
-      
       if (!response.ok) {
         throw new Error('Failed to load reviews');
       }
-      
       const data = await response.json();
       setReviews(data.reviews || []);
     } catch (error) {
@@ -74,7 +64,6 @@ export default function MyReviewsTab() {
       setLoading(false);
     }
   };
-
   const handleDownloadReview = async (reviewId: string) => {
     if (!user) {
       toast({
@@ -84,7 +73,6 @@ export default function MyReviewsTab() {
       });
       return;
     }
-
     try {
       const token = await user.getIdToken();
       const response = await fetch(`/api/reviews/${reviewId}/download`, {
@@ -92,12 +80,10 @@ export default function MyReviewsTab() {
           'Authorization': `Bearer ${token}`,
         },
       });
-      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to download review');
       }
-      
       // Create blob and download
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -108,7 +94,6 @@ export default function MyReviewsTab() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
       toast({
         title: 'Download Started',
         description: 'Your review PDF is being downloaded.',
@@ -122,7 +107,6 @@ export default function MyReviewsTab() {
       });
     }
   };
-
   const handleViewReview = async (reviewId: string) => {
     if (!user) {
       toast({
@@ -132,7 +116,6 @@ export default function MyReviewsTab() {
       });
       return;
     }
-
     try {
       const token = await user.getIdToken();
       const response = await fetch(`/api/reviews/${reviewId}`, {
@@ -140,15 +123,13 @@ export default function MyReviewsTab() {
           'Authorization': `Bearer ${token}`,
         },
       });
-      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to load review');
       }
-      
       const data = await response.json();
       // TODO: Open review in modal or navigate to review page
-      console.log('Review data:', data.review);
+
       
       toast({
         title: 'Review Loaded',
@@ -163,7 +144,6 @@ export default function MyReviewsTab() {
       });
     }
   };
-
   const getStatusBadge = (status: Review['status']) => {
     return (
       <Badge className={`${statusColors[status]} border-none`}>
@@ -175,7 +155,6 @@ export default function MyReviewsTab() {
       </Badge>
     );
   };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -183,7 +162,6 @@ export default function MyReviewsTab() {
       day: 'numeric',
     });
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -191,7 +169,6 @@ export default function MyReviewsTab() {
       </div>
     );
   }
-
   if (reviews.length === 0) {
     return (
       <div className="text-center py-12">
@@ -207,7 +184,6 @@ export default function MyReviewsTab() {
       </div>
     );
   }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -215,7 +191,6 @@ export default function MyReviewsTab() {
           Review History ({reviews.length})
         </h2>
       </div>
-
       <div className="grid gap-4">
         {reviews.map((review) => (
           <motion.div
@@ -247,7 +222,6 @@ export default function MyReviewsTab() {
                     </div>
                   )}
                 </div>
-
                 {review.overallScore && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -255,7 +229,6 @@ export default function MyReviewsTab() {
                     </p>
                   </div>
                 )}
-
                 {review.commentsCount !== undefined && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -263,7 +236,6 @@ export default function MyReviewsTab() {
                     </p>
                   </div>
                 )}
-
                 <div className="flex gap-2">
                   {review.status === 'COMPLETED' && (
                     <Button

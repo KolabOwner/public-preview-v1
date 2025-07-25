@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -8,13 +7,11 @@ import { useUserUsage } from '@/lib/client/hooks/auth/use-user-usage';
 import { useAuth } from '@/contexts/auth-context';
 import { STRIPE_PRICE_IDS } from '@/lib/stripe';
 import dynamic from 'next/dynamic';
-
 // Dynamic import with no SSR to fix serialization error
 const CreateResumeModal = dynamic(
   () => import('../resume/modals/create-resume-modal'),
   { ssr: false }
 );
-
 const AppSidebarNav = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -23,7 +20,6 @@ const AppSidebarNav = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-
   // Check if we're in a resume editor route that should show collapsed sidebar
   const isResumeEditorRoute = pathname.includes('/dashboard/resumes/') &&
     (pathname.includes('/summary') || pathname.includes('/contact') ||
@@ -32,7 +28,6 @@ const AppSidebarNav = () => {
      pathname.includes('/involvement') || pathname.includes('/coursework') ||
      pathname.includes('/certifications') || pathname.includes('/preview') ||
      pathname.includes('/cover-letter'));
-
   const navItems = [
     {
       href: '/dashboard',
@@ -65,21 +60,17 @@ const AppSidebarNav = () => {
       description: 'AI-powered feedback'
     },
   ];
-
   const gridPatternUrl = "data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cpattern id='grid' width='60' height='60' patternUnits='userSpaceOnUse'%3e%3cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3e%3c/pattern%3e%3c/defs%3e%3crect width='100%25' height='100%25' fill='url(%23grid)'/%3e%3c/svg%3e";
-
   const handleUpgrade = async (planId: string) => {
-    console.log(`Processing upgrade to ${planId} plan`);
+
 
     if (!user) {
       console.error('User not authenticated');
       return;
     }
-
     try {
       // Get the correct price ID based on plan
       const priceId = planId === 'monthly' ? STRIPE_PRICE_IDS.monthly : STRIPE_PRICE_IDS.quarterly;
-
       // Create checkout session
       const response = await fetch('/api/payments/create-checkout-session', {
         method: 'POST',
@@ -93,13 +84,10 @@ const AppSidebarNav = () => {
           interval: planId,
         }),
       });
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       const { sessionId } = await response.json();
-
       if (sessionId) {
         // Redirect to Stripe checkout
         const stripe = await import('@stripe/stripe-js').then(m => m.loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!));
@@ -111,7 +99,6 @@ const AppSidebarNav = () => {
       console.error('Upgrade failed:', error);
     }
   };
-
   return (
     <>
       <aside
@@ -121,7 +108,6 @@ const AppSidebarNav = () => {
         {/* Enhanced gradient background with corporate theme */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" />
-
           {/* Corporate animated gradients */}
           <div className="absolute inset-0" style={{ '--size': '400px' } as React.CSSProperties}>
             {/* Gold gradient */}
@@ -133,7 +119,6 @@ const AppSidebarNav = () => {
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-first opacity-100 mix-blend-normal !blur-3xl origin-[center_center]"
             />
-
             {/* Amber gradient */}
             <div
               style={{
@@ -143,7 +128,6 @@ const AppSidebarNav = () => {
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-second opacity-100 mix-blend-normal !blur-3xl origin-[calc(26%)]"
             />
-
             {/* Navy gradient */}
             <div
               style={{
@@ -153,7 +137,6 @@ const AppSidebarNav = () => {
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-third opacity-100 mix-blend-normal !blur-3xl origin-[calc(100%)]"
             />
-
             {/* Warm gold accent */}
             <div
               style={{
@@ -163,7 +146,6 @@ const AppSidebarNav = () => {
               }}
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fourth opacity-70 mix-blend-normal !blur-3xl origin-[calc(10%-200px)]"
             />
-
             {/* Deep corporate navy */}
             <div
               style={{
@@ -174,11 +156,9 @@ const AppSidebarNav = () => {
               className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fifth opacity-100 mix-blend-normal !blur-3xl origin-[calc(30%)_calc(30%)]"
             />
           </div>
-
           {/* Subtle radial pattern overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.02),transparent_50%)]" />
         </div>
-
         {/* Content */}
         <div className={`relative z-10 sidebar-content flex flex-col h-full min-h-full ${isResumeEditorRoute ? 'p-2' : 'p-6'} overflow-y-auto`}>
           {/* Logo */}
@@ -197,29 +177,24 @@ const AppSidebarNav = () => {
                         <stop offset="50%" stopColor="#f3f4f6" />
                         <stop offset="100%" stopColor="#e5e7eb" />
                       </linearGradient>
-
                       {/* Accent gradient for depth */}
                       <linearGradient id="h-accent" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
                         <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
                       </linearGradient>
-
                       {/* Shadow gradient */}
                       <radialGradient id="h-shadow-grad">
                         <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
                         <stop offset="100%" stopColor="#1e40af" stopOpacity="0" />
                       </radialGradient>
-
                       {/* Mask for cut effect */}
                       <mask id="h-mask">
                         <rect width="40" height="40" fill="white" />
                         <path d="M12 18h16v4h-16z" fill="black" />
                       </mask>
                     </defs>
-
                     {/* Subtle shadow base */}
                     <ellipse cx="20" cy="38" rx="12" ry="2" fill="url(#h-shadow-grad)" />
-
                     {/* Main K structure - modern geometric design */}
                     <g>
                       {/* Left vertical pillar */}
@@ -228,14 +203,12 @@ const AppSidebarNav = () => {
                         fill="url(#h-metal)"
                         filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
                       />
-
                       {/* Upper diagonal arm */}
                       <path
                         d="M16 18 L26 8 Q27 7 28 7 L30 7 Q32 7 32 9 L32 11 Q32 12 31 13 L22 22 Q21 22 20 21 L17 19 Q16 18 16 18 Z"
                         fill="url(#h-metal)"
                         filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
                       />
-
                       {/* Lower diagonal arm */}
                       <path
                         d="M16 22 L20 19 Q21 18 22 18 L31 27 Q32 28 32 29 L32 31 Q32 33 30 33 L28 33 Q27 33 26 32 L16 22 Z"
@@ -243,7 +216,6 @@ const AppSidebarNav = () => {
                         filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
                       />
                     </g>
-
                     {/* Premium highlights */}
                     <path
                       d="M10 8 Q10 7 11 7 L13 7 Q14 7 14 8 L14 10 Q14 11 13 11 L11 11 Q10 11 10 10 Z"
@@ -255,7 +227,6 @@ const AppSidebarNav = () => {
                       fill="url(#h-accent)"
                       opacity="0.8"
                     />
-
                     {/* Subtle inner stroke for definition */}
                     <g fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5">
                       <path d="M9 7 Q9 6.5 9.5 6.5 L14.5 6.5 Q15 6.5 15 7 L15 33 Q15 33.5 14.5 33.5 L9.5 33.5 Q9 33.5 9 33 Z" />
@@ -265,7 +236,6 @@ const AppSidebarNav = () => {
                   </svg>
                 </div>
               </div>
-
               {/* Company Name - Hidden in collapsed state */}
               {!isResumeEditorRoute && (
                 <div className="flex items-baseline">
@@ -275,7 +245,6 @@ const AppSidebarNav = () => {
               )}
             </div>
           </div>
-
           {/* Create Resume Button with corporate theme */}
           {!isResumeEditorRoute && (
             <button
@@ -291,12 +260,10 @@ const AppSidebarNav = () => {
               </span>
             </button>
           )}
-
           {/* Navigation */}
           <nav className="flex-1 space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-
               return (
                 <div key={item.href} className="relative">
                   <Link
@@ -313,14 +280,12 @@ const AppSidebarNav = () => {
                     {isActive && !isResumeEditorRoute && (
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-corporate-gold-500 to-corporate-amber-500 rounded-r-full" />
                     )}
-
                     {/* Icon */}
                     <span className={`sidebar-icon relative ${
                       isActive ? 'text-corporate-amber-600 dark:text-corporate-amber-400' : ''
                     } ${isResumeEditorRoute ? 'text-lg' : ''}`}>
                       {item.icon}
                     </span>
-
                     {/* Label - Hidden in collapsed state */}
                     {!isResumeEditorRoute && (
                       <div className="flex-1 relative">
@@ -335,7 +300,6 @@ const AppSidebarNav = () => {
                       </div>
                     )}
                   </Link>
-
                   {/* Tooltip for collapsed state */}
                   {isResumeEditorRoute && hoveredItem === item.href && (
                     <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50">
@@ -352,9 +316,7 @@ const AppSidebarNav = () => {
                 </div>
               );
             })}
-
           </nav>
-
           {/* Bottom section - Hidden in collapsed state and for Pro/Enterprise users */}
           {!isResumeEditorRoute && usage.maxPdfGenerations !== -1 && (
             <div className="mx-1 flex flex-col items-start gap-y-4 self-stretch rounded-xl p-4 bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10" data-test-id="free-usage-counter">
@@ -396,7 +358,6 @@ const AppSidebarNav = () => {
               </div>
             </div>
           )}
-
           {/* Upgrade Button for collapsed state */}
           {isResumeEditorRoute && (
             <div className="mt-auto mb-2">
@@ -408,7 +369,6 @@ const AppSidebarNav = () => {
                 <svg className="w-5 h-5 text-corporate-gold-600 dark:text-corporate-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-
                 {/* Tooltip */}
                 <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-50">
                   <div className="bg-white dark:bg-navy-800 text-slate-900 dark:text-white px-3 py-2 rounded-lg shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 border border-slate-200 dark:border-navy-700 whitespace-nowrap">
@@ -421,14 +381,12 @@ const AppSidebarNav = () => {
           )}
         </div>
       </aside>
-
       {/* Upgrade Modal */}
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         onUpgrade={handleUpgrade}
       />
-
       {/* Create Resume Modal */}
       <CreateResumeModal
         isOpen={showCreateModal}
@@ -437,5 +395,4 @@ const AppSidebarNav = () => {
     </>
   );
 };
-
 export default AppSidebarNav;

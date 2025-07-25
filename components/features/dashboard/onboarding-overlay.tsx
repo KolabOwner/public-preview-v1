@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
@@ -7,11 +6,9 @@ import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/fi
 import { db } from '@/config/firebase-config';
 import { FileStatus, PDFProcessor } from '@/lib/server/services/resume/pdf-generator';
 import { useUserUsage } from '@/lib/client/hooks/auth/use-user-usage';
-
 interface OnboardingOverlayProps {
   onClose: () => void;
 }
-
 export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
   const [currentScreen, setCurrentScreen] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -20,7 +17,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
   const router = useRouter();
   const { getIdToken, user } = useAuth();
   const { usage, loading: usageLoading, incrementPdfDownload, canDownloadPdf } = useUserUsage();
-
   const handleClose = async () => {
     // Update the user's showFirstTimeOverlay flag to false
     try {
@@ -42,21 +38,18 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
     }
     onClose();
   };
-
   const handleDocumentTypeSelect = (type: string) => {
     if (type === 'resume') {
       setCurrentScreen(2);
     }
     // Add other document types handling here in the future
   };
-
   const handleResumeCreationMethod = async (method: string) => {
     if (method === 'import') {
       // Don't close overlay yet, go to import screen
       setCurrentScreen(3);
       return;
     }
-
     // Update the user's showFirstTimeOverlay flag to false
     try {
       const token = await getIdToken();
@@ -75,7 +68,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
     } catch (error) {
       console.error('Error updating user overlay preference:', error);
     }
-
     // Create resume based on the selected method
     switch (method) {
       case 'scratch':
@@ -85,7 +77,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
             router.push('/dashboard/resumes');
             return;
           }
-
           // Use the same approach as CreateResumeModal for blank resumes
           const resumeData: any = {
             title: 'My Resume',
@@ -96,10 +87,8 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
             updatedAt: serverTimestamp(),
             status: FileStatus.UPLOADED
           };
-
           // Create resume document in Firestore
           const docRef = await addDoc(collection(db, 'resumes'), resumeData);
-
           // Redirect to the resume editor
           router.push(`/dashboard/resumes/${docRef.id}`);
           onClose();
@@ -121,56 +110,45 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
         break;
     }
   };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
   };
-
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
   };
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
     const file = e.dataTransfer.files[0];
     if (file) {
       processFile(file);
     }
   };
-
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
     processFile(file);
   };
-
   const processFile = async (file: File) => {
     // Check if file is PDF
     if (!file.type.includes('pdf')) {
       setError('Please upload a PDF file');
       return;
     }
-
     // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       setError('File size exceeds 10MB limit');
       return;
     }
-
     // Check PDF generation limit
     if (!canDownloadPdf()) {
       setError(`You've reached your PDF generation limit (${usage.pdfGenerations}/${usage.maxPdfGenerations}). Please upgrade your plan.`);
       return;
     }
-
     setIsProcessing(true);
     setError('');
-
     try {
       // Update the user's showFirstTimeOverlay flag to false
       const token = await getIdToken();
@@ -186,15 +164,13 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
           }),
         });
       }
-
       if (!user) {
         console.error('No user found');
         router.push('/dashboard/resumes');
         return;
       }
-
       // Use the same PDFProcessor approach as CreateResumeModal
-      console.log(`Processing PDF file: ${file.name} (${file.size} bytes)`);
+
 
       // Create a new resume record in Firestore
       const newResumeId = await PDFProcessor.createResume({
@@ -202,16 +178,14 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
         title: file.name.replace(/\.pdf$/i, ''),
         initialStatus: FileStatus.UPLOADED
       });
-
       // Process the PDF
       const result = await PDFProcessor.processPDF(file, newResumeId, {
         userId: user.uid,
         saveToFirebase: true,
         title: file.name.replace(/\.pdf$/i, '')
       });
-
       if (result.success) {
-        console.log('PDF processing completed successfully:', result);
+
 
         // Update the resume with additional metadata
         const resumeRef = doc(db, 'resumes', newResumeId);
@@ -220,12 +194,9 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
           isTargeted: false,
           updatedAt: serverTimestamp()
         };
-        
         await updateDoc(resumeRef, updateData);
-
         // Increment PDF generation count for uploaded PDFs
         await incrementPdfDownload();
-
         // Redirect to the resume edit page after successful processing
         setTimeout(() => {
           router.push(`/dashboard/resumes/${newResumeId}`);
@@ -242,7 +213,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
       setIsProcessing(false);
     }
   };
-
   const renderScreen = () => {
     switch (currentScreen) {
       case 1:
@@ -253,7 +223,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                 Hello, which document do you want to create today?
               </h2>
             </div>
-            
             <div className="space-y-4">
               <div
                 className="w-full cursor-pointer rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-6 py-4 transition-all duration-200 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-600 group"
@@ -274,7 +243,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                 </div>
               </div>
             </div>
-            
             <div className="text-center">
               <button
                 className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline"
@@ -285,7 +253,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
             </div>
           </div>
         );
-
       case 2:
         return (
           <div className="space-y-6">
@@ -294,7 +261,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                 How would you like to create your resume?
               </h2>
             </div>
-            
             <div className="space-y-3">
               <div
                 className="w-full cursor-pointer rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-6 py-4 transition-all duration-200 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-600 group"
@@ -344,7 +310,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                 </p>
               </div>
             </div>
-            
             <div className="flex items-center justify-between pt-4">
               <button
                 className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -361,7 +326,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
             </div>
           </div>
         );
-
       case 3:
         return (
           <div className="space-y-6">
@@ -373,13 +337,11 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                 Upload your existing resume and we&apos;ll help you improve it
               </p>
             </div>
-            
             {error && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-700 dark:text-red-400 text-sm">
                 {error}
               </div>
             )}
-            
             <div className="space-y-4">
               <div 
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
@@ -424,7 +386,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                   </div>
                 </label>
               </div>
-              
               <div className="flex items-start gap-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                 <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -434,7 +395,6 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
                 </p>
               </div>
             </div>
-            
             <div className="flex items-center justify-between pt-4">
               <button
                 className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -451,17 +411,14 @@ export default function OnboardingOverlay({ onClose }: OnboardingOverlayProps) {
             </div>
           </div>
         );
-
       default:
         return null;
     }
   };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop with blur */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={handleClose} />
-      
       {/* Modal content */}
       <div className="relative w-full max-w-[448px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
         <div className="px-8 py-10">

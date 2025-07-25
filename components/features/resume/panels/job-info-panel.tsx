@@ -1,44 +1,30 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Loader2 } from 'lucide-react';
 import { useJobInfo } from '@/contexts/job-info-context';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
-
 interface JobInfoPanelProps {
   resumeId?: string; // Add this prop
   onComplete?: () => void;
   className?: string;
 }
-
 export default function JobInfoPanel({ resumeId, onComplete, className = '' }: JobInfoPanelProps) {
   const { updateJobInfo, isLoading, currentResumeId, analysisResults, jobInfo, setCurrentResumeId } = useJobInfo();
   const { user } = useAuth();
   const { toast } = useToast();
-
   const [jobTitle, setJobTitle] = useState('');
   const [jobCompany, setJobCompany] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Set the resume ID in the context when the component mounts
   useEffect(() => {
-    console.log('=== RESUME ID DEBUG ===');
-    console.log('Prop resumeId:', resumeId);
-    console.log('Context currentResumeId:', currentResumeId);
-    console.log('User ID:', user?.uid);
-    console.log('=== END RESUME ID DEBUG ===');
-
     if (resumeId && resumeId !== currentResumeId) {
-      console.log('Setting resume ID in JobInfo context:', resumeId);
       setCurrentResumeId(resumeId);
     }
   }, [resumeId, currentResumeId, setCurrentResumeId, user?.uid]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!jobTitle.trim() || !jobDescription.trim()) {
       toast({
         title: 'Missing Information',
@@ -47,9 +33,7 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
       });
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       const jobData = {
         title: jobTitle,
@@ -57,32 +41,28 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
         company: jobCompany,
       };
 
-      console.log('=== JOB INFO SUBMISSION DEBUG ===');
-      console.log('Job data:', jobData);
+
+
       console.log('Current resume ID:', currentResumeId);
       console.log('Prop resume ID:', resumeId);
       console.log('User ID:', user?.uid);
-
       // Call updateJobInfo and log the result
       const result = await updateJobInfo(jobData);
-
       console.log('updateJobInfo result:', result);
       console.log('Analysis results from context:', analysisResults);
       console.log('Job info from context:', jobInfo);
-      console.log('=== END DEBUG ===');
+
 
       toast({
         title: 'Analysis Complete',
         description: 'Job keywords have been analyzed successfully',
       });
-
       onComplete?.();
     } catch (err) {
       console.error('=== ERROR UPDATING JOB INFO ===');
       console.error('Error details:', err);
       console.error('Error message:', err instanceof Error ? err.message : 'Unknown error');
       console.error('=== END ERROR ===');
-
       toast({
         title: 'Analysis Failed',
         description: err instanceof Error ? err.message : 'Unable to analyze job keywords',
@@ -92,9 +72,7 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
       setIsSubmitting(false);
     }
   };
-
   const isAnalyzing = isLoading || isSubmitting;
-
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
       <div className="flex items-center gap-3 mb-4">
@@ -110,7 +88,6 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
           </p>
         </div>
       </div>
-
       {/* Show a warning if no resume ID is set */}
       {!currentResumeId && !resumeId && (
         <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
@@ -119,7 +96,6 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
           </p>
         </div>
       )}
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="job-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -135,7 +111,6 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
             disabled={isAnalyzing}
           />
         </div>
-
         <div>
           <label htmlFor="job-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Job Description *
@@ -150,7 +125,6 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
             disabled={isAnalyzing}
           />
         </div>
-
         <button
           type="submit"
           disabled={isAnalyzing || !jobTitle.trim() || !jobDescription.trim() || (!currentResumeId && !resumeId)}

@@ -45,7 +45,6 @@ function ResumePreviewContent() {
       }
 
       try {
-        console.log('Fetching resume with ID:', resumeId);
         const resumeRef = doc(db, 'resumes', resumeId);
         const resumeSnap = await getDoc(resumeRef);
 
@@ -55,7 +54,6 @@ function ResumePreviewContent() {
         }
 
         const resumeData = resumeSnap.data() as ResumeData;
-        console.log('Fetched resume data:', resumeData);
 
         // Ensure user owns this resume
         if (resumeData.userId !== user.uid) {
@@ -111,7 +109,6 @@ function ResumePreviewContent() {
   const processedResumeData = resume.parsedData || processRMSData(resume.rmsRawData) || resume;
 
   // Log what we're passing to the preview
-  console.log('Passing to ResumePreview:', processedResumeData);
 
   return (
     <ResumePreview
@@ -197,15 +194,6 @@ function processRMSData(rmsData: any) {
       isCurrent: getRmsField(`rms_experience_${i}_iscurrent`) === true || getRmsField(`rms_experience_${i}_iscurrent`) === 'true' || getRmsField(`rms_experience_${i}_isCurrent`) === 'true' || getRmsField(`Rms_experience_${i}_isCurrent`) === 'true',
     };
     
-    // Debug logging to see what fields are available
-    if (i === 0) {
-      console.log('[RMS Debug] First experience item fields:', {
-        position: getRmsField(`Rms_experience_${i}_position`),
-        title: getRmsField(`Rms_experience_${i}_title`),
-        role: getRmsField(`Rms_experience_${i}_role`),
-        company: exp.company,
-      });
-    }
     
     if (exp.company || exp.position || exp.description) {
       processed.experience.push(exp);
