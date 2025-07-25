@@ -77,8 +77,8 @@ function ResumesPageContent() {
         const dateB = sortBy === 'created' ? b.createdAt : b.lastUpdated;
         
         // Handle case where dates might be Timestamp objects or strings
-        const timeA = dateA?.toDate ? dateA.toDate().getTime() : new Date(dateA).getTime();
-        const timeB = dateB?.toDate ? dateB.toDate().getTime() : new Date(dateB).getTime();
+        const timeA = (dateA as any)?.toDate ? (dateA as any).toDate().getTime() : new Date(dateA as string).getTime();
+        const timeB = (dateB as any)?.toDate ? (dateB as any).toDate().getTime() : new Date(dateB as string).getTime();
         
         return timeB - timeA; // desc order
       });
