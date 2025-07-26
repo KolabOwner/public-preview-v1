@@ -34,7 +34,9 @@ import {
   Loader2,
   BarChart3,
   FileText,
-  Download
+  Download,
+  ChevronDown,
+  TrendingUp
 } from 'lucide-react';
 
 import { Button } from '@/components/shared/button';
@@ -125,23 +127,26 @@ const HeroContent = memo(() => {
 
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
+            asChild
             size="lg"
             className="group bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white px-8 py-6 rounded-2xl text-lg font-semibold font-corporate-sans shadow-xl hover:shadow-lg transition-all duration-250"
             aria-label="Create your resume for free"
           >
-            <Sparkles className="w-6 h-6 mr-2" aria-hidden="true" />
-            Create My Resume - Free
-            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            <a href="/sign-up">
+              <Sparkles className="w-6 h-6 mr-2" aria-hidden="true" />
+              Create My Resume - Free
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            </a>
           </Button>
 
           <Button
             variant="outline"
             size="lg"
             className="bg-white border-2 border-corporate-navy-200 text-corporate-navy-700 hover:bg-corporate-navy-50 hover:border-corporate-navy-300 px-6 py-6 rounded-2xl text-lg font-semibold font-corporate-sans transition-colors duration-200"
-            aria-label="Browse resume templates"
+            aria-label="Import my resume"
           >
             <Eye className="w-5 h-5 mr-2" aria-hidden="true" />
-            Browse Templates
+            Import My Resume
           </Button>
         </div>
 
@@ -209,56 +214,75 @@ const ResumeHeaderBar = memo(() => {
 
 ResumeHeaderBar.displayName = 'ResumeHeaderBar';
 
-// 3D Keywords Panel Component - Optimized Size
+// Keywords Panel Component - Realistic Mini Version
 const KeywordsPanel3D = memo(({ keywords }: { keywords: KeywordItem[] }) => {
+  const matchedKeywords = keywords.filter(k => k.matched);
+  const missingKeywords = keywords.filter(k => !k.matched);
+
   return (
     <Card 
-      className="bg-white/95 backdrop-blur-sm shadow-xl border-white/20 hover:shadow-2xl transition-all duration-250" 
+      className="bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-250" 
       style={{ width: '120px', height: 'fit-content' }}
       role="complementary" 
       aria-labelledby="keywords-panel-title"
     >
       <CardHeader className="pb-1 px-2 pt-2">
         <div className="flex items-center gap-1 mb-1">
-          <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-500 rounded-md flex items-center justify-center shadow-sm">
-            <Target className="w-2 h-2 text-white" aria-hidden="true" />
+          <div className="w-3 h-3 bg-blue-100 rounded flex items-center justify-center">
+            <Target className="w-2 h-2 text-blue-600" aria-hidden="true" />
           </div>
-          <CardTitle id="keywords-panel-title" className="text-[10px] font-bold text-gray-900">
+          <CardTitle id="keywords-panel-title" className="text-[10px] font-semibold text-gray-900">
             Keywords
           </CardTitle>
         </div>
-        <CardDescription className="text-[8px] text-gray-600">
-          Matched: {keywords.filter(k => k.matched).length}/{keywords.length}
-        </CardDescription>
       </CardHeader>
 
       <CardContent className="px-2 pb-2 pt-0">
-        <div className="space-y-1 mb-2" role="list" aria-label="Matched keywords">
-          {keywords.filter(k => k.matched).slice(0, 4).map((keyword, index) => (
-            <div key={index} className="flex items-center gap-1 p-1 rounded-md hover:bg-gray-50 transition-colors" role="listitem">
-              <div className="w-2 h-2 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
-                <Check className="w-1 h-1 text-white" aria-hidden="true" />
-              </div>
-              <span className="font-medium text-gray-900 truncate text-[8px]">{keyword.text}</span>
+        {/* Matched Keywords Section */}
+        {matchedKeywords.length > 0 && (
+          <div className="mb-2">
+            <p className="text-[8px] text-gray-600 mb-1 font-medium">
+              Already included:
+            </p>
+            <div className="space-y-0.5" role="list" aria-label="Matched keywords">
+              {matchedKeywords.slice(0, 6).map((keyword, index) => (
+                <div key={index} className="flex items-center justify-between px-1 py-0.5 hover:bg-gray-50 transition-colors rounded" role="listitem">
+                  <span className="font-medium text-gray-900 truncate text-[8px] capitalize">{keyword.text}</span>
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+        )}
+
+        {/* Missing Keywords Section */}
+        {missingKeywords.length > 0 && (
+          <div>
+            <p className="text-[8px] text-gray-600 mb-1 font-medium">
+              Add to resume:
+            </p>
+            <div className="space-y-0.5" role="list" aria-label="Missing keywords">
+              {missingKeywords.slice(0, 6).map((keyword, index) => (
+                <div key={index} className="flex items-center justify-between px-1 py-0.5 hover:bg-gray-50 transition-colors rounded" role="listitem">
+                  <span className="font-medium text-gray-900 truncate text-[8px] capitalize">{keyword.text}</span>
+                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full flex-shrink-0"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* See More Link */}
+        <div className="text-center">
+          <button className="text-blue-600 hover:text-blue-700 text-[6px] font-medium transition-colors">
+            See more (35)
+          </button>
         </div>
 
-        <div className="border-t pt-1">
-          <p className="text-[8px] text-gray-600 mb-1">
-            Suggestions:
-          </p>
-          <div className="space-y-1" role="list" aria-label="Suggested keywords">
-            {keywords.filter(k => !k.matched).slice(0, 2).map((keyword, index) => (
-              <div key={index} className="flex items-center gap-1 p-1 rounded-md opacity-70 hover:opacity-100 transition-opacity" role="listitem">
-                <div className="w-2 h-2 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
-                  <div className="w-0.5 h-0.5 bg-white rounded-full"></div>
-                </div>
-                <span className="font-medium text-gray-900 truncate text-[8px]">{keyword.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Update Job Button */}
+        <button className="w-full px-2 py-1 bg-white border border-gray-300 text-gray-900 rounded text-[7px] font-medium hover:bg-gray-50 transition-colors">
+          Update job description
+        </button>
       </CardContent>
     </Card>
   );
@@ -421,16 +445,39 @@ const ResumePreview3D = memo(({ resumeData, selectedColor, highlightKeywords }: 
 
   return (
     <div className="flex flex-col items-center" style={{ width: `${DOCUMENT_WIDTH}px` }}>
-      {/* Header Controls - Outside document */}
-      <div className="w-full bg-gray-100 border border-gray-300 rounded-t-lg p-2 mb-0">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1">
-            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+      {/* Resume Header Bar - Miniature Version */}
+      <div className="w-full bg-white/80 backdrop-blur-sm border border-gray-200 rounded-t-lg shadow-sm">
+        <div className="flex items-center justify-between px-2 py-1.5">
+          {/* Left Section - Control Buttons */}
+          <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 bg-blue-600 text-white rounded text-[8px] px-1.5 py-0.5 font-medium">
+              <Zap className="w-2 h-2" />
+              <span>Auto-adjust</span>
+            </div>
+            <div className="flex items-center gap-0.5 bg-white border border-gray-200 text-gray-700 rounded text-[8px] px-1.5 py-0.5 font-medium">
+              <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Adjustments</span>
+            </div>
+            <div className="flex items-center gap-0.5 bg-white border border-gray-200 text-gray-700 rounded text-[8px] px-1.5 py-0.5 font-medium">
+              <FileText className="w-2 h-2" />
+              <span>Templates</span>
+            </div>
           </div>
-          <div className="flex-1 text-center text-xs text-gray-600 font-medium">
-            Resume Preview
+
+          {/* Right Section - Download Button */}
+          <div className="flex items-center">
+            <div className="flex items-center bg-blue-600 text-white rounded text-[8px] font-medium">
+              <div className="flex items-center gap-0.5 px-1.5 py-0.5">
+                <Download className="w-2 h-2" />
+                <span>Download PDF</span>
+              </div>
+              <div className="border-l border-blue-700 px-0.5 py-0.5">
+                <ChevronDown className="w-2 h-2" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -584,94 +631,69 @@ const ResumePreview3D = memo(({ resumeData, selectedColor, highlightKeywords }: 
 
 ResumePreview3D.displayName = 'ResumePreview3D';
 
-// ATS Score Display Component - Optimized Size
+// ATS Score Display Component - Realistic Mini Version
 const ATSScore3D = memo(({ atsScore, isAnimating }: { atsScore: number; isAnimating: boolean }) => {
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return { color: '#10b981', label: 'Excellent', bg: 'from-green-50 to-emerald-50' };
-    if (score >= 70) return { color: '#f59e0b', label: 'Good', bg: 'from-yellow-50 to-orange-50' };
-    return { color: '#ef4444', label: 'Needs Work', bg: 'from-red-50 to-pink-50' };
+  const getScoreStatus = (score: number) => {
+    if (score >= 90) return { label: 'Excellent', color: 'text-teal-600', bgColor: 'bg-teal-500' };
+    if (score >= 75) return { label: 'Good', color: 'text-amber-600', bgColor: 'bg-amber-500' };
+    return { label: 'Needs Work', color: 'text-red-600', bgColor: 'bg-red-500' };
   };
 
-  const scoreInfo = getScoreColor(atsScore);
+  const scoreStatus = getScoreStatus(atsScore);
 
   return (
     <Card
-      className="bg-white/95 backdrop-blur-sm shadow-xl border-white/20 hover:shadow-2xl transition-all duration-250"
+      className="bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-250"
       style={{ width: '120px', height: 'fit-content' }}
       role="complementary"
       aria-labelledby="ats-score-title"
     >
       <CardHeader className="pb-1 px-2 pt-2">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-1">
-            <div className="w-4 h-4 bg-gradient-to-br from-green-500 to-emerald-500 rounded-md flex items-center justify-center shadow-sm">
-              <Zap className="w-2 h-2 text-white" aria-hidden="true" />
-            </div>
-            <CardTitle id="ats-score-title" className="text-[10px] font-bold text-gray-900">
-              ATS Score
-            </CardTitle>
+        <div className="flex items-center gap-1 mb-1">
+          <div className="w-3 h-3 bg-blue-100 rounded flex items-center justify-center">
+            <BarChart3 className="w-2 h-2 text-blue-600" aria-hidden="true" />
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" aria-hidden="true"></div>
-            <Badge variant="outline" className="text-[8px] px-1 py-0.5 border-green-200 text-green-700">
-              Live
-            </Badge>
-          </div>
+          <CardTitle id="ats-score-title" className="text-[10px] font-semibold text-gray-900">
+            ATS Score
+          </CardTitle>
         </div>
+        <CardDescription className="text-[8px] text-gray-600">
+          Resume optimization
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="px-2 pb-2 pt-0">
-        <div className="flex items-center justify-center mb-2">
-          <div className="relative w-12 h-12">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
-              <path
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none"
-                stroke="#e5e7eb"
-                strokeWidth="2"
-              />
-              <path
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none"
-                stroke={scoreInfo.color}
-                strokeWidth="2.5"
-                strokeDasharray={`${atsScore}, 100`}
-                strokeLinecap="round"
-                className={`transition-all duration-1000 ${isAnimating ? 'animate-pulse' : ''}`}
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-sm font-bold text-gray-900" aria-label={`ATS Score: ${atsScore} out of 100`}>
-                  {atsScore}
-                </div>
-                <div className={`text-[7px] font-semibold px-1 py-0.5 rounded-full bg-gradient-to-r ${scoreInfo.bg} text-gray-700`}>
-                  {scoreInfo.label}
-                </div>
-              </div>
-            </div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-gray-900">
+              {atsScore}
+            </span>
+            <span className="text-[8px] text-gray-500">/100</span>
+          </div>
+          <div className={`text-[8px] font-medium ${scoreStatus.color}`}>
+            {scoreStatus.label}
           </div>
         </div>
 
-        <div className="space-y-1" role="list" aria-label="ATS score breakdown">
-          {[
-            { label: 'Format', status: 'excellent', icon: Check },
-            { label: 'Keywords', status: 'strong', icon: Check },
-            { label: 'Structure', status: 'perfect', icon: Check }
-          ].map((item, index) => (
-            <div key={index} className="flex justify-between items-center p-1 rounded-md bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-200" role="listitem">
-              <span className="text-[8px] font-medium text-gray-700">{item.label}</span>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full flex items-center justify-center bg-gradient-to-br from-green-400 to-green-500">
-                  <item.icon className="w-1 h-1 text-white" aria-hidden="true" />
-                </div>
-                <span className="text-[7px] font-semibold capitalize text-green-600">
-                  {item.status}
-                </span>
-              </div>
-            </div>
-          ))}
+        {/* Progress Bar */}
+        <div className="mb-2">
+          <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-1000 ease-out ${scoreStatus.bgColor} ${isAnimating ? 'animate-pulse' : ''}`}
+              style={{ width: `${atsScore}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-0.5">
+            <span className="text-[7px] text-gray-400">0</span>
+            <span className="text-[7px] text-gray-400">100</span>
+          </div>
         </div>
+
+        {/* Explore Score Button */}
+        <button className="w-full px-2 py-1 bg-blue-600 text-white rounded text-[8px] font-medium flex items-center justify-center gap-1 hover:bg-blue-700 transition-colors">
+          <TrendingUp className="w-2 h-2" />
+          <span>Explore Score</span>
+        </button>
       </CardContent>
     </Card>
   );
@@ -714,10 +736,16 @@ export default function HeroSection3D({
     { text: 'Team Leadership', matched: true },
     { text: 'A/B Testing', matched: true },
     { text: 'API Integration', matched: true },
+    { text: 'Cross-functional', matched: true },
+    { text: 'Product Strategy', matched: true },
+    { text: 'User Research', matched: true },
+    { text: 'KPI Tracking', matched: true },
     { text: 'Machine Learning', matched: false },
     { text: 'DevOps', matched: false },
     { text: 'Cloud Computing', matched: false },
-    { text: 'Blockchain', matched: false }
+    { text: 'Blockchain', matched: false },
+    { text: 'Product Roadmap', matched: false },
+    { text: 'Growth Hacking', matched: false }
   ];
 
 const resumeData: ResumeData = {
@@ -734,9 +762,9 @@ const resumeData: ResumeData = {
         duration: 'January 2022—Present',
         location: 'San Francisco, CA',
         bullets: [
-          'Led product strategy and roadmap for core platform serving 2.5M+ active users, resulting in 35% increase in user engagement and $8.2M additional annual revenue through feature optimization and user experience improvements.',
-          'Collaborated with engineering, design, and marketing teams to launch 4 major product features, reducing customer churn by 28% and improving Net Promoter Score from 7.2 to 8.9 within 18 months.',
-          'Implemented data-driven product development process using advanced analytics tools, reducing time-to-market by 40% and increasing feature adoption rates by 65% through strategic A/B testing and user feedback integration.',
+          'Led product strategy and product roadmap for core platform serving 2.5M+ active users, resulting in 35% increase in user engagement and $8.2M additional annual revenue through feature optimization and user experience improvements.',
+          'Collaborated with cross-functional engineering, design, and marketing teams to launch 4 major product features, reducing customer churn by 28% and improving Net Promoter Score from 7.2 to 8.9 within 18 months.',
+          'Implemented data-driven product development process using advanced analytics tools and KPI tracking, reducing time-to-market by 40% and increasing feature adoption rates by 65% through strategic A/B testing and user research integration.',
           'Mentored 3 junior product managers and established product management best practices across the organization, improving team efficiency by 25% and reducing product defects by 18%.'
         ]
       },
@@ -826,8 +854,8 @@ const resumeData: ResumeData = {
 
     keywordTexts.forEach(keyword => {
       const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`(${escapedKeyword})`, 'gi');
-      highlightedText = sanitizedText.replace(regex, `<mark class="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-1 rounded font-medium">$1</mark>`);
+      const regex = new RegExp(`\\b(${escapedKeyword})\\b`, 'gi');
+      highlightedText = highlightedText.replace(regex, `<mark class="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-1 rounded font-medium">$1</mark>`);
     });
 
     return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
@@ -850,19 +878,20 @@ const resumeData: ResumeData = {
 
   return (
     <section
-      className={`relative bg-gradient-to-br from-slate-50 via-white to-slate-50 overflow-hidden min-h-screen ${className}`}
+      className={`relative bg-white overflow-hidden min-h-screen ${className}`}
       role="main"
       aria-labelledby="main-heading"
       {...props}
     >
       {/* Enhanced Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.08),transparent_50%)]" aria-hidden="true"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(139,92,246,0.08),transparent_50%)]" aria-hidden="true"></div>
-      <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_40%,rgba(59,130,246,0.02)_50%,transparent_60%)]" aria-hidden="true"></div>
+      <div className="absolute top-10 right-10 w-96 h-96 bg-corporate-gold-500/4 rounded-full blur-3xl animate-pulse" aria-hidden="true"></div>
+      <div className="absolute bottom-20 left-10 w-80 h-80 bg-corporate-amber-400/5 rounded-full blur-3xl animate-pulse delay-1000" aria-hidden="true"></div>
+      <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-corporate-navy-500/3 rounded-full blur-2xl animate-bounce" aria-hidden="true"></div>
+      <div className="absolute inset-0 bg-grid-black opacity-[0.01]" aria-hidden="true"></div>
 
       <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-12 lg:py-20">
         {/* Main Hero Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center min-h-[500px] lg:min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[500px] lg:min-h-[600px]">
           {/* Left Side - Hero Content */}
           <div className="order-2 lg:order-1">
             <HeroContent />

@@ -58,8 +58,8 @@ const transformationScenarios: TransformationScenario[] = [
     category: 'New Graduate',
     title: 'From Academic to Professional',
     description: 'Transform student projects and coursework into compelling professional experience that employers actually want to see.',
-    beforeImage: '/images/resume-before-grad.jpg',
-    afterImage: '/images/resume-after-grad.jpg',
+    beforeImage: '/images/transformation/resume-before-grad.png',
+    afterImage: '/images/transformation/resume-after-grad.png',
     beforeStats: {
       atsScore: 34,
       callbackRate: '3%',
@@ -85,8 +85,8 @@ const transformationScenarios: TransformationScenario[] = [
     category: 'Career Pivot',
     title: 'From Different Industry',
     description: 'Successfully transition between industries by highlighting transferable skills and repositioning your experience.',
-    beforeImage: '/images/resume-before-pivot.jpg',
-    afterImage: '/images/resume-after-pivot.jpg',
+    beforeImage: '/images/transformation/resume-before-pivot.png',
+    afterImage: '/images/transformation/resume-after-pivot.png',
     beforeStats: {
       atsScore: 42,
       callbackRate: '8%',
@@ -112,8 +112,8 @@ const transformationScenarios: TransformationScenario[] = [
     category: 'Executive Level',
     title: 'From Manager to C-Suite',
     description: 'Elevate your executive presence with strategic accomplishments and leadership impact that board members notice.',
-    beforeImage: '/images/resume-before-exec.jpg',
-    afterImage: '/images/resume-after-exec.jpg',
+    beforeImage: '/images/transformation/resume-before-exec.png',
+    afterImage: '/images/transformation/resume-after-exec.png',
     beforeStats: {
       atsScore: 67,
       callbackRate: '15%',
@@ -139,8 +139,8 @@ const transformationScenarios: TransformationScenario[] = [
     category: 'Gap Recovery',
     title: 'From Career Gap to Comeback',
     description: 'Turn employment gaps into growth stories while maintaining professional momentum and credibility.',
-    beforeImage: '/images/resume-before-gap.jpg',
-    afterImage: '/images/resume-after-gap.jpg',
+    beforeImage: '/images/transformation/resume-before-gap.png',
+    afterImage: '/images/transformation/resume-after-gap.png',
     beforeStats: {
       atsScore: 28,
       callbackRate: '5%',
@@ -204,71 +204,18 @@ const BeforeAfterComparison = ({ scenario }: { scenario: TransformationScenario 
           transition={{ duration: 0.3 }}
           className="relative"
         >
-          <div className="bg-white rounded-2xl p-8 shadow-xl border border-corporate-navy-200">
-            {/* Resume Mockup */}
-            <div className="aspect-[8.5/11] bg-gradient-to-br from-corporate-navy-50 to-white rounded-lg border border-corporate-navy-200 relative overflow-hidden">
-
-              {/* Header Section */}
-              <div className={`p-6 border-b ${
-                activeView === 'before'
-                  ? 'border-gray-200'
-                  : 'border-corporate-gold-200 bg-gradient-to-r from-corporate-gold-50 to-corporate-amber-50'
-              }`}>
-                <div className={`h-6 w-48 rounded mb-3 ${
-                  activeView === 'before' ? 'bg-gray-300' : 'bg-corporate-navy-800'
-                }`}></div>
-                <div className={`h-3 w-32 rounded mb-2 ${
-                  activeView === 'before' ? 'bg-gray-200' : 'bg-corporate-gold-600'
-                }`}></div>
-                <div className={`h-3 w-40 rounded ${
-                  activeView === 'before' ? 'bg-gray-200' : 'bg-corporate-navy-600'
-                }`}></div>
-              </div>
-
-              {/* Content Sections */}
-              <div className="p-6 space-y-6">
-                {/* Experience Section */}
-                <div>
-                  <div className={`h-4 w-24 rounded mb-3 ${
-                    activeView === 'before' ? 'bg-gray-300' : 'bg-corporate-navy-700'
-                  }`}></div>
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((item) => (
-                      <div key={item} className="space-y-1">
-                        <div className={`h-3 w-full rounded ${
-                          activeView === 'before' ? 'bg-gray-200' : 'bg-corporate-navy-200'
-                        }`}></div>
-                        <div className={`h-2 w-3/4 rounded ${
-                          activeView === 'before' ? 'bg-gray-200' : 'bg-corporate-gold-200'
-                        }`}></div>
-                        <div className={`h-2 w-5/6 rounded ${
-                          activeView === 'before' ? 'bg-gray-200' : 'bg-corporate-navy-200'
-                        }`}></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Skills Section */}
-                <div>
-                  <div className={`h-4 w-16 rounded mb-3 ${
-                    activeView === 'before' ? 'bg-gray-300' : 'bg-corporate-navy-700'
-                  }`}></div>
-                  <div className="flex flex-wrap gap-2">
-                    {[1, 2, 3, 4, 5].map((item) => (
-                      <div
-                        key={item}
-                        className={`h-6 w-16 rounded-full ${
-                          activeView === 'before'
-                            ? 'bg-gray-200'
-                            : 'bg-gradient-to-r from-corporate-gold-100 to-corporate-amber-100'
-                        }`}
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
+          <div className="bg-white rounded-2xl p-4 shadow-xl border border-corporate-navy-200">
+            {/* Actual Resume Image */}
+            <div className="aspect-[8.5/11] relative overflow-hidden rounded-lg border border-corporate-navy-200">
+              <img
+                src={activeView === 'before' ? scenario.beforeImage : scenario.afterImage}
+                alt={`Resume ${activeView} transformation - ${scenario.title}`}
+                className="w-full h-full object-contain bg-white"
+                onError={(e) => {
+                  console.log(`Failed to load image: ${e.currentTarget.src}`);
+                }}
+              />
+              
               {/* Quality Indicator */}
               <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold ${
                 activeView === 'before'
@@ -458,7 +405,7 @@ const CareerTransformation = () => {
           <h2 className="text-5xl md:text-7xl font-bold leading-tight mb-8">
             <span className="block text-corporate-navy-900">Before & After</span>
             <span className="block bg-gradient-to-r from-corporate-gold-600 via-corporate-amber-500 to-corporate-gold-600 bg-clip-text text-transparent">
-              Resume Makeovers
+              Resume Transformations
             </span>
           </h2>
 

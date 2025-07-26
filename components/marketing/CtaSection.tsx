@@ -35,14 +35,14 @@ interface CtaSectionProps {
 
 const CtaSection: React.FC<CtaSectionProps> = ({
   className = '',
-  title = 'Your Career Transformation Starts Now',
+  title = 'Ready to Build Your AI-Powered <span class="bg-gradient-to-r from-corporate-gold-600 to-corporate-amber-500 bg-clip-text text-transparent">Resume?</span>',
   subtitle = 'Join 50,000+ professionals who got hired faster',
   ctaText = 'Build My Resume',
-  ctaUrl = '/ai-resume-builder'
+  ctaUrl = '/sign-up'
 }) => {
   return (
     <section 
-      className={`relative py-32 bg-white overflow-hidden ${className}`}
+      className={`relative pt-24 pb-32 bg-white overflow-hidden ${className}`}
       aria-labelledby="cta-heading"
     >
       {/* Light Background Elements */}
@@ -68,31 +68,24 @@ const CtaSection: React.FC<CtaSectionProps> = ({
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center"
+          className="text-center space-y-8"
         >
-          {/* Main CTA Block */}
-          <div className="relative bg-gradient-to-br from-corporate-navy-900 to-corporate-navy-800 rounded-3xl p-12 md:p-16 shadow-2xl overflow-hidden">
-            {/* Dark Card Glow Effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-corporate-gold-500/10 to-corporate-amber-500/10 rounded-3xl"></div>
-            
-            <div className="relative space-y-8">
               <motion.h2 
                 id="cta-heading"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-professional-50 via-corporate-gold-200 to-professional-50 bg-clip-text text-transparent leading-tight"
-              >
-                {title}
-              </motion.h2>
+                className="text-5xl md:text-7xl font-bold text-corporate-navy-900 leading-tight"
+                dangerouslySetInnerHTML={{ __html: title }}
+              />
               
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-2xl text-corporate-gold-200 font-light max-w-3xl mx-auto"
+                className="text-2xl text-corporate-navy-600 font-light max-w-3xl mx-auto"
               >
                 {subtitle}
               </motion.p>
@@ -137,7 +130,7 @@ const CtaSection: React.FC<CtaSectionProps> = ({
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.8, duration: 0.6 }}
-                className="flex items-center justify-center gap-4 text-corporate-gold-300/80 text-sm"
+                className="flex items-center justify-center gap-4 text-corporate-navy-500 text-sm"
               >
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
@@ -148,8 +141,6 @@ const CtaSection: React.FC<CtaSectionProps> = ({
                 <div className="w-1 h-1 bg-corporate-gold-400 rounded-full"></div>
                 <span>2 min setup</span>
               </motion.div>
-            </div>
-          </div>
         </motion.div>
       </div>
     </section>

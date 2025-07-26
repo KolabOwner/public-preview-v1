@@ -107,19 +107,19 @@ const MainNavbar = () => {
             {/* Desktop Navigation - Completely New Layout */}
             <div className="hidden lg:flex items-center">
               {/* Navigation Pills Container */}
-              <div className="flex items-center bg-corporate-navy-50/80 dark:bg-corporate-navy-800/80 backdrop-blur-sm rounded-xl p-1.5 mx-6 border border-corporate-navy-200/50 dark:border-corporate-navy-700/50">
+              <div className="flex items-center bg-corporate-navy-50/80 dark:bg-corporate-navy-800/80 backdrop-blur-sm rounded-lg p-1 mx-6 border border-corporate-navy-200/50 dark:border-corporate-navy-700/50">
                 
                 {/* AI Resume Builder - Featured */}
                 <Link
                   href="/ai-resume-builder"
-                  className={`group relative px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                  className={`group relative px-2 py-1.5 rounded-md text-sm font-medium transition-all duration-300 ${
                     isActive('/ai-resume-builder')
                       ? 'bg-gradient-to-r from-corporate-amber-500 to-corporate-gold-500 text-white shadow-lg shadow-corporate-gold-500/30'
                       : 'text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
                     <span>AI Builder</span>
                   </div>
                   {isActive('/ai-resume-builder') && (
@@ -133,12 +133,12 @@ const MainNavbar = () => {
                   ref={(el) => { dropdownRefs.current['ai-tools'] = el; }}
                 >
                   <button
-                    className="group flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 transition-all duration-300"
+                    className="group flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 transition-all duration-300"
                     onClick={() => handleDropdownToggle('ai-tools')}
                   >
-                    <Zap className="w-4 h-4" />
+                    <Zap className="w-3.5 h-3.5" />
                     <span>AI Tools</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${
                       activeDropdown === 'ai-tools' ? 'rotate-180' : ''
                     }`} />
                   </button>
@@ -287,12 +287,12 @@ const MainNavbar = () => {
                   ref={(el) => { dropdownRefs.current['templates'] = el; }}
                 >
                   <button
-                    className="group flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 transition-all duration-300"
+                    className="group flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 transition-all duration-300"
                     onClick={() => handleDropdownToggle('templates')}
                   >
-                    <Grid3X3 className="w-4 h-4" />
+                    <Grid3X3 className="w-3.5 h-3.5" />
                     <span>Templates</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${
                       activeDropdown === 'templates' ? 'rotate-180' : ''
                     }`} />
                   </button>
@@ -375,9 +375,9 @@ const MainNavbar = () => {
                 {/* Pricing */}
                 <Link
                   href="/pricing"
-                  className="group flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 transition-all duration-300"
+                  className="group flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 transition-all duration-300"
                 >
-                  <TrendingUp className="w-4 h-4" />
+                  <TrendingUp className="w-3.5 h-3.5" />
                   <span>Pricing</span>
                 </Link>
               </div>
@@ -387,18 +387,18 @@ const MainNavbar = () => {
             <div className="hidden lg:flex items-center gap-4">
               <Link
                 href="/sign-in"
-                className="px-4 py-2 text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white transition-colors"
               >
                 Sign In
               </Link>
               
               <Link
-                href="/ai-resume-builder"
-                className="group relative overflow-hidden bg-gradient-to-r from-corporate-amber-500 to-corporate-gold-500 hover:from-corporate-amber-400 hover:to-corporate-gold-400 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-corporate-gold-500/30 hover:shadow-corporate-gold-500/50 transform hover:-translate-y-0.5 transition-all duration-300"
+                href="/sign-up"
+                className="group relative overflow-hidden bg-gradient-to-r from-corporate-amber-500 to-corporate-gold-500 hover:from-corporate-amber-400 hover:to-corporate-gold-400 text-white font-semibold px-4 py-2 rounded-lg shadow-lg shadow-corporate-gold-500/30 hover:shadow-corporate-gold-500/50 transform hover:-translate-y-0.5 transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                <span className="relative flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
+                <span className="relative flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
                   <span>Create Free Resume</span>
                 </span>
               </Link>
@@ -454,7 +454,7 @@ const MainNavbar = () => {
                   </Link>
                   
                   <Link 
-                    href="/ai-resume-builder" 
+                    href="/sign-up" 
                     className="flex items-center justify-center gap-2 mt-3 px-4 py-3 bg-gradient-to-r from-corporate-amber-500 to-corporate-gold-500 text-white rounded-xl font-bold shadow-lg shadow-corporate-gold-500/30"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

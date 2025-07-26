@@ -91,7 +91,7 @@ const FaqSection = () => {
   };
 
   return (
-    <section className="relative bg-white overflow-hidden py-24">
+    <section className="relative bg-white overflow-hidden py-16 pb-8">
       {/* Light Background Elements */}
       <div className="absolute inset-0">
         {/* Subtle Floating Shapes */}

@@ -19,95 +19,126 @@ const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
 const path = require('path');
 
-// Comprehensive resume data that follows the application's data structure
+// Career Change - AFTER Kolab scenario
 const STANDARD_RESUME_DATA = {
   contact: {
-    fullName: "Alex Chen",
-    firstName: "Alex",
-    lastName: "Chen",
-    email: "alex.chen@email.com",
-    phone: "(555) 987-6543",
+    fullName: "Aisha Patel",
+    firstName: "Aisha",
+    lastName: "Patel",
+    email: "aisha.patel@email.com",
+    phone: "(555) 345-6789",
     city: "Austin",
     state: "TX",
     country: "United States",
-    linkedin: "linkedin.com/in/alex-chen-cfo"
+    linkedin: "linkedin.com/in/aishapatel"
   },
 
-  summary: "Accomplished Chief Financial Officer with 8+ years of progressive finance leadership experience driving strategic growth, operational excellence, and shareholder value creation. Former corporate finance manager who built expertise across financial planning, investor relations, and organizational transformation. Proven track record of leading companies through scaling challenges, fundraising processes, and complex business transitions while maintaining strong financial controls and governance.",
+  summary: "Customer-focused product strategist with 6+ years of experience driving user-centric marketing initiatives and data-driven decision making. Proven track record of analyzing customer behavior, optimizing user experiences, and collaborating cross-functionally to deliver measurable business outcomes. Expert in leveraging market research and analytics to inform product strategy and drive 25% improvement in customer engagement metrics. Ready to apply deep customer insights and strategic thinking to accelerate product growth and innovation.",
 
   experiences: [
     {
       id: "exp1",
-      position: "Chief Financial Officer",
-      company: "GreenTech Solutions",
+      position: "Senior Product Marketing Specialist",
+      company: "TechFlow Solutions",
       location: "Austin, TX",
-      dateBegin: "2021-11-01",
+      dateBegin: "2021-03-01",
       dateEnd: "Present",
-      description: "Lead all financial operations for $50M revenue clean energy company, overseeing accounting, FP&A, treasury, and investor relations while driving strategic initiatives that doubled company valuation to $200M. • Successfully raised $25M Series B funding round by developing comprehensive financial models, investor presentations, and due diligence materials, enabling aggressive expansion into 5 new markets. • Implemented advanced financial planning and budgeting processes that improved forecast accuracy by 40% and reduced month-end close time from 15 days to 5 days. • Led acquisition integration of two competitor companies totaling $12M, managing due diligence, deal structuring, and post-merger financial consolidation that achieved 95% of projected synergies. • Built finance team from 3 to 12 professionals, establishing scalable processes and systems that supported 150% revenue growth while maintaining operating margins above 20%. • Developed board reporting and governance frameworks, presenting quarterly financial results to board of directors and key investors while ensuring SOX compliance and audit readiness."
+      description: "Drive customer-centric product positioning and go-to-market strategy for B2B software platform serving 10K+ users. • Developed user persona frameworks and customer journey mapping that informed product roadmap decisions, resulting in 35% increase in user engagement. • Collaborated cross-functionally with engineering, design, and sales teams to prioritize feature development based on customer feedback and market analysis. • Implemented data-driven A/B testing strategy for product messaging and user onboarding flows, improving conversion rates by 28%. • Led customer research initiatives including user interviews and behavioral analysis to drive product strategy and feature prioritization."
     },
     {
       id: "exp2", 
-      position: "Finance Director",
-      company: "Austin Manufacturing Corp",
+      position: "Product Marketing Coordinator",
+      company: "Creative Agency Plus",
       location: "Austin, TX",
-      dateBegin: "2019-06-01",
-      dateEnd: "2021-10-31",
-      description: "Managed financial planning, analysis, and reporting for $200M industrial manufacturing company, leading strategic initiatives that improved EBITDA margins by 5% and reduced working capital by $8M. • Developed comprehensive 3-year strategic plan and annual budgets, working closely with operations leadership to identify growth opportunities and cost optimization initiatives. • Led implementation of new ERP system (SAP) across 4 manufacturing facilities, managing $2M project budget and ensuring seamless transition that improved financial reporting accuracy and operational visibility. • Restructured debt portfolio and banking relationships, negotiating new $15M credit facility with improved terms that reduced interest expenses by $400K annually. • Established cost accounting and profitability analysis frameworks that identified unprofitable product lines, leading to strategic decisions that improved overall margins by 8%. • Managed team of 8 finance professionals across accounting, FP&A, and treasury functions, implementing performance management systems that reduced staff turnover by 30%."
+      dateBegin: "2019-01-01",
+      dateEnd: "2021-02-28",
+      description: "Managed product positioning and customer experience optimization for 20+ client digital products and services. • Conducted competitive analysis and market research to identify product differentiation opportunities, informing strategic positioning for client launches. • Collaborated with design and development teams to ensure user-centered approach in campaign execution and product messaging. • Implemented customer feedback collection systems and analyzed user behavior data to drive product improvement recommendations. • Coordinated product launch strategies and tracked success metrics, achieving 92% client satisfaction rate."
     },
     {
       id: "exp3",
-      position: "Corporate Finance Manager",
-      company: "Regional Investment Bank",
-      location: "Dallas, TX", 
-      dateBegin: "2017-03-01",
-      dateEnd: "2019-05-31",
-      description: "Performed financial analysis and strategic advisory services for middle-market clients while developing expertise in M&A transactions, capital raising, and financial restructuring. • Executed 15+ M&A transactions totaling $300M+ in deal value, managing financial due diligence, valuation analysis, and deal structuring for both buy-side and sell-side engagements. • Prepared detailed financial models and investment memoranda for private equity and strategic acquirers, achieving successful transaction completion rate of 85% above industry average. • Led capital raising initiatives for client companies, including debt refinancing and equity investments ranging from $5M to $50M, helping clients optimize capital structure and reduce cost of capital. • Conducted comprehensive financial and operational assessments for distressed companies, developing turnaround strategies that restored profitability for 80% of engagements. • Built strong relationships with institutional investors, lenders, and strategic partners, creating valuable network that supported successful deal execution and client value creation."
+      position: "Customer Insights Analyst",
+      company: "Local Retail Group",
+      location: "Austin, TX",
+      dateBegin: "2018-06-01",
+      dateEnd: "2018-12-31",
+      description: "Analyzed customer behavior and market trends across 12 retail locations to inform product merchandising and user experience decisions. • Conducted customer research through surveys and behavioral analysis, generating actionable insights that improved in-store customer experience by 20%. • Collaborated with operations teams to optimize product placement and customer journey based on data analysis. • Created comprehensive customer behavior reports and presented findings to leadership team, influencing strategic product positioning decisions. • Developed customer segmentation framework that enhanced targeted marketing effectiveness."
     }
   ],
 
   education: [
     {
       id: "edu1",
-      qualification: "Master of Business Administration",
-      fieldOfStudy: "Finance",
+      qualification: "Bachelor of Business Administration",
+      fieldOfStudy: "Marketing",
       institution: "University of Texas at Austin",
       location: "Austin, TX",
-      date: "2016-12-01",
+      date: "2018-05-01",
       dateFormat: "YYYY",
-      gpa: "3.9/4.0"
+      gpa: "3.2/4.0"
     }
   ],
 
   skills: [
     {
       id: "skill1",
-      category: "Financial Leadership",
-      keywords: "Strategic Planning, Financial Modeling, Investor Relations, Board Reporting, Fundraising"
+      category: "Product Strategy",
+      keywords: "User Research, Customer Journey Mapping, Product Positioning, Go-to-Market Strategy"
     },
     {
       id: "skill2", 
-      category: "Corporate Finance",
-      keywords: "M&A, Capital Structure, Debt & Equity Financing, Valuation, Due Diligence"
+      category: "Analytics & Research",
+      keywords: "A/B Testing, Behavioral Analysis, Market Research, Data-Driven Decision Making"
     },
     {
       id: "skill3",
-      category: "Operations & Systems",
-      keywords: "ERP Implementation, Financial Controls, SOX Compliance, Process Optimization"
+      category: "Cross-Functional Leadership",
+      keywords: "Stakeholder Management, Product Roadmap Planning, Customer Insights, Feature Prioritization"
     },
     {
       id: "skill4",
-      category: "Team Leadership",
-      keywords: "Organizational Development, Performance Management, Change Management, Talent Acquisition"
-    },
-    {
-      id: "skill5",
-      category: "Technical Skills",
-      keywords: "Advanced Excel, SAP, QuickBooks, Tableau, Financial Reporting, GAAP"
+      category: "Technical Tools",
+      keywords: "Google Analytics, Mixpanel, Figma, SQL, Product Management Platforms"
     }
   ],
 
+  projects: [
+    {
+      id: "proj1",
+      title: "SaaS Product Competitive Intelligence Platform",
+      organization: "Independent Product Strategy Project",
+      description: "Built comprehensive competitive analysis framework for SaaS product positioning and feature gap identification. • Researched 15 B2B software companies to map product feature matrices, pricing strategies, and user experience patterns. • Developed strategic product positioning recommendations based on competitive landscape analysis and market opportunity assessment. • Created data visualization dashboard with actionable insights for product roadmap prioritization and go-to-market strategy optimization.",
+      startDate: "2023-01-01",
+      endDate: "2023-03-01",
+      url: ""
+    },
+    {
+      id: "proj2",
+      title: "Customer Journey Optimization Study",
+      organization: "Product Management Certification Project",
+      description: "Designed and executed comprehensive user research study to identify friction points in customer onboarding experience. • Conducted 25+ user interviews and analyzed behavioral data to map complete customer journey from acquisition to activation. • Identified 5 key optimization opportunities that could potentially improve conversion rates by 30%. • Presented findings and strategic recommendations to cross-functional team, demonstrating product thinking and user-centric approach.",
+      startDate: "2023-06-01",
+      endDate: "2023-08-01",
+      url: ""
+    }
+  ],
 
-
+  involvements: [
+    {
+      id: "inv1",
+      role: "Product Strategy Committee Lead",
+      organization: "Austin Young Professionals Network",
+      location: "Austin, TX",
+      startDate: "2022-01-01",
+      endDate: "Present",
+      description: "Lead strategic product development initiatives for professional networking platform serving 2,000+ members. • Spearhead user research and feedback collection to inform platform feature roadmap and member experience optimization strategies. • Collaborate cross-functionally with technology and events teams to prioritize product enhancements based on member behavior data and engagement metrics. • Drive strategic planning sessions for community growth initiatives, applying product thinking methodologies to increase member retention by 40%.",
+      current: true,
+      bulletPoints: [
+        "Spearhead user research and feedback collection to inform platform feature roadmap and member experience optimization strategies.",
+        "Collaborate cross-functionally with technology and events teams to prioritize product enhancements based on member behavior data and engagement metrics.",
+        "Drive strategic planning sessions for community growth initiatives, applying product thinking methodologies to increase member retention by 40%."
+      ]
+    }
+  ]
 };
 
 // Default document settings that match the application
@@ -116,9 +147,9 @@ const DEFAULT_DOCUMENT_SETTINGS = {
   fontFamily: "Merriweather",
   primaryColor: "#1f2937",
   textColor: "#1f2937",
-  fontSize: 11,
-  lineHeight: 1.3,
-  sectionSpacing: 1,
+  fontSize: 9.5,
+  lineHeight: 1.2,
+  sectionSpacing: 0.8,
   paperSize: "Letter",
   margins: {
     top: 0.5,
@@ -437,10 +468,10 @@ function generateResumeHTML(resumeData, styles) {
             </div>
         </header>
 
-        <!-- Professional Summary -->
+        <!-- Summary -->
         ${resumeData.summary ? `
         <section class="section-margin">
-            <h2 class="resume-section-header">Professional Summary</h2>
+            <h2 class="resume-section-header">Summary</h2>
             <p class="resume-summary">${resumeData.summary}</p>
         </section>
         ` : ''}
@@ -448,7 +479,7 @@ function generateResumeHTML(resumeData, styles) {
         <!-- Experience -->
         ${resumeData.experiences && resumeData.experiences.length > 0 ? `
         <section class="section-margin">
-            <h2 class="resume-section-header">Professional Experience</h2>
+            <h2 class="resume-section-header">Experience</h2>
             ${resumeData.experiences.map(exp => `
                 <div class="resume-experience-block">
                     <div class="block-spacing">
@@ -492,11 +523,83 @@ function generateResumeHTML(resumeData, styles) {
         </section>
         ` : ''}
 
+        <!-- Certifications -->
+        ${resumeData.certifications && resumeData.certifications.length > 0 ? `
+        <section class="section-margin">
+            <h2 class="resume-section-header">Certifications</h2>
+            ${resumeData.certifications.map(cert => `
+                <div class="resume-education-block">
+                    <div class="resume-degree-title">${cert.name}</div>
+                    <div class="resume-school-info">
+                        ${cert.issuer}${cert.date ? ` • ${formatDate(cert.date, 'MMM YYYY')}` : ''}${cert.credentialId ? ` • ID: ${cert.credentialId}` : ''}
+                    </div>
+                </div>
+            `).join('')}
+        </section>
+        ` : ''}
+
+        <!-- Projects -->
+        ${resumeData.projects && resumeData.projects.length > 0 ? `
+        <section class="section-margin">
+            <h2 class="resume-section-header">Projects</h2>
+            ${resumeData.projects.map(project => `
+                <div class="resume-project-block">
+                    <div class="block-spacing">
+                        <h3 class="resume-project-title">${project.title}</h3>
+                    </div>
+                    <div class="resume-company">
+                        <span>${project.organization}</span>
+                        <span class="resume-date">
+                            ${formatDate(project.startDate)} - ${formatDate(project.endDate)}
+                        </span>
+                    </div>
+                    ${project.description ? `
+                        <ul class="resume-bullet-list">
+                            ${parseBulletPoints(project.description).map(bullet => 
+                                `<li>${bullet}</li>`
+                            ).join('')}
+                        </ul>
+                    ` : ''}
+                    ${project.url ? `
+                        <div class="resume-detail-text">GitHub: ${project.url}</div>
+                    ` : ''}
+                </div>
+            `).join('')}
+        </section>
+        ` : ''}
+
+
+        <!-- Involvement -->
+        ${resumeData.involvements && resumeData.involvements.length > 0 ? `
+        <section class="section-margin">
+            <h2 class="resume-section-header">Involvement</h2>
+            ${resumeData.involvements.map(involvement => `
+                <div class="resume-involvement-block">
+                    <div class="block-spacing">
+                        <h3 class="resume-involvement-title">${involvement.role}</h3>
+                    </div>
+                    <div class="resume-company">
+                        <span>${involvement.organization}</span>
+                        <span class="resume-date">
+                            ${formatDate(involvement.startDate)} - ${formatDate(involvement.endDate)}${involvement.location ? `, ${involvement.location}` : ''}
+                        </span>
+                    </div>
+                    ${involvement.description ? `
+                        <ul class="resume-bullet-list">
+                            ${parseBulletPoints(involvement.description).map(bullet => 
+                                `<li>${bullet}</li>`
+                            ).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+            `).join('')}
+        </section>
+        ` : ''}
 
         <!-- Skills -->
         ${resumeData.skills && resumeData.skills.length > 0 ? `
         <section class="section-margin">
-            <h2 class="resume-section-header">Technical Skills</h2>
+            <h2 class="resume-section-header">Skills</h2>
             ${resumeData.skills.map(category => `
                 <div class="resume-skills-category">
                     <span class="resume-skills-title">${category.category}:</span>
@@ -593,7 +696,7 @@ async function generateResumeTemplate() {
     });
     
     // Save PNG
-    const pngPath = path.join(__dirname, 'business-4.png');
+    const pngPath = path.join(__dirname, 'resume-after-pivot.png');
     await fs.writeFile(pngPath, screenshotBuffer);
     console.log(`✅ PNG saved to: ${pngPath}`);
     

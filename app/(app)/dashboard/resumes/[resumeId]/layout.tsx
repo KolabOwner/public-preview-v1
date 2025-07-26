@@ -286,7 +286,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
         <div className="flex justify-center mb-8 mt-4 relative" style={{ zIndex: 10 }}>
           <div className="flex flex-row flex-wrap gap-3 justify-center items-center">
             {/* Resume Selector Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-1 py-1 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50" style={{ zIndex: 1 }}>
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50" style={{ zIndex: 1 }}>
               <div className="relative" ref={resumeDropdownRef}>
                 <button
                   onClick={() => setShowResumeDropdown(!showResumeDropdown)}
@@ -418,13 +418,13 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="py-2 max-h-96 overflow-y-auto">
                       {allEditorTabs.filter(tab => !['contact', 'preview', 'cover-letter'].includes(tab.key)).map((tab) => {
                         const hasContent = sectionHasContent(tab.key);
                         const isEnabled = tabVisibility[tab.key];
                         const isHidden = hiddenTabs.find(t => t.key === tab.key);
-                        
+
                         return (
                           <div
                             key={tab.key}
@@ -444,7 +444,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                                 </span>
                               )}
                             </Link>
-                            
+
                             <label className="flex items-center cursor-pointer">
                               <input
                                 type="checkbox"
@@ -474,7 +474,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                     href={tab.href}
                     className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
-                        ? 'bg-corporate-amber-600 text-white' 
+                        ? 'bg-orange-600 text-white' 
                         : 'text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400'
                     } cursor-pointer`}
                   >
@@ -554,7 +554,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                 </Link>
               );
             })}
-            
+
             {/* Mobile More Button */}
             <button
               onClick={() => setShowMoreMenu(true)}
@@ -565,7 +565,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
             </div>
 
             {/* Mobile Action Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-slate-200 dark:border-navy-700 w-fit h-fit bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 gap-0.5 shadow-lg shadow-slate-200/50 dark:shadow-navy-900/50">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 gap-0.5 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
               {actionTabs.map((tab) => {
                 const isActive = pathname === tab.href;
                 return (
@@ -574,7 +574,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                     href={tab.href}
                     className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
                       isActive 
-                        ? 'bg-resume-blue-600 text-neutral-0' 
+                        ? 'bg-orange-600 text-white' 
                         : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                     } cursor-pointer`}
                   >
