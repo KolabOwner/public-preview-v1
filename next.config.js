@@ -49,7 +49,6 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    quality: 80, // Reduce quality for better compression
   },
   // Security headers
   async headers() {
