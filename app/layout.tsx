@@ -73,7 +73,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
           referrerPolicy="no-referrer"
           media="print"
-          onLoad="this.media='all'"
+          onLoad={(e) => { (e.target as HTMLLinkElement).media = 'all'; }}
         />
         {/* REMOVED: Duplicate @font-face declarations - CDN already provides these */}
       </head>
