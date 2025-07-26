@@ -106,15 +106,26 @@ export async function createRecaptchaAssessment(
     
     return finalResult;
   } catch (error) {
-    console.error('[reCAPTCHA] Assessment failed with error:', {
+    const errorDetails = error instanceof Error ? {
       message: error.message,
-      code: error.code,
-      details: error.details,
+      name: error.name,
       stack: error.stack,
+    } : {
+      message: String(error),
+      name: 'Unknown',
+      stack: undefined,
+    };
+
+    console.error('[reCAPTCHA] Assessment failed with error:', {
+      ...errorDetails,
+      code: (error as any)?.code,
+      details: (error as any)?.details,
     });
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       label: RecaptchaLabel.BAD,
-      reason: `${RecaptchaError.ASSESSMENT_FAILED}: ${error.message}`,
+      reason: `${RecaptchaError.ASSESSMENT_FAILED}: ${errorMessage}`,
       score: 0.0,
       valid: false,
     };
