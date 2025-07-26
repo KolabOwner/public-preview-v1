@@ -88,9 +88,6 @@ export default function LandingPage() {
           {/* Feature Deep-Dive */}
           <ContentFocusedFeatures />
 
-          {/* Product Experience */}
-          <DashboardMockup />
-
           {/* Template Gallery */}
           <ResumeTemplateShowcase />
 
@@ -102,6 +99,9 @@ export default function LandingPage() {
 
           {/* Conversion Section */}
           <CtaSection />
+
+          {/* Product Experience */}
+          <DashboardMockup />
 
           {/* Site Footer */}
           <Footer />

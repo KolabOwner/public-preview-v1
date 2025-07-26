@@ -133,9 +133,9 @@ const ProfessionalSamples = () => {
             <span className="text-corporate-navy-700 font-medium">Professionally Designed Samples</span>
           </div>
           <h2 id="samples-heading" className="text-5xl md:text-7xl font-bold leading-tight mb-8">
-            <span className="block text-corporate-navy-900">Templates That</span>
+            <span className="block text-corporate-navy-900">Browse from over 700+</span>
             <span className="block bg-gradient-to-r from-corporate-gold-600 via-corporate-amber-500 to-corporate-gold-600 bg-clip-text text-transparent">
-              Open Doors
+              Resume Samples
             </span>
           </h2>
           <p className="text-xl text-corporate-navy-600 leading-relaxed max-w-3xl mx-auto">

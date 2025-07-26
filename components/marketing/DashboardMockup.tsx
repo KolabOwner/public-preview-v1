@@ -4,42 +4,25 @@ import React, { useState } from 'react';
 
 // Main Component
 const DashboardMockup = () => {
-  const [keepExpanded, setKeepExpanded] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('updated');
 
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
+    <section className="py-16 bg-white relative overflow-hidden">
       {/* Corporate Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-corporate-gold-500/8 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-corporate-amber-400/6 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-corporate-gold-600/4 rounded-full blur-2xl animate-bounce"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 bg-corporate-gold-500/8 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-56 h-56 bg-corporate-amber-400/6 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-corporate-gold-600/4 rounded-full blur-2xl animate-bounce"></div>
         <div className="absolute inset-0 bg-grid-white opacity-[0.02]"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Header */}
-        <div className="text-center mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-3 bg-gray-100 backdrop-blur-sm border border-gray-300 rounded-full px-6 py-3 mb-8">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
-            <span className="text-gray-700 font-medium">Smart Dashboard</span>
-          </div>
-          <h2 className="text-5xl md:text-7xl font-bold leading-tight mb-8">
-            <span className="block text-gray-900">Your Resume & Cover Letter</span>
-            <span className="block bg-gradient-to-r from-corporate-gold-400 via-corporate-amber-400 to-corporate-gold-500 bg-clip-text text-transparent">
-              Command Center
-            </span>
-          </h2>
-          <p className="text-xl text-corporate-gold-200/80 max-w-3xl mx-auto leading-relaxed">
-            Manage all your resumes, track applications, and optimize your job search from one powerful dashboard
-          </p>
-        </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
 
-        <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-lg shadow-2xl max-w-7xl mx-auto flex overflow-hidden min-h-[800px] transition-colors duration-300`}>
+        <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-lg shadow-xl max-w-5xl mx-auto flex overflow-hidden min-h-[600px] transition-colors duration-300 transform scale-90`}>
           {/* Mockup Sidebar */}
-          <aside className={`w-[280px] min-h-full ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-r border-gray-700' : 'bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200'} flex flex-col transition-colors duration-300`}>
+          <aside className={`w-[240px] min-h-full ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-r border-gray-700' : 'bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200'} flex flex-col transition-colors duration-300`}>
             {/* Logo Section */}
             <div className="p-6">
               <div className="flex items-center gap-3">
@@ -60,12 +43,12 @@ const DashboardMockup = () => {
 
             {/* Create Button */}
             <div className="px-6 mb-6">
-              <button className="w-full bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-corporate-gold-500/30">
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="w-full bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white font-medium py-2 px-3 rounded-lg shadow-md shadow-corporate-gold-500/20">
+                <span className="flex items-center justify-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  Create New Resume
+                  <span className="text-sm">Create New Resume</span>
                 </span>
               </button>
             </div>
@@ -95,34 +78,10 @@ const DashboardMockup = () => {
               </div>
             </nav>
 
-            {/* Usage Stats */}
-            <div className="px-6 pb-6">
-              <div className={`${isDarkMode ? 'bg-gray-800/60 border-gray-600' : 'bg-white/60 border-gray-200'} backdrop-blur-sm border rounded-xl p-4 transition-colors duration-300`}>
-                <div className="flex flex-col gap-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <svg className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} transition-colors duration-300`}>AI GENERATIONS</span>
-                    </div>
-                    <span className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} transition-colors duration-300`}>5 / 10</span>
-                  </div>
-                </div>
-                <button className="w-full mt-3 bg-gradient-to-r from-corporate-gold-600 to-corporate-amber-600 text-white font-bold text-xs uppercase px-2 py-2 rounded-lg shadow-lg shadow-corporate-gold-500/30">
-                  <span className="flex items-center justify-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                    UPGRADE
-                  </span>
-                </button>
-              </div>
-            </div>
           </aside>
 
           {/* Main Dashboard Content */}
-          <main className="flex-1 p-12">
+          <main className="flex-1 p-8">
       <div className="flex justify-between">
         {/* Tab Navigation */}
         <div className="my-6 flex flex-row gap-x-2">
@@ -203,9 +162,9 @@ const DashboardMockup = () => {
         </div>
 
         {/* Resume Cards Row */}
-        <div className="flex flex-row gap-6">
+        <div className="flex flex-row gap-4">
           {/* Resume Card 1 */}
-          <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+          <div className={`relative h-64 w-52 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
             <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
               <div className="text-[7px] font-semibold">Charles Bloomberg</div>
               <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
@@ -262,7 +221,7 @@ const DashboardMockup = () => {
           </div>
 
           {/* Resume Card 2 */}
-          <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+          <div className={`relative h-64 w-52 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
             <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
               <div className="text-[7px] font-semibold">Charles Bloomberg</div>
               <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
@@ -319,7 +278,7 @@ const DashboardMockup = () => {
           </div>
 
           {/* Resume Card 3 */}
-          <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+          <div className={`relative h-64 w-52 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
             <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
               <div className="text-[7px] font-semibold">Charles Bloomberg</div>
               <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
@@ -366,7 +325,7 @@ const DashboardMockup = () => {
             <div className="absolute bottom-0 left-0 z-10 w-full">
               <div className={`relative flex min-h-[3.5rem] flex-row items-center justify-between rounded-lg rounded-t-none ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} py-0 transition-colors duration-300`}>
                 <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
-                  <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-base font-semibold leading-6 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>Rezi Resume</div>
+                  <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-base font-semibold leading-6 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>Kolab Resume</div>
                 </div>
                 <div className={`flex h-12 min-w-12 items-center justify-center text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
                   <i className="fas fa-ellipsis-vertical" aria-hidden="true"></i>
@@ -376,21 +335,10 @@ const DashboardMockup = () => {
           </div>
         </div>
 
-        {/* Keep Section - Collapsible */}
-        <div className="py-7 text-left text-xs font-bold uppercase">
-          <button 
-            onClick={() => setKeepExpanded(!keepExpanded)}
-            className={`flex items-center ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} transition-colors duration-300`}
-          >
-            <i className={`fas ${keepExpanded ? 'fa-caret-down' : 'fa-caret-right'} pr-2.5 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} transition-colors duration-300`} aria-hidden="true"></i>
-            <span>Keep</span>
-          </button>
-        </div>
 
-        {keepExpanded && (
-          <div className="flex flex-row gap-6">
+          <div className="flex flex-row gap-4 mt-8">
             {/* Keep Resume Card 1 */}
-            <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+            <div className={`relative h-64 w-52 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
               <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
                 <div className="text-[7px] font-semibold">Charles Bloomberg</div>
                 <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
@@ -447,7 +395,7 @@ const DashboardMockup = () => {
             </div>
 
             {/* Keep Resume Card 2 */}
-            <div className={`relative h-72 w-60 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+            <div className={`relative h-64 w-52 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
               <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
                 <div className="text-[7px] font-semibold">Charles Bloomberg</div>
                 <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548 • in/bloomberg</div>
@@ -487,7 +435,7 @@ const DashboardMockup = () => {
                   <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
                     <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Designed a website to empower Australians to identify transferable skillsets and upskill for jobs of the future.</span></li>
                     <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Conducted 2 surveys and more than 10 interviews across the general public and industry.</span></li>
-                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Undertaken research into public sentiment before, during, and post-Covid lockdown, government initiatives, projected growth industries, and environmental considerations.</span></li>
+                    <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Undertaken research into public sentiment before, during, and post-Covid lockdown, government initiatives, projected growth industries, and environmental conditions.</span></li>
                   </ul>
                 </div>
               </div>
@@ -503,7 +451,6 @@ const DashboardMockup = () => {
               </div>
             </div>
           </div>
-        )}
 
         {/* Add Section Button */}
         <div className="py-7 text-left text-xs font-bold uppercase">
