@@ -12,16 +12,10 @@
 
 'use client';
 
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
+import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle } from 'lucide-react';
-
-// Dynamically import framer-motion to reduce initial bundle
-const motion = dynamic(() => import('framer-motion').then(mod => ({ default: mod.motion })), {
-  ssr: false,
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-2xl h-96" />
-});
 
 interface ProfessionalSample {
   title: string;
