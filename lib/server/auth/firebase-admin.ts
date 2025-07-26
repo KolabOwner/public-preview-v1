@@ -22,7 +22,7 @@ const initAdmin = () => {
       }
 
       // Clean and format the private key properly
-      let privateKey = rawPrivateKey
+      const privateKey = rawPrivateKey
         .replace(/\\n/g, '\n')  // Replace literal \n with actual newlines
         .replace(/"/g, '')      // Remove any quotes
         .trim();                // Remove extra whitespace
