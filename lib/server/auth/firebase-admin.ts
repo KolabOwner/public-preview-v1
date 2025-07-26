@@ -15,7 +15,31 @@ const initAdmin = () => {
       // Use environment variables for Firebase Admin SDK credentials
       const projectId = process.env.FIREBASE_PROJECT_ID;
       const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-      const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+      const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
+      
+      if (!rawPrivateKey) {
+        throw new Error('FIREBASE_PRIVATE_KEY environment variable is not set');
+      }
+
+      // Clean and format the private key properly
+      let privateKey = rawPrivateKey
+        .replace(/\\n/g, '\n')  // Replace literal \n with actual newlines
+        .replace(/"/g, '')      // Remove any quotes
+        .trim();                // Remove extra whitespace
+
+      // Ensure proper PEM format
+      if (!privateKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
+        console.error('Private key does not start with proper PEM header');
+        console.error('Private key preview:', privateKey.substring(0, 50) + '...');
+        throw new Error('Invalid private key format - must start with -----BEGIN PRIVATE KEY-----');
+      }
+
+      if (!privateKey.endsWith('-----END PRIVATE KEY-----')) {
+        console.error('Private key does not end with proper PEM footer');
+        throw new Error('Invalid private key format - must end with -----END PRIVATE KEY-----');
+      }
+
+      console.log('✓ Private key format validation passed');
 
       if (!projectId || !clientEmail || !privateKey) {
         const missingVars = [];
