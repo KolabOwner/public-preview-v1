@@ -150,7 +150,7 @@ const TestimonialSection = () => {
             {/* Quote */}
             <div className="mb-6">
               <h3 className="text-lg lg:text-xl font-semibold text-gray-900 leading-relaxed">
-                "Kolab is an exceptional AI-powered resume builder that includes smart templates and optimization features to help you create a resume that stands out to both hiring managers and applicant tracking systems. This is the perfect tool to transform your career prospects."
+                &quot;Kolab is an exceptional AI-powered resume builder that includes smart templates and optimization features to help you create a resume that stands out to both hiring managers and applicant tracking systems. This is the perfect tool to transform your career prospects.&quot;
               </h3>
             </div>
             
