@@ -58,6 +58,8 @@ export default function RootLayout({
 
         {/* DNS prefetch for other CDNs */}
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+        <link rel="dns-prefetch" href="https://www.google.com" />
+        <link rel="dns-prefetch" href="https://www.gstatic.com" />
 
         {/* Font Awesome icons - preload critical font */}
         <link 

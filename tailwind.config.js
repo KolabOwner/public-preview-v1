@@ -8,15 +8,17 @@ const config: Config = {
     './contexts/**/*.{js,ts,jsx,tsx}',
     './lib/**/*.{js,ts,jsx,tsx}',
   ],
-  // Optimize CSS purging
+  // Optimize CSS purging - be more specific
   safelist: [
-    // Keep critical utility classes that might be dynamically generated
-    /^bg-corporate-/,
-    /^text-corporate-/,
-    /^border-corporate-/,
+    // Keep only the most critical dynamic classes
     'animate-pulse',
     'animate-spin',
     'sr-only',
+    'bg-corporate-navy-900',
+    'bg-corporate-gold-500',
+    'text-corporate-navy-900',
+    'text-corporate-gold-600',
+    'border-corporate-navy-100',
   ],
   darkMode: 'class', // Enable class-based dark mode
   theme: {

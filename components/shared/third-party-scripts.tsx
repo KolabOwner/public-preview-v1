@@ -16,21 +16,33 @@ export default function ThirdPartyScripts({
 }: ThirdPartyScriptsProps) {
   return (
     <>
-      {/* Google Tag Manager - Load with delay */}
+      {/* Google Tag Manager - Load with delay and only after user interaction */}
       {enableGTM && (
         <Script
           id="gtm-script"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
-              // Delay GTM loading to improve performance
-              setTimeout(() => {
-                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
-              }, 3000);
+              // Load GTM only after user interaction or after 5 seconds
+              let gtmLoaded = false;
+              const loadGTM = () => {
+                if (!gtmLoaded) {
+                  gtmLoaded = true;
+                  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                  })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
+                }
+              };
+              
+              // Load on user interaction
+              ['mousedown', 'touchstart', 'scroll', 'keydown'].forEach(event => {
+                document.addEventListener(event, loadGTM, { once: true, passive: true });
+              });
+              
+              // Fallback: load after 5 seconds
+              setTimeout(loadGTM, 5000);
             `,
           }}
         />
