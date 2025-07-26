@@ -7,6 +7,7 @@ import { Inter, Source_Sans_3, Merriweather } from 'next/font/google';
 import { Providers } from './Providers';
 import { ThemeScript } from '@/components/shared/theme-script';
 import ThirdPartyScripts from '@/components/shared/third-party-scripts';
+import AsyncCSS from '@/components/shared/async-css';
 
 // Optimize font loading with Next.js font optimization
 const inter = Inter({ 
@@ -58,7 +59,7 @@ export default function RootLayout({
         {/* DNS prefetch for other CDNs */}
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
 
-        {/* Font Awesome icons - preload critical font, then load stylesheet */}
+        {/* Font Awesome icons - preload critical font */}
         <link 
           rel="preload"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2"
@@ -66,21 +67,13 @@ export default function RootLayout({
           type="font/woff2"
           crossOrigin="anonymous"
         />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
-          media="print"
-          onLoad={(e) => { (e.target as HTMLLinkElement).media = 'all'; }}
-        />
         {/* REMOVED: Duplicate @font-face declarations - CDN already provides these */}
       </head>
       <body className={inter.className}>
           <Providers>
             {children}
           </Providers>
+          <AsyncCSS />
           <ThirdPartyScripts 
             enableGTM={process.env.NODE_ENV === 'production'}
             enableGA={process.env.NODE_ENV === 'production'}
