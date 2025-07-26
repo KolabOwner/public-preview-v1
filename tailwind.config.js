@@ -5,6 +5,18 @@ const config: Config = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './contexts/**/*.{js,ts,jsx,tsx}',
+    './lib/**/*.{js,ts,jsx,tsx}',
+  ],
+  // Optimize CSS purging
+  safelist: [
+    // Keep critical utility classes that might be dynamically generated
+    /^bg-corporate-/,
+    /^text-corporate-/,
+    /^border-corporate-/,
+    'animate-pulse',
+    'animate-spin',
+    'sr-only',
   ],
   darkMode: 'class', // Enable class-based dark mode
   theme: {

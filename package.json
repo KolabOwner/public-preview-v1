@@ -122,6 +122,22 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all",
+      "not safari < 14",
+      "not chrome < 90",
+      "not firefox < 88",
+      "not edge < 90"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "author": "",
   "license": "MIT"
 }

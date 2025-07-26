@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { Inter, Source_Sans_3, Merriweather } from 'next/font/google';
 import { Providers } from './Providers';
 import { ThemeScript } from '@/components/shared/theme-script';
+import ThirdPartyScripts from '@/components/shared/third-party-scripts';
 
 // Optimize font loading with Next.js font optimization
 const inter = Inter({ 
@@ -57,13 +58,22 @@ export default function RootLayout({
         {/* DNS prefetch for other CDNs */}
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
 
-        {/* Font Awesome icons - load with font-display: swap to avoid bbox warnings */}
+        {/* Font Awesome icons - preload critical font, then load stylesheet */}
+        <link 
+          rel="preload"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
           crossOrigin="anonymous"
           referrerPolicy="no-referrer"
+          media="print"
+          onLoad="this.media='all'"
         />
         {/* REMOVED: Duplicate @font-face declarations - CDN already provides these */}
       </head>
@@ -71,6 +81,10 @@ export default function RootLayout({
           <Providers>
             {children}
           </Providers>
+          <ThirdPartyScripts 
+            enableGTM={process.env.NODE_ENV === 'production'}
+            enableGA={process.env.NODE_ENV === 'production'}
+          />
       </body>
     </html>
   );

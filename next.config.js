@@ -17,7 +17,17 @@ const nextConfig = {
     optimizeCss: true,
     optimizeServerReact: true,
     serverMinification: true,
+    // Enable tree shaking for better bundle optimization
+    esmExternals: 'loose',
   },
+  
+  // Enable tree shaking and dead code elimination
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
+  // Modern JavaScript target to avoid legacy polyfills
+  target: 'server',
   // Vercel optimizations
   outputFileTracing: true,
   compress: true,
@@ -133,24 +143,65 @@ const nextConfig = {
       ];
     }
     
-    // Bundle optimization
+    // Bundle optimization - more aggressive code splitting
     config.optimization = {
       ...config.optimization,
       splitChunks: {
-        ...config.optimization.splitChunks,
+        chunks: 'all',
         cacheGroups: {
-          ...config.optimization.splitChunks.cacheGroups,
-          ai: {
-            test: /[\\/]ai[\\/]/,
-            name: 'ai-chunk',
+          default: false,
+          vendors: false,
+          // Framework chunk for React, Next.js core
+          framework: {
+            test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
+            name: 'framework',
             chunks: 'all',
-            priority: 10,
+            priority: 40,
+            enforce: true,
           },
-          pdf: {
-            test: /[\\/](pdf|jspdf|puppeteer)[\\/]/,
-            name: 'pdf-chunk',
+          // Common libraries
+          lib: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'lib',
             chunks: 'all',
-            priority: 10,
+            priority: 30,
+            minChunks: 2,
+          },
+          // AI-related libraries
+          ai: {
+            test: /[\\/](ai|genkit|google|vertex)[\\/]/,
+            name: 'ai-chunk',
+            chunks: 'async',
+            priority: 20,
+          },
+          // PDF processing libraries
+          pdf: {
+            test: /[\\/](pdf|jspdf|puppeteer|canvas)[\\/]/,
+            name: 'pdf-chunk',
+            chunks: 'async',
+            priority: 20,
+          },
+          // Motion and animation libraries
+          motion: {
+            test: /[\\/]node_modules[\\/](framer-motion)[\\/]/,
+            name: 'motion-chunk',
+            chunks: 'async',
+            priority: 15,
+          },
+          // UI component libraries
+          ui: {
+            test: /[\\/]node_modules[\\/](@radix-ui|@headlessui)[\\/]/,
+            name: 'ui-chunk',
+            chunks: 'async',
+            priority: 15,
+          },
+          // Common utilities
+          commons: {
+            name: 'commons',
+            chunks: 'all',
+            minChunks: 2,
+            priority: 5,
+            reuseExistingChunk: true,
           },
         },
       },

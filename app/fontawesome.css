@@ -12,10 +12,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Use fas (solid) as primary style */
+/* Use fas (solid) as primary style with font-display: swap */
 .fad::before {
-  font-family: "Font Awesome 5 Free", serif;
+  font-family: "Font Awesome 6 Free", serif;
   font-weight: 900;
+  font-display: swap;
 }
 
 /* Map all duotone icons to their solid variants */

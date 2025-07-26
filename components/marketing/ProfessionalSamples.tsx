@@ -13,6 +13,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle, BarChart, Users, Zap } from 'lucide-react';
 
@@ -78,8 +79,17 @@ const SampleCard = ({ sample }: { sample: ProfessionalSample }) => (
     whileHover={{ y: -8 }}
     className="group relative flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg border border-corporate-navy-100 hover:shadow-2xl transition-all duration-300"
   >
-    <div className="aspect-[8.5/11] bg-corporate-navy-50 rounded-t-2xl overflow-hidden">
-      <img src={sample.imageUrl} alt={sample.title} className="w-full h-full object-cover" />
+    <div className="aspect-[8.5/11] bg-corporate-navy-50 rounded-t-2xl overflow-hidden relative">
+      <Image 
+        src={sample.imageUrl} 
+        alt={sample.title} 
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        loading="lazy"
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+      />
     </div>
     <div className="p-4">
       <h4 className="font-semibold text-corporate-navy-900 truncate group-hover:text-corporate-gold-600 transition-colors">{sample.title}</h4>
@@ -173,7 +183,18 @@ const ProfessionalSamples = () => {
             </div>
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-2xl opacity-20 animate-pulse"></div>
-              <img src={featuredSample.imageUrl} alt={featuredSample.title} className="relative rounded-2xl shadow-2xl border-2 border-corporate-navy-700" />
+              <div className="relative rounded-2xl shadow-2xl border-2 border-corporate-navy-700 overflow-hidden aspect-[8.5/11]">
+                <Image 
+                  src={featuredSample.imageUrl} 
+                  alt={featuredSample.title} 
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={true}
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                />
+              </div>
             </div>
           </div>
         </motion.div>
