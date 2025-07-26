@@ -39,14 +39,37 @@ export async function createRecaptchaAssessment(
   expectedAction: string
 ): Promise<RecaptchaAssessmentResult> {
   try {
+    console.log('[reCAPTCHA] Starting assessment with:', {
+      projectId,
+      siteKey: recaptchaSiteKey,
+      expectedAction,
+      tokenPrefix: token.substring(0, 20) + '...',
+    });
+
+    // Validate environment variables
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    
+    if (!clientEmail || !privateKey) {
+      console.error('[reCAPTCHA] Missing Firebase credentials:', {
+        hasClientEmail: !!clientEmail,
+        hasPrivateKey: !!privateKey,
+      });
+      throw new Error('Missing Firebase service account credentials');
+    }
+
+    console.log('[reCAPTCHA] Using service account:', clientEmail);
+
     // Use Firebase service account credentials for Google Cloud authentication
     const client = new RecaptchaEnterpriseServiceClient({
       credentials: {
-        client_email: process.env.FIREBASE_CLIENT_EMAIL,
-        private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        client_email: clientEmail,
+        private_key: privateKey,
       },
       projectId: projectId,
     });
+
+    console.log('[reCAPTCHA] Client initialized, making assessment request...');
 
     // Build the assessment request
     const [response] = await client.createAssessment({
@@ -60,22 +83,38 @@ export async function createRecaptchaAssessment(
       },
     });
 
+    console.log('[reCAPTCHA] Assessment response received:', {
+      tokenValid: response.tokenProperties?.valid,
+      tokenAction: response.tokenProperties?.action,
+      score: response.riskAnalysis?.score,
+      reasons: response.riskAnalysis?.reasons,
+    });
+
     // Check for bad action based on response
     const result = checkForBadAction(response, expectedAction);
     
     // Add score to result
     const score = response.riskAnalysis?.score || 0.0;
     
-    return {
+    const finalResult = {
       ...result,
       score: parseFloat(score.toFixed(1)),
       valid: response.tokenProperties?.valid || false,
     };
+
+    console.log('[reCAPTCHA] Final assessment result:', finalResult);
+    
+    return finalResult;
   } catch (error) {
-    console.error('reCAPTCHA Enterprise assessment failed:', error);
+    console.error('[reCAPTCHA] Assessment failed with error:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      stack: error.stack,
+    });
     return {
       label: RecaptchaLabel.BAD,
-      reason: RecaptchaError.ASSESSMENT_FAILED,
+      reason: `${RecaptchaError.ASSESSMENT_FAILED}: ${error.message}`,
       score: 0.0,
       valid: false,
     };

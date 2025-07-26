@@ -11,8 +11,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { token, action, ...userData } = body;
 
+    console.log('[API] reCAPTCHA assessment request:', {
+      action,
+      tokenPrefix: token?.substring(0, 20) + '...',
+      userData: Object.keys(userData),
+      origin: request.headers.get('origin'),
+      userAgent: request.headers.get('user-agent')?.substring(0, 50),
+    });
+
     // Validate required fields
     if (!token || !action) {
+      console.error('[API] Missing required fields:', { hasToken: !!token, hasAction: !!action });
       return NextResponse.json(
         { error: 'Token and action are required' },
         { status: 400 }
@@ -23,8 +32,21 @@ export async function POST(request: NextRequest) {
     const projectId = process.env.GOOGLE_CLOUD_PROJECT;
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY;
 
+    console.log('[API] Environment variables check:', {
+      hasProjectId: !!projectId,
+      hasSiteKey: !!siteKey,
+      projectId,
+      siteKey,
+    });
+
     if (!projectId || !siteKey) {
-      console.error('Missing reCAPTCHA Enterprise configuration');
+      console.error('[API] Missing reCAPTCHA Enterprise configuration:', {
+        projectId,
+        siteKey,
+        allEnvVars: Object.keys(process.env).filter(key => 
+          key.includes('RECAPTCHA') || key.includes('GOOGLE') || key.includes('FIREBASE')
+        ),
+      });
       return NextResponse.json(
         { error: 'reCAPTCHA configuration error' },
         { status: 500 }
