@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AdminTemplateService } from '@/lib/server/services/template/admin-template-service';
 import { TemplateSearchParams } from '@/types/template.types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
