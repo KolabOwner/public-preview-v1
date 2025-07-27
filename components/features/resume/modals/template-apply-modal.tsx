@@ -93,13 +93,8 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
     setError('');
 
     try {
-      // Convert template content to resume data format
-      const templateData = isResumeTemplate 
-        ? (template as ResumeTemplate).content 
-        : (template as CoverLetterTemplate).content;
-
       // Create resume document in Firestore with template data
-      const resumeData: any = {
+      const resumeData: Record<string, any> = {
         title: resumeTitle,
         userId: user.uid,
         templateId: template.id,
@@ -118,7 +113,7 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
         const content = resumeTemplate.content;
         
         // Convert template content to RMS raw data format
-        const rmsRawData: any = {
+        const rmsRawData: Record<string, any> = {
           // Contact info
           Rms_contact_fullName: content.name || '',
           rms_contact_fullname: content.name || '',
@@ -150,12 +145,12 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
           rms_education_count: content.education?.length || 0,
           
           // Skills - count skill categories (technical, soft, languages)
-          Rms_skill_count: (content.skills?.technical?.length > 0 ? 1 : 0) + 
-                           (content.skills?.soft?.length > 0 ? 1 : 0) + 
-                           (content.skills?.languages?.length > 0 ? 1 : 0),
-          rms_skill_count: (content.skills?.technical?.length > 0 ? 1 : 0) + 
-                          (content.skills?.soft?.length > 0 ? 1 : 0) + 
-                          (content.skills?.languages?.length > 0 ? 1 : 0),
+          Rms_skill_count: ((content.skills?.technical?.length ?? 0) > 0 ? 1 : 0) + 
+                           ((content.skills?.soft?.length ?? 0) > 0 ? 1 : 0) + 
+                           ((content.skills?.languages?.length ?? 0) > 0 ? 1 : 0),
+          rms_skill_count: ((content.skills?.technical?.length ?? 0) > 0 ? 1 : 0) + 
+                          ((content.skills?.soft?.length ?? 0) > 0 ? 1 : 0) + 
+                          ((content.skills?.languages?.length ?? 0) > 0 ? 1 : 0),
           
           // Projects
           Rms_project_count: content.projects?.length || 0,
@@ -208,7 +203,7 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
         let skillIndex = 0;
         
         // Technical skills as one entry
-        if (content.skills?.technical?.length > 0) {
+        if (content.skills?.technical && content.skills.technical.length > 0) {
           rmsRawData[`Rms_skill_${skillIndex}_category`] = 'Technical Skills';
           rmsRawData[`rms_skill_${skillIndex}_category`] = 'Technical Skills';
           rmsRawData[`Rms_skill_${skillIndex}_keywords`] = content.skills.technical.join(', ');
@@ -217,7 +212,7 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
         }
 
         // Soft skills as one entry
-        if (content.skills?.soft?.length > 0) {
+        if (content.skills?.soft && content.skills.soft.length > 0) {
           rmsRawData[`Rms_skill_${skillIndex}_category`] = 'Soft Skills';
           rmsRawData[`rms_skill_${skillIndex}_category`] = 'Soft Skills';
           rmsRawData[`Rms_skill_${skillIndex}_keywords`] = content.skills.soft.join(', ');
@@ -226,7 +221,7 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
         }
 
         // Languages as one entry (if they exist)
-        if (content.skills?.languages?.length > 0) {
+        if (content.skills?.languages && content.skills.languages.length > 0) {
           rmsRawData[`Rms_skill_${skillIndex}_category`] = 'Languages';
           rmsRawData[`rms_skill_${skillIndex}_category`] = 'Languages';
           rmsRawData[`Rms_skill_${skillIndex}_keywords`] = content.skills.languages.map(lang => `${lang.language} (${lang.proficiency})`).join(', ');
@@ -266,8 +261,8 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
           rmsRawData[`rms_involvement_${index}_organization`] = vol.organization || '';
           rmsRawData[`Rms_involvement_${index}_role`] = vol.role || '';
           rmsRawData[`rms_involvement_${index}_role`] = vol.role || '';
-          rmsRawData[`Rms_involvement_${index}_location`] = vol.location || '';
-          rmsRawData[`rms_involvement_${index}_location`] = vol.location || '';
+          rmsRawData[`Rms_involvement_${index}_location`] = '';
+          rmsRawData[`rms_involvement_${index}_location`] = '';
           rmsRawData[`Rms_involvement_${index}_dateBegin`] = vol.startDate || '';
           rmsRawData[`rms_involvement_${index}_dateBegin`] = vol.startDate || '';
           rmsRawData[`Rms_involvement_${index}_dateEnd`] = vol.endDate || '';
@@ -301,9 +296,9 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
       router.push(`/dashboard/resumes/${docRef.id}/contact`);
       onClose();
 
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error applying template:', err);
-      setError(err.message || 'Failed to apply template');
+      setError((err as Error).message || 'Failed to apply template');
     } finally {
       setIsApplying(false);
     }
@@ -423,7 +418,7 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
                 <span className="font-medium">Usage:</span> {usage.pdfGenerations}/{usage.maxPdfGenerations === -1 ? '∞' : usage.maxPdfGenerations} PDF generations used
                 {!canDownloadPdf() && (
                   <span className="block mt-1 text-red-600 dark:text-red-400 font-medium">
-                    You've reached your PDF generation limit. Please upgrade to continue.
+                    You&apos;ve reached your PDF generation limit. Please upgrade to continue.
                   </span>
                 )}
               </p>

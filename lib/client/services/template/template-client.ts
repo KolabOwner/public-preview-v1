@@ -267,8 +267,16 @@ export class TemplateClient {
       </div>
     `;
 
+    // Generate unique numeric ID from template ID string
+    let hash = 0;
+    for (let i = 0; i < template.id.length; i++) {
+      const char = template.id.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
     return {
-      id: parseInt(template.id.slice(-6), 16) || Math.floor(Math.random() * 100000), // Convert to number for compatibility
+      id: Math.abs(hash), // Ensure positive number
       title: template.role,
       tag: template.metadata.isPremium ? 'PRO' : 'FREE',
       resumeContent,
@@ -321,8 +329,16 @@ export class TemplateClient {
       </div>
     `;
 
+    // Generate unique numeric ID from template ID string (with offset for cover letters)
+    let hash = 1; // Start with 1 to differentiate from resumes
+    for (let i = 0; i < template.id.length; i++) {
+      const char = template.id.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
     return {
-      id: parseInt(template.id.slice(-6), 16) || Math.floor(Math.random() * 100000),
+      id: Math.abs(hash), // Ensure positive number
       title: `${template.role} Cover Letter`,
       tag: template.metadata.isPremium ? 'PRO' : 'FREE',
       resumeContent,
