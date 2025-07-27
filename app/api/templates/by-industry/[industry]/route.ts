@@ -1,7 +1,7 @@
 // app/api/templates/by-industry/[industry]/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { AdminTemplateService } from '@/lib/server/services/admin-template-service';
+import { AdminTemplateService } from '@/lib/server/services/template/admin-template-service';
 import { Industry } from '@/types/template.types';
 
 export async function GET(

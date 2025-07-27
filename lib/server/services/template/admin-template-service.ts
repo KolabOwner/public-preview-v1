@@ -6,8 +6,7 @@ import {
   Template, 
   TemplateSearchParams,
   TemplateSearchResult,
-  Industry,
-  ExperienceLevel
+  Industry
 } from '@/types/template.types';
 
 // Initialize Firebase Admin SDK
@@ -71,14 +70,14 @@ export class AdminTemplateService {
         experienceLevel,
         keywords = [],
         isPremium,
-        limit = 20,
+        limit,
         offset = 0,
         sortBy = 'popularity',
         sortOrder = 'desc'
       } = params;
 
-      const collectionName = type === 'resume' 
-        ? RESUME_TEMPLATES_COLLECTION 
+      const collectionName = type === 'resume'
+        ? RESUME_TEMPLATES_COLLECTION
         : COVER_LETTER_TEMPLATES_COLLECTION;
 
       let query = db.collection(collectionName)
@@ -116,17 +115,19 @@ export class AdminTemplateService {
       query = query.orderBy(sortField, sortOrder);
 
       // Add pagination
-      query = query.limit(limit + 1); // Get one extra to check if there are more
+      if (limit) {
+        query = query.limit(limit + 1); // Get one extra to check if there are more
+      }
 
       if (offset > 0) {
         query = query.offset(offset);
       }
 
       const querySnapshot = await query.get();
-      
+
       const templates: Template[] = [];
       querySnapshot.forEach((doc) => {
-        if (templates.length < limit) {
+        if (!limit || templates.length < limit) {
           templates.push({
             id: doc.id,
             ...doc.data()
@@ -137,7 +138,7 @@ export class AdminTemplateService {
       return {
         templates,
         total: querySnapshot.size,
-        hasMore: querySnapshot.size > limit
+        hasMore: limit ? querySnapshot.size > limit : false
       };
     } catch (error) {
       console.error('Error searching templates:', error);
@@ -147,13 +148,13 @@ export class AdminTemplateService {
 
   // Get templates by industry
   static async getTemplatesByIndustry(
-    industry: Industry, 
+    industry: Industry,
     type: 'resume' | 'cover_letter' = 'resume',
-    limit: number = 10
+    limit = 10
   ): Promise<Template[]> {
     try {
-      const collectionName = type === 'resume' 
-        ? RESUME_TEMPLATES_COLLECTION 
+      const collectionName = type === 'resume'
+        ? RESUME_TEMPLATES_COLLECTION
         : COVER_LETTER_TEMPLATES_COLLECTION;
 
       const querySnapshot = await db.collection(collectionName)
@@ -164,7 +165,7 @@ export class AdminTemplateService {
         .get();
 
       const templates: Template[] = [];
-      
+
       querySnapshot.forEach((doc) => {
         templates.push({
           id: doc.id,
@@ -182,19 +183,19 @@ export class AdminTemplateService {
   // Get a single template by ID
   static async getTemplate(id: string, type: 'resume' | 'cover_letter'): Promise<Template | null> {
     try {
-      const collectionName = type === 'resume' 
-        ? RESUME_TEMPLATES_COLLECTION 
+      const collectionName = type === 'resume'
+        ? RESUME_TEMPLATES_COLLECTION
         : COVER_LETTER_TEMPLATES_COLLECTION;
-      
+
       const docSnap = await db.collection(collectionName).doc(id).get();
-      
+
       if (docSnap.exists) {
         return {
           id: docSnap.id,
           ...docSnap.data()
         } as Template;
       }
-      
+
       return null;
     } catch (error) {
       console.error('Error getting template:', error);
@@ -205,7 +206,7 @@ export class AdminTemplateService {
   // Get popular templates across all industries
   static async getPopularTemplates(
     type: 'resume' | 'cover_letter' = 'resume',
-    limit: number = 10
+    limit = 10
   ): Promise<Template[]> {
     try {
       const collectionName = type === 'resume' 

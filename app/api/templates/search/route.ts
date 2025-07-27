@@ -1,7 +1,7 @@
 // app/api/templates/search/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { AdminTemplateService } from '@/lib/server/services/admin-template-service';
+import { AdminTemplateService } from '@/lib/server/services/template/admin-template-service';
 import { TemplateSearchParams } from '@/types/template.types';
 
 export async function GET(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       experienceLevel: searchParams.get('experienceLevel') as any,
       keywords: searchParams.get('keywords')?.split(',').filter(Boolean),
       isPremium: searchParams.get('isPremium') ? searchParams.get('isPremium') === 'true' : undefined,
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20,
+      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined,
       offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0,
       sortBy: searchParams.get('sortBy') as any || 'popularity',
       sortOrder: searchParams.get('sortOrder') as any || 'desc'

@@ -15,34 +15,6 @@ export const FONT_FAMILY_MAP: Record<string, string> = {
   'Inter': '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
 };
 
-// Font size scales based on professional PDF standards
-export const FONT_SIZE_SCALES = {
-  professional: {
-    name: 1.35,        // 14.84pt from 11pt base
-    contact: 0.614,    // 6.75pt from 11pt base
-    sectionHeader: 0.941, // 10.35pt from 11pt base
-    jobTitle: 0.818,   // 9pt from 11pt base
-    body: 0.695,       // 7.65pt from 11pt base
-    detail: 0.609,     // 6.7pt from 11pt base
-  },
-  modern: {
-    name: 1.5,
-    contact: 0.7,
-    sectionHeader: 1.1,
-    jobTitle: 0.9,
-    body: 0.8,
-    detail: 0.7,
-  },
-  creative: {
-    name: 1.6,
-    contact: 0.8,
-    sectionHeader: 1.2,
-    jobTitle: 1.0,
-    body: 0.85,
-    detail: 0.75,
-  },
-};
-
 // Resume style configuration
 export interface ResumeStyleConfig {
   fontSizes: {

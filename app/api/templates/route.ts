@@ -1,7 +1,7 @@
 // app/api/templates/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { AdminTemplateService } from '@/lib/server/services/admin-template-service';
+import { AdminTemplateService } from '@/lib/server/services/template/admin-template-service';
 import { TemplateSearchParams } from '@/types/template.types';
 
 export async function GET(request: NextRequest) {

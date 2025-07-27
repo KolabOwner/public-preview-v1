@@ -123,7 +123,7 @@ export class DocumentSettingsService {
    */
   private static getDefaultSettings(): ResumeDocumentSettings {
     return {
-      zoom: 120,
+      zoom: 115,
       fontFamily: 'Merriweather',
       primaryColor: '#000000',
       textColor: '#000000',

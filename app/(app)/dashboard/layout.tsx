@@ -1,5 +1,6 @@
 'use client';
 
+import React from "react";
 import { AuthProvider } from '@/contexts/auth-context';
 import ProtectedRoute from '@/components/features/auth/protected-route';
 import AppSidebarNav from '@/components/features/dashboard/app-sidebar-nav';

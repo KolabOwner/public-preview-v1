@@ -23,6 +23,8 @@ export type ExperienceLevel = 'entry' | 'mid' | 'senior' | 'executive';
 
 export type TemplateType = 'resume' | 'cover_letter';
 
+export type CoverLetterTone = 'formal' | 'conversational' | 'enthusiastic' | 'professional' | 'confident';
+
 export interface TemplateMetadata {
   createdAt: Date;
   updatedAt: Date;
@@ -45,10 +47,10 @@ export interface ResumeTemplateContent {
   phone: string;
   linkedin?: string;
   website?: string;
-  
+
   // Professional Summary
   summary: string;
-  
+
   // Experience
   experience: Array<{
     id: string;
@@ -61,7 +63,7 @@ export interface ResumeTemplateContent {
     responsibilities: string[];
     achievements?: string[];
   }>;
-  
+
   // Education
   education: Array<{
     id: string;
@@ -74,7 +76,7 @@ export interface ResumeTemplateContent {
     relevantCourses?: string[];
     honors?: string[];
   }>;
-  
+
   // Skills
   skills: {
     technical?: string[];
@@ -89,7 +91,7 @@ export interface ResumeTemplateContent {
       date: string;
     }>;
   };
-  
+
   // Additional Sections (optional)
   projects?: Array<{
     id: string;
@@ -99,7 +101,7 @@ export interface ResumeTemplateContent {
     link?: string;
     achievements: string[];
   }>;
-  
+
   volunteer?: Array<{
     id: string;
     role: string;
@@ -109,7 +111,7 @@ export interface ResumeTemplateContent {
     description: string;
     achievements: string[];
   }>;
-  
+
   publications?: Array<{
     id: string;
     title: string;
@@ -117,7 +119,7 @@ export interface ResumeTemplateContent {
     date: string;
     link?: string;
   }>;
-  
+
   awards?: Array<{
     id: string;
     title: string;
@@ -137,35 +139,35 @@ export interface CoverLetterTemplateContent {
   email: string;
   phone: string;
   date: string;
-  
+
   // Recipient
   recipientName?: string;
   recipientTitle?: string;
   companyName: string;
   companyAddress?: string;
-  
+
   // Content
   salutation: string; // "Dear Hiring Manager" or "Dear [Name]"
-  
+
   // Paragraphs
   opening: {
     hook: string;
     position: string;
     source: string; // How you found the position
   };
-  
+
   body: Array<{
     id: string;
     content: string;
-    focus: 'skills' | 'experience' | 'achievements' | 'fit';
+    focus: 'skills' | 'experience' | 'achievements' | 'fit' | 'passion';
   }>;
-  
+
   closing: {
     callToAction: string;
     availability: string;
     thanks: string;
   };
-  
+
   signature: {
     closing: string; // "Sincerely," "Best regards," etc.
     name: string;
@@ -194,7 +196,7 @@ export interface CoverLetterTemplate {
   experienceLevel: ExperienceLevel;
   content: CoverLetterTemplateContent;
   metadata: TemplateMetadata;
-  tone: 'formal' | 'conversational' | 'enthusiastic';
+  tone: CoverLetterTone;
   keywords: string[];
 }
 

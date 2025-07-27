@@ -3,13 +3,14 @@
 
 import React, { useState, useEffect } from 'react';
 import SampleCard from "@/components/features/resume/samples/SampleCard";
-import { TemplateClient } from '@/lib/client/services/template-client';
+import { TemplateClient } from '@/lib/client/services/template/template-client';
 
 export interface Sample {
   id: number;
   title: string;
   tag: string;
   resumeContent: string;
+  templateType?: 'resume' | 'cover_letter';
 }
 
 const RetailSamplesPage: React.FC = () => {
@@ -21,14 +22,24 @@ const RetailSamplesPage: React.FC = () => {
     const loadRetailSamples = async () => {
       try {
         setLoading(true);
-        const templates = await TemplateClient.getSamplesForIndustry('retail', 'resume');
+        // Fetch both resume and cover letter templates
+        const [resumeTemplates, coverLetterTemplates] = await Promise.all([
+          TemplateClient.getSamplesForIndustry('retail', 'resume'),
+          TemplateClient.getSamplesForIndustry('retail', 'cover_letter')
+        ]);
         
-        // Convert templates to samples format for existing SampleCard component
-        const convertedSamples = templates.map(template => 
-          TemplateClient.templateToSample(template)
-        );
+        // Convert templates to samples format and add type identifier
+        const resumeSamples = resumeTemplates.map(template => ({
+          ...TemplateClient.templateToSample(template),
+          templateType: 'resume' as const
+        }));
+        const coverLetterSamples = coverLetterTemplates.map(template => ({
+          ...TemplateClient.templateToSample(template),
+          templateType: 'cover_letter' as const
+        }));
         
-        setSamples(convertedSamples);
+        // Keep them separate for rendering with section headers
+        setSamples([...resumeSamples, ...coverLetterSamples]);
       } catch (err) {
         console.error('Error loading retail samples:', err);
         setError('Failed to load retail samples');
@@ -244,7 +255,7 @@ resumeContent: `
           </div>
 
           {/* Samples Grid */}
-          <div className="flex w-full flex-row flex-wrap gap-4 md:gap-6">
+          <div className="flex w-full flex-col gap-6">
             <style dangerouslySetInnerHTML={{
               __html: `
                 .resume-content-wrapper {
@@ -272,9 +283,31 @@ resumeContent: `
                 }
               `
             }} />
-            {samples.map((sample: Sample) => (
-              <SampleCard key={sample.id} sample={sample} />
-            ))}
+            
+            {/* Resume Templates Section */}
+            {samples.filter(sample => sample.templateType === 'resume' || !sample.templateType).length > 0 && (
+              <>
+                <div className="flex w-full flex-row flex-wrap gap-4 md:gap-6">
+                  {samples.filter(sample => sample.templateType === 'resume' || !sample.templateType).map((sample: Sample) => (
+                    <SampleCard key={sample.id} sample={sample} />
+                  ))}
+                </div>
+              </>
+            )}
+            
+            {/* Cover Letter Templates Section */}
+            {samples.filter(sample => sample.templateType === 'cover_letter').length > 0 && (
+              <>
+                <div className="mt-8 mb-4">
+                  <h2 className="text-2xl font-semibold text-foreground">Cover Letters</h2>
+                </div>
+                <div className="flex w-full flex-row flex-wrap gap-4 md:gap-6">
+                  {samples.filter(sample => sample.templateType === 'cover_letter').map((sample: Sample) => (
+                    <SampleCard key={sample.id} sample={sample} />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </main>
       </div>
