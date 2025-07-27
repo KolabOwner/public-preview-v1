@@ -189,7 +189,7 @@ export class TemplateClient {
   // Convert resume template to sample format
   private static resumeTemplateToSample(template: Template) {
 
-    const resumeTemplate = template;
+    const resumeTemplate = template as ResumeTemplate;
     
     // Generate HTML content with all sections
     const resumeContent = `
@@ -286,7 +286,7 @@ export class TemplateClient {
 
   // Convert cover letter template to sample format
   private static coverLetterTemplateToSample(template: Template) {
-    const coverLetterTemplate = template;
+    const coverLetterTemplate = template as CoverLetterTemplate;
     
     // Generate HTML content for cover letter preview
     const resumeContent = `
