@@ -80,6 +80,20 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
     
+    // Resume templates - read-only for authenticated users
+    match /resume_templates/{templateId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Cover letter templates - read-only for authenticated users  
+    match /cover_letter_templates/{templateId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
     // System/public data that everyone can read but only admins can write
     match /system/{document} {
       allow read: if true;

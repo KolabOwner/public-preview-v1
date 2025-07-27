@@ -1,111 +1,107 @@
 // app/(app)/dashboard/samples/business/page.tsx
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import SampleCard from "@/components/features/resume/samples/SampleCard";
+import { TemplateClient } from '@/lib/client/services/template-client';
+import { Template } from '@/types/template.types';
 
 export interface Sample {
   id: number;
   title: string;
   tag: string;
-  companyIcon: string;
   resumeContent: string;
 }
 
-const businessSamplesData: Sample[] = [
-  {
-    id: 1,
-    title: 'Marketing Project Coordinator',
-    tag: 'PRO',
-    companyIcon: '',
-    resumeContent: `
-      <div class="resume-content-wrapper" style="padding: 1.5cm; font-family: Merriweather, serif; font-size: 9pt; transform: scale(0.4); transform-origin: left top;">
-        <h2 style="font-size: 1.65em; font-weight: bold; margin-bottom: 0.5em; text-align: center;">Sarah Johnson</h2>
-        <p style="font-size: 0.75em; text-align: center; margin-bottom: 1em; opacity: 0.7;">New York, NY | (555) 123-4567 | sarah.johnson@email.com</p>
-        <hr style="margin: 1em 0; opacity: 0.3;">
-        <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5em;">Summary</h3>
-        <p style="font-size: 0.85em; line-height: 1.5;">Results-driven Marketing Project Coordinator with 4+ years of experience managing cross-functional teams and delivering high-impact campaigns. Proven track record of increasing brand awareness and generating qualified leads through strategic digital marketing initiatives.</p>
-        <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-top: 1.5em; margin-bottom: 0.5em;">Experience</h3>
-        <h4 style="font-size: 1em; font-weight: 600; margin-bottom: 0.25em;">Marketing Project Coordinator | TechCorp Inc.</h4>
-        <p style="font-size: 0.85em; font-weight: 400; margin-bottom: 0.5em; opacity: 0.7;">June 2021 - Present | New York, NY</p>
-        <ul style="list-style: disc; margin-left: 1.5em; font-size: 0.85em; line-height: 1.6;">
-          <li>Managed creation of new websites for global product releases to increase awareness and sales by 35%</li>
-          <li>Led a team of 5 to produce digital content generating over 1,000 new sales qualified leads quarterly</li>
-          <li>Coordinated cross-departmental collaboration between marketing, sales, and product teams</li>
-        </ul>
-      </div>
-    `,
-  },
-  {
-    id: 2,
-    title: 'Senior Project Manager',
-    tag: 'PRO',
-    companyIcon: '',
-    resumeContent: `
-      <div class="resume-content-wrapper" style="padding: 1.5cm; font-family: Merriweather, serif; font-size: 9pt; transform: scale(0.4); transform-origin: left top;">
-        <h2 style="font-size: 1.65em; font-weight: bold; margin-bottom: 0.5em; text-align: center;">Michael Chen</h2>
-        <p style="font-size: 0.75em; text-align: center; margin-bottom: 1em; opacity: 0.7;">San Francisco, CA | (555) 987-6543 | michael.chen@email.com</p>
-        <hr style="margin: 1em 0; opacity: 0.3;">
-        <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5em;">Summary</h3>
-        <p style="font-size: 0.85em; line-height: 1.5;">Senior Project Manager with 8+ years of demonstrated success in IT and enterprise systems. Expert in agile methodologies, stakeholder management, and delivering complex projects on time and under budget.</p>
-        <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-top: 1.5em; margin-bottom: 0.5em;">Experience</h3>
-        <h4 style="font-size: 1em; font-weight: 600; margin-bottom: 0.25em;">Senior Project Manager | GlobalTech Solutions</h4>
-        <p style="font-size: 0.85em; font-weight: 400; margin-bottom: 0.5em; opacity: 0.7;">March 2020 - Present | San Francisco, CA</p>
-        <ul style="list-style: disc; margin-left: 1.5em; font-size: 0.85em; line-height: 1.6;">
-          <li>Led enterprise software implementations for Fortune 500 clients with budgets exceeding $2M</li>
-          <li>Managed cross-functional teams of 15+ developers, analysts, and designers</li>
-          <li>Achieved 98% on-time delivery rate across 25+ projects using agile methodologies</li>
-        </ul>
-      </div>
-    `,
-  },
-  {
-    id: 3,
-    title: 'Business Analyst',
-    tag: 'PRO',
-    companyIcon: '',
-    resumeContent: `
-      <div class="resume-content-wrapper" style="padding: 1.5cm; font-family: Merriweather, serif; font-size: 9pt; transform: scale(0.4); transform-origin: left top;">
-        <h2 style="font-size: 1.65em; font-weight: bold; margin-bottom: 0.5em; text-align: center;">Emily Rodriguez</h2>
-        <p style="font-size: 0.75em; text-align: center; margin-bottom: 1em; opacity: 0.7;">Chicago, IL | (555) 456-7890 | emily.rodriguez@email.com</p>
-        <hr style="margin: 1em 0; opacity: 0.3;">
-        <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5em;">Summary</h3>
-        <p style="font-size: 0.85em; line-height: 1.5;">Detail-oriented Business Analyst with 5+ years of experience in process improvement, data analysis, and stakeholder management. Proven ability to translate business requirements into technical solutions and drive operational efficiency.</p>
-        <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-top: 1.5em; margin-bottom: 0.5em;">Experience</h3>
-        <h4 style="font-size: 1em; font-weight: 600; margin-bottom: 0.25em;">Senior Business Analyst | Financial Services Corp</h4>
-        <p style="font-size: 0.85em; font-weight: 400; margin-bottom: 0.5em; opacity: 0.7;">January 2021 - Present | Chicago, IL</p>
-        <ul style="list-style: disc; margin-left: 1.5em; font-size: 0.85em; line-height: 1.6;">
-          <li>Analyzed business processes and identified opportunities for 20% efficiency improvement</li>
-          <li>Collaborated with IT teams to implement automated solutions reducing manual work by 40%</li>
-          <li>Created comprehensive documentation and training materials for new system implementations</li>
-        </ul>
-      </div>
-    `,
-  },
-  {
-    id: 4,
-    title: 'HR Manager',
-    tag: 'PRO',
-    companyIcon: '',
-    resumeContent: `
-      <div class="resume-content-wrapper" style="padding: 1.5cm; font-family: Merriweather, serif; font-size: 9pt; transform: scale(0.4); transform-origin: left top;">
-        <h2 style="font-size: 1.65em; font-weight: bold; margin-bottom: 0.5em; text-align: center;">David Thompson</h2>
-        <p style="font-size: 0.75em; text-align: center; margin-bottom: 1em; opacity: 0.7;">Austin, TX | (555) 789-0123 | david.thompson@email.com</p>
-        <hr style="margin: 1em 0; opacity: 0.3;">
-        <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5em;">Summary</h3>
-        <p style="font-size: 0.85em; line-height: 1.5;">Strategic HR Manager with 7+ years of experience in talent acquisition, employee development, and organizational change management. Expert in building high-performance teams and implementing HR policies that drive business success.</p>
-        <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-top: 1.5em; margin-bottom: 0.5em;">Experience</h3>
-        <h4 style="font-size: 1em; font-weight: 600; margin-bottom: 0.25em;">HR Manager | Innovation Labs Inc.</h4>
-        <p style="font-size: 0.85em; font-weight: 400; margin-bottom: 0.5em; opacity: 0.7;">April 2020 - Present | Austin, TX</p>
-        <ul style="list-style: disc; margin-left: 1.5em; font-size: 0.85em; line-height: 1.6;">
-          <li>Managed full-cycle recruitment process, reducing time-to-hire by 30%</li>
-          <li>Developed and implemented employee training programs increasing retention by 25%</li>
-          <li>Led organizational restructuring initiatives supporting company growth from 50 to 200 employees</li>
-        </ul>
-      </div>
-    `,
-  }
-];
-
 const BusinessSamplesPage: React.FC = () => {
+  const [samples, setSamples] = useState<Sample[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadBusinessSamples = async () => {
+      try {
+        setLoading(true);
+        const templates = await TemplateClient.getSamplesForIndustry('business', 'resume');
+        
+        // Convert templates to samples format for existing SampleCard component
+        const convertedSamples = templates.map(template => 
+          TemplateClient.templateToSample(template)
+        );
+        
+        setSamples(convertedSamples);
+      } catch (err) {
+        console.error('Error loading business samples:', err);
+        setError('Failed to load business samples');
+        
+        // Fallback to static data if needed
+        setSamples([
+          {
+            id: 1,
+            title: 'Marketing Project Coordinator',
+            tag: 'PRO',
+resumeContent: `
+              <div class="resume-content-wrapper" style="padding: 1.5cm; font-family: Merriweather, serif; font-size: 9pt; transform: scale(0.4); transform-origin: left top;">
+                <h2 style="font-size: 1.65em; font-weight: bold; margin-bottom: 0.5em; text-align: center;">Sarah Johnson</h2>
+                <p style="font-size: 0.75em; text-align: center; margin-bottom: 1em; opacity: 0.7;">New York, NY | (555) 123-4567 | sarah.johnson@email.com</p>
+                <hr style="margin: 1em 0; opacity: 0.3;">
+                <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5em;">Summary</h3>
+                <p style="font-size: 0.85em; line-height: 1.5;">Results-driven Marketing Project Coordinator with 4+ years of experience managing cross-functional teams and delivering high-impact campaigns. Proven track record of increasing brand awareness and generating qualified leads through strategic digital marketing initiatives.</p>
+                <h3 style="font-size: 1.15em; font-weight: 600; text-transform: uppercase; margin-top: 1.5em; margin-bottom: 0.5em;">Experience</h3>
+                <h4 style="font-size: 1em; font-weight: 600; margin-bottom: 0.25em;">Marketing Project Coordinator | TechCorp Inc.</h4>
+                <p style="font-size: 0.85em; font-weight: 400; margin-bottom: 0.5em; opacity: 0.7;">June 2021 - Present | New York, NY</p>
+                <ul style="list-style: disc; margin-left: 1.5em; font-size: 0.85em; line-height: 1.6;">
+                  <li>Managed creation of new websites for global product releases to increase awareness and sales by 35%</li>
+                  <li>Led a team of 5 to produce digital content generating over 1,000 new sales qualified leads quarterly</li>
+                  <li>Coordinated cross-departmental collaboration between marketing, sales, and product teams</li>
+                </ul>
+              </div>
+            `,
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBusinessSamples();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 bg-background text-foreground">
+        <div className="relative flex w-[100vw] flex-col gap-4 md:gap-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8">
+          <main className="w-full sm:h-full lg:h-auto">
+            <div className="mt-6 flex flex-row items-center justify-between self-stretch">
+              <div className="text-3xl font-semibold leading-9 text-foreground">Search Sample Library</div>
+            </div>
+            <div className="mt-6 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="ml-2">Loading business samples...</span>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && samples.length === 0) {
+    return (
+      <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 bg-background text-foreground">
+        <div className="relative flex w-[100vw] flex-col gap-4 md:gap-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8">
+          <main className="w-full sm:h-full lg:h-auto">
+            <div className="mt-6 flex flex-row items-center justify-between self-stretch">
+              <div className="text-3xl font-semibold leading-9 text-foreground">Search Sample Library</div>
+            </div>
+            <div className="mt-6 text-center text-red-500">
+              {error}
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 bg-background text-foreground">
       <div
@@ -256,7 +252,7 @@ const BusinessSamplesPage: React.FC = () => {
                 }
               `
             }} />
-            {businessSamplesData.map((sample: Sample) => (
+            {samples.map((sample: Sample) => (
               <SampleCard key={sample.id} sample={sample} />
             ))}
           </div>
