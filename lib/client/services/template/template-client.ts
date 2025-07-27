@@ -2,6 +2,8 @@
 
 import { 
   Template, 
+  ResumeTemplate,
+  CoverLetterTemplate,
   TemplateSearchParams,
   TemplateSearchResult,
   Industry
@@ -238,13 +240,13 @@ export class TemplateClient {
         <div style="padding-bottom: 4px;">
           <div style="margin-bottom: 2px;">
             <p style="font-size: 3.5pt; font-weight: 600; margin: 0; margin-bottom: 0.5px; line-height: 1.1;">Technical:</p>
-            <p style="font-size: 3.5pt; margin: 0; line-height: 1.1;">${resumeTemplate.content.skills.technical.slice(0, 6).join(', ')}</p>
+            <p style="font-size: 3.5pt; margin: 0; line-height: 1.1;">${resumeTemplate.content.skills.technical?.slice(0, 6).join(', ') || ''}</p>
           </div>
           <div style="margin-bottom: 2px;">
             <p style="font-size: 3.5pt; font-weight: 600; margin: 0; margin-bottom: 0.5px; line-height: 1.1;">Leadership:</p>
-            <p style="font-size: 3.5pt; margin: 0; line-height: 1.1;">${resumeTemplate.content.skills.soft.slice(0, 4).join(', ')}</p>
+            <p style="font-size: 3.5pt; margin: 0; line-height: 1.1;">${resumeTemplate.content.skills.soft?.slice(0, 4).join(', ') || ''}</p>
           </div>
-          ${resumeTemplate.content.skills.languages.length > 1 ? `
+          ${resumeTemplate.content.skills.languages && resumeTemplate.content.skills.languages.length > 1 ? `
           <div style="margin-bottom: 2px;">
             <p style="font-size: 3.5pt; font-weight: 600; margin: 0; margin-bottom: 0.5px; line-height: 1.1;">Languages:</p>
             <p style="font-size: 3.5pt; margin: 0; line-height: 1.1;">${resumeTemplate.content.skills.languages.map(lang => `${lang.language} (${lang.proficiency})`).slice(0, 3).join(', ')}</p>
@@ -253,7 +255,7 @@ export class TemplateClient {
         </div>
         
         <!-- Certifications Section (if any) -->
-        ${resumeTemplate.content.skills.certifications.length > 0 ? `
+        ${resumeTemplate.content.skills.certifications && resumeTemplate.content.skills.certifications.length > 0 ? `
         <h3 style="font-size: 4.5pt; font-weight: 600; text-transform: uppercase; margin-top: 4px; margin-bottom: 3px; border-bottom: 0.5px solid #666; line-height: 1.1; display: block; padding-bottom: 1px;">Certifications</h3>
         <div style="padding-bottom: 4px;">
           ${resumeTemplate.content.skills.certifications.slice(0, 3).map(cert => `
