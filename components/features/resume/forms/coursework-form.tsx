@@ -16,11 +16,10 @@ import '../styles/form-styles.css';
 // Schema for a single coursework entry
 const courseworkEntrySchema = z.object({
   id: z.string().optional(),
-  courseName: z.string().min(1, "Course name is required."),
+  name: z.string().min(1, "Course name is required."),
   institution: z.string().min(1, "Institution is required."),
-  date: z.string().min(1, "Date is required."),
-  skill: z.string().min(1, "Key skill is required."),
-  application: z.string().optional(),
+  date: z.string().optional(),
+  description: z.string().optional(),
 });
 
 // Schema for the entire form
@@ -48,11 +47,10 @@ const cleanValue = (value: string | undefined | null): string => {
 const convertToFormFormat = (entries: CourseworkEntry[]): CourseworkFormEntry[] => {
   return entries.map(entry => ({
     ...entry,
-    courseName: cleanValue(entry.courseName),
+    name: cleanValue(entry.name),
     institution: cleanValue(entry.institution),
     date: cleanValue(entry.date),
-    skill: cleanValue(entry.skill),
-    application: cleanValue(entry.application),
+    description: cleanValue(entry.description),
   }));
 };
 
@@ -60,11 +58,10 @@ const convertToFormFormat = (entries: CourseworkEntry[]): CourseworkFormEntry[] 
 const convertToStoreFormat = (formData: CourseworkFormData): CourseworkEntry[] => {
   return formData.entries.map(entry => ({
     id: entry.id || '',
-    courseName: entry.courseName || '',
+    name: entry.name || '',
     institution: entry.institution || '',
     date: entry.date || '',
-    skill: entry.skill || '',
-    application: entry.application || '',
+    description: entry.description || '',
   }));
 };
 
@@ -83,11 +80,10 @@ export default function CourseworkForm({ initialData, onSave }: CourseworkFormPr
       entries: (initialData && initialData.length > 0) 
         ? convertToFormFormat(initialData)
         : [{
-            courseName: '',
+            name: '',
             institution: '',
             date: '',
-            skill: '',
-            application: ''
+            description: ''
           }]
     },
     mode: 'onChange',
@@ -105,11 +101,10 @@ export default function CourseworkForm({ initialData, onSave }: CourseworkFormPr
     const formData = (initialData && initialData.length > 0) 
       ? convertToFormFormat(initialData)
       : [{
-          courseName: '',
+          name: '',
           institution: '',
           date: '',
-          skill: '',
-          application: ''
+          description: ''
         }];
     
     reset({ entries: formData });
@@ -163,11 +158,10 @@ export default function CourseworkForm({ initialData, onSave }: CourseworkFormPr
 
   const addNewCoursework = () => {
     append({
-      courseName: '',
+      name: '',
       institution: '',
       date: '',
-      skill: '',
-      application: ''
+      description: ''
     });
     setActiveIndex(fields.length);
   };
@@ -180,8 +174,8 @@ export default function CourseworkForm({ initialData, onSave }: CourseworkFormPr
   };
 
   const activeEntry = watch(`entries.${activeIndex}`);
-  const headerTitle = activeEntry?.courseName
-    ? `${activeEntry.courseName}`
+  const headerTitle = activeEntry?.name
+    ? `${activeEntry.name}`
     : "New Coursework Entry";
 
   // Track when we're just navigating (not making actual changes)
@@ -197,11 +191,10 @@ export default function CourseworkForm({ initialData, onSave }: CourseworkFormPr
       const entry = currentEntries[activeIndex];
       
       // Use setValue with shouldDirty: false to prevent triggering dirty state
-      setValue(`entries.${activeIndex}.courseName`, entry.courseName || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.name`, entry.name || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.institution`, entry.institution || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.date`, entry.date || '', { shouldDirty: false });
-      setValue(`entries.${activeIndex}.skill`, entry.skill || '', { shouldDirty: false });
-      setValue(`entries.${activeIndex}.application`, entry.application || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.description`, entry.description || '', { shouldDirty: false });
       
       // Reset navigation flag after a short delay
       setTimeout(() => {
@@ -274,18 +267,18 @@ export default function CourseworkForm({ initialData, onSave }: CourseworkFormPr
               <Label className="resume-label">
                 Course Name <span className="resume-label-required" aria-label="required">*</span>
               </Label>
-              <div className={`resume-input-container ${errors.entries?.[activeIndex]?.courseName ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
+              <div className={`resume-input-container ${errors.entries?.[activeIndex]?.name ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
                 <Input 
-                  {...register(`entries.${activeIndex}.courseName`)} 
+                  {...register(`entries.${activeIndex}.name`)} 
                   placeholder="Introduction to Computer Systems"
                   className="resume-input"
                   disabled={isSaving}
                 />
               </div>
-              {errors.entries?.[activeIndex]?.courseName && (
+              {errors.entries?.[activeIndex]?.name && (
                 <p className="resume-error-message">
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  {errors.entries[activeIndex]?.courseName?.message}
+                  {errors.entries[activeIndex]?.name?.message}
                 </p>
               )}
             </div>
@@ -312,68 +305,45 @@ export default function CourseworkForm({ initialData, onSave }: CourseworkFormPr
             </div>
           </div>
 
-          {/* Date & Key Skill */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label className="resume-label">
-                Date <span className="resume-label-required" aria-label="required">*</span>
-              </Label>
-              <div className={`resume-input-container ${errors.entries?.[activeIndex]?.date ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
-                <Calendar className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
-                <Input 
-                  {...register(`entries.${activeIndex}.date`)} 
-                  placeholder="Spring 2024"
-                  className="resume-input px-0 pr-3"
-                  disabled={isSaving}
-                />
-              </div>
-              {errors.entries?.[activeIndex]?.date && (
-                <p className="resume-error-message">
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  {errors.entries[activeIndex]?.date?.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="resume-label">
-                Key Skill <span className="resume-label-required" aria-label="required">*</span>
-              </Label>
-              <div className={`resume-input-container ${errors.entries?.[activeIndex]?.skill ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
-                <Lightbulb className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
-                <Input 
-                  {...register(`entries.${activeIndex}.skill`)} 
-                  placeholder="Problem Solving"
-                  className="resume-input px-0 pr-3"
-                  disabled={isSaving}
-                />
-              </div>
-              {errors.entries?.[activeIndex]?.skill && (
-                <p className="resume-error-message">
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  {errors.entries[activeIndex]?.skill?.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Skill Application */}
+          {/* Date */}
           <div className="space-y-2">
             <Label className="resume-label">
-              Skill Application
+              Date
             </Label>
-            <div className={`resume-input-container ${errors.entries?.[activeIndex]?.application ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''} relative`}>
+            <div className={`resume-input-container ${errors.entries?.[activeIndex]?.date ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
+              <Calendar className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
+              <Input 
+                {...register(`entries.${activeIndex}.date`)} 
+                placeholder="Spring 2024"
+                className="resume-input px-0 pr-3"
+                disabled={isSaving}
+              />
+            </div>
+            {errors.entries?.[activeIndex]?.date && (
+              <p className="resume-error-message">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                {errors.entries[activeIndex]?.date?.message}
+              </p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label className="resume-label">
+              Description
+            </Label>
+            <div className={`resume-input-container ${errors.entries?.[activeIndex]?.description ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''} relative`}>
               <PenTool className="absolute left-3 top-3 h-4 w-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 flex-shrink-0" />
               <Textarea
-                {...register(`entries.${activeIndex}.application`)}
-                placeholder="Describe specific examples of how you applied this skill during the course..."
+                {...register(`entries.${activeIndex}.description`)}
+                placeholder="Describe key concepts learned, projects completed, or skills developed in this course..."
                 className="resume-textarea pl-10 pr-3 py-3 resize-none min-h-[100px]"
                 rows={4}
                 disabled={isSaving}
               />
             </div>
             <p className="text-xs text-corporate-navy-500 dark:text-gray-400">
-              Describe specific examples of how you applied this skill during the course.
+              Highlight the most relevant aspects of this coursework for your career goals.
             </p>
           </div>
 

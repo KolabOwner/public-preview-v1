@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Users, Save, Loader2, PlusCircle, Trash2, ChevronLeft, ChevronRight, AlertCircle, MapPin, Building2, Plus, X, GripVertical } from "lucide-react";
+import { Users, Save, Loader2, Trash2, ChevronLeft, ChevronRight, AlertCircle, MapPin, Building2, Plus, X, GripVertical } from "lucide-react";
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
@@ -28,7 +28,6 @@ const involvementEntrySchema = z.object({
   startDate: z.string().min(1, "Start date is required."),
   endDate: z.string().optional(),
   current: z.boolean(),
-  description: z.string().optional(),
   bulletPoints: z.array(bulletPointSchema).optional(),
 }).refine(data => !data.current ? !!data.endDate?.trim() : true, {
   message: "End date is required unless it's a current involvement.",
@@ -62,18 +61,7 @@ const cleanValue = (value: string | undefined | null): string => {
 // Convert store format to form format
 const convertToFormFormat = (entries: InvolvementEntry[]): InvolvementFormEntry[] => {
   return entries.map(entry => {
-    // Parse bullet points from description if bulletPoints array is empty
-    let bulletPoints = entry.bulletPoints?.filter(Boolean) || [];
-
-    if (bulletPoints.length === 0 && entry.description) {
-      // Split by various bullet point formats: •, -, *, or newline followed by these
-      const points = entry.description
-        .split(/(?:^|\n)\s*[•\-\*]\s*|(?<=[.!?])\s*•\s*/)
-        .map((point: string) => point.trim())
-        .filter((point: string) => point.length > 0);
-
-      bulletPoints = points;
-    }
+    const bulletPoints = entry.bulletPoints?.filter(Boolean) || [];
 
     return {
       ...entry,
@@ -82,7 +70,6 @@ const convertToFormFormat = (entries: InvolvementEntry[]): InvolvementFormEntry[
       location: cleanValue(entry.location),
       startDate: cleanValue(entry.startDate),
       endDate: cleanValue(entry.endDate),
-      description: cleanValue(entry.description),
       bulletPoints: bulletPoints.length > 0 ? bulletPoints.map((bp: any) => ({ value: bp })) : [{ value: '' }],
     };
   });
@@ -98,7 +85,6 @@ const convertToStoreFormat = (formData: InvolvementFormData): InvolvementEntry[]
     startDate: entry.startDate || '',
     endDate: entry.endDate || '',
     current: entry.current || false,
-    description: entry.description || '',
     bulletPoints: entry.bulletPoints 
       ? entry.bulletPoints.map(bp => bp.value).filter(v => v && v.trim())
       : [],
@@ -126,7 +112,6 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
             startDate: '',
             endDate: '',
             current: false,
-            description: '',
             bulletPoints: [{ value: '' }]
           }]
     },
@@ -217,7 +202,6 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
       startDate: '',
       endDate: '',
       current: false,
-      description: '',
       bulletPoints: [{ value: '' }]
     });
     setActiveIndex(fields.length);
@@ -254,7 +238,6 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
       setValue(`entries.${activeIndex}.startDate`, entry.startDate || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.endDate`, entry.endDate || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.current`, entry.current || false, { shouldDirty: false });
-      setValue(`entries.${activeIndex}.description`, entry.description || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.bulletPoints`, entry.bulletPoints || [{ value: '' }], { shouldDirty: false });
       
       // Reset navigation flag after a short delay
