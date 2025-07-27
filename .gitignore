@@ -49,3 +49,10 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+# Firebase service account keys
+*.json
+my-rms-validator-firebase-adminsdk-*.json
+
+# Scripts (development only)
+scripts/
