@@ -369,7 +369,11 @@ export const useResumeStore = create<ResumeStore>()(
       markSectionClean: (section: SectionKey) => {
         set((state) => {
           state.dirtyState[section] = false;
-          state.originalData[section] = { ...state.resumeData[section] } as any;
+          // Handle both object and primitive types
+          const data = state.resumeData[section];
+          (state.originalData as any)[section] = typeof data === 'object' && data !== null 
+            ? Array.isArray(data) ? [...data] : { ...data }
+            : data;
           state.saveStatus.pendingSections = state.saveStatus.pendingSections.filter(s => s !== section);
         });
       },
@@ -411,7 +415,11 @@ export const useResumeStore = create<ResumeStore>()(
 
           set((state) => {
             state.dirtyState[section] = false;
-            state.originalData[section] = { ...state.resumeData[section] } as any;
+            // Handle both object and primitive types
+            const data = state.resumeData[section];
+            (state.originalData as any)[section] = typeof data === 'object' && data !== null 
+              ? Array.isArray(data) ? [...data] : { ...data }
+              : data;
             state.saveStatus.pendingSections = state.saveStatus.pendingSections.filter(s => s !== section);
             state.saveStatus.lastSaved = new Date();
             state.saveStatus.isSaving = state.saveStatus.pendingSections.length > 0;
@@ -467,7 +475,11 @@ export const useResumeStore = create<ResumeStore>()(
             // Mark all dirty sections as clean
             dirtySections.forEach(section => {
               state.dirtyState[section] = false;
-              state.originalData[section] = { ...state.resumeData[section] } as any;
+              // Handle both object and primitive types
+              const data = state.resumeData[section];
+              (state.originalData as any)[section] = typeof data === 'object' && data !== null 
+                ? Array.isArray(data) ? [...data] : { ...data }
+                : data;
             });
             state.saveStatus.pendingSections = [];
             state.saveStatus.lastSaved = new Date();
@@ -488,7 +500,11 @@ export const useResumeStore = create<ResumeStore>()(
       // Revert a specific section to its last saved state
       revertSection: (section: SectionKey) => {
         set((state) => {
-          state.resumeData[section] = { ...state.originalData[section] } as any;
+          // Handle both object and primitive types
+          const data = state.originalData[section];
+          (state.resumeData as any)[section] = typeof data === 'object' && data !== null 
+            ? Array.isArray(data) ? [...data] : { ...data }
+            : data;
           state.dirtyState[section] = false;
         });
       },
