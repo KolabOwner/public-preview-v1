@@ -20,8 +20,8 @@ interface ResumeProps {
   resume: {
     id: string;
     title: string;
-    lastUpdated: string;
-    createdAt: string;
+    lastUpdated: string | { seconds: number; nanoseconds: number };
+    createdAt: string | { seconds: number; nanoseconds: number };
     isTargeted?: boolean;
     thumbnail?: string;
   };
@@ -281,11 +281,31 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
     setShowMenu(!showMenu);
   };
 
-  const formatDateRange = (startDate?: string, endDate?: string, current?: boolean) => {
+  const formatDateRange = (startDate?: string | { seconds: number; nanoseconds: number }, endDate?: string | { seconds: number; nanoseconds: number }, current?: boolean) => {
     if (!startDate && !endDate) return '';
 
-    const start = startDate || '';
-    const end = current ? 'Present' : (endDate || '');
+    let start = '';
+    let end = '';
+
+    // Handle startDate
+    if (startDate) {
+      if (isFirestoreTimestamp(startDate)) {
+        start = new Date(startDate.seconds * 1000).getFullYear().toString();
+      } else {
+        start = startDate;
+      }
+    }
+
+    // Handle endDate
+    if (current) {
+      end = 'Present';
+    } else if (endDate) {
+      if (isFirestoreTimestamp(endDate)) {
+        end = new Date(endDate.seconds * 1000).getFullYear().toString();
+      } else {
+        end = endDate;
+      }
+    }
 
     if (start && end) {
       return `${start} – ${end}`;
@@ -311,40 +331,24 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
     return [];
   };
 
-  const getAllSkills = (): string[] => {
-    const allSkills: string[] = [];
-    resumeData?.skillCategories?.forEach(category => {
-      category.skills?.forEach(skill => {
-        if (skill.name) {
-          allSkills.push(skill.name);
-        }
-      });
-    });
-    return allSkills.slice(0, 15); // Limit to prevent overflow
+  const isFirestoreTimestamp = (value: any): value is { seconds: number; nanoseconds: number } => {
+    return value && typeof value === 'object' && 'seconds' in value && 'nanoseconds' in value;
+  };
+
+  // Helper function to convert various date formats to Date object
+  const parseDate = (dateValue: any): Date => {
+    if (isFirestoreTimestamp(dateValue)) {
+      return new Date(dateValue.seconds * 1000);
+    }
+    return new Date(dateValue);
   };
 
   const getLastUpdatedText = () => {
     try {
-      const date = new Date(resume.lastUpdated);
+      const date = parseDate(resume.lastUpdated);
       return `Edited ${formatDistanceToNow(date, { addSuffix: false })} ago`;
     } catch (e) {
       return 'Edited recently';
-    }
-  };
-
-  const getFormattedDate = () => {
-    try {
-      const date = new Date(resume.lastUpdated);
-      return date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true
-      });
-    } catch (e) {
-      return '';
     }
   };
 

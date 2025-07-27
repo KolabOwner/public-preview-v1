@@ -1,22 +1,36 @@
 // components/resume/resume-editor-tabs-area.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { usePathname, useParams } from 'next/navigation';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from "@/config/firebase-config";
-import { useToast } from '@/lib/client/hooks/ui/use-toast';
+import React, { useEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
+import { useResumeStore } from '@/lib/client/stores/resume-store';
+import FormWrapper from './wrappers/form-wrapper';
 import dynamic from 'next/dynamic';
 
+// Import types from the resume store (where they're originally defined)
+import type {
+  ContactFormData,
+  ExperienceEntry,
+  EducationEntry,
+  SkillEntry,
+  ProjectEntry,
+  InvolvementEntry,
+  CourseworkEntry,
+  CertificationEntry,
+  UnifiedResumeData // Import from store instead of redefining
+} from '@/lib/client/stores/resume-store';
+
 // Export types for use in lazy-loaded components
-export type { ContactFormData } from './forms/contact-form';
-export type { ExperienceEntry } from './forms/experience-form';
-export type { EducationEntry } from './forms/education-form';
-export type { SkillEntry } from './forms/skills-form';
-export type { ProjectEntry } from './forms/projects-form';
-export type { InvolvementEntry } from './forms/involvement-form';
-export type { CourseworkEntry } from './forms/coursework-form';
-export type { CertificationEntry } from './forms/certifications-form';
+export type {
+  ContactFormData,
+  ExperienceEntry,
+  EducationEntry,
+  SkillEntry,
+  ProjectEntry,
+  InvolvementEntry,
+  CourseworkEntry,
+  CertificationEntry
+} from '@/lib/client/stores/resume-store';
 
 // Dynamic imports for all form components - no loading UI to prevent flash
 const ContactForm = dynamic(() => import('./forms/contact-form'), {
@@ -55,55 +69,16 @@ const SummaryForm = dynamic(() => import('./forms/summary-form'), {
   ssr: false
 });
 
-// Re-import types that are used in this file
-import type { ContactFormData } from './forms/contact-form';
-import type { ExperienceEntry } from './forms/experience-form';
-import type { EducationEntry } from './forms/education-form';
-import type { SkillEntry } from './forms/skills-form';
-import type { ProjectEntry } from './forms/projects-form';
-import type { InvolvementEntry } from './forms/involvement-form';
-import type { CourseworkEntry } from './forms/coursework-form';
-import type { CertificationEntry } from './forms/certifications-form';
-
-// Unified Resume Data Structure
-interface UnifiedResumeData {
-  contactInfo: ContactFormData;
+// Define SummaryData type to match what SummaryForm expects
+interface SummaryData {
   summary: string;
-  experiences: ExperienceEntry[];
-  education: EducationEntry[];
-  skills: SkillEntry[];
-  projects: ProjectEntry[];
-  involvements: InvolvementEntry[];
-  coursework: CourseworkEntry[];
-  certifications: CertificationEntry[];
-  awards: AwardEntry[];
-  languages: LanguageEntry[];
-  publications: PublicationEntry[];
+  positionHighlight: boolean;
+  position: string;
+  skillsHighlight: string;
 }
 
-interface AwardEntry {
-  id: string;
-  title: string;
-  issuer: string;
-  date: string;
-  description?: string;
-}
-
-interface LanguageEntry {
-  id: string;
-  language: string;
-  proficiency: string;
-}
-
-interface PublicationEntry {
-  id: string;
-  title: string;
-  publisher: string;
-  date: string;
-  authors: string;
-  url?: string;
-  description?: string;
-}
+// Additional interfaces for sections not in the store (if needed)
+// Note: These are defined locally since they may not be in the store yet
 
 interface ResumeDocument {
   id: string;
@@ -124,7 +99,7 @@ function ResumePreview(props: { resumeData: UnifiedResumeData, resumeId: string 
   return null;
 }
 
-// Default empty resume data structure
+// Default empty resume data structure - using store's UnifiedResumeData type
 const createDefaultResumeData = (): UnifiedResumeData => ({
   contactInfo: {
     fullName: '',
@@ -144,7 +119,7 @@ const createDefaultResumeData = (): UnifiedResumeData => ({
     showState: true,
     showCity: true
   },
-  summary: '',
+  summary: '', // Store expects string, not object
   experiences: [],
   education: [],
   skills: [],
@@ -157,6 +132,49 @@ const createDefaultResumeData = (): UnifiedResumeData => ({
   publications: []
 });
 
+// Helper function to convert SummaryData to string for store compatibility
+const summaryDataToString = (summaryData: SummaryData): string => {
+  const parts = [
+    summaryData.summary,
+    summaryData.positionHighlight ? `Position: ${summaryData.position}` : '',
+    summaryData.skillsHighlight ? `Skills: ${summaryData.skillsHighlight}` : ''
+  ].filter(Boolean);
+
+  return parts.join('\n\n');
+};
+
+// Helper function to convert string to SummaryData for form compatibility
+const stringToSummaryData = (summaryString: string): SummaryData => {
+  // If it's already an object, return as is
+  if (typeof summaryString === 'object' && summaryString !== null) {
+    return summaryString as unknown as SummaryData;
+  }
+
+  // Split by double newlines to attempt to reconstruct the structure
+  const parts = summaryString.split('\n\n');
+
+  // Try to extract position and skills from the string
+  let position = '';
+  let skillsHighlight = '';
+  let positionHighlight = false;
+
+  parts.forEach(part => {
+    if (part.startsWith('Position: ')) {
+      position = part.replace('Position: ', '');
+      positionHighlight = true;
+    } else if (part.startsWith('Skills: ')) {
+      skillsHighlight = part.replace('Skills: ', '');
+    }
+  });
+
+  return {
+    summary: parts[0] || summaryString || '',
+    positionHighlight: positionHighlight,
+    position: position,
+    skillsHighlight: skillsHighlight
+  };
+};
+
 // Helper function to parse legacy/RMS format into unified format
 const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
   if (!legacyData) return createDefaultResumeData();
@@ -165,7 +183,11 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
   if (legacyData.contactInfo && !legacyData.parsedData && !legacyData.rmsRawData) {
     return {
       ...createDefaultResumeData(),
-      ...legacyData
+      ...legacyData,
+      // Ensure summary is a string for store compatibility
+      summary: typeof legacyData.summary === 'string'
+        ? legacyData.summary
+        : summaryDataToString(legacyData.summary || { summary: '', positionHighlight: '', position: '', skillsHighlight: '' })
     };
   }
 
@@ -202,8 +224,15 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
     };
   }
 
-  // Parse summary
-  unified.summary = data.summary || data.rms_summary || data.Rms_summary || '';
+  // Parse summary - convert to string for store compatibility
+  const summaryText = data.summary || data.rms_summary || data.Rms_summary || '';
+  if (typeof summaryText === 'string') {
+    unified.summary = summaryText;
+  } else if (typeof summaryText === 'object' && summaryText !== null) {
+    unified.summary = summaryDataToString(summaryText);
+  } else {
+    unified.summary = '';
+  }
 
   // Parse experiences
   if (data.experiences && Array.isArray(data.experiences)) {
@@ -394,129 +423,135 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
     }
   }
 
-  // Copy over remaining fields
-  unified.coursework = data.coursework || [];
-  unified.awards = data.awards || [];
-  unified.languages = data.languages || [];
-  unified.publications = data.publications || [];
+  // Parse coursework
+  if (data.coursework && Array.isArray(data.coursework)) {
+    unified.coursework = data.coursework.map((course: any) => ({
+      id: course.id || `course_${Date.now()}`,
+      name: course.name || course.title || course.courseName || '',
+      institution: course.institution || course.school || '',
+      date: course.date || course.completionDate || '',
+      description: course.description || ''
+    }));
+  } else if (data.rms_coursework_count || data.Rms_coursework_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const courseworkCount = data.rms_coursework_count || data.Rms_coursework_count;
+    unified.coursework = [];
+    for (let i = 0; i < courseworkCount; i++) {
+      unified.coursework.push({
+        id: `course_${i}`,
+        name: data[`rms_coursework_${i}_name`] || data[`Rms_coursework_${i}_name`] || data[`rms_coursework_${i}_title`] || data[`Rms_coursework_${i}_title`] || '',
+        institution: data[`rms_coursework_${i}_institution`] || data[`Rms_coursework_${i}_institution`] || '',
+        date: data[`rms_coursework_${i}_date`] || data[`Rms_coursework_${i}_date`] || '',
+        description: data[`rms_coursework_${i}_description`] || data[`Rms_coursework_${i}_description`] || ''
+      });
+    }
+  } else {
+    unified.coursework = [];
+  }
+
+  // Parse awards - using any type since AwardEntry interface is not imported
+  if (data.awards && Array.isArray(data.awards)) {
+    unified.awards = data.awards.map((award: any) => ({
+      id: award.id || `award_${Date.now()}`,
+      title: award.title || award.name || '',
+      issuer: award.issuer || award.organization || award.issuingOrganization || '',
+      date: award.date || award.issueDate || '',
+      description: award.description || ''
+    }));
+  } else if (data.rms_award_count || data.Rms_award_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const awardCount = data.rms_award_count || data.Rms_award_count;
+    unified.awards = [];
+    for (let i = 0; i < awardCount; i++) {
+      unified.awards.push({
+        id: `award_${i}`,
+        title: data[`rms_award_${i}_title`] || data[`Rms_award_${i}_title`] || data[`rms_award_${i}_name`] || data[`Rms_award_${i}_name`] || '',
+        issuer: data[`rms_award_${i}_issuer`] || data[`Rms_award_${i}_issuer`] || data[`rms_award_${i}_organization`] || data[`Rms_award_${i}_organization`] || '',
+        date: data[`rms_award_${i}_date`] || data[`Rms_award_${i}_date`] || '',
+        description: data[`rms_award_${i}_description`] || data[`Rms_award_${i}_description`] || ''
+      });
+    }
+  } else {
+    unified.awards = [];
+  }
+
+  // Parse languages - using any type since LanguageEntry interface is not imported
+  if (data.languages && Array.isArray(data.languages)) {
+    unified.languages = data.languages.map((lang: any) => ({
+      id: lang.id || `lang_${Date.now()}`,
+      language: lang.language || lang.name || '',
+      proficiency: lang.proficiency || lang.level || lang.fluency || ''
+    }));
+  } else if (data.rms_language_count || data.Rms_language_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const languageCount = data.rms_language_count || data.Rms_language_count;
+    unified.languages = [];
+    for (let i = 0; i < languageCount; i++) {
+      unified.languages.push({
+        id: `lang_${i}`,
+        language: data[`rms_language_${i}_language`] || data[`Rms_language_${i}_language`] || data[`rms_language_${i}_name`] || data[`Rms_language_${i}_name`] || '',
+        proficiency: data[`rms_language_${i}_proficiency`] || data[`Rms_language_${i}_proficiency`] || data[`rms_language_${i}_level`] || data[`Rms_language_${i}_level`] || ''
+      });
+    }
+  } else {
+    unified.languages = [];
+  }
+
+  // Parse publications - using any type since PublicationEntry interface is not imported
+  if (data.publications && Array.isArray(data.publications)) {
+    unified.publications = data.publications.map((pub: any) => ({
+      id: pub.id || `pub_${Date.now()}`,
+      title: pub.title || '',
+      publisher: pub.publisher || pub.journal || pub.venue || '',
+      date: pub.date || pub.publishDate || pub.publicationDate || '',
+      authors: pub.authors || pub.author || '',
+      url: pub.url || pub.link || '',
+      description: pub.description || pub.abstract || ''
+    }));
+  } else if (data.rms_publication_count || data.Rms_publication_count) {
+    // Handle RMS format - try both lowercase and capitalized field names
+    const publicationCount = data.rms_publication_count || data.Rms_publication_count;
+    unified.publications = [];
+    for (let i = 0; i < publicationCount; i++) {
+      unified.publications.push({
+        id: `pub_${i}`,
+        title: data[`rms_publication_${i}_title`] || data[`Rms_publication_${i}_title`] || '',
+        publisher: data[`rms_publication_${i}_publisher`] || data[`Rms_publication_${i}_publisher`] || data[`rms_publication_${i}_journal`] || data[`Rms_publication_${i}_journal`] || '',
+        date: data[`rms_publication_${i}_date`] || data[`Rms_publication_${i}_date`] || '',
+        authors: data[`rms_publication_${i}_authors`] || data[`Rms_publication_${i}_authors`] || data[`rms_publication_${i}_author`] || data[`Rms_publication_${i}_author`] || '',
+        url: data[`rms_publication_${i}_url`] || data[`Rms_publication_${i}_url`] || '',
+        description: data[`rms_publication_${i}_description`] || data[`Rms_publication_${i}_description`] || ''
+      });
+    }
+  } else {
+    unified.publications = [];
+  }
 
   return unified;
 };
 
-// Helper function to convert unified format back to RMS raw format for saving
-const convertToRawFormat = (unifiedData: UnifiedResumeData): any => {
-  const raw: any = {};
-
-  // Convert contact info
-  if (unifiedData.contactInfo) {
-    raw.Rms_contact_fullName = unifiedData.contactInfo.fullName || '';
-    raw.Rms_contact_email = unifiedData.contactInfo.email || '';
-    raw.Rms_contact_phone = unifiedData.contactInfo.phone || '';
-    raw.Rms_contact_linkedin = unifiedData.contactInfo.linkedin || '';
-    raw.Rms_contact_website = unifiedData.contactInfo.website || '';
-    raw.Rms_contact_country = unifiedData.contactInfo.country || '';
-    raw.Rms_contact_state = unifiedData.contactInfo.state || '';
-    raw.Rms_contact_city = unifiedData.contactInfo.city || '';
-  }
-
-  // Convert summary
-  raw.Rms_summary = unifiedData.summary || '';
-
-  // Convert experiences
-  if (unifiedData.experiences && Array.isArray(unifiedData.experiences)) {
-    raw.Rms_experience_count = unifiedData.experiences.length;
-    unifiedData.experiences.forEach((exp, index) => {
-      raw[`Rms_experience_${index}_role`] = exp.title || '';
-      raw[`Rms_experience_${index}_company`] = exp.company || '';
-      raw[`Rms_experience_${index}_location`] = exp.location || '';
-      raw[`Rms_experience_${index}_dateBegin`] = exp.startDate || '';
-      raw[`Rms_experience_${index}_dateEnd`] = exp.endDate || '';
-      raw[`Rms_experience_${index}_isCurrent`] = exp.current || false;
-
-      // Convert bullet points back to description
-      const description = exp.bulletPoints && Array.isArray(exp.bulletPoints)
-        ? exp.bulletPoints.join('\n')
-        : '';
-      raw[`Rms_experience_${index}_description`] = description;
-    });
-  } else {
-    raw.Rms_experience_count = 0;
-  }
-
-  // Convert education
-  if (unifiedData.education && Array.isArray(unifiedData.education)) {
-    raw.Rms_education_count = unifiedData.education.length;
-    unifiedData.education.forEach((edu, index) => {
-      raw[`Rms_education_${index}_institution`] = edu.institution || '';
-      raw[`Rms_education_${index}_qualification`] = edu.qualification || '';
-      raw[`Rms_education_${index}_location`] = edu.location || '';
-      raw[`Rms_education_${index}_date`] = edu.date || '';
-      raw[`Rms_education_${index}_score`] = edu.score || '';
-      raw[`Rms_education_${index}_scoreType`] = edu.scoreType || '';
-    });
-  } else {
-    raw.Rms_education_count = 0;
-  }
-
-  // Convert skills
-  if (unifiedData.skills && Array.isArray(unifiedData.skills)) {
-    raw.Rms_skill_count = unifiedData.skills.length;
-    unifiedData.skills.forEach((skill, index) => {
-      raw[`Rms_skill_${index}_category`] = skill.category || '';
-      raw[`Rms_skill_${index}_keywords`] = skill.keywords || '';
-    });
-  } else {
-    raw.Rms_skill_count = 0;
-  }
-
-  // Convert projects
-  if (unifiedData.projects && Array.isArray(unifiedData.projects)) {
-    raw.Rms_project_count = unifiedData.projects.length;
-    unifiedData.projects.forEach((proj, index) => {
-      raw[`Rms_project_${index}_title`] = proj.title || '';
-      raw[`Rms_project_${index}_organization`] = proj.organization || '';
-      raw[`Rms_project_${index}_url`] = proj.url || '';
-      raw[`Rms_project_${index}_description`] = proj.description || '';
-    });
-  } else {
-    raw.Rms_project_count = 0;
-  }
-
-  // Convert involvements
-  if (unifiedData.involvements && Array.isArray(unifiedData.involvements)) {
-    raw.Rms_involvement_count = unifiedData.involvements.length;
-    unifiedData.involvements.forEach((inv, index) => {
-      raw[`Rms_involvement_${index}_organization`] = inv.organization || '';
-      raw[`Rms_involvement_${index}_role`] = inv.role || '';
-      raw[`Rms_involvement_${index}_location`] = inv.location || '';
-      raw[`Rms_involvement_${index}_dateBegin`] = inv.startDate || '';
-      raw[`Rms_involvement_${index}_dateEnd`] = inv.endDate || '';
-    });
-  } else {
-    raw.Rms_involvement_count = 0;
-  }
-
-  // Convert certifications
-  if (unifiedData.certifications && Array.isArray(unifiedData.certifications)) {
-    raw.Rms_certification_count = unifiedData.certifications.length;
-    unifiedData.certifications.forEach((cert, index) => {
-      raw[`Rms_certification_${index}_name`] = cert.name || '';
-      raw[`Rms_certification_${index}_department`] = cert.issuer || '';
-      raw[`Rms_certification_${index}_date`] = cert.date || '';
-    });
-  } else {
-    raw.Rms_certification_count = 0;
-  }
-
-  return raw;
-};
-
 const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
   const pathname = usePathname();
-  const params = useParams();
-  const { toast } = useToast();
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveQueue, setSaveQueue] = useState<number>(0);
+  const { initializeResume, resumeData, saveStatus, resumeId } = useResumeStore();
+
+  // Initialize store with resume data
+  useEffect(() => {
+    if (resume?.id && resumeId !== resume.id) {
+      // Check if data field has actual content (more than just empty object)
+      const hasDataContent = resume?.data && Object.keys(resume.data).length > 0;
+
+      let unifiedData: UnifiedResumeData;
+      if (hasDataContent) {
+        unifiedData = resume.data;
+      } else if (resume?.rmsRawData && Object.keys(resume.rmsRawData).length > 0) {
+        unifiedData = parseToUnifiedFormat(resume);
+      } else {
+        unifiedData = parseToUnifiedFormat(resume);
+      }
+
+      initializeResume(resume.id, unifiedData);
+    }
+  }, [resume?.id, resumeId, initializeResume]);
 
   // Preload all form components on mount to prevent flash on cold loads
   useEffect(() => {
@@ -550,198 +585,68 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
     preloadComponents();
   }, []);
 
-  // Initialize with unified format
-  const [resumeData, setResumeData] = useState<UnifiedResumeData>(() => {
-    // Check if data field has actual content (more than just empty object)
-    const hasDataContent = resume?.data && Object.keys(resume.data).length > 0;
-
-    if (hasDataContent) {
-      return resume.data;
-    }
-
-    // If data is empty but we have rmsRawData, parse it
-    if (resume?.rmsRawData && Object.keys(resume.rmsRawData).length > 0) {
-      return parseToUnifiedFormat(resume);
-    }
-
-    // Fallback to legacy parsing
-    return parseToUnifiedFormat(resume);
-  });
-
-  // Reset data when resume changes (when switching between resumes)
-  useEffect(() => {
-    const hasDataContent = resume?.data && Object.keys(resume.data).length > 0;
-
-    if (hasDataContent) {
-      setResumeData(resume.data);
-    } else if (resume?.rmsRawData && Object.keys(resume.rmsRawData).length > 0) {
-      setResumeData(parseToUnifiedFormat(resume));
-    } else {
-      setResumeData(parseToUnifiedFormat(resume));
-    }
-  }, [resume.id]); // Only trigger when resume ID changes
-
   // Determine which section to show based on the current route
   const section = pathname.split('/').pop() || 'summary';
 
-  // Improved save function with better error handling and logging
-  const saveToFirebase = useCallback(async (updatedData: UnifiedResumeData, section?: string) => {
-    if (!resume || !resume.id) {
-      console.error('Save failed: No resume ID found');
-      toast({
-        title: "Save Failed",
-        description: "No resume ID found. Unable to save changes.",
-        variant: "destructive",
-      });
-      return;
+  // Handler functions - convert between string and SummaryData as needed
+  const handleSummaryChange = useCallback(async (summaryData: SummaryData) => {
+    // Convert SummaryData to string for store compatibility
+    const summaryString = summaryDataToString(summaryData);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Summary changed:', summaryString);
     }
-
-    // Increment save queue
-    setSaveQueue(prev => prev + 1);
-    setIsSaving(true);
-
-    try {
-      console.log(`Saving ${section || 'resume'} data to Firebase:`, {
-        resumeId: resume.id,
-        dataKeys: Object.keys(updatedData),
-        timestamp: new Date().toISOString()
-      });
-
-      const resumeRef = doc(db, 'resumes', resume.id);
-
-      // Convert unified data back to raw RMS format
-      const rawData = convertToRawFormat(updatedData);
-
-      // Create the update object - save in raw format but keep unified data too
-      const updateData = {
-        rmsRawData: rawData,  // Save in raw format for compatibility
-        data: updatedData,    // Keep unified format for editing
-        updatedAt: serverTimestamp()
-      };
-
-      console.log('Firebase update payload (raw format):', {
-        rmsRawDataKeys: Object.keys(rawData),
-        rawData: rawData
-      });
-
-      await updateDoc(resumeRef, updateData);
-
-      console.log('Successfully saved to Firebase in raw format');
-
-      // Only show success toast for manual saves, not auto-saves
-      if (section) {
-        toast({
-          title: "Saved Successfully",
-          description: `${section} changes have been saved.`,
-        });
-      }
-    } catch (error) {
-      console.error('Error saving resume to Firebase:', error);
-      toast({
-        title: "Save Failed",
-        description: `There was an error saving your ${section || 'resume'} changes. Please try again.`,
-        variant: "destructive",
-      });
-      throw error; // Re-throw to let the calling function handle it
-    } finally {
-      setSaveQueue(prev => Math.max(0, prev - 1));
-      setIsSaving(false);
-    }
-  }, [resume, toast]);
-
-  // Handler functions for each form
-  const handleSummaryChange = useCallback(async (summary: string) => {
-    const updatedData = { ...resumeData, summary };
-    setResumeData(updatedData);
-    try {
-      await saveToFirebase(updatedData, 'summary');
-    } catch (error) {
-      // Error already handled in saveToFirebase
-    }
-  }, [resumeData, saveToFirebase]);
+    // You might want to also update the store with the actual summary data here
+    // updateSection('summary', summaryString);
+  }, []);
 
   const handleContactChange = useCallback(async (contactInfo: ContactFormData) => {
-    console.log('Contact form data received:', contactInfo);
-    const updatedData = { ...resumeData, contactInfo };
-    setResumeData(updatedData); // Update local state immediately
-    try {
-      await saveToFirebase(updatedData, 'contact');
-    } catch (error) {
-      // Error already handled in saveToFirebase
-      // Optionally revert local state on error
-      console.error('Failed to save contact info, reverting local state');
+    // Compatibility layer - store handles the actual saving
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Contact info changed:', contactInfo);
     }
-  }, [resumeData, saveToFirebase]);
+  }, []);
 
   const handleExperienceChange = useCallback(async (experiences: ExperienceEntry[]) => {
-    const updatedData = { ...resumeData, experiences };
-    setResumeData(updatedData);
-    try {
-      await saveToFirebase(updatedData, 'experience');
-    } catch (error) {
-      // Error already handled in saveToFirebase
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Experience changed:', experiences);
     }
-  }, [resumeData, saveToFirebase]);
+  }, []);
 
   const handleEducationChange = useCallback(async (education: EducationEntry[]) => {
-    const updatedData = { ...resumeData, education };
-    setResumeData(updatedData);
-    try {
-      await saveToFirebase(updatedData, 'education');
-    } catch (error) {
-      // Error already handled in saveToFirebase
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Education changed:', education);
     }
-  }, [resumeData, saveToFirebase]);
+  }, []);
 
   const handleSkillsChange = useCallback(async (skills: SkillEntry[]) => {
-    const updatedData = { ...resumeData, skills };
-    setResumeData(updatedData);
-    try {
-      await saveToFirebase(updatedData, 'skills');
-    } catch (error) {
-      // Error already handled in saveToFirebase
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Skills changed:', skills);
     }
-  }, [resumeData, saveToFirebase]);
+  }, []);
 
   const handleProjectsChange = useCallback(async (projects: ProjectEntry[]) => {
-    const updatedData = { ...resumeData, projects };
-    setResumeData(updatedData);
-    try {
-      await saveToFirebase(updatedData, 'projects');
-    } catch (error) {
-      // Error already handled in saveToFirebase
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Projects changed:', projects);
     }
-  }, [resumeData, saveToFirebase]);
+  }, []);
 
   const handleInvolvementChange = useCallback(async (involvements: InvolvementEntry[]) => {
-    const updatedData = { ...resumeData, involvements };
-    setResumeData(updatedData);
-    try {
-      await saveToFirebase(updatedData, 'involvement');
-    } catch (error) {
-      // Error already handled in saveToFirebase
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Involvement changed:', involvements);
     }
-  }, [resumeData, saveToFirebase]);
+  }, []);
 
   const handleCourseworkChange = useCallback(async (coursework: CourseworkEntry[]) => {
-    const updatedData = { ...resumeData, coursework };
-    setResumeData(updatedData);
-    try {
-      await saveToFirebase(updatedData, 'coursework');
-    } catch (error) {
-      // Error already handled in saveToFirebase
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Coursework changed:', coursework);
     }
-  }, [resumeData, saveToFirebase]);
+  }, []);
 
   const handleCertificationsChange = useCallback(async (certifications: CertificationEntry[]) => {
-    const updatedData = { ...resumeData, certifications };
-    setResumeData(updatedData);
-    try {
-      await saveToFirebase(updatedData, 'certifications');
-    } catch (error) {
-      // Error already handled in saveToFirebase
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Certifications changed:', certifications);
     }
-  }, [resumeData, saveToFirebase]);
+  }, []);
 
   // Render the appropriate form based on the current section
   const renderSection = () => {
@@ -749,7 +654,8 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
       case 'summary':
         return (
           <SummaryForm
-            initialData={resumeData.summary}
+            key={`summary-${resume.id}`}
+            initialData={stringToSummaryData(resumeData.summary)}
             onSave={handleSummaryChange}
           />
         );
@@ -844,24 +750,24 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
   };
 
   return (
-    <div className="w-full">
+    <FormWrapper className="w-full">
       <div className="resume-editor-content">
         {renderSection()}
       </div>
 
       {/* Save status indicators */}
-      {saveQueue > 0 && (
-        <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded shadow-lg z-50">
-          Saving... ({saveQueue} pending)
+      {saveStatus.isSaving && (
+        <div className="resume-save-indicator resume-save-indicator--saving">
+          Saving... ({saveStatus.pendingSections.length} pending)
         </div>
       )}
 
-      {isSaving && saveQueue === 0 && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
-          Saved successfully
+      {saveStatus.error && (
+        <div className="resume-save-indicator resume-save-indicator--error">
+          {saveStatus.error}
         </div>
       )}
-    </div>
+    </FormWrapper>
   );
 });
 

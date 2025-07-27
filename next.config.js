@@ -23,7 +23,9 @@ const nextConfig = {
   
   // Enable tree shaking and dead code elimination
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn']
+    } : false,
   },
   
   // Modern JavaScript target to avoid legacy polyfills

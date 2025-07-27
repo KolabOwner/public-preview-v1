@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,6 +11,8 @@ import { Label } from '@/components/shared/label';
 import { Switch } from '@/components/shared/switch';
 import { Textarea } from '@/components/shared/textarea';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
+import { useResumeStore, type ExperienceEntry } from '@/lib/client/stores/resume-store';
+import '../styles/form-styles.css';
 
 // Schema for a single bullet point object
 const bulletPointSchema = z.object({
@@ -39,10 +41,15 @@ const experienceSchema = z.object({
 
 // TypeScript types inferred from schemas
 type BulletPoint = z.infer<typeof bulletPointSchema>;
-export type ExperienceEntry = Omit<z.infer<typeof experienceEntrySchema>, 'bulletPoints'> & {
-  bulletPoints: string[];
+type ExperienceFormEntry = Omit<z.infer<typeof experienceEntrySchema>, 'bulletPoints'> & {
+  bulletPoints: BulletPoint[];
 };
 type ExperienceFormData = z.infer<typeof experienceSchema>;
+
+interface ExperienceFormProps {
+  initialData: ExperienceEntry[];
+  onSave: (data: ExperienceEntry[]) => Promise<void>;
+}
 
 // Helper to clean placeholder values from initial data
 const cleanValue = (value: string | undefined | null): string => {
@@ -51,9 +58,22 @@ const cleanValue = (value: string | undefined | null): string => {
   return ['n/a', 'N/A', 'none', 'null', '-', 'NA'].includes(trimmed) ? '' : trimmed;
 };
 
-// Clean data to ensure no undefined values for Firestore
-const cleanDataForFirestore = (entry: any) => {
-  return {
+// Convert store format to form format
+const convertToFormFormat = (entries: ExperienceEntry[]): ExperienceFormEntry[] => {
+  return entries.map(entry => ({
+    ...entry,
+    title: cleanValue(entry.title),
+    company: cleanValue(entry.company),
+    location: cleanValue(entry.location),
+    startDate: cleanValue(entry.startDate),
+    endDate: cleanValue(entry.endDate),
+    bulletPoints: entry.bulletPoints?.map(bp => ({ value: bp })) || [{ value: '' }],
+  }));
+};
+
+// Convert form format to store format
+const convertToStoreFormat = (formData: ExperienceFormData): ExperienceEntry[] => {
+  return formData.entries.map(entry => ({
     id: entry.id || '',
     title: entry.title || '',
     company: entry.company || '',
@@ -61,36 +81,26 @@ const cleanDataForFirestore = (entry: any) => {
     startDate: entry.startDate || '',
     endDate: entry.endDate || '',
     current: entry.current || false,
-    description: entry.description || '',
-    bulletPoints: Array.isArray(entry.bulletPoints) 
-      ? entry.bulletPoints.filter((bp: any) => bp && typeof bp === 'string' && bp.trim().length > 0)
+    bulletPoints: entry.bulletPoints 
+      ? entry.bulletPoints.map(bp => bp.value).filter(v => v && v.trim())
       : [],
-  };
+  }));
 };
-
-interface ExperienceFormProps {
-  initialData: ExperienceEntry[];
-  onSave: (data: ExperienceEntry[]) => Promise<void>;
-}
 
 export default function ExperienceForm({ initialData, onSave }: ExperienceFormProps) {
   const { toast } = useToast();
+  const { updateSection, saveSection, isSectionDirty, saveStatus } = useResumeStore();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isSaving, setIsSaving] = useState(false);
+  const previousDataRef = useRef<string>('');
+
+  const isDirty = isSectionDirty('experiences');
+  const isSaving = saveStatus.isSaving && saveStatus.pendingSections.includes('experiences');
 
   const form = useForm<ExperienceFormData>({
     resolver: zodResolver(experienceSchema),
     defaultValues: {
       entries: (initialData && initialData.length > 0) 
-        ? initialData.map(e => ({
-            ...e,
-            title: cleanValue(e.title),
-            company: cleanValue(e.company),
-            location: cleanValue(e.location),
-            startDate: cleanValue(e.startDate),
-            endDate: cleanValue(e.endDate),
-            bulletPoints: e.bulletPoints?.map(bp => ({ value: bp })) || [{ value: '' }],
-          }))
+        ? convertToFormFormat(initialData)
         : [{
             title: '',
             company: '',
@@ -104,7 +114,7 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
     mode: 'onChange',
   });
 
-  const { register, control, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, getValues } = form;
+  const { register, control, handleSubmit, formState: { errors }, watch, setValue, getValues, reset } = form;
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -116,35 +126,64 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
     name: `entries.${activeIndex}.bulletPoints`
   });
 
-  // Manual save
-  const handleSave = async () => {
+  // Reset form when initialData changes (when switching resumes)
+  useEffect(() => {
+    const formData = (initialData && initialData.length > 0) 
+      ? convertToFormFormat(initialData)
+      : [{
+          title: '',
+          company: '',
+          location: '',
+          startDate: '',
+          endDate: '',
+          current: false,
+          bulletPoints: [{ value: '' }]
+        }];
+    
+    reset({ entries: formData });
+    setActiveIndex(0);
+    previousDataRef.current = JSON.stringify(formData);
+  }, [initialData, reset]);
+
+  // Watch all form values for real-time updates
+  const watchedValues = watch();
+
+  // Update store when form data changes (no auto-save) - using ref to prevent infinite loops
+  useEffect(() => {
+    // Skip updates when we're just navigating between entries
+    if (isNavigatingRef.current) {
+      return;
+    }
+    
+    const currentData = JSON.stringify(watchedValues);
+    if (currentData !== previousDataRef.current && currentData !== JSON.stringify({ entries: convertToFormFormat(initialData) })) {
+      previousDataRef.current = currentData;
+      const storeData = convertToStoreFormat(watchedValues);
+      updateSection('experiences', storeData);
+    }
+  }, [watchedValues, updateSection, initialData]);
+
+  // Manual save function
+  const handleManualSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const formData = getValues();
+    
     try {
-      setIsSaving(true);
-      const formData = getValues();
-      
-      // Process entries to ensure clean data with no undefined values
-      const processedEntries = formData.entries.map(entry => {
-        const cleaned = cleanDataForFirestore({
-          ...entry,
-          bulletPoints: entry.bulletPoints ? entry.bulletPoints.map(bp => bp.value).filter(v => v && v.trim()) : [],
-        });
-        return cleaned;
-      });
-      
-      await onSave(processedEntries);
+      const storeData = convertToStoreFormat(formData);
+      await onSave(storeData); // Call the parent callback first to update the data
+      await saveSection('experiences'); // Then save to the store
       toast({
         title: "Success",
         description: "Experience information saved successfully",
       });
     } catch (error) {
-      console.error('Experience save error:', error);
+      console.error('Manual save error:', error);
       toast({
         title: "Error",
         description: "Failed to save experience information",
         variant: "destructive",
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -173,57 +212,62 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
     ? `${activeEntry.title} at ${activeEntry.company}`
     : "New Experience Entry";
 
+  // Track when we're just navigating (not making actual changes)
+  const isNavigatingRef = useRef(false);
+
   // Effect to ensure form fields update when navigating between entries
-  React.useEffect(() => {
-    // Force form to re-register fields when activeIndex changes
-    // This ensures the form displays the correct values for the active entry
+  useEffect(() => {
     const currentEntries = getValues("entries");
     if (currentEntries && currentEntries[activeIndex]) {
+      // Mark that we're navigating to prevent dirty state
+      isNavigatingRef.current = true;
+      
       const entry = currentEntries[activeIndex];
-      // Force field updates by setting values explicitly
-      setValue(`entries.${activeIndex}.title`, entry.title || '');
-      setValue(`entries.${activeIndex}.company`, entry.company || '');
-      setValue(`entries.${activeIndex}.location`, entry.location || '');
-      setValue(`entries.${activeIndex}.startDate`, entry.startDate || '');
-      setValue(`entries.${activeIndex}.endDate`, entry.endDate || '');
-      setValue(`entries.${activeIndex}.current`, entry.current || false);
-      setValue(`entries.${activeIndex}.bulletPoints`, entry.bulletPoints || [{ value: '' }]);
+      
+      // Use setValue with keepDirty option to maintain dirty state
+      setValue(`entries.${activeIndex}.title`, entry.title || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.company`, entry.company || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.location`, entry.location || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.startDate`, entry.startDate || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.endDate`, entry.endDate || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.current`, entry.current || false, { shouldDirty: false });
+      setValue(`entries.${activeIndex}.bulletPoints`, entry.bulletPoints || [{ value: '' }], { shouldDirty: false });
+      
+      // Reset navigation flag after a short delay
+      setTimeout(() => {
+        isNavigatingRef.current = false;
+      }, 50);
     }
   }, [activeIndex, setValue, getValues]);
 
-
   return (
-    <div className={`relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${
-      isSaving 
-        ? 'opacity-75 pointer-events-none border-corporate-amber-300 dark:border-corporate-amber-600' 
-        : 'border-corporate-navy-200 dark:border-corporate-navy-700 hover:border-corporate-amber-300 dark:hover:border-corporate-amber-600/50'
-    }`}>
+    <div className={`resume-form-container ${isSaving ? 'resume-form-container--saving' : ''} ${isDirty ? 'resume-form-container--dirty' : ''}`}>
       {/* Background gradient effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" aria-hidden="true" />
+      <div className="resume-form-background" aria-hidden="true" />
       
       {/* Subtle pattern overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.02),transparent_50%)]" aria-hidden="true" />
+      <div className="resume-form-pattern" aria-hidden="true" />
       
-      <div className="relative">
+      <div className="resume-form-content">
         {/* Header */}
-        <div className="px-6 py-4 bg-white/90 dark:bg-corporate-navy-800/90 backdrop-blur-sm border-b-2 border-corporate-navy-100 dark:border-corporate-navy-700 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-corporate-navy-900 dark:text-gray-100 flex items-center gap-2">
-            <div className="p-1.5 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-lg shadow-sm">
+        <div className="resume-form-header">
+          <h2 className="resume-form-title">
+            <div className="resume-form-icon">
               <Briefcase className="h-4 w-4 text-white" />
             </div>
             <span className="truncate pr-4">{headerTitle}</span>
           </h2>
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="resume-form-nav">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))} 
               disabled={activeIndex === 0 || isSaving}
-              className="hover:bg-corporate-amber-100 dark:hover:bg-corporate-amber-900/20 disabled:opacity-40"
+              className="resume-form-nav-button"
             >
               <ChevronLeft className="h-4 w-4 text-corporate-navy-700 dark:text-gray-300" />
             </Button>
-            <span className="text-sm font-medium text-corporate-navy-600 dark:text-gray-400 w-12 text-center bg-corporate-navy-50 dark:bg-corporate-navy-800 rounded-md py-1">
+            <span className="resume-form-nav-counter">
               {activeIndex + 1} / {fields.length}
             </span>
             <Button 
@@ -231,19 +275,19 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
               size="icon" 
               onClick={() => setActiveIndex(Math.min(fields.length - 1, activeIndex + 1))} 
               disabled={activeIndex === fields.length - 1 || isSaving}
-              className="hover:bg-corporate-amber-100 dark:hover:bg-corporate-amber-900/20 disabled:opacity-40"
+              className="resume-form-nav-button"
             >
               <ChevronRight className="h-4 w-4 text-corporate-navy-700 dark:text-gray-300" />
             </Button>
             {fields.length > 1 && (
               <>
-                <div className="w-px h-6 bg-corporate-navy-200 dark:bg-corporate-navy-600 mx-2" />
+                <div className="resume-form-nav-divider" />
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={() => removeExperience(activeIndex)} 
                   disabled={isSaving}
-                  className="text-corporate-navy-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  className="resume-form-delete-button"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -253,31 +297,23 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
         </div>
 
         {/* Form Content */}
-        <div className="relative bg-white/80 dark:bg-corporate-navy-900/90 backdrop-blur-sm p-6 md:p-8">
-          <div className="space-y-6">
-            {/* Job Title & Company */}
+        <form onSubmit={handleManualSave} className="space-y-6" aria-busy={isSaving}>
+          {/* Job Title & Company */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-                  Job Title <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
+                <Label className="resume-label">
+                  Job Title <span className="resume-label-required" aria-label="required">*</span>
                 </Label>
-                <div className={`
-                  flex items-center rounded-lg border-2 transition-all duration-200
-                  ${errors.entries?.[activeIndex]?.title 
-                    ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                    : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-                  }
-                  ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-                `}>
+                <div className={`resume-input-container ${errors.entries?.[activeIndex]?.title ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
                   <Input 
                     {...register(`entries.${activeIndex}.title`)} 
                     placeholder="Software Engineer"
-                    className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                    className="resume-input"
                     disabled={isSaving}
                   />
                 </div>
                 {errors.entries?.[activeIndex]?.title && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
+                  <p className="resume-error-message">
                     <AlertCircle className="h-4 w-4 flex-shrink-0" />
                     {errors.entries[activeIndex]?.title?.message}
                   </p>
@@ -285,26 +321,19 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-                  Company <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
+                <Label className="resume-label">
+                  Company <span className="resume-label-required" aria-label="required">*</span>
                 </Label>
-                <div className={`
-                  flex items-center rounded-lg border-2 transition-all duration-200
-                  ${errors.entries?.[activeIndex]?.company 
-                    ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                    : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-                  }
-                  ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-                `}>
+                <div className={`resume-input-container ${errors.entries?.[activeIndex]?.company ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
                   <Input 
                     {...register(`entries.${activeIndex}.company`)} 
                     placeholder="Google Inc."
-                    className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                    className="resume-input"
                     disabled={isSaving}
                   />
                 </div>
                 {errors.entries?.[activeIndex]?.company && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
+                  <p className="resume-error-message">
                     <AlertCircle className="h-4 w-4 flex-shrink-0" />
                     {errors.entries[activeIndex]?.company?.message}
                   </p>
@@ -315,49 +344,35 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
             {/* Location & Time Period */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+                <Label className="resume-label">
                   Location
                 </Label>
-                <div className={`
-                  flex items-center rounded-lg border-2 transition-all duration-200
-                  ${errors.entries?.[activeIndex]?.location 
-                    ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                    : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-                  }
-                  ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-                `}>
+                <div className={`resume-input-container ${errors.entries?.[activeIndex]?.location ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
                   <Input 
                     {...register(`entries.${activeIndex}.location`)} 
                     placeholder="New York, NY"
-                    className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                    className="resume-input"
                     disabled={isSaving}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+                <Label className="resume-label">
                   Time Period
                 </Label>
                 <div className="flex items-start gap-2">
                   <div className="flex-grow space-y-2">
-                    <div className={`
-                      flex items-center rounded-lg border-2 transition-all duration-200
-                      ${errors.entries?.[activeIndex]?.startDate 
-                        ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                        : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-                      }
-                      ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-                    `}>
+                    <div className={`resume-input-container ${errors.entries?.[activeIndex]?.startDate ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
                       <Input 
                         {...register(`entries.${activeIndex}.startDate`)} 
                         placeholder="Jan 2023"
-                        className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                        className="resume-input"
                         disabled={isSaving}
                       />
                     </div>
                     {errors.entries?.[activeIndex]?.startDate && (
-                      <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
+                      <p className="resume-error-message">
                         <AlertCircle className="h-4 w-4 flex-shrink-0" />
                         {errors.entries[activeIndex]?.startDate?.message}
                       </p>
@@ -365,24 +380,16 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
                   </div>
                   
                   <div className="flex-grow space-y-2">
-                    <div className={`
-                      flex items-center rounded-lg border-2 transition-all duration-200
-                      ${errors.entries?.[activeIndex]?.endDate 
-                        ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                        : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-                      }
-                      ${watch(`entries.${activeIndex}.current`) ? 'opacity-50' : ''}
-                      ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-                    `}>
+                    <div className={`resume-input-container ${errors.entries?.[activeIndex]?.endDate ? 'resume-input-container--error' : ''} ${watch(`entries.${activeIndex}.current`) ? 'opacity-50' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
                       <Input 
                         {...register(`entries.${activeIndex}.endDate`)} 
                         placeholder="Present"
                         disabled={watch(`entries.${activeIndex}.current`) || isSaving}
-                        className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
+                        className="resume-input"
                       />
                     </div>
                     {errors.entries?.[activeIndex]?.endDate && (
-                      <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
+                      <p className="resume-error-message">
                         <AlertCircle className="h-4 w-4 flex-shrink-0" />
                         {errors.entries[activeIndex]?.endDate?.message}
                       </p>
@@ -398,7 +405,7 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
                           checked={field.value} 
                           onCheckedChange={field.onChange}
                           disabled={isSaving}
-                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
+                          className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
                         />
                       )}
                     />
@@ -412,22 +419,18 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
 
             {/* Achievements / Responsibilities */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
+              <Label className="resume-label">
                 Key Achievements & Responsibilities
               </Label>
               <div className="space-y-3">
                 {bulletPointFields.map((field, bulletIndex) => (
-                  <div key={field.id} className="flex items-start gap-2 group">
-                    <GripVertical className="h-5 w-5 text-corporate-navy-400 dark:text-gray-500 cursor-grab mt-1 flex-shrink-0" />
-                    <div className={`
-                      flex-grow rounded-lg border-2 transition-all duration-200
-                      ${'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'}
-                      ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-                    `}>
+                  <div key={field.id} className="resume-bullet-item group">
+                    <GripVertical className="resume-bullet-grip" />
+                    <div className={`resume-bullet-input ${isSaving ? 'resume-input-container--disabled' : ''}`}>
                       <Textarea
                         {...register(`entries.${activeIndex}.bulletPoints.${bulletIndex}.value`)}
                         placeholder="• Increased team productivity by 25% through implementation of automated testing frameworks"
-                        className="border-0 bg-transparent focus:ring-0 focus:border-0 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 p-3 resize-none min-h-[60px]"
+                        className="resume-textarea min-h-[60px]"
                         rows={2}
                         disabled={isSaving}
                       />
@@ -438,7 +441,7 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
                       size="icon" 
                       onClick={() => removeBulletPoint(bulletIndex)} 
                       disabled={isSaving}
-                      className="opacity-50 group-hover:opacity-100 text-corporate-navy-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 mt-1 flex-shrink-0"
+                      className="resume-bullet-remove"
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -449,7 +452,7 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
                   variant="outline" 
                   onClick={() => appendBulletPoint({ value: '' })} 
                   disabled={isSaving}
-                  className="w-full border-2 border-corporate-navy-300 dark:border-corporate-navy-600 text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-amber-900/20 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 transition-all duration-200"
+                  className="resume-button-secondary w-full"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Achievement
@@ -458,37 +461,52 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-between items-center pt-6 border-t-2 border-corporate-navy-100 dark:border-corporate-navy-700">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={addNewExperience}
-                disabled={isSaving}
-                className="border-2 border-corporate-navy-300 dark:border-corporate-navy-600 text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-amber-900/20 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 transition-all duration-200"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Experience
-              </Button>
-              <Button 
-                onClick={handleSave}
-                disabled={isSaving}
-                className="w-full md:w-auto bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white font-semibold px-6 py-2.5 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Experience
-                  </>
+            <div className="resume-form-actions">
+              <div className="flex items-center gap-2">
+                {isDirty && (
+                  <span className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                    <div className="resume-section-dirty-dot" />
+                    Unsaved changes
+                  </span>
                 )}
-              </Button>
+                {!isDirty && saveStatus.lastSaved && (
+                  <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+                    <div className="resume-section-clean-dot" />
+                    Saved
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={addNewExperience}
+                  disabled={isSaving}
+                  className="resume-button-secondary"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Experience
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={isSaving || !isDirty}
+                  className="resume-button-primary"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="resume-button-icon animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="resume-button-icon" />
+                      Save Experience
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>
+        </form>
       </div>
     </div>
   );

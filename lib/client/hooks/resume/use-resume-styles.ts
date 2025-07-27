@@ -11,6 +11,7 @@ import {
 } from '@/components/features/resume/styles/resume-styles';
 import { RESUME_TEMPLATES, applyTemplateToSettings, ResumeTemplate, validateTemplate } from "@/components/features/resume/templates/resume-templates";
 import { DocumentSettingsClient } from '@/lib/client/services/resume/document-settings-client';
+import { useTemplateChangeBatch } from './use-debounced-batch';
 
 
 interface UseResumeStylesOptions {
@@ -367,6 +368,18 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
     }));
   }, []);
 
+  // Batched template change handler for optimal Firestore performance
+  const templateBatch = useTemplateChangeBatch(
+    async (templateId: string, settings: DocumentSettings) => {
+      if (resumeId && syncWithFirestore && hasLoadedFromFirestore) {
+        await DocumentSettingsClient.saveSettings(resumeId, settings, templateId);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Template ${templateId} persisted to Firestore for resume ${resumeId}`);
+        }
+      }
+    }
+  );
+
   // Change template with comprehensive error handling and validation
   const changeTemplate = useCallback(async (templateId: string): Promise<boolean> => {
     try {
@@ -386,25 +399,22 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
         logChanges: process.env.NODE_ENV === 'development'
       });
       
-      // Log template application for debugging
-      console.log(`Applying template "${template.name}" (${templateId})`, {
-        previousTemplate: currentTemplate,
-        templateDefaults: template.defaults,
-        appliedSettings: newSettings
-      });
+      // Log template application for debugging (development only)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Applying template "${template.name}" (${templateId})`, {
+          previousTemplate: currentTemplate,
+          templateDefaults: template.defaults,
+          appliedSettings: newSettings
+        });
+      }
 
-      // Update settings and template
+      // Update settings and template immediately for UI responsiveness
       setDocumentSettings(newSettings);
       setCurrentTemplate(templateId);
       
-      // Immediately persist template change to Firestore if available
+      // Batch template change to prevent rapid Firestore writes
       if (resumeId && syncWithFirestore && hasLoadedFromFirestore) {
-        try {
-          await DocumentSettingsClient.saveSettings(resumeId, newSettings, templateId);
-          console.log(`Template ${templateId} persisted to Firestore for resume ${resumeId}`);
-        } catch (firestoreError) {
-          console.warn('Failed to persist template to Firestore:', firestoreError);
-        }
+        templateBatch.addToBatch(templateId, { templateId, settings: newSettings });
       }
 
       // Trigger callback if provided
@@ -415,7 +425,7 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
       console.error('Error applying template:', error);
       return false;
     }
-  }, [documentSettings, currentTemplate, onSettingsChange, resumeId, syncWithFirestore, hasLoadedFromFirestore]);
+  }, [documentSettings, currentTemplate, onSettingsChange, resumeId, syncWithFirestore, hasLoadedFromFirestore, templateBatch]);
 
   // Reset to defaults with professional template
   const resetSettings = useCallback(() => {

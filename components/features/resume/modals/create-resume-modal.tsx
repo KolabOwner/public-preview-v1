@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
@@ -13,10 +14,12 @@ import {
   Upload,
   Info
 } from 'lucide-react';
+
 interface CreateResumeModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
 export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResumeModalProps) {
   const [title, setTitle] = useState('');
   const [experience, setExperience] = useState('');
