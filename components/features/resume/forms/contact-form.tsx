@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Save, Loader2, Mail, Phone, Globe, MapPin } from "lucide-react";
 import { Switch } from '@/components/shared/switch';

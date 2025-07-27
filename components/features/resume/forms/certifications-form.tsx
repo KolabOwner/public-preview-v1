@@ -8,7 +8,6 @@ import { Award, Save, Loader2, Plus, ChevronLeft, ChevronRight, AlertCircle, Cal
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
-import { Textarea } from '@/components/shared/textarea';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
 import { useResumeStore, type CertificationEntry } from '@/lib/client/stores/resume-store';
 import '../styles/form-styles.css';
@@ -19,7 +18,9 @@ const certificationEntrySchema = z.object({
   name: z.string().min(1, "Certificate name is required."),
   issuer: z.string().min(1, "Issuing organization is required."),
   date: z.string().min(1, "Issue date is required."),
-  description: z.string().optional(),
+  expiryDate: z.string().optional(),
+  credentialId: z.string().optional(),
+  url: z.string().optional(),
 });
 
 // Schema for the entire form
@@ -50,7 +51,9 @@ const convertToFormFormat = (entries: CertificationEntry[]): CertificationFormEn
     name: cleanValue(entry.name),
     issuer: cleanValue(entry.issuer),
     date: cleanValue(entry.date),
-    description: cleanValue(entry.description),
+    expiryDate: cleanValue(entry.expiryDate),
+    credentialId: cleanValue(entry.credentialId),
+    url: cleanValue(entry.url),
   }));
 };
 
@@ -61,7 +64,9 @@ const convertToStoreFormat = (formData: CertificationsFormData): CertificationEn
     name: entry.name || '',
     issuer: entry.issuer || '',
     date: entry.date || '',
-    description: entry.description || '',
+    expiryDate: entry.expiryDate || '',
+    credentialId: entry.credentialId || '',
+    url: entry.url || '',
   }));
 };
 
@@ -83,7 +88,9 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
             name: '',
             issuer: '',
             date: '',
-            description: ''
+            expiryDate: '',
+            credentialId: '',
+            url: ''
           }]
     },
     mode: 'onChange',
@@ -104,7 +111,9 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
           name: '',
           issuer: '',
           date: '',
-          description: ''
+          expiryDate: '',
+          credentialId: '',
+          url: ''
         }];
     
     reset({ entries: formData });
@@ -161,7 +170,9 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
       name: '',
       issuer: '',
       date: '',
-      description: ''
+      expiryDate: '',
+      credentialId: '',
+      url: ''
     });
     setActiveIndex(fields.length);
   };
@@ -194,7 +205,9 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
       setValue(`entries.${activeIndex}.name`, entry.name || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.issuer`, entry.issuer || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.date`, entry.date || '', { shouldDirty: false });
-      setValue(`entries.${activeIndex}.description`, entry.description || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.expiryDate`, entry.expiryDate || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.credentialId`, entry.credentialId || '', { shouldDirty: false });
+      setValue(`entries.${activeIndex}.url`, entry.url || '', { shouldDirty: false });
       
       // Reset navigation flag after a short delay
       setTimeout(() => {
@@ -327,23 +340,54 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
             )}
           </div>
 
-          {/* Description */}
+          {/* Additional Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Expiry Date */}
+            <div className="space-y-2">
+              <Label className="resume-label">
+                Expiry Date
+              </Label>
+              <div className={`resume-input-container ${errors.entries?.[activeIndex]?.expiryDate ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
+                <Calendar className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
+                <Input 
+                  {...register(`entries.${activeIndex}.expiryDate`)} 
+                  placeholder="December 2027"
+                  className="resume-input px-0 pr-3"
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
+
+            {/* Credential ID */}
+            <div className="space-y-2">
+              <Label className="resume-label">
+                Credential ID
+              </Label>
+              <div className={`resume-input-container ${errors.entries?.[activeIndex]?.credentialId ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
+                <Input 
+                  {...register(`entries.${activeIndex}.credentialId`)} 
+                  placeholder="ABC123XYZ"
+                  className="resume-input"
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Credential URL */}
           <div className="space-y-2">
             <Label className="resume-label">
-              Relevance & Value
+              Credential URL
             </Label>
-            <div className={`resume-input-container ${errors.entries?.[activeIndex]?.description ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
-              <Textarea
-                {...register(`entries.${activeIndex}.description`)}
-                placeholder="Describe how this certification is relevant to your career goals and what skills it demonstrates..."
-                className="resume-textarea p-3 resize-none min-h-[100px]"
-                rows={4}
+            <div className={`resume-input-container ${errors.entries?.[activeIndex]?.url ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
+              <Input 
+                {...register(`entries.${activeIndex}.url`)} 
+                placeholder="https://www.credential-provider.com/verify/ABC123XYZ"
+                className="resume-input"
+                type="url"
                 disabled={isSaving}
               />
             </div>
-            <p className="text-xs text-corporate-navy-500 dark:text-gray-400">
-              Explain the value this certification brings to your professional profile.
-            </p>
           </div>
 
           {/* Action Buttons */}
