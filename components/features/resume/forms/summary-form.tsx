@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Sparkles, ChevronLeft, ChevronRight, Save, Loader2, FileText, AlertCircle, Target, Cpu } from "lucide-react";
+import { Sparkles, ChevronLeft, ChevronRight, Save, Loader2, FileText, AlertCircle, Target, Cpu, RefreshCw, BookOpen } from "lucide-react";
 import { useResumeData } from "@/contexts/resume-data-context";
 import { generateSummaryAPI } from '@/lib/client/api/summary';
 import { Button } from '@/components/shared/button';
@@ -19,6 +19,8 @@ export interface SummaryData {
 }
 
 interface SummaryFormProps {
+  initialData?: string;
+  onSave?: (summary: string) => Promise<void>;
   onSaveSuccess?: () => void;
 }
 
@@ -39,7 +41,7 @@ const cleanDataForFirestore = (data: SummaryData) => {
   };
 };
 
-export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
+export default function SummaryForm({ initialData, onSave, onSaveSuccess }: SummaryFormProps) {
   const {
     resumeData,
     processedData,
@@ -61,6 +63,8 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
   const [aiAlternatives, setAiAlternatives] = useState<string[]>([]);
   const [currentAlternativeIndex, setCurrentAlternativeIndex] = useState(0);
   const [showAlternatives, setShowAlternatives] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [wordCount, setWordCount] = useState(0);
 
   // Helper function to get field value with both capitalizations
   const getResumeField = useCallback((fieldName: string): string | boolean | number | undefined => {
@@ -70,12 +74,14 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
     return resumeData[capitalField];
   }, [resumeData]);
 
+  // Extract positions from resume data
   const positions = useMemo(() => {
     if (processedData?.experience?.length > 0) {
       return processedData.experience
         .map(exp => exp.position)
         .filter(pos => pos && pos.trim())
-        .filter((pos, index, self) => self.indexOf(pos) === index);
+        .filter((pos, index, self) => self.indexOf(pos) === index)
+        .slice(0, 10); // Limit to 10 most recent positions
     }
 
     if (resumeData) {
@@ -89,12 +95,15 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
         }
       }
 
-      return extractedPositions.filter((pos, index, self) => self.indexOf(pos) === index);
+      return extractedPositions
+        .filter((pos, index, self) => self.indexOf(pos) === index)
+        .slice(0, 10);
     }
 
     return [];
   }, [processedData, resumeData]);
 
+  // Extract skills from resume data
   const extractedSkills = useMemo(() => {
     if (processedData?.skills?.length > 0) {
       return processedData.skills
@@ -120,55 +129,103 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
     return '';
   }, [processedData, resumeData]);
 
-  // Initialize summary data from context
+  // Calculate word count
+  const calculateWordCount = useCallback((text: string) => {
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    return words.length;
+  }, []);
+
+  // Initialize summary data from context or props
   useEffect(() => {
-    const existingSummary = getResumeField('rms_summary') || processedData?.summary;
+    const existingSummary = initialData || getResumeField('rms_summary') || processedData?.summary;
     const existingPositionHighlight = getResumeField('summary_position_highlight');
     const existingTargetPosition = getResumeField('summary_target_position');
     const existingSkillsHighlight = getResumeField('summary_skills_highlight');
 
     if (existingSummary || (resumeData && Object.keys(resumeData).length > 0)) {
       setSummaryData(prev => {
+        const summaryText = cleanValue(typeof existingSummary === 'string' ? existingSummary : String(existingSummary || ''));
         const newData = {
-          summary: cleanValue(typeof existingSummary === 'string' ? existingSummary : String(existingSummary || '')) || prev.summary,
+          summary: summaryText || prev.summary,
           positionHighlight: existingPositionHighlight !== undefined ? existingPositionHighlight !== false : prev.positionHighlight,
           position: cleanValue(typeof existingTargetPosition === 'string' ? existingTargetPosition : String(existingTargetPosition || '')) || positions[0] || prev.position,
           skillsHighlight: cleanValue(typeof existingSkillsHighlight === 'string' ? existingSkillsHighlight : String(existingSkillsHighlight || '')) || extractedSkills || prev.skillsHighlight
         };
 
         if (JSON.stringify(newData) !== JSON.stringify(prev)) {
+          setWordCount(calculateWordCount(newData.summary));
           return newData;
         }
         return prev;
       });
     }
-  }, [resumeData?.id, extractedSkills, getResumeField, positions, processedData?.summary, resumeData]);
+  }, [initialData, resumeData?.id, extractedSkills, getResumeField, positions, processedData?.summary, resumeData, calculateWordCount]);
 
+  // Validation with comprehensive checks
   const validate = useCallback((): boolean => {
     const errs = new Set<string>();
-    if (!summaryData.summary.trim()) errs.add('summary');
+
+    if (!summaryData.summary.trim()) {
+      errs.add('summary');
+    } else if (summaryData.summary.trim().length < 50) {
+      errs.add('summary_too_short');
+    } else if (summaryData.summary.trim().length > 1000) {
+      errs.add('summary_too_long');
+    }
+
+    if (summaryData.positionHighlight && !summaryData.position.trim()) {
+      errs.add('position_required');
+    }
+
     setErrors(errs);
     return errs.size === 0;
-  }, [summaryData.summary]);
+  }, [summaryData]);
 
-  const update = (field: keyof SummaryData, value: SummaryData[keyof SummaryData]) => {
-    setSummaryData(prev => ({ ...prev, [field]: value }));
+  // Update field with change tracking
+  const update = useCallback((field: keyof SummaryData, value: SummaryData[keyof SummaryData]) => {
+    setSummaryData(prev => {
+      const newData = { ...prev, [field]: value };
 
+      // Update word count if summary changed
+      if (field === 'summary' && typeof value === 'string') {
+        setWordCount(calculateWordCount(value));
+      }
+
+      // Track unsaved changes
+      setHasUnsavedChanges(true);
+
+      return newData;
+    });
+
+    // Clear related errors
     if (errors.has(field)) {
       setErrors(prev => {
         const next = new Set(prev);
         next.delete(field);
+        if (field === 'summary') {
+          next.delete('summary_too_short');
+          next.delete('summary_too_long');
+        }
+        if (field === 'position') {
+          next.delete('position_required');
+        }
         return next;
       });
     }
-  };
+  }, [errors, calculateWordCount]);
 
-  // Manual save
+  // Enhanced save function with better error handling
   const handleSave = useCallback(async () => {
     if (!validate()) {
+      const errorMessages: string[] = [];
+      if (errors.has('summary')) errorMessages.push('Professional summary is required');
+      if (errors.has('summary_too_short')) errorMessages.push('Summary should be at least 50 characters');
+      if (errors.has('summary_too_long')) errorMessages.push('Summary should not exceed 1000 characters');
+      if (errors.has('position_required')) errorMessages.push('Position is required when position highlight is enabled');
+
       toast({
         title: "Validation Error",
-        description: "Please write a professional summary",
+        description: errorMessages.join('. '),
         variant: "destructive",
       });
       return;
@@ -176,18 +233,25 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
 
     setIsSaving(true);
     try {
-      const useCapital = resumeData && Object.keys(resumeData).some(key => key.startsWith('Rms_'));
-      const cleanedData = cleanDataForFirestore(summaryData);
+      // If onSave prop is provided, use it instead of the internal save logic
+      if (onSave) {
+        await onSave(summaryData.summary);
+      } else {
+        // Internal save logic
+        const useCapital = resumeData && Object.keys(resumeData).some(key => key.startsWith('Rms_'));
+        const cleanedData = cleanDataForFirestore(summaryData);
 
-      const updates: Record<string, string | boolean> = {};
-      updates[useCapital ? 'Rms_summary' : 'rms_summary'] = cleanedData.summary;
-      updates['summary_position_highlight'] = cleanedData.positionHighlight;
-      updates['summary_target_position'] = cleanedData.positionHighlight ? cleanedData.position : '';
-      updates['summary_skills_highlight'] = cleanedData.skillsHighlight;
+        const updates: Record<string, string | boolean> = {};
+        updates[useCapital ? 'Rms_summary' : 'rms_summary'] = cleanedData.summary;
+        updates['summary_position_highlight'] = cleanedData.positionHighlight;
+        updates['summary_target_position'] = cleanedData.positionHighlight ? cleanedData.position : '';
+        updates['summary_skills_highlight'] = cleanedData.skillsHighlight;
 
-      updateResumeData(updates);
-      await saveResumeData();
+        updateResumeData(updates);
+        await saveResumeData();
+      }
 
+      setHasUnsavedChanges(false);
       toast({
         title: "Success",
         description: "Summary saved successfully",
@@ -200,22 +264,23 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
       console.error('Summary save error:', error);
       toast({
         title: "Error",
-        description: "Failed to save summary",
+        description: error instanceof Error ? error.message : "Failed to save summary",
         variant: "destructive",
       });
     } finally {
       setIsSaving(false);
     }
-  }, [summaryData, resumeData, updateResumeData, saveResumeData, onSaveSuccess, validate, toast]);
+  }, [summaryData, resumeData, updateResumeData, saveResumeData, onSave, onSaveSuccess, validate, errors, toast]);
 
+  // Enhanced AI generation with better error handling and data preparation
   const handleAIWrite = async () => {
     const hasExperience = positions.length > 0;
     const hasSkills = extractedSkills.length > 0;
 
     if (!hasExperience && !hasSkills) {
       toast({
-        title: "Missing Data",
-        description: "Please add experience or skills to your resume first",
+        title: "Insufficient Data",
+        description: "Please add work experience or skills to your resume first to generate an AI summary",
         variant: "destructive",
       });
       return;
@@ -227,6 +292,7 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
     setCurrentAlternativeIndex(0);
 
     try {
+      // Prepare experience data
       const experienceData = [];
       if (resumeData) {
         const experienceCount = parseInt(resumeData['Rms_experience_count'] || '0');
@@ -250,6 +316,7 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
         }
       }
 
+      // Prepare education data
       const educationData = [];
       if (resumeData) {
         const educationCount = parseInt(resumeData['Rms_education_count'] || '0');
@@ -271,6 +338,7 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
         }
       }
 
+      // Prepare comprehensive resume data for AI
       const resumeDataForAI = {
         contact: processedData?.contact || {
           fullName: resumeData?.['Rms_contact_fullName'] || '',
@@ -303,22 +371,28 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
         existingSummary: summaryData.summary,
       });
 
-      update('summary', response.summary);
+      if (response.summary) {
+        update('summary', response.summary);
+        setHasUnsavedChanges(true);
 
-      if (response.alternatives && response.alternatives.length > 0) {
-        setAiAlternatives([response.summary, ...response.alternatives]);
-        setShowAlternatives(true);
+        if (response.alternatives && response.alternatives.length > 0) {
+          setAiAlternatives([response.summary, ...response.alternatives]);
+          setShowAlternatives(true);
+          setCurrentAlternativeIndex(0);
+        }
+
+        toast({
+          title: "Success",
+          description: "AI summary generated successfully! Review and save when ready.",
+        });
+      } else {
+        throw new Error('No summary received from AI service');
       }
-
-      toast({
-        title: "Success",
-        description: "Summary generated successfully!",
-      });
     } catch (error) {
       console.error('AI generation error:', error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to generate summary',
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : 'Failed to generate summary. Please try again.',
         variant: "destructive",
       });
     } finally {
@@ -326,22 +400,35 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
     }
   };
 
-  const handleAlternativeSelect = (index: number) => {
+  // Handle alternative selection
+  const handleAlternativeSelect = useCallback((index: number) => {
     if (aiAlternatives[index]) {
       update('summary', aiAlternatives[index]);
       setCurrentAlternativeIndex(index);
     }
-  };
+  }, [aiAlternatives, update]);
 
-  const navigateAlternative = (direction: 'prev' | 'next') => {
+  // Navigate through alternatives
+  const navigateAlternative = useCallback((direction: 'prev' | 'next') => {
     const newIndex = direction === 'next'
       ? Math.min(currentAlternativeIndex + 1, aiAlternatives.length - 1)
       : Math.max(currentAlternativeIndex - 1, 0);
     handleAlternativeSelect(newIndex);
-  };
+  }, [currentAlternativeIndex, aiAlternatives.length, handleAlternativeSelect]);
 
+  // Check if there's enough content for AI generation
   const hasEnoughContent = positions.length > 0 || extractedSkills.length > 0;
 
+  // Get error messages
+  const getErrorMessage = useCallback(() => {
+    if (errors.has('summary')) return 'Professional summary is required';
+    if (errors.has('summary_too_short')) return 'Summary should be at least 50 characters (currently ' + summaryData.summary.length + ')';
+    if (errors.has('summary_too_long')) return 'Summary should not exceed 1000 characters (currently ' + summaryData.summary.length + ')';
+    if (errors.has('position_required')) return 'Position is required when position highlight is enabled';
+    return '';
+  }, [errors, summaryData.summary.length]);
+
+  // Show loading state
   if (contextLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -361,10 +448,10 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
     }`}>
       {/* Background gradient effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" aria-hidden="true" />
-      
+
       {/* Subtle pattern overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.02),transparent_50%)]" aria-hidden="true" />
-      
+
       <div className="relative">
         {/* Header */}
         <div className="px-6 py-4 bg-white/90 dark:bg-corporate-navy-800/90 backdrop-blur-sm border-b-2 border-corporate-navy-100 dark:border-corporate-navy-700 flex items-center justify-between">
@@ -373,7 +460,18 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
               <FileText className="h-4 w-4 text-white" />
             </div>
             <span>Professional Summary</span>
+            {hasUnsavedChanges && (
+              <div className="w-2 h-2 bg-corporate-amber-500 rounded-full animate-pulse" title="Unsaved changes" />
+            )}
           </h2>
+
+          {/* Word count indicator */}
+          <div className="flex items-center gap-2 text-sm text-corporate-navy-600 dark:text-gray-400">
+            <BookOpen className="h-4 w-4" />
+            <span className={wordCount > 100 ? 'text-corporate-amber-600 dark:text-corporate-amber-400 font-medium' : ''}>
+              {wordCount} words
+            </span>
+          </div>
         </div>
 
         {/* Form Content */}
@@ -383,12 +481,17 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
             <div className="lg:col-span-2 space-y-6">
               {/* Summary Textarea */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-                  Professional Summary <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
+                <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100 flex items-center justify-between">
+                  <span>
+                    Professional Summary <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
+                  </span>
+                  <span className="text-xs text-corporate-navy-500 dark:text-gray-400">
+                    {summaryData.summary.length}/1000 characters
+                  </span>
                 </Label>
                 <div className={`
                   rounded-lg border-2 transition-all duration-200
-                  ${errors.has('summary') 
+                  ${errors.size > 0
                     ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
                     : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
                   }
@@ -397,16 +500,17 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
                   <Textarea
                     value={summaryData.summary}
                     onChange={(e) => update('summary', e.target.value)}
-                    placeholder="Experienced global early-stage executive with economics and mathematics degree from the University of Wisconsin. Passion for building inspiring companies people love through industry-leading design, development, branding, and making big bets."
+                    placeholder="Write a compelling professional summary that highlights your key achievements, skills, and career objectives. Example: Experienced software engineer with 5+ years developing scalable web applications. Proven track record of leading cross-functional teams and delivering high-quality solutions that drive business growth."
                     className="border-0 bg-transparent focus:ring-0 focus:border-0 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 p-4 resize-none min-h-[180px]"
                     rows={8}
                     disabled={isSaving}
+                    maxLength={1000}
                   />
                 </div>
-                {errors.has('summary') && (
+                {errors.size > 0 && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
                     <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                    Please write a professional summary
+                    {getErrorMessage()}
                   </p>
                 )}
               </div>
@@ -414,9 +518,9 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
               {/* AI Alternatives Navigation */}
               {showAlternatives && aiAlternatives.length > 1 && (
                 <div className="bg-corporate-amber-50/50 dark:bg-corporate-amber-900/20 rounded-xl p-4 border-2 border-corporate-amber-200 dark:border-corporate-amber-800">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium text-corporate-amber-800 dark:text-corporate-amber-300">
-                      Alternative {currentAlternativeIndex + 1} of {aiAlternatives.length}
+                      AI Alternative {currentAlternativeIndex + 1} of {aiAlternatives.length}
                     </span>
                     <div className="flex items-center gap-1">
                       <Button
@@ -439,22 +543,37 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
                       </Button>
                     </div>
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                    {aiAlternatives.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleAlternativeSelect(index)}
+                        className={`px-3 py-1 text-xs rounded-full transition-all ${
+                          index === currentAlternativeIndex
+                            ? 'bg-corporate-amber-200 dark:bg-corporate-amber-800 text-corporate-amber-900 dark:text-corporate-amber-100'
+                            : 'bg-corporate-amber-100 dark:bg-corporate-amber-900/40 text-corporate-amber-700 dark:text-corporate-amber-300 hover:bg-corporate-amber-150 dark:hover:bg-corporate-amber-900/60'
+                        }`}
+                      >
+                        Option {index + 1}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
             {/* AI Summary Writer */}
             <div className="lg:col-span-1">
-              <div className="bg-white/90 dark:bg-corporate-navy-800/90 rounded-xl p-6 border-2 border-corporate-navy-100 dark:border-corporate-navy-700 space-y-6">
+              <div className="bg-white/90 dark:bg-corporate-navy-800/90 rounded-xl p-6 border-2 border-corporate-navy-100 dark:border-corporate-navy-700 space-y-6 sticky top-6">
                 <div>
                   <h3 className="text-lg font-semibold text-corporate-navy-900 dark:text-gray-100 mb-2 flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-corporate-amber-500" />
                     AI Summary Writer
                   </h3>
                   <p className="text-sm text-corporate-navy-600 dark:text-gray-400">
-                    AI writer helps you to write your summary for a{' '}
-                    <span className="text-corporate-amber-600 dark:text-corporate-amber-400 font-medium">targeted job position</span>.
-                    Strange result? Just regenerate!
+                    Generate a professional summary tailored to your{' '}
+                    <span className="text-corporate-amber-600 dark:text-corporate-amber-400 font-medium">target position</span>{' '}
+                    and highlighting your key skills.
                   </p>
                 </div>
 
@@ -463,14 +582,16 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-                        Position Highlight
+                        Target Position
                       </Label>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-corporate-navy-500 dark:text-gray-400">from resume</span>
+                        <span className="text-xs text-corporate-navy-500 dark:text-gray-400">
+                          {positions.length > 0 ? 'from resume' : 'none found'}
+                        </span>
                         <Switch
                           checked={summaryData.positionHighlight}
                           onCheckedChange={(checked) => update('positionHighlight', checked)}
-                          disabled={isSaving}
+                          disabled={isSaving || positions.length === 0}
                           className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
                         />
                       </div>
@@ -478,15 +599,18 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
 
                     <div className={`
                       flex items-center rounded-lg border-2 transition-all duration-200
-                      ${!summaryData.positionHighlight ? 'opacity-50' : ''}
-                      ${'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'}
+                      ${!summaryData.positionHighlight || positions.length === 0 ? 'opacity-50' : ''}
+                      ${errors.has('position_required') 
+                        ? 'border-red-500 dark:border-red-400' 
+                        : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+                      }
                       ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
                     `}>
                       <Target className="h-4 w-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 mr-2 flex-shrink-0" />
                       <select
                         value={summaryData.position}
                         onChange={(e) => update('position', e.target.value)}
-                        disabled={!summaryData.positionHighlight || isSaving}
+                        disabled={!summaryData.positionHighlight || positions.length === 0 || isSaving}
                         className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 px-0 pr-3 w-full"
                       >
                         {positions.length === 0 ? (
@@ -500,6 +624,7 @@ export default function SummaryForm({ onSaveSuccess }: SummaryFormProps) {
                           </>
                         )}
                       </select>
+
                     </div>
                   </div>
 

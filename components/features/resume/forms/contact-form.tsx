@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Save, Loader2, Mail, Phone, Globe, MapPin } from "lucide-react";
 import { Switch } from '@/components/shared/switch';
@@ -75,24 +75,50 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
     register,
     watch,
     setValue,
-    getValues,
-    formState: { errors }
+    handleSubmit,
+    reset,
+    formState: { errors, isDirty }
   } = useForm<ContactFormData>({
     defaultValues: initialData,
     mode: 'onChange'
   });
 
-  // Manual save
-  const handleSave = async () => {
+  // Reset form when initialData changes (when switching resumes)
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
+
+  // Watch all form values for real-time updates
+  const watchedValues = watch();
+
+  // Auto-save when form data changes (debounced)
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        await onSave(watchedValues);
+        console.log('Auto-saved contact form data:', watchedValues);
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+      }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [watchedValues, isDirty, onSave]);
+
+  // Manual save function using handleSubmit for proper validation
+  const handleManualSave = handleSubmit(async (formData) => {
     try {
       setIsSaving(true);
-      const formData = getValues();
+      console.log('Manual save triggered with data:', formData);
       await onSave(formData);
       toast({
         title: "Success",
         description: "Contact information saved successfully",
       });
     } catch (error) {
+      console.error('Manual save error:', error);
       toast({
         title: "Error",
         description: "Failed to save contact information",
@@ -101,29 +127,37 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
     } finally {
       setIsSaving(false);
     }
-  };
+  });
 
-  // Field handlers with auto-formatting
+  // Field handlers with proper form integration
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhone(cleanValue(e.target.value));
-    setValue('phone', formatted);
+    setValue('phone', formatted, { shouldDirty: true, shouldValidate: true });
   };
 
   const handleLinkedInChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatLinkedIn(e.target.value);
-    setValue('linkedin', formatted);
+    setValue('linkedin', formatted, { shouldDirty: true, shouldValidate: true });
   };
 
   const handleWebsiteBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatWebsite(e.target.value);
-    setValue('website', formatted);
+    setValue('website', formatted, { shouldDirty: true, shouldValidate: true });
   };
 
   const handleCountryChange = (value: string) => {
-    setValue('country', value);
+    setValue('country', value, { shouldDirty: true, shouldValidate: true });
     if (!isStateSelectionEnabled(value)) {
-      setValue('state', '');
+      setValue('state', '', { shouldDirty: true, shouldValidate: true });
     }
+  };
+
+  const handleStateChange = (value: string) => {
+    setValue('state', value, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const handleSwitchChange = (field: keyof ContactFormData, checked: boolean) => {
+    setValue(field, checked as any, { shouldDirty: true, shouldValidate: true });
   };
 
   return (
@@ -134,12 +168,12 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
     }`}>
       {/* Background gradient effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" aria-hidden="true" />
-      
+
       {/* Subtle pattern overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.02),transparent_50%)]" aria-hidden="true" />
-      
+
       <div className="relative bg-white/80 dark:bg-corporate-navy-900/90 backdrop-blur-sm p-6 md:p-8">
-        <form className="space-y-6" aria-busy={isSaving}>
+        <form onSubmit={handleManualSave} className="space-y-6" aria-busy={isSaving}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Full Name */}
           <div className="space-y-2">
@@ -155,7 +189,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
               ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
             `}>
               <Input
-                {...register('fullName', { 
+                {...register('fullName', {
                   required: 'Full name is required',
                   minLength: { value: 2, message: 'Name must be at least 2 characters' }
                 })}
@@ -186,7 +220,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
             `}>
               <Mail className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
               <Input
-                {...register('email', { 
+                {...register('email', {
                   required: 'Email is required',
                   pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
                 })}
@@ -290,7 +324,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
                 <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
                 <Switch
                   checked={watch('showCountry')}
-                  onCheckedChange={(checked) => setValue('showCountry', checked)}
+                  onCheckedChange={(checked) => handleSwitchChange('showCountry', checked)}
                   className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
                 />
               </div>
@@ -328,7 +362,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
                 <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
                 <Switch
                   checked={watch('showState')}
-                  onCheckedChange={(checked) => setValue('showState', checked)}
+                  onCheckedChange={(checked) => handleSwitchChange('showState', checked)}
                   className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
                 />
               </div>
@@ -342,9 +376,9 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
               ${!isStateSelectionEnabled(watch('country')) ? 'opacity-50 cursor-not-allowed' : ''}
               ${isSaving ? 'opacity-60' : ''}
             `}>
-              <Select 
-                value={watch('state')} 
-                onValueChange={(value) => setValue('state', value)}
+              <Select
+                value={watch('state')}
+                onValueChange={handleStateChange}
                 disabled={!isStateSelectionEnabled(watch('country')) || isSaving}
               >
                 <SelectTrigger className="h-10 sm:h-12 border-0 bg-transparent focus:ring-0 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 hover:bg-transparent">
@@ -375,7 +409,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
                 <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
                 <Switch
                   checked={watch('showCity')}
-                  onCheckedChange={(checked) => setValue('showCity', checked)}
+                  onCheckedChange={(checked) => handleSwitchChange('showCity', checked)}
                   className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
                 />
               </div>
@@ -415,7 +449,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
         {/* Save Button */}
         <div className="flex justify-end pt-2">
           <Button
-            onClick={handleSave}
+            type="submit"
             disabled={isSaving}
             className="w-full md:w-auto bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white font-semibold px-6 py-2.5 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
           >
@@ -433,6 +467,13 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
           </Button>
         </div>
         </form>
+
+        {/* Auto-save indicator */}
+        {isDirty && !isSaving && (
+          <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded text-sm">
+            Changes auto-saved
+          </div>
+        )}
       </div>
     </div>
   );

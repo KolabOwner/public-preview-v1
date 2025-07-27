@@ -47,21 +47,92 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
       }
     }
 
-    // Default visibility - only show sections with content
+    // Default visibility - will be updated when resumeData loads
     return {
-      contact: true, // Always show contact
-      experience: true, // Core sections default to true
-      education: true,
-      skills: true,
-      projects: false, // Additional sections default to false
+      contact: true, // Always show contact as fallback
+      experience: false,
+      education: false,
+      skills: false,
+      projects: false,
       involvement: false,
       coursework: false,
       certifications: false,
       summary: false,
-      'cover-letter': true,
-      preview: true,
+      'cover-letter': true, // Always show cover letter
+      preview: true, // Always show preview
     };
   });
+
+  // Function to check if a section has content
+  const sectionHasContent = useCallback((section: string): boolean => {
+    if (!resumeData) return false;
+
+    switch (section) {
+      case 'contact':
+        // Check both unified format and RMS format
+        return (resumeData.contactInfo && (
+          resumeData.contactInfo.fullName ||
+          resumeData.contactInfo.email ||
+          resumeData.contactInfo.phone
+        )) || (
+          resumeData.Rms_contact_fullName ||
+          resumeData.rms_contact_fullName ||
+          resumeData.Rms_contact_email ||
+          resumeData.rms_contact_email
+        );
+
+      case 'experience':
+        // Check unified format and RMS format
+        return (resumeData.experiences && resumeData.experiences.length > 0) ||
+               (resumeData.Rms_experience_count > 0) ||
+               (resumeData.rms_experience_count > 0);
+
+      case 'education':
+        // Check unified format and RMS format
+        return (resumeData.education && resumeData.education.length > 0) ||
+               (resumeData.Rms_education_count > 0) ||
+               (resumeData.rms_education_count > 0);
+
+      case 'skills':
+        // Check both skillCategories (legacy) and skills (unified)
+        return (resumeData.skillCategories && resumeData.skillCategories.length > 0) ||
+               (resumeData.skills && resumeData.skills.length > 0) ||
+               (resumeData.Rms_skill_count > 0) ||
+               (resumeData.rms_skill_count > 0);
+
+      case 'projects':
+        return (resumeData.projects && resumeData.projects.length > 0) ||
+               (resumeData.Rms_project_count > 0) ||
+               (resumeData.rms_project_count > 0);
+
+      case 'involvement':
+        return (resumeData.involvements && resumeData.involvements.length > 0) ||
+               (resumeData.Rms_involvement_count > 0) ||
+               (resumeData.rms_involvement_count > 0);
+
+      case 'coursework':
+        return (resumeData.coursework && resumeData.coursework.length > 0) ||
+               (resumeData.Rms_coursework_count > 0) ||
+               (resumeData.rms_coursework_count > 0);
+
+      case 'certifications':
+        return (resumeData.certifications && resumeData.certifications.length > 0) ||
+               (resumeData.Rms_certification_count > 0) ||
+               (resumeData.rms_certification_count > 0);
+
+      case 'summary':
+        return (resumeData.summary && resumeData.summary.trim().length > 0) ||
+               (resumeData.rms_summary && resumeData.rms_summary.trim().length > 0) ||
+               (resumeData.Rms_summary && resumeData.Rms_summary.trim().length > 0);
+
+      case 'preview':
+        return true; // Always show preview
+      case 'cover-letter':
+        return true; // Always show cover letter option
+      default:
+        return false;
+    }
+  }, [resumeData]);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -91,18 +162,24 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
       const hasSavedPreferences = saved && saved !== '{}';
 
       if (!hasSavedPreferences) {
-        // Auto-hide sections without content
+        // Auto-detect ALL sections with content
         setTabVisibility(prev => ({
           ...prev,
+          contact: true, // Always show contact
+          experience: sectionHasContent('experience'),
+          education: sectionHasContent('education'),
+          skills: sectionHasContent('skills'),
           projects: sectionHasContent('projects'),
           involvement: sectionHasContent('involvement'),
           coursework: sectionHasContent('coursework'),
           certifications: sectionHasContent('certifications'),
           summary: sectionHasContent('summary'),
+          'cover-letter': true, // Always show cover letter
+          preview: true, // Always show preview
         }));
       }
     }
-  }, [resumeData, resumeId]);
+  }, [resumeData, resumeId, sectionHasContent]);
 
   // Fetch resumes for dropdown
   useEffect(() => {
@@ -146,7 +223,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
         const resumeDoc = await getDoc(doc(db, 'resumes', resumeId));
         if (resumeDoc.exists()) {
           const data = resumeDoc.data();
-          
+
           setCurrentResume({
             id: resumeDoc.id,
             title: data.title || 'Untitled Resume',
@@ -184,42 +261,6 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
     // Navigate to the same section in the new resume
     router.push(`/dashboard/resumes/${newResumeId}/${section}`);
     setShowResumeDropdown(false);
-  };
-
-  // Function to check if a section has content
-  const sectionHasContent = (section: string): boolean => {
-    if (!resumeData) return false;
-
-    switch (section) {
-      case 'contact':
-        return resumeData.contactInfo && (
-          resumeData.contactInfo.fullName ||
-          resumeData.contactInfo.email ||
-          resumeData.contactInfo.phone
-        );
-      case 'experience':
-        return resumeData.experiences && resumeData.experiences.length > 0;
-      case 'education':
-        return resumeData.education && resumeData.education.length > 0;
-      case 'skills':
-        return resumeData.skillCategories && resumeData.skillCategories.length > 0;
-      case 'projects':
-        return resumeData.projects && resumeData.projects.length > 0;
-      case 'involvement':
-        return resumeData.involvements && resumeData.involvements.length > 0;
-      case 'coursework':
-        return resumeData.coursework && resumeData.coursework.length > 0;
-      case 'certifications':
-        return resumeData.certifications && resumeData.certifications.length > 0;
-      case 'summary':
-        return resumeData.summary && resumeData.summary.length > 0;
-      case 'preview':
-        return true; // Always show preview
-      case 'cover-letter':
-        return true; // Always show cover letter option
-      default:
-        return false;
-    }
   };
 
   // Toggle tab visibility
@@ -321,7 +362,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
                               {resume.isTargeted && (
-                                <span className="text-xs uppercase text-resume-blue-400 mr-1">[TARGETED]</span>
+                                <span className="text-xs uppercase text-orange-400 mr-1">[TARGETED]</span>
                               )}
                               {resume.title}
                             </div>
@@ -357,7 +398,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                   href={tab.href}
                   className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 ${
                     isActive 
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/30' 
+                      ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-500/30' 
                       : 'text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100'
                   } cursor-pointer`}
                 >
@@ -393,12 +434,12 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                         </div>
                         <button
                           onClick={() => {
-                            // Reset visibility to match content
+                            // Reset visibility to actually match content detection
                             setTabVisibility({
-                              contact: true,
-                              experience: true,
-                              education: true,
-                              skills: true,
+                              contact: true, // Always show contact
+                              experience: sectionHasContent('experience'),
+                              education: sectionHasContent('education'),
+                              skills: sectionHasContent('skills'),
                               projects: sectionHasContent('projects'),
                               involvement: sectionHasContent('involvement'),
                               coursework: sectionHasContent('coursework'),
@@ -610,7 +651,7 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-200">
                         {resume.isTargeted && (
-                          <span className="text-xs uppercase text-resume-blue-400 mr-1">[TARGETED]</span>
+                          <span className="text-xs uppercase text-orange-400 mr-1">[TARGETED]</span>
                         )}
                         {resume.title}
                       </div>
