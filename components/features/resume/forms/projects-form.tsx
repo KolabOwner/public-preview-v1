@@ -90,19 +90,23 @@ const convertToFormFormat = (entries: ProjectEntry[]): ProjectFormEntry[] => {
 
 // Convert form format to store format
 const convertToStoreFormat = (formData: ProjectFormData): ProjectEntry[] => {
-  return formData.entries.map(entry => ({
-    id: entry.id || '',
-    title: entry.title || '',
-    organization: entry.organization || '',
-    startDate: entry.startDate || '',
-    endDate: entry.endDate || '',
-    current: entry.current || false,
-    url: entry.url || '',
-    description: entry.description || '',
-    bulletPoints: entry.bulletPoints 
+  return formData.entries.map(entry => {
+    const bulletPoints = entry.bulletPoints 
       ? entry.bulletPoints.map(bp => bp.value).filter(v => v && v.trim())
-      : [],
-  }));
+      : [];
+    
+    return {
+      id: entry.id || '',
+      title: entry.title || '',
+      organization: entry.organization || '',
+      startDate: entry.startDate || '',
+      endDate: entry.endDate || '',
+      current: entry.current || false,
+      url: entry.url || '',
+      description: bulletPoints.length > 0 ? bulletPoints.join('\n• ') : (entry.description || ''),
+      bulletPoints: bulletPoints,
+    };
+  });
 };
 
 export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps) {

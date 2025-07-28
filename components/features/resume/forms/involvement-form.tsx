@@ -28,6 +28,7 @@ const involvementEntrySchema = z.object({
   startDate: z.string().min(1, "Start date is required."),
   endDate: z.string().optional(),
   current: z.boolean(),
+  description: z.string().optional(),
   bulletPoints: z.array(bulletPointSchema).optional(),
 }).refine(data => !data.current ? !!data.endDate?.trim() : true, {
   message: "End date is required unless it's a current involvement.",
@@ -70,6 +71,7 @@ const convertToFormFormat = (entries: InvolvementEntry[]): InvolvementFormEntry[
       location: cleanValue(entry.location),
       startDate: cleanValue(entry.startDate),
       endDate: cleanValue(entry.endDate),
+      description: cleanValue(entry.description),
       bulletPoints: bulletPoints.length > 0 ? bulletPoints.map((bp: any) => ({ value: bp })) : [{ value: '' }],
     };
   });
@@ -85,6 +87,7 @@ const convertToStoreFormat = (formData: InvolvementFormData): InvolvementEntry[]
     startDate: entry.startDate || '',
     endDate: entry.endDate || '',
     current: entry.current || false,
+    description: entry.description || '',
     bulletPoints: entry.bulletPoints 
       ? entry.bulletPoints.map(bp => bp.value).filter(v => v && v.trim())
       : [],
@@ -112,6 +115,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
             startDate: '',
             endDate: '',
             current: false,
+            description: '',
             bulletPoints: [{ value: '' }]
           }]
     },
@@ -202,6 +206,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
       startDate: '',
       endDate: '',
       current: false,
+      description: '',
       bulletPoints: [{ value: '' }]
     });
     setActiveIndex(fields.length);
@@ -238,6 +243,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
       setValue(`entries.${activeIndex}.startDate`, entry.startDate || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.endDate`, entry.endDate || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.current`, entry.current || false, { shouldDirty: false });
+      setValue(`entries.${activeIndex}.description`, entry.description || '', { shouldDirty: false });
       setValue(`entries.${activeIndex}.bulletPoints`, entry.bulletPoints || [{ value: '' }], { shouldDirty: false });
       
       // Reset navigation flag after a short delay
@@ -426,47 +432,26 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
             </div>
           </div>
 
-          {/* Activities / Responsibilities */}
+          {/* Description */}
           <div className="space-y-2">
             <Label className="resume-label">
-              Activities & Responsibilities
+              Description
             </Label>
-            <div className="space-y-3">
-              {bulletPointFields.map((field, bulletIndex) => (
-                <div key={field.id} className="resume-bullet-item group">
-                  <GripVertical className="resume-bullet-grip" />
-                  <div className={`resume-bullet-input ${isSaving ? 'resume-input-container--disabled' : ''}`}>
-                    <Textarea
-                      {...register(`entries.${activeIndex}.bulletPoints.${bulletIndex}.value`)}
-                      placeholder="• Managed annual budget of $50,000 and increased event attendance by 40%"
-                      className="resume-textarea min-h-[60px]"
-                      rows={2}
-                      disabled={isSaving}
-                    />
-                  </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => removeBulletPoint(bulletIndex)} 
-                    disabled={isSaving}
-                    className="resume-bullet-remove"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => appendBulletPoint({ value: '' })} 
+            <div className={`resume-input-container ${errors.entries?.[activeIndex]?.description ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
+              <Textarea
+                {...register(`entries.${activeIndex}.description`)}
+                placeholder="Brief description of the organization or your involvement..."
+                className="resume-textarea min-h-[120px]"
+                rows={4}
                 disabled={isSaving}
-                className="resume-button-secondary w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Activity
-              </Button>
+              />
             </div>
+            {errors.entries?.[activeIndex]?.description && (
+              <p className="resume-error-message">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                {errors.entries[activeIndex]?.description?.message}
+              </p>
+            )}
           </div>
 
           {/* Action Buttons */}

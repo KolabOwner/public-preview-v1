@@ -262,6 +262,23 @@ export default function ResumePreview({
   const formatDate = (date: string | Date | null | undefined, format?: string) => {
     if (!date) return '';
 
+    // Handle Firestore Timestamp objects
+    if (typeof date === 'object' && date !== null && 'seconds' in date) {
+      const dateObj = new Date(date.seconds * 1000);
+      if (format === 'MMM YYYY') {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+      } else if (format === 'YYYY') {
+        return dateObj.getFullYear().toString();
+      } else {
+        return dateObj.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long'
+        });
+      }
+    }
+
     if (typeof date === 'string') {
       if (date.toLowerCase() === 'present') return 'Present';
       const dateObj = new Date(date);
@@ -275,6 +292,22 @@ export default function ResumePreview({
         return dateObj.getFullYear().toString();
       } else {
         return dateObj.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long'
+        });
+      }
+    }
+
+    // Handle Date objects
+    if (date instanceof Date) {
+      if (format === 'MMM YYYY') {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[date.getMonth()]} ${date.getFullYear()}`;
+      } else if (format === 'YYYY') {
+        return date.getFullYear().toString();
+      } else {
+        return date.toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'long'
         });
@@ -358,7 +391,7 @@ export default function ResumePreview({
       experience: safeArray(resumeData.experiences || resumeData.experience).length > 0 && (
         <ResumeSection key="experience" title={getSectionTitle('experience', currentTemplate)} styles={inlineStyles}>
           {safeArray(resumeData.experiences || resumeData.experience).map((exp: any, idx: number) => (
-            <div key={exp.id || idx} className="resume-experience-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
+            <div key={exp.id || idx} className="resume-experience-block" style={{ marginBottom: currentTemplate === 'alternative' ? '2rem' : `${resumeStyles.spacing.blockGap}rem` }}>
               {currentTemplate === 'modern' ? (
                 <>
                   <div style={{ marginBottom: '0.1rem' }}>
@@ -395,6 +428,53 @@ export default function ResumePreview({
                     </span>
                   </div>
                 </>
+              ) : currentTemplate === 'alternative' ? (
+                <>
+                  {/* Two-column layout for Alternative template */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.5rem', alignItems: 'start' }}>
+                    {/* Left column: Job title, dates */}
+                    <div style={{ paddingRight: '0.5rem' }}>
+                      <h3 style={{ ...inlineStyles.jobTitle, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.jobTitle * 0.9}pt`, fontStyle: 'normal', fontFamily: 'inherit', fontWeight: 700 }}>
+                        {decodeHTMLEntities(exp.position || exp.title || 'Position')}
+                      </h3>
+                      <div style={{ ...inlineStyles.detailText, fontSize: `${resumeStyles.fontSizes.detail * 0.95}pt`, color: '#6b7280' }}>
+                        {formatDate(exp.dateBegin || exp.startDate)} - {formatDate(exp.dateEnd || exp.endDate)}
+                      </div>
+                    </div>
+                    
+                    {/* Right column: Company, location, description */}
+                    <div>
+                      <div style={{ position: 'relative', paddingLeft: '1rem' }}>
+                        <div style={{ 
+                          position: 'absolute', 
+                          left: 0, 
+                          top: '0.2rem', 
+                          width: '6px', 
+                          height: '6px', 
+                          backgroundColor: '#9ca3af', 
+                          borderRadius: '50%' 
+                        }} />
+                        <div style={{ ...inlineStyles.bodyText, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.body * 0.9}pt`, fontStyle: 'normal' }}>
+                          <span style={{ fontWeight: 700, fontStyle: 'normal' }}>{decodeHTMLEntities(exp.company || 'Company')}</span>
+                          {exp.location && (
+                            <>
+                              <span style={{ margin: '0 0.3rem' }}>|</span>
+                              <span style={{ fontStyle: 'normal' }}>{decodeHTMLEntities(exp.location)}</span>
+                            </>
+                          )}
+                        </div>
+                        {(exp.bulletPoints || exp.description) && (
+                          <div style={{ ...inlineStyles.bodyText, fontSize: `${resumeStyles.fontSizes.body * 0.85}pt`, lineHeight: 1.3 }}>
+                            {/* Convert bullet points to single paragraph */}
+                            {exp.bulletPoints && exp.bulletPoints.length > 0 
+                              ? exp.bulletPoints.join(' ') 
+                              : exp.description || ''}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <>
                   <div style={{ marginBottom: '0.05rem' }}>
@@ -411,7 +491,7 @@ export default function ResumePreview({
                   </div>
                 </>
               )}
-              {(exp.bulletPoints || exp.description) && (
+              {(exp.bulletPoints || exp.description) && currentTemplate !== 'alternative' && (
                 <BulletList
                   items={exp.bulletPoints && exp.bulletPoints.length > 0 
                     ? exp.bulletPoints 
@@ -467,6 +547,38 @@ export default function ResumePreview({
                         GPA: {edu.gpa}
                       </div>
                     )}
+                  </>
+                ) : currentTemplate === 'alternative' ? (
+                  <>
+                    {/* Two-column layout for Alternative template - Education */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.5rem', alignItems: 'start' }}>
+                      {/* Left column: Degree */}
+                      <div style={{ paddingRight: '0.5rem' }}>
+                        <div className="resume-degree-title" style={{ ...inlineStyles.jobTitle, fontSize: `${resumeStyles.fontSizes.jobTitle * 0.9}pt` }}>
+                          {edu.qualification && edu.fieldOfStudy ?
+                            `${edu.qualification} in ${edu.fieldOfStudy}` :
+                            edu.qualification || edu.degree || 'Degree'}
+                        </div>
+                      </div>
+                      
+                      {/* Right column: School, location, date, GPA */}
+                      <div>
+                        <div className="resume-school-info" style={{ ...inlineStyles.bodyText, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.body * 0.9}pt`, fontStyle: 'normal' }}>
+                          <span style={{ fontWeight: 500, fontStyle: 'normal' }}>{institutionName}</span>
+                          {location && (
+                            <>
+                              <span style={{ margin: '0 0.3rem' }}>|</span>
+                              <span style={{ fontStyle: 'normal' }}>{location}</span>
+                            </>
+                          )}
+                        </div>
+                        <div style={{ ...inlineStyles.detailText, fontSize: `${resumeStyles.fontSizes.detail * 0.85}pt` }}>
+                          {edu.date && formatDate(edu.date, edu.dateFormat)}
+                          {edu.gpa && edu.date && <span style={{ margin: '0 0.3rem' }}>|</span>}
+                          {edu.gpa && <span>GPA: {edu.gpa}</span>}
+                        </div>
+                      </div>
+                    </div>
                   </>
                 ) : currentTemplate === 'minimal' || currentTemplate === 'bold' ? (
                   <>
@@ -548,34 +660,81 @@ export default function ResumePreview({
         <ResumeSection key="projects" title={getSectionTitle('projects', currentTemplate)} styles={inlineStyles}>
           {safeArray(resumeData.projects).map((project: any, idx: number) => (
             <div key={project.id || idx} className="resume-project-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
-              <div style={{ marginBottom: '0.05rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <h3 className="resume-project-title" style={inlineStyles.jobTitle}>
-                    {project.title || project.name || 'Project'}
-                  </h3>
-                  {(project.dateBegin || project.dateEnd) && (
-                    <span className="resume-date" style={inlineStyles.date}>
-                      {formatDate(project.dateBegin)} {project.dateBegin && project.dateEnd && '—'} {formatDate(project.dateEnd)}
-                    </span>
+              {currentTemplate === 'alternative' ? (
+                <>
+                  {/* Two-column layout for Alternative template - Projects */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.5rem', alignItems: 'start' }}>
+                    {/* Left column: Project title */}
+                    <div style={{ paddingRight: '0.5rem' }}>
+                      <h3 className="resume-project-title" style={{ ...inlineStyles.jobTitle, fontSize: `${resumeStyles.fontSizes.jobTitle * 0.9}pt` }}>
+                        {project.title || project.name || 'Project'}
+                      </h3>
+                    </div>
+                    
+                    {/* Right column: Organization, dates, description */}
+                    <div>
+                      {project.organization && (
+                        <div className="resume-company" style={{ ...inlineStyles.bodyText, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.body * 0.9}pt`, fontStyle: 'normal' }}>
+                          <span style={{ fontWeight: 500, fontStyle: 'normal' }}>{decodeHTMLEntities(project.organization)}</span>
+                          {(project.dateBegin || project.dateEnd) && (
+                            <>
+                              <span style={{ margin: '0 0.3rem' }}>|</span>
+                              <span style={{ fontStyle: 'normal' }}>{formatDate(project.dateBegin)} {project.dateBegin && project.dateEnd && '—'} {formatDate(project.dateEnd)}</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      {!project.organization && (project.dateBegin || project.dateEnd) && (
+                        <div style={{ ...inlineStyles.detailText, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.detail * 0.85}pt` }}>
+                          {formatDate(project.dateBegin)} {project.dateBegin && project.dateEnd && '—'} {formatDate(project.dateEnd)}
+                        </div>
+                      )}
+                      {project.description && (
+                        <div style={{ ...inlineStyles.bodyText, fontSize: `${resumeStyles.fontSizes.body * 0.85}pt`, lineHeight: 1.3 }}>
+                          {/* Convert bullet points to single paragraph */}
+                          {parseBulletPoints(project.description).join(' ')}
+                        </div>
+                      )}
+                      {project.repository && (
+                        <div style={{ ...inlineStyles.detailText, marginTop: '0.1rem', fontSize: `${resumeStyles.fontSizes.detail * 0.85}pt` }}>
+                          <span style={{ fontWeight: 600 }}>Repository:</span> {project.repository}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '0.05rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <h3 className="resume-project-title" style={inlineStyles.jobTitle}>
+                        {project.title || project.name || 'Project'}
+                      </h3>
+                      {(project.dateBegin || project.dateEnd) && (
+                        <span className="resume-date" style={inlineStyles.date}>
+                          {formatDate(project.dateBegin)} {project.dateBegin && project.dateEnd && '—'} {formatDate(project.dateEnd)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {project.organization && (
+                    <div className="resume-company" style={{ ...inlineStyles.bodyText, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
+                      {decodeHTMLEntities(project.organization)}
+                    </div>
                   )}
-                </div>
-              </div>
-              {project.organization && (
-                <div className="resume-company" style={{ ...inlineStyles.bodyText, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
-                  {decodeHTMLEntities(project.organization)}
-                </div>
-              )}
-              {project.description && (
-                <BulletList
-                  items={parseBulletPoints(project.description)}
-                  styles={inlineStyles}
-                />
-              )}
-              {project.repository && (
-                <div className="resume-skills-category" style={{ ...inlineStyles.detailText, marginTop: `${resumeStyles.spacing.bulletGap}rem` }}>
-                  <span style={{ fontWeight: 700 }}>Repository:</span>{' '}
-                  {project.repository}
-                </div>
+                  {project.description && (
+                    <BulletList
+                      items={parseBulletPoints(project.description)}
+                      styles={inlineStyles}
+                    />
+                  )}
+                  {project.repository && (
+                    <div className="resume-skills-category" style={{ ...inlineStyles.detailText, marginTop: `${resumeStyles.spacing.bulletGap}rem` }}>
+                      <span style={{ fontWeight: 700 }}>Repository:</span>{' '}
+                      {project.repository}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ))}
@@ -613,39 +772,84 @@ export default function ResumePreview({
         <ResumeSection key="involvement" title={getSectionTitle('involvement', currentTemplate)} styles={inlineStyles}>
           {safeArray(resumeData.involvement).map((inv: any, idx: number) => (
             <div key={inv.id || idx} className="resume-involvement-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
-              {/* Role title */}
-              <div className="flex gap-2">
-                <h3 className="resume-involvement-title" style={inlineStyles.jobTitle}>
-                  {inv.role || 'Role'}
-                </h3>
-              </div>
-              
-              {/* Location, Organization, and Dates on same line with bullet separators */}
-              <div className="flex justify-between gap-2 font-semibold">
-                <div className="flex flex-wrap" style={{ ...inlineStyles.detailText, fontWeight: 'normal', fontSize: '0.65em', lineHeight: '1.5' }}>
-                  {inv.location && (
-                    <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
-                      {inv.location}
-                    </span>
+              {currentTemplate === 'alternative' ? (
+                <>
+                  {/* Two-column layout for Alternative template - Involvement */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.5rem', alignItems: 'start' }}>
+                    {/* Left column: Role title, dates */}
+                    <div style={{ paddingRight: '0.5rem' }}>
+                      <div style={{ position: 'relative', paddingLeft: '1rem' }}>
+                        <div style={{ 
+                          position: 'absolute', 
+                          left: 0, 
+                          top: '0.2rem', 
+                          width: '6px', 
+                          height: '6px', 
+                          backgroundColor: '#9ca3af', 
+                          borderRadius: '50%' 
+                        }} />
+                        <h3 className="resume-involvement-title" style={{ ...inlineStyles.jobTitle, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.jobTitle * 0.9}pt` }}>
+                          {inv.role || 'Role'}
+                        </h3>
+                        <div style={{ ...inlineStyles.detailText, fontSize: `${resumeStyles.fontSizes.detail * 0.85}pt` }}>
+                          {formatDate(inv.dateBegin)}{inv.dateBegin && inv.dateEnd && ' - '}{formatDate(inv.dateEnd)}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Right column: Organization, location, description */}
+                    <div>
+                      <div style={{ ...inlineStyles.bodyText, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.body * 0.9}pt`, fontStyle: 'normal' }}>
+                        {inv.organization && <span style={{ fontWeight: 500, fontStyle: 'normal' }}>{inv.organization}</span>}
+                        {inv.organization && inv.location && <span style={{ margin: '0 0.3rem' }}>|</span>}
+                        {inv.location && <span style={{ fontStyle: 'normal' }}>{inv.location}</span>}
+                      </div>
+                      {inv.description && (
+                        <div style={{ ...inlineStyles.bodyText, fontSize: `${resumeStyles.fontSizes.body * 0.85}pt`, lineHeight: 1.3 }}>
+                          {/* Convert bullet points to single paragraph */}
+                          {parseBulletPoints(inv.description).join(' ')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Role title */}
+                  <div className="flex gap-2">
+                    <h3 className="resume-involvement-title" style={inlineStyles.jobTitle}>
+                      {inv.role || 'Role'}
+                    </h3>
+                  </div>
+                  
+                  {/* Location, Organization, and Dates on same line with bullet separators */}
+                  <div className="flex justify-between gap-2 font-semibold">
+                    <div className="flex flex-wrap" style={{ ...inlineStyles.detailText, fontWeight: 'normal', fontSize: '0.65em', lineHeight: '1.5' }}>
+                      {inv.location && (
+                        <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
+                          {inv.location}
+                        </span>
+                      )}
+                      {inv.organization && (
+                        <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
+                          {inv.organization}
+                        </span>
+                      )}
+                      {(inv.dateBegin || inv.dateEnd) && (
+                        <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
+                          {formatDate(inv.dateBegin)}{inv.dateBegin && inv.dateEnd && ' - '}{formatDate(inv.dateEnd)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {inv.description && (
+                    <BulletList
+                      items={parseBulletPoints(inv.description)}
+                      styles={inlineStyles}
+                    />
                   )}
-                  {inv.organization && (
-                    <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
-                      {inv.organization}
-                    </span>
-                  )}
-                  {(inv.dateBegin || inv.dateEnd) && (
-                    <span className="flex before:mr-1 before:ml-1 before:content-['•'] before:first:hidden before:first:ml-0">
-                      {formatDate(inv.dateBegin)}{inv.dateBegin && inv.dateEnd && ' - '}{formatDate(inv.dateEnd)}
-                    </span>
-                  )}
-                </div>
-              </div>
-              
-              {inv.description && (
-                <BulletList
-                  items={parseBulletPoints(inv.description)}
-                  styles={inlineStyles}
-                />
+                </>
               )}
             </div>
           ))}
@@ -798,6 +1002,136 @@ export default function ResumePreview({
       ),
     };
 
+    // Alternative template uses two-column layout
+    if (currentTemplate === 'alternative') {
+      return (
+        <div className="resume-container" style={inlineStyles.container}>
+          {/* Triangular gradient background */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '35%',
+            zIndex: -1,
+            overflow: 'hidden'
+          }}>
+            {/* Left triangle - light blue */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(147, 197, 253, 0.1)',
+              clipPath: 'polygon(0% 0%, 40% 0%, 40% 50%, 0% 100%)',
+              zIndex: -2
+            }} />
+            
+            {/* Right triangle - light green */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(134, 239, 172, 0.1)',
+              clipPath: 'polygon(40% 0%, 100% 0%, 100% 100%, 40% 50%)',
+              zIndex: -1
+            }} />
+          </div>
+          
+          <div style={{
+            padding: resumeStyles.spacing.documentPadding,
+            minHeight: '11in',
+            boxSizing: 'border-box',
+            position: 'relative'
+          }}>
+            {/* Contact Information - Always First */}
+            <header>
+              {/* Split name into first and last for Alternative template */}
+              {(() => {
+                const nameParts = fullName.split(' ');
+                const firstName = nameParts[0] || '';
+                const lastName = nameParts.slice(1).join(' ') || '';
+                
+                return (
+                  <div>
+                    <div className="resume-name" style={{
+                      ...inlineStyles.name,
+                      fontSize: `${resumeStyles.fontSizes.name * 1.1}pt`,
+                      lineHeight: 1.1,
+                      marginBottom: '0.1rem'
+                    }}>
+                      {firstName}
+                    </div>
+                    {lastName && (
+                      <div className="resume-name" style={{
+                        ...inlineStyles.name,
+                        fontSize: `${resumeStyles.fontSizes.name * 1.1}pt`,
+                        lineHeight: 1.1,
+                        marginBottom: '0.3rem'
+                      }}>
+                        {lastName}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+              
+              <div className="resume-contact" style={{
+                ...inlineStyles.contact,
+                paddingBottom: '1rem'
+              }}>
+                {contact.city && contact.state && (
+                  <>
+                    <span>{contact.city}, {contact.state}</span>
+                    {contact.country && contact.country !== 'United States' && <span>, {contact.country}</span>}
+                    {(contact.email || contact.phone || contact.linkedin) && <span> • </span>}
+                  </>
+                )}
+                {contact.email && (
+                  <>
+                    <span>{contact.email}</span>
+                    {(contact.phone || contact.linkedin) && <span> • </span>}
+                  </>
+                )}
+                {contact.phone && (
+                  <>
+                    <span>{contact.phone}</span>
+                    {contact.linkedin && <span> • </span>}
+                  </>
+                )}
+                {contact.linkedin && (
+                  <span>in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                )}
+              </div>
+            </header>
+
+            {/* Two-column layout for sections */}
+            <InlineDraggableSectionsContainer>
+              {sectionOrder
+                .filter(sectionId => sectionComponents[sectionId])
+                .map((sectionId, index) => (
+                  <InlineDraggableSection
+                    key={sectionId}
+                    sectionId={sectionId}
+                    index={index}
+                    onReorder={handleSectionReorder}
+                    className="mb-4 mt-3"
+                    style={{ minHeight: '2rem' }}
+                  >
+                    {sectionComponents[sectionId]}
+                  </InlineDraggableSection>
+                ))
+              }
+            </InlineDraggableSectionsContainer>
+          </div>
+        </div>
+      );
+    }
+
+    // Default layout for other templates
     return (
       <div className="resume-container" style={inlineStyles.container}>
         <div style={{

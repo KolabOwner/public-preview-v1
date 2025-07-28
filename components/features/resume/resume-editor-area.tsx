@@ -1,4 +1,4 @@
-// components/resume/resume-editor-tabs-area.tsx
+// components/resume/resume-editor-area.tsx
 'use client';
 
 import React, { useEffect, useCallback } from 'react';
@@ -530,7 +530,7 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
   return unified;
 };
 
-const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
+export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
   const pathname = usePathname();
   const { initializeResume, resumeData, saveStatus, resumeId } = useResumeStore();
 
@@ -654,7 +654,6 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
       case 'summary':
         return (
           <SummaryForm
-            key={`summary-${resume.id}`}
             initialData={stringToSummaryData(resumeData.summary)}
             onSave={handleSummaryChange}
           />
@@ -770,5 +769,3 @@ const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: Resume
     </FormWrapper>
   );
 });
-
-export default ResumeEditorArea;

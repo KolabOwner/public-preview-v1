@@ -154,7 +154,6 @@ resumeContent: `
                     style={{ fontWeight: 600 }}
                     defaultValue="business"
                   >
-                    <option value="pro">Pro</option>
                     <option value="business">Business</option>
                     <option value="programming">Programming</option>
                     <option value="engineering">Engineering</option>
@@ -174,21 +173,7 @@ resumeContent: `
             {/* Desktop Category Tabs */}
             <div className="hidden w-full sm:flex">
               <nav className="flex content-center gap-2 self-stretch flex-wrap min-h-[32px]">
-                <a id="unsafe-nav-0" aria-label="Pro" href="/dashboard/samples/pro">
-                  <div
-                    className="rounded-md bg-secondary hover:bg-secondary/80 focus:bg-secondary/90 flex items-center h-6 px-2 text-xs cursor-pointer text-secondary-foreground flex relative h-6 text-xs font-semibold leading-4 font-sans-pro uppercase py-0 px-2 transition-all duration-200 ease-in-out whitespace-nowrap items-center rounded-md tracking-[.12px]"
-                    role="button"
-                    tabIndex={0}
-                    aria-disabled={false}
-                  >
-                    <div className="flex items-center justify-center gap-x-2">
-                      <span className="uppercase text-xs font-semibold text-center whitespace-nowrap overflow-hidden text-ellipsis w-full">
-                        Pro
-                      </span>
-                    </div>
-                  </div>
-                </a>
-                <a id="unsafe-nav-1" aria-label="Business" href="/dashboard/samples/business">
+                <a id="unsafe-nav-0" aria-label="Business" href="/dashboard/samples/business">
                   <div
                     className="rounded-md bg-primary hover:bg-primary/90 focus:bg-primary/95 flex items-center h-6 px-2 text-xs cursor-pointer text-primary-foreground flex relative h-6 text-xs font-semibold leading-4 font-sans-pro uppercase py-0 px-2 transition-all duration-200 ease-in-out whitespace-nowrap items-center rounded-md tracking-[.12px]"
                     role="button"
@@ -215,7 +200,7 @@ resumeContent: `
                   { label: 'Legal', href: '/dashboard/samples/legal' },
                   { label: 'Other', href: '/dashboard/samples/other' },
                 ].map((item, index) => (
-                  <a key={index} id={`unsafe-nav-${index + 2}`} aria-label={item.label} href={item.href}>
+                  <a key={index} id={`unsafe-nav-${index + 1}`} aria-label={item.label} href={item.href}>
                     <div
                       className="rounded-md bg-secondary hover:bg-secondary/80 focus:bg-secondary/90 flex items-center h-6 px-2 text-xs cursor-pointer text-secondary-foreground flex relative h-6 text-xs font-semibold leading-4 font-sans-pro uppercase py-0 px-2 transition-all duration-200 ease-in-out whitespace-nowrap items-center rounded-md tracking-[.12px]"
                       role="button"

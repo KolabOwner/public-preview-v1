@@ -56,3 +56,5 @@ my-rms-validator-firebase-adminsdk-*.json
 
 # Scripts (development only)
 scripts/
+pdfs/
+

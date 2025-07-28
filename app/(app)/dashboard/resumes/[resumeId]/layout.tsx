@@ -224,15 +224,29 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
         if (resumeDoc.exists()) {
           const data = resumeDoc.data();
 
-          setCurrentResume({
+          const newCurrentResume = {
             id: resumeDoc.id,
             title: data.title || 'Untitled Resume',
             isTargeted: data.isTargeted || false,
+          };
+
+          // Only update if actually different to prevent unnecessary re-renders
+          setCurrentResume(prev => {
+            if (!prev || prev.id !== newCurrentResume.id || prev.title !== newCurrentResume.title) {
+              return newCurrentResume;
+            }
+            return prev;
           });
 
           // Set resume data for content detection - try multiple data sources
           const resumeDataToSet = data.parsedData || data.data || data.rmsRawData || {};
-          setResumeData(resumeDataToSet);
+          setResumeData(prev => {
+            // Only update if data has actually changed
+            if (JSON.stringify(prev) !== JSON.stringify(resumeDataToSet)) {
+              return resumeDataToSet;
+            }
+            return prev;
+          });
         }
       } catch (error) {
         console.error('Error fetching current resume:', error);

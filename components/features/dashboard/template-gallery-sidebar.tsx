@@ -42,7 +42,7 @@ const TEMPLATE_IMAGES: Record<string, string> = {
   professional: "/images/templates/StandardTemplate.png",
   creative: "/images/templates/BoldTemplate.png",
   minimal: "/images/templates/CompactTemplate.png",
-  executive: "/images/templates/AlternativeTemplate.png",
+  alternative: "/images/templates/AlternativeTemplate.png",
   academic: "/images/templates/creative-1.png",
   technical: "/images/templates/ModernTemplate.png",
   bold: "/images/templates/BoldTemplate.png"
@@ -54,8 +54,8 @@ const RECOMMENDED_TEMPLATE_IDS = ["professional", "modern", "minimal", "bold"] a
 // Memoized template data
 const getTemplateData = () => {
   const recommended = RECOMMENDED_TEMPLATE_IDS.map(id => RESUME_TEMPLATES[id]).filter(Boolean);
-  const executive = RESUME_TEMPLATES["executive"];
-  return { recommended, executive };
+  const alternative = RESUME_TEMPLATES["alternative"];
+  return { recommended, alternative };
 };
 
 // Optimized Template Card Component
@@ -219,7 +219,7 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
   disabled = false,
   resumeId
 }) => {
-  const [activeTab, setActiveTab] = useState<"recommended" | "executive">("recommended");
+  const [activeTab, setActiveTab] = useState<"recommended" | "alternative">("recommended");
   const [isLoading, setIsLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -333,9 +333,9 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
             )}
           </button>
           <button
-            onClick={() => setActiveTab("executive")}
+            onClick={() => setActiveTab("alternative")}
             className={`flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative ${
-              activeTab === "executive"
+              activeTab === "alternative"
                 ? "text-blue-400 bg-slate-800/50"
                 : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/30"
             }`}
@@ -343,9 +343,9 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
           >
             <div className="flex items-center justify-center gap-2">
               <Award className="w-4 h-4" />
-              EXECUTIVE
+              ALTERNATIVE
             </div>
-            {activeTab === "executive" && (
+            {activeTab === "alternative" && (
               <motion.div
                 layoutId="activeTab"
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500"
@@ -410,19 +410,19 @@ const TemplateGallerySidebar = memo<TemplateGallerySidebarProps>(({
                 </motion.div>
               ) : (
                 <motion.div
-                  key="executive"
+                  key="alternative"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                   className="space-y-4"
                 >
-                  {templateData.executive && (
+                  {templateData.alternative && (
                     <TemplateCard
-                      template={templateData.executive}
-                      isSelected={selectedTemplate === templateData.executive.id}
+                      template={templateData.alternative}
+                      isSelected={selectedTemplate === templateData.alternative.id}
                       onSelect={handleTemplateSelect}
-                      canAccess={canAccessTemplate(templateData.executive.id)}
+                      canAccess={canAccessTemplate(templateData.alternative.id)}
                       disabled={disabled}
                       isLoading={isLoading}
                     />

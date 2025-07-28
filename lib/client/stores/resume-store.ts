@@ -74,6 +74,7 @@ export interface InvolvementEntry {
   startDate: string;
   endDate?: string;
   current: boolean;
+  description?: string;
   bulletPoints: string[];
 }
 
@@ -305,6 +306,7 @@ const convertToRawFormat = (unifiedData: UnifiedResumeData): any => {
       raw[`Rms_involvement_${index}_location`] = inv.location || '';
       raw[`Rms_involvement_${index}_dateBegin`] = inv.startDate || '';
       raw[`Rms_involvement_${index}_dateEnd`] = inv.endDate || '';
+      raw[`Rms_involvement_${index}_description`] = inv.description || '';
     });
   } else {
     raw.Rms_involvement_count = 0;
@@ -343,16 +345,19 @@ export const useResumeStore = create<ResumeStore>()(
       // Initialize resume data
       initializeResume: (resumeId: string, data: UnifiedResumeData) => {
         set((state) => {
-          state.resumeId = resumeId;
-          state.resumeData = { ...data };
-          state.originalData = { ...data };
-          state.dirtyState = createDefaultDirtyState();
-          state.saveStatus = {
-            isSaving: false,
-            lastSaved: null,
-            pendingSections: [],
-            error: null
-          };
+          // Only initialize if actually switching to a different resume
+          if (state.resumeId !== resumeId) {
+            state.resumeId = resumeId;
+            state.resumeData = { ...data };
+            state.originalData = { ...data };
+            state.dirtyState = createDefaultDirtyState();
+            state.saveStatus = {
+              isSaving: false,
+              lastSaved: null,
+              pendingSections: [],
+              error: null
+            };
+          }
         });
       },
 

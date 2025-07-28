@@ -1768,13 +1768,13 @@ export class PDFGenerator {
         body: 0.8,
         detail: 0.7,
       },
-      executive: {
-        name: 1.45,
+      alternative: {
+        name: 1.8,
         contact: 0.65,
         sectionHeader: 0.95,
-        jobTitle: 0.85,
-        body: 0.75,
-        detail: 0.65,
+        jobTitle: 0.8,
+        body: 0.7,
+        detail: 0.6,
       },
       academic: {
         name: 1.3,
