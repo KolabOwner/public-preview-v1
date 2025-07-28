@@ -264,7 +264,7 @@ export default function ResumePreview({
 
     // Handle Firestore Timestamp objects
     if (typeof date === 'object' && date !== null && 'seconds' in date) {
-      const dateObj = new Date(date.seconds * 1000);
+      const dateObj = new Date((date as any).seconds * 1000);
       if (format === 'MMM YYYY') {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

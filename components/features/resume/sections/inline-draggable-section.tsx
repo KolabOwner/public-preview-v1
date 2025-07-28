@@ -8,6 +8,7 @@ interface InlineDraggableSectionProps {
   onReorder: (dragIndex: number, dropIndex: number) => void;
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export const InlineDraggableSection: React.FC<InlineDraggableSectionProps> = ({
@@ -15,7 +16,8 @@ export const InlineDraggableSection: React.FC<InlineDraggableSectionProps> = ({
   index,
   onReorder,
   children,
-  className = ''
+  className = '',
+  style
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [showHandle, setShowHandle] = useState(false);
@@ -80,7 +82,8 @@ export const InlineDraggableSection: React.FC<InlineDraggableSectionProps> = ({
         onDrop={handleDrop}
         style={{
           opacity: isDragging ? 0.5 : 1,
-          transition: 'opacity 0.2s ease'
+          transition: 'opacity 0.2s ease',
+          ...style
         }}
       >
       {/* Hover zone with integrated drag handle */}
