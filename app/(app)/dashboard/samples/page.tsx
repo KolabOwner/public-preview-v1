@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SampleCard from '@/components/features/resume/samples/SampleCard';
 import { TemplateClient } from '@/lib/client/services/template/template-client';
+import { Industry } from '@/types/template.types';
 
 export interface Sample {
   id: number;
@@ -14,7 +15,31 @@ export interface Sample {
   template?: any;
 }
 
-type Category = 'business' | 'programming' | 'engineering' | 'marketing' | 'design' | 'student' | 'medical' | 'finance' | 'education' | 'legal' | 'other';
+// Categories for UI display
+type Category = Industry | 'student' | 'medical';
+
+// Map categories to industries (some categories map to existing industries)
+const categoryToIndustryMap: Record<Category, Industry> = {
+  business: 'business',
+  programming: 'programming',
+  engineering: 'engineering',
+  marketing: 'marketing',
+  design: 'design',
+  student: 'education', // Map student to education industry
+  medical: 'healthcare', // Map medical to healthcare industry
+  finance: 'finance',
+  education: 'education',
+  legal: 'legal',
+  other: 'other',
+  technology: 'technology',
+  healthcare: 'healthcare',
+  creative: 'creative',
+  hospitality: 'hospitality',
+  retail: 'retail',
+  manufacturing: 'manufacturing',
+  nonprofit: 'nonprofit',
+  government: 'government',
+};
 
 const CATEGORIES = [
   { key: 'business' as Category, label: 'Business' },
@@ -61,9 +86,11 @@ export default function SamplesPage() {
     setErrors(prev => ({ ...prev, [category]: null }));
 
     try {
+      // Map category to industry for the API call
+      const industry = categoryToIndustryMap[category];
       const [resumeTemplates, coverLetterTemplates] = await Promise.all([
-        TemplateClient.getSamplesForIndustry(category, 'resume'),
-        TemplateClient.getSamplesForIndustry(category, 'cover_letter')
+        TemplateClient.getSamplesForIndustry(industry, 'resume'),
+        TemplateClient.getSamplesForIndustry(industry, 'cover_letter')
       ]);
       
       const resumeSamples = resumeTemplates.map(template => ({
