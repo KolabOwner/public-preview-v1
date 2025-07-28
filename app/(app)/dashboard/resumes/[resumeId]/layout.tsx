@@ -1,191 +1,177 @@
 'use client';
 
-import React, { useState, useEffect, useRef, memo, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from "@/components/shared/theme-provider";
-import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, doc, getDoc, DocumentData } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
 
+// ==================== TYPES ====================
 interface Resume {
   id: string;
   title: string;
-  isTargeted?: boolean;
+  isTargeted: boolean;
 }
 
-const ResumeEditorLayout = memo(function ResumeEditorLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const pathname = usePathname();
-  const params = useParams();
-  const router = useRouter();
-  const resumeId = params.resumeId as string;
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showResumeDropdown, setShowResumeDropdown] = useState(false);
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [currentResume, setCurrentResume] = useState<Resume | null>(null);
-  const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const userMenuRef = useRef<HTMLDivElement>(null);
-  const resumeDropdownRef = useRef<HTMLDivElement>(null);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
-  const [resumeData, setResumeData] = useState<any>(null);
-  const [tabVisibility, setTabVisibility] = useState<Record<string, boolean>>(() => {
-    // Load saved preferences from localStorage - scoped to this resume
-    if (typeof window !== 'undefined' && resumeId) {
-      const saved = localStorage.getItem(`resumeTabVisibility_${resumeId}`);
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error('Error parsing saved tab visibility:', e);
-        }
-      }
-    }
+interface TabConfig {
+  key: string;
+  label: string;
+  href: string;
+  category: 'editor' | 'action';
+  alwaysVisible?: boolean;
+}
 
-    // Default visibility - will be updated when resumeData loads
-    return {
-      contact: true, // Always show contact as fallback
-      experience: false,
-      education: false,
-      skills: false,
-      projects: false,
-      involvement: false,
-      coursework: false,
-      certifications: false,
-      summary: false,
-      'cover-letter': true, // Always show cover letter
-      preview: true, // Always show preview
-    };
-  });
+interface TabVisibility {
+  [key: string]: boolean;
+}
 
-  // Function to check if a section has content
-  const sectionHasContent = useCallback((section: string): boolean => {
-    if (!resumeData) return false;
+interface ResumeData extends DocumentData {
+  // Unified format
+  contactInfo?: {
+    fullName?: string;
+    email?: string;
+    phone?: string;
+  };
+  experiences?: any[];
+  education?: any[];
+  skills?: any[];
+  skillCategories?: any[];
+  projects?: any[];
+  involvements?: any[];
+  coursework?: any[];
+  certifications?: any[];
+  summary?: string;
 
-    switch (section) {
-      case 'contact':
-        // Check both unified format and RMS format
-        return (resumeData.contactInfo && (
-          resumeData.contactInfo.fullName ||
-          resumeData.contactInfo.email ||
-          resumeData.contactInfo.phone
-        )) || (
-          resumeData.Rms_contact_fullName ||
-          resumeData.rms_contact_fullName ||
-          resumeData.Rms_contact_email ||
-          resumeData.rms_contact_email
-        );
+  // RMS format fields
+  Rms_contact_fullName?: string;
+  rms_contact_fullName?: string;
+  Rms_contact_email?: string;
+  rms_contact_email?: string;
+  Rms_experience_count?: number;
+  rms_experience_count?: number;
+  Rms_education_count?: number;
+  rms_education_count?: number;
+  Rms_skill_count?: number;
+  rms_skill_count?: number;
+  Rms_project_count?: number;
+  rms_project_count?: number;
+  Rms_involvement_count?: number;
+  rms_involvement_count?: number;
+  Rms_coursework_count?: number;
+  rms_coursework_count?: number;
+  Rms_certification_count?: number;
+  rms_certification_count?: number;
+  Rms_summary?: string;
+  rms_summary?: string;
+}
 
-      case 'experience':
-        // Check unified format and RMS format
-        return (resumeData.experiences && resumeData.experiences.length > 0) ||
-               (resumeData.Rms_experience_count > 0) ||
-               (resumeData.rms_experience_count > 0);
+// ==================== CONSTANTS ====================
+const SECTIONS = {
+  CONTACT: 'contact',
+  EXPERIENCE: 'experience',
+  EDUCATION: 'education',
+  SKILLS: 'skills',
+  PROJECTS: 'projects',
+  INVOLVEMENT: 'involvement',
+  COURSEWORK: 'coursework',
+  CERTIFICATIONS: 'certifications',
+  SUMMARY: 'summary',
+  PREVIEW: 'preview',
+  COVER_LETTER: 'cover-letter',
+} as const;
 
-      case 'education':
-        // Check unified format and RMS format
-        return (resumeData.education && resumeData.education.length > 0) ||
-               (resumeData.Rms_education_count > 0) ||
-               (resumeData.rms_education_count > 0);
+const ALWAYS_VISIBLE_SECTIONS = [SECTIONS.CONTACT, SECTIONS.PREVIEW, SECTIONS.COVER_LETTER];
 
-      case 'skills':
-        // Check both skillCategories (legacy) and skills (unified)
-        return (resumeData.skillCategories && resumeData.skillCategories.length > 0) ||
-               (resumeData.skills && resumeData.skills.length > 0) ||
-               (resumeData.Rms_skill_count > 0) ||
-               (resumeData.rms_skill_count > 0);
+const DEFAULT_VISIBILITY: TabVisibility = {
+  contact: true,
+  experience: false,
+  education: false,
+  skills: false,
+  projects: false,
+  involvement: false,
+  coursework: false,
+  certifications: false,
+  summary: false,
+  'cover-letter': true,
+  preview: true,
+};
 
-      case 'projects':
-        return (resumeData.projects && resumeData.projects.length > 0) ||
-               (resumeData.Rms_project_count > 0) ||
-               (resumeData.rms_project_count > 0);
-
-      case 'involvement':
-        return (resumeData.involvements && resumeData.involvements.length > 0) ||
-               (resumeData.Rms_involvement_count > 0) ||
-               (resumeData.rms_involvement_count > 0);
-
-      case 'coursework':
-        return (resumeData.coursework && resumeData.coursework.length > 0) ||
-               (resumeData.Rms_coursework_count > 0) ||
-               (resumeData.rms_coursework_count > 0);
-
-      case 'certifications':
-        return (resumeData.certifications && resumeData.certifications.length > 0) ||
-               (resumeData.Rms_certification_count > 0) ||
-               (resumeData.rms_certification_count > 0);
-
-      case 'summary':
-        return (resumeData.summary && resumeData.summary.trim().length > 0) ||
-               (resumeData.rms_summary && resumeData.rms_summary.trim().length > 0) ||
-               (resumeData.Rms_summary && resumeData.Rms_summary.trim().length > 0);
-
-      case 'preview':
-        return true; // Always show preview
-      case 'cover-letter':
-        return true; // Always show cover letter option
-      default:
-        return false;
-    }
-  }, [resumeData]);
-
-  // Close menus when clicking outside
+// ==================== CUSTOM HOOKS ====================
+const useClickOutside = (refs: React.RefObject<HTMLElement>[], callback: () => void) => {
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setShowUserMenu(false);
-      }
-      if (resumeDropdownRef.current && !resumeDropdownRef.current.contains(event.target as Node)) {
-        setShowResumeDropdown(false);
-      }
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setShowMoreMenu(false);
-      }
-    }
+    const handleClickOutside = (event: MouseEvent) => {
+      const isOutside = refs.every(ref => ref.current && !ref.current.contains(event.target as Node));
+      if (isOutside) callback();
+    };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [refs, callback]);
+};
 
-  // Update tab visibility based on content when resume data loads
+const useResumeData = (resumeId: string | undefined) => {
+  const { user } = useAuth();
+  const [resume, setResume] = useState<Resume | null>(null);
+  const [resumeData, setResumeData] = useState<ResumeData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
   useEffect(() => {
-    if (resumeData && resumeId) {
-      // Only update visibility for sections that don't have saved preferences
-      const saved = localStorage.getItem(`resumeTabVisibility_${resumeId}`);
-      const hasSavedPreferences = saved && saved !== '{}';
-
-      if (!hasSavedPreferences) {
-        // Auto-detect ALL sections with content
-        setTabVisibility(prev => ({
-          ...prev,
-          contact: true, // Always show contact
-          experience: sectionHasContent('experience'),
-          education: sectionHasContent('education'),
-          skills: sectionHasContent('skills'),
-          projects: sectionHasContent('projects'),
-          involvement: sectionHasContent('involvement'),
-          coursework: sectionHasContent('coursework'),
-          certifications: sectionHasContent('certifications'),
-          summary: sectionHasContent('summary'),
-          'cover-letter': true, // Always show cover letter
-          preview: true, // Always show preview
-        }));
-      }
+    if (!resumeId || !user) {
+      setLoading(false);
+      return;
     }
-  }, [resumeData, resumeId, sectionHasContent]);
 
-  // Fetch resumes for dropdown
+    const fetchResume = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const resumeDoc = await getDoc(doc(db, 'resumes', resumeId));
+        if (!resumeDoc.exists()) {
+          throw new Error('Resume not found');
+        }
+
+        const data = resumeDoc.data();
+
+        // Extract resume metadata
+        setResume({
+          id: resumeDoc.id,
+          title: data.title || 'Untitled Resume',
+          isTargeted: data.isTargeted || false,
+        });
+
+        // Extract resume data from various possible sources
+        const extractedData = data.parsedData || data.data || data.rmsRawData || {};
+        setResumeData(extractedData);
+      } catch (err) {
+        setError(err as Error);
+        console.error('Error fetching resume:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResume();
+  }, [resumeId, user]);
+
+  return { resume, resumeData, loading, error };
+};
+
+const useResumesList = () => {
+  const { user } = useAuth();
+  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const fetchResumes = async () => {
-      if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
+    const fetchResumes = async () => {
       try {
         const resumesQuery = query(
           collection(db, 'resumes'),
@@ -194,291 +180,469 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
         );
 
         const querySnapshot = await getDocs(resumesQuery);
-        const resumeData: Resume[] = [];
+        const resumesData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          title: doc.data().title || 'Untitled Resume',
+          isTargeted: doc.data().isTargeted || false,
+        }));
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          resumeData.push({
-            id: doc.id,
-            title: data.title || 'Untitled Resume',
-            isTargeted: data.isTargeted || false,
-          });
-        });
-
-        setResumes(resumeData);
+        setResumes(resumesData);
       } catch (error) {
         console.error('Error fetching resumes:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchResumes();
   }, [user]);
 
-  // Fetch current resume details
-  useEffect(() => {
-    const fetchCurrentResume = async () => {
-      if (!resumeId || !user) return;
+  return { resumes, loading };
+};
 
+const useTabVisibility = (resumeId: string | undefined, resumeData: ResumeData | null) => {
+  const storageKey = resumeId ? `resumeTabVisibility_${resumeId}` : null;
+
+  const [visibility, setVisibility] = useState<TabVisibility>(() => {
+    if (!storageKey || typeof window === 'undefined') return DEFAULT_VISIBILITY;
+
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
       try {
-        const resumeDoc = await getDoc(doc(db, 'resumes', resumeId));
-        if (resumeDoc.exists()) {
-          const data = resumeDoc.data();
-
-          const newCurrentResume = {
-            id: resumeDoc.id,
-            title: data.title || 'Untitled Resume',
-            isTargeted: data.isTargeted || false,
-          };
-
-          // Only update if actually different to prevent unnecessary re-renders
-          setCurrentResume(prev => {
-            if (!prev || prev.id !== newCurrentResume.id || prev.title !== newCurrentResume.title) {
-              return newCurrentResume;
-            }
-            return prev;
-          });
-
-          // Set resume data for content detection - try multiple data sources
-          const resumeDataToSet = data.parsedData || data.data || data.rmsRawData || {};
-          setResumeData(prev => {
-            // Only update if data has actually changed
-            if (JSON.stringify(prev) !== JSON.stringify(resumeDataToSet)) {
-              return resumeDataToSet;
-            }
-            return prev;
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching current resume:', error);
+        return JSON.parse(saved);
+      } catch {
+        return DEFAULT_VISIBILITY;
       }
-    };
+    }
 
-    fetchCurrentResume();
-  }, [resumeId, user]);
+    return DEFAULT_VISIBILITY;
+  });
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
+  const sectionHasContent = useCallback((section: string): boolean => {
+    if (!resumeData) return false;
 
-  const handleLogout = async () => {
+    switch (section) {
+      case SECTIONS.CONTACT:
+        return !!(
+          (resumeData.contactInfo?.fullName || resumeData.contactInfo?.email || resumeData.contactInfo?.phone) ||
+          (resumeData.Rms_contact_fullName || resumeData.rms_contact_fullName ||
+           resumeData.Rms_contact_email || resumeData.rms_contact_email)
+        );
+
+      case SECTIONS.EXPERIENCE:
+        return !!(
+          (resumeData.experiences && resumeData.experiences.length > 0) ||
+          (resumeData.Rms_experience_count && resumeData.Rms_experience_count > 0) ||
+          (resumeData.rms_experience_count && resumeData.rms_experience_count > 0)
+        );
+
+      case SECTIONS.EDUCATION:
+        return !!(
+          (resumeData.education && resumeData.education.length > 0) ||
+          (resumeData.Rms_education_count && resumeData.Rms_education_count > 0) ||
+          (resumeData.rms_education_count && resumeData.rms_education_count > 0)
+        );
+
+      case SECTIONS.SKILLS:
+        return !!(
+          (resumeData.skillCategories && resumeData.skillCategories.length > 0) ||
+          (resumeData.skills && resumeData.skills.length > 0) ||
+          (resumeData.Rms_skill_count && resumeData.Rms_skill_count > 0) ||
+          (resumeData.rms_skill_count && resumeData.rms_skill_count > 0)
+        );
+
+      case SECTIONS.PROJECTS:
+        return !!(
+          (resumeData.projects && resumeData.projects.length > 0) ||
+          (resumeData.Rms_project_count && resumeData.Rms_project_count > 0) ||
+          (resumeData.rms_project_count && resumeData.rms_project_count > 0)
+        );
+
+      case SECTIONS.INVOLVEMENT:
+        return !!(
+          (resumeData.involvements && resumeData.involvements.length > 0) ||
+          (resumeData.Rms_involvement_count && resumeData.Rms_involvement_count > 0) ||
+          (resumeData.rms_involvement_count && resumeData.rms_involvement_count > 0)
+        );
+
+      case SECTIONS.COURSEWORK:
+        return !!(
+          (resumeData.coursework && resumeData.coursework.length > 0) ||
+          (resumeData.Rms_coursework_count && resumeData.Rms_coursework_count > 0) ||
+          (resumeData.rms_coursework_count && resumeData.rms_coursework_count > 0)
+        );
+
+      case SECTIONS.CERTIFICATIONS:
+        return !!(
+          (resumeData.certifications && resumeData.certifications.length > 0) ||
+          (resumeData.Rms_certification_count && resumeData.Rms_certification_count > 0) ||
+          (resumeData.rms_certification_count && resumeData.rms_certification_count > 0)
+        );
+
+      case SECTIONS.SUMMARY:
+        return !!(
+          (resumeData.summary?.trim()) ||
+          (resumeData.rms_summary?.trim()) ||
+          (resumeData.Rms_summary?.trim())
+        );
+
+      case SECTIONS.PREVIEW:
+      case SECTIONS.COVER_LETTER:
+        return true;
+
+      default:
+        return false;
+    }
+  }, [resumeData]);
+
+  // Auto-detect content on data load
+  useEffect(() => {
+    if (!resumeData || !storageKey) return;
+
+    const saved = localStorage.getItem(storageKey);
+    if (!saved || saved === '{}') {
+      const autoDetected = Object.keys(DEFAULT_VISIBILITY).reduce((acc, key) => ({
+        ...acc,
+        [key]: ALWAYS_VISIBLE_SECTIONS.includes(key as any) || sectionHasContent(key)
+      }), {} as TabVisibility);
+
+      setVisibility(autoDetected);
+    }
+  }, [resumeData, storageKey, sectionHasContent]);
+
+  const toggleVisibility = useCallback((tab: string) => {
+    setVisibility(prev => {
+      const updated = { ...prev, [tab]: !prev[tab] };
+      if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+      }
+      return updated;
+    });
+  }, [storageKey]);
+
+  const resetVisibility = useCallback(() => {
+    const autoDetected = Object.keys(DEFAULT_VISIBILITY).reduce((acc, key) => ({
+      ...acc,
+      [key]: ALWAYS_VISIBLE_SECTIONS.includes(key as any) || sectionHasContent(key)
+    }), {} as TabVisibility);
+
+    setVisibility(autoDetected);
+    if (storageKey) {
+      localStorage.removeItem(storageKey);
+    }
+  }, [storageKey, sectionHasContent]);
+
+  return { visibility, toggleVisibility, resetVisibility, sectionHasContent };
+};
+
+// ==================== COMPONENTS ====================
+interface NavigationDropdownProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const NavigationDropdown = memo<NavigationDropdownProps>(({ isOpen, onClose, children, className = '' }) => {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0" style={{ zIndex: 999998 }} onClick={onClose} />
+      <div
+        className={`absolute top-full mt-2 bg-white dark:bg-corporate-navy-800 rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 shadow-2xl ${className}`}
+        style={{ zIndex: 999999 }}
+      >
+        {children}
+      </div>
+    </>
+  );
+});
+
+NavigationDropdown.displayName = 'NavigationDropdown';
+
+interface TabButtonProps {
+  tab: TabConfig;
+  isActive: boolean;
+  onClick?: () => void;
+}
+
+const TabButton = memo<TabButtonProps>(({ tab, isActive, onClick }) => {
+  const className = `rounded-md inline-flex items-center gap-1 group relative text-xs leading-4 h-6 px-2 transition-all ${
+    isActive 
+      ? tab.category === 'editor' 
+        ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-500/30' 
+        : 'bg-orange-600 text-white'
+      : 'text-gray-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400'
+  } cursor-pointer`;
+
+  const content = (
+    <div className="w-full overflow-hidden">
+      <p className="font-semibold uppercase truncate">
+        {tab.key === SECTIONS.PREVIEW ? 'Finish up & Preview' : tab.label}
+      </p>
+    </div>
+  );
+
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={tab.href} className={className}>
+      {content}
+    </Link>
+  );
+});
+
+TabButton.displayName = 'TabButton';
+
+interface MobileMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}
+
+const MobileMenu = memo<MobileMenuProps>(({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 sm:hidden" onClick={onClose}>
+      <div
+        className="absolute bottom-0 left-0 right-0 bg-white dark:bg-corporate-navy-800 rounded-t-2xl border-t border-corporate-navy-200 dark:border-corporate-navy-700 p-4 max-h-[80vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="w-12 h-1 bg-corporate-navy-300 dark:bg-gray-600 rounded-full mx-auto mb-4" />
+        <h3 className="text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 mb-3">{title}</h3>
+        {children}
+      </div>
+    </div>
+  );
+});
+
+MobileMenu.displayName = 'MobileMenu';
+
+// ==================== MAIN COMPONENT ====================
+const ResumeEditorLayout = memo(function ResumeEditorLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const params = useParams();
+  const router = useRouter();
+  const resumeId = params.resumeId as string | undefined;
+
+  // Auth and theme
+  const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
+
+  // UI state
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showResumeDropdown, setShowResumeDropdown] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+
+  // Refs for click outside handling
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const resumeDropdownRef = useRef<HTMLDivElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  // Data hooks
+  const { resume: currentResume, resumeData, loading: resumeLoading } = useResumeData(resumeId);
+  const { resumes } = useResumesList();
+  const { visibility, toggleVisibility, resetVisibility, sectionHasContent } = useTabVisibility(resumeId, resumeData);
+
+  // Close dropdowns on outside click
+  useClickOutside(
+    [userMenuRef, resumeDropdownRef, moreMenuRef],
+    () => {
+      setShowUserMenu(false);
+      setShowResumeDropdown(false);
+      setShowMoreMenu(false);
+    }
+  );
+
+  // Tab configuration
+  const allTabs = useMemo<TabConfig[]>(() => {
+    if (!resumeId) return [];
+
+    return [
+      { key: SECTIONS.CONTACT, label: 'Contact', href: `/dashboard/resumes/${resumeId}/contact`, category: 'editor' },
+      { key: SECTIONS.EXPERIENCE, label: 'Experience', href: `/dashboard/resumes/${resumeId}/experience`, category: 'editor' },
+      { key: SECTIONS.EDUCATION, label: 'Education', href: `/dashboard/resumes/${resumeId}/education`, category: 'editor' },
+      { key: SECTIONS.PROJECTS, label: 'Projects', href: `/dashboard/resumes/${resumeId}/projects`, category: 'editor' },
+      { key: SECTIONS.INVOLVEMENT, label: 'Involvement', href: `/dashboard/resumes/${resumeId}/involvement`, category: 'editor' },
+      { key: SECTIONS.SKILLS, label: 'Skills', href: `/dashboard/resumes/${resumeId}/skills`, category: 'editor' },
+      { key: SECTIONS.COURSEWORK, label: 'Coursework', href: `/dashboard/resumes/${resumeId}/coursework`, category: 'editor' },
+      { key: SECTIONS.CERTIFICATIONS, label: 'Certifications', href: `/dashboard/resumes/${resumeId}/certifications`, category: 'editor' },
+      { key: SECTIONS.SUMMARY, label: 'Summary', href: `/dashboard/resumes/${resumeId}/summary`, category: 'editor' },
+      { key: SECTIONS.PREVIEW, label: 'Preview', href: `/dashboard/resumes/${resumeId}/preview`, category: 'action' },
+      { key: SECTIONS.COVER_LETTER, label: 'Cover Letter', href: `/dashboard/resumes/${resumeId}/cover-letter`, category: 'action' },
+    ];
+  }, [resumeId]);
+
+  const { editorTabs, actionTabs, visibleTabs } = useMemo(() => {
+    const editor = allTabs.filter(tab => tab.category === 'editor');
+    const action = allTabs.filter(tab => tab.category === 'action');
+    const visible = editor.filter(tab => tab.key === SECTIONS.CONTACT || visibility[tab.key]);
+
+    return { editorTabs: editor, actionTabs: action, visibleTabs: visible };
+  }, [allTabs, visibility]);
+
+  // Handlers
+  const handleResumeSwitch = useCallback((newResumeId: string) => {
+    const section = pathname.split('/').pop() || 'contact';
+    router.push(`/dashboard/resumes/${newResumeId}/${section}`);
+    setShowResumeDropdown(false);
+  }, [pathname, router]);
+
+  const handleLogout = useCallback(async () => {
     try {
       await logout();
       setShowUserMenu(false);
     } catch (error) {
       console.error('Error during logout:', error);
     }
-  };
+  }, [logout]);
 
-  const handleResumeSwitch = (newResumeId: string) => {
-    // Get the current section from the pathname
-    const section = pathname.split('/').pop() || 'contact';
-    // Navigate to the same section in the new resume
-    router.push(`/dashboard/resumes/${newResumeId}/${section}`);
-    setShowResumeDropdown(false);
-  };
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  }, [theme, setTheme]);
 
-  // Toggle tab visibility
-  const toggleTabVisibility = (tab: string) => {
-    setTabVisibility(prev => {
-      const newVisibility = {
-        ...prev,
-        [tab]: !prev[tab]
-      };
-
-      // Save to localStorage - scoped to this resume
-      if (typeof window !== 'undefined' && resumeId) {
-        localStorage.setItem(`resumeTabVisibility_${resumeId}`, JSON.stringify(newVisibility));
-      }
-
-      return newVisibility;
-    });
-  };
-
-  // Resume editor tabs
-  const allEditorTabs = [
-    { label: 'Contact', href: `/dashboard/resumes/${resumeId}/contact`, key: 'contact' },
-    { label: 'Experience', href: `/dashboard/resumes/${resumeId}/experience`, key: 'experience' },
-    { label: 'Education', href: `/dashboard/resumes/${resumeId}/education`, key: 'education' },
-    { label: 'Projects', href: `/dashboard/resumes/${resumeId}/projects`, key: 'projects' },
-    { label: 'Involvement', href: `/dashboard/resumes/${resumeId}/involvement`, key: 'involvement' },
-    { label: 'Skills', href: `/dashboard/resumes/${resumeId}/skills`, key: 'skills' },
-    { label: 'Coursework', href: `/dashboard/resumes/${resumeId}/coursework`, key: 'coursework' },
-    { label: 'Certifications', href: `/dashboard/resumes/${resumeId}/certifications`, key: 'certifications' },
-    { label: 'Summary', href: `/dashboard/resumes/${resumeId}/summary`, key: 'summary' },
-    { label: 'Preview', href: `/dashboard/resumes/${resumeId}/preview`, key: 'preview' },
-    { label: 'Cover Letter', href: `/dashboard/resumes/${resumeId}/cover-letter`, key: 'cover-letter' },
-  ];
-
-  // Filter tabs based on content and visibility
-  const editorTabs = allEditorTabs.filter(tab => !['preview', 'cover-letter'].includes(tab.key));
-  const actionTabs = allEditorTabs.filter(tab => ['preview', 'cover-letter'].includes(tab.key));
-
-  const visibleTabs = editorTabs.filter(tab => {
-    // Always show contact
-    if (tab.key === 'contact') return true;
-
-    // Show tab if it's enabled (checked in dropdown)
-    return tabVisibility[tab.key];
-  });
-
-  const hiddenTabs = editorTabs.filter(tab => {
-    // Never hide contact
-    if (tab.key === 'contact') return false;
-
-    // Tab is hidden if disabled (unchecked in dropdown)
-    return !tabVisibility[tab.key];
-  });
-
-  // Find if we're on the main resume page
+  // Check if on main page
   const isMainPage = pathname === `/dashboard/resumes/${resumeId}`;
+
+  if (!resumeId) {
+    return <div>No resume ID provided</div>;
+  }
 
   return (
     <main className="sm:h-full lg:h-auto px-6 lg:px-8 xl:px-10 pt-8 pb-4 lg:pb-6">
       {/* Desktop Navigation */}
       <div className="hidden sm:block">
-
-        {/* Centered Tab Navigation */}
         <div className="flex justify-center mb-8 mt-4 relative" style={{ zIndex: 10 }}>
           <div className="flex flex-row flex-wrap gap-3 justify-center items-center">
-            {/* Resume Selector Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50" style={{ zIndex: 1 }}>
-              <div className="relative" ref={resumeDropdownRef}>
+
+            {/* Resume Selector */}
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 shadow-lg">
+              <div ref={resumeDropdownRef} className="relative">
                 <button
                   onClick={() => setShowResumeDropdown(!showResumeDropdown)}
-                  className="rounded inline-flex items-center gap-1.5 group relative text-[11px] lg:text-xs leading-3 lg:leading-4 h-6 lg:h-7 px-2 lg:px-3 transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-surface-2/80"
+                  className="rounded inline-flex items-center gap-1.5 group relative text-xs h-7 px-3 transition-all text-gray-600 dark:text-gray-300 hover:bg-surface-2/80"
+                  disabled={resumeLoading}
                 >
-                <span className="font-semibold uppercase tracking-wide truncate max-w-[150px] text-[10px] lg:text-[11px]">
-                  {currentResume ? (
-                    <>
-                      {currentResume.isTargeted && '[TARGETED] '}
-                      {currentResume.title}
-                    </>
-                  ) : (
-                    'Loading...'
-                  )}
-                </span>
-                <i className={`fas fa-chevron-${showResumeDropdown ? 'up' : 'down'} text-[10px] transition-transform`}></i>
-              </button>
+                  <span className="font-semibold uppercase tracking-wide truncate max-w-[150px] text-[11px]">
+                    {currentResume ? (
+                      <>
+                        {currentResume.isTargeted && '[TARGETED] '}
+                        {currentResume.title}
+                      </>
+                    ) : resumeLoading ? (
+                      'Loading...'
+                    ) : (
+                      'Resume Not Found'
+                    )}
+                  </span>
+                  <i className={`fas fa-chevron-${showResumeDropdown ? 'up' : 'down'} text-[10px]`} />
+                </button>
 
-                {/* Resume Dropdown Menu */}
-                {showResumeDropdown && (
-                  <div className="absolute top-full left-0 mt-2 min-w-[280px] max-w-sm bg-white dark:bg-navy-800 rounded-lg border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-400/20 dark:shadow-navy-900/50 backdrop-blur-sm"
-                       style={{ zIndex: 9999999 }}>
-                    <div className="py-2 max-h-96 overflow-y-auto">
-                      {resumes.map((resume) => (
-                        <button
-                          key={resume.id}
-                          onClick={() => handleResumeSwitch(resume.id)}
-                          className={`w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 ${
-                            resume.id === resumeId ? 'bg-surface-3/30' : ''
-                          }`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
-                              {resume.isTargeted && (
-                                <span className="text-xs uppercase text-orange-400 mr-1">[TARGETED]</span>
-                              )}
-                              {resume.title}
-                            </div>
-                          </div>
-                          {resume.id === resumeId && (
-                            <i className="fas fa-check text-corporate-amber-600 dark:text-corporate-amber-400 text-sm"></i>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="border-t border-surface-2-stroke py-2">
-                      <Link
-                        href="/dashboard/resumes"
-                        className="w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                <NavigationDropdown
+                  isOpen={showResumeDropdown}
+                  onClose={() => setShowResumeDropdown(false)}
+                  className="min-w-[280px] max-w-sm"
+                >
+                  <div className="py-2 max-h-96 overflow-y-auto">
+                    {resumes.map((resume) => (
+                      <button
+                        key={resume.id}
+                        onClick={() => handleResumeSwitch(resume.id)}
+                        className={`w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 ${
+                          resume.id === resumeId ? 'bg-surface-3/30' : ''
+                        }`}
                       >
-                        <i className="fas fa-arrow-left text-xs"></i>
-                        <span>Back to All Resumes</span>
-                      </Link>
-                    </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+                            {resume.isTargeted && (
+                              <span className="text-xs uppercase text-orange-400 mr-1">[TARGETED]</span>
+                            )}
+                            {resume.title}
+                          </div>
+                        </div>
+                        {resume.id === resumeId && (
+                          <i className="fas fa-check text-corporate-amber-600 text-sm" />
+                        )}
+                      </button>
+                    ))}
                   </div>
-                )}
+
+                  <div className="border-t border-surface-2-stroke py-2">
+                    <Link
+                      href="/dashboard/resumes"
+                      className="w-full text-left px-4 py-2.5 hover:bg-surface-3/50 transition-colors flex items-center gap-2 text-sm"
+                    >
+                      <i className="fas fa-arrow-left text-xs" />
+                      <span>Back to All Resumes</span>
+                    </Link>
+                  </div>
+                </NavigationDropdown>
               </div>
             </div>
 
-            {/* Editor Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
-            {visibleTabs.map((tab) => {
-              const isActive = pathname === tab.href || (isMainPage && tab.label === 'Contact');
-              return (
-                <Link
+            {/* Editor Tabs */}
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg">
+              {visibleTabs.map((tab) => (
+                <TabButton
                   key={tab.href}
-                  href={tab.href}
-                  className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 ${
-                    isActive 
-                      ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-500/30' 
-                      : 'text-gray-700 dark:text-gray-300 focus:bg-slate-100 dark:focus:bg-navy-700 hover:text-gray-900 dark:hover:text-gray-100'
-                  } cursor-pointer`}
+                  tab={tab}
+                  isActive={pathname === tab.href || (isMainPage && tab.key === SECTIONS.CONTACT)}
+                />
+              ))}
+
+              {/* More Menu */}
+              <div ref={moreMenuRef} className="relative">
+                <button
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="rounded-md inline-flex items-center gap-1 group relative text-xs leading-4 h-6 px-2 text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700"
+                  title="More sections"
                 >
-                  <div className="w-full overflow-hidden">
-                    <p className="font-semibold uppercase truncate">{tab.label}</p>
-                  </div>
-                </Link>
-              );
-            })}
+                  <i className="fas fa-ellipsis-h" />
+                </button>
 
-            {/* More Menu for Additional Sections */}
-            <div className="relative" ref={moreMenuRef}>
-              <button
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400 cursor-pointer"
-                title="More sections"
-              >
-                <i className="fas fa-ellipsis-h"></i>
-              </button>
-
-                {/* More Menu Dropdown */}
-                {showMoreMenu && (
-                  <>
-                    {/* Invisible backdrop */}
-                    <div className="fixed inset-0" style={{ zIndex: 999998 }} onClick={() => setShowMoreMenu(false)} />
-                    <div className="absolute top-full right-0 mt-2 min-w-[280px] bg-white dark:bg-corporate-navy-800 rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 shadow-2xl shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50 backdrop-blur-sm"
-                         style={{ zIndex: 999999 }}>
-                    <div className="p-3 border-b border-corporate-navy-200 dark:border-corporate-navy-700">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm font-semibold text-corporate-navy-700 dark:text-gray-300">Additional Sections</h3>
-                          <p className="text-xs text-corporate-navy-500 dark:text-gray-500 mt-1">Click to navigate or toggle visibility</p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            // Reset visibility to actually match content detection
-                            setTabVisibility({
-                              contact: true, // Always show contact
-                              experience: sectionHasContent('experience'),
-                              education: sectionHasContent('education'),
-                              skills: sectionHasContent('skills'),
-                              projects: sectionHasContent('projects'),
-                              involvement: sectionHasContent('involvement'),
-                              coursework: sectionHasContent('coursework'),
-                              certifications: sectionHasContent('certifications'),
-                              summary: sectionHasContent('summary'),
-                              'cover-letter': true,
-                              preview: true,
-                            });
-                            // Clear localStorage - scoped to this resume
-                            if (resumeId) {
-                              localStorage.removeItem(`resumeTabVisibility_${resumeId}`);
-                            }
-                          }}
-                          className="text-xs text-corporate-amber-600 hover:text-corporate-amber-500 dark:text-corporate-amber-400 dark:hover:text-corporate-amber-300 underline"
-                        >
-                          Reset
-                        </button>
+                <NavigationDropdown
+                  isOpen={showMoreMenu}
+                  onClose={() => setShowMoreMenu(false)}
+                  className="min-w-[280px]"
+                >
+                  <div className="p-3 border-b border-corporate-navy-200 dark:border-corporate-navy-700">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-semibold text-corporate-navy-700 dark:text-gray-300">
+                          Additional Sections
+                        </h3>
+                        <p className="text-xs text-corporate-navy-500 dark:text-gray-500 mt-1">
+                          Click to navigate or toggle visibility
+                        </p>
                       </div>
+                      <button
+                        onClick={resetVisibility}
+                        className="text-xs text-corporate-amber-600 hover:text-corporate-amber-500 underline"
+                      >
+                        Reset
+                      </button>
                     </div>
+                  </div>
 
-                    <div className="py-2 max-h-96 overflow-y-auto">
-                      {allEditorTabs.filter(tab => !['contact', 'preview', 'cover-letter'].includes(tab.key)).map((tab) => {
+                  <div className="py-2 max-h-96 overflow-y-auto">
+                    {editorTabs
+                      .filter(tab => !ALWAYS_VISIBLE_SECTIONS.includes(tab.key as any))
+                      .map((tab) => {
                         const hasContent = sectionHasContent(tab.key);
-                        const isEnabled = tabVisibility[tab.key];
-                        const isHidden = hiddenTabs.find(t => t.key === tab.key);
+                        const isEnabled = visibility[tab.key];
 
                         return (
                           <div
@@ -490,12 +654,16 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                               className="flex-1 flex items-center gap-2"
                               onClick={() => setShowMoreMenu(false)}
                             >
-                              <span className={`text-sm font-medium ${hasContent ? 'text-corporate-navy-700 dark:text-gray-200' : 'text-corporate-navy-500 dark:text-gray-500'}`}>
+                              <span className={`text-sm font-medium ${
+                                hasContent 
+                                  ? 'text-corporate-navy-700 dark:text-gray-200' 
+                                  : 'text-corporate-navy-500 dark:text-gray-500'
+                              }`}>
                                 {tab.label}
                               </span>
                               {hasContent && (
                                 <span className="text-xs text-corporate-amber-600 dark:text-corporate-amber-400">
-                                  <i className="fas fa-check-circle"></i>
+                                  <i className="fas fa-check-circle" />
                                 </span>
                               )}
                             </Link>
@@ -504,43 +672,30 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
                               <input
                                 type="checkbox"
                                 checked={isEnabled}
-                                onChange={() => toggleTabVisibility(tab.key)}
-                                className="w-4 h-4 text-corporate-amber-600 bg-white dark:bg-corporate-navy-700 border-corporate-navy-300 dark:border-corporate-navy-600 rounded focus:ring-corporate-amber-500 focus:ring-2"
+                                onChange={() => toggleVisibility(tab.key)}
+                                className="w-4 h-4 text-corporate-amber-600 rounded focus:ring-corporate-amber-500"
                               />
-                              <span className="ml-2 text-xs text-corporate-navy-500 dark:text-gray-400">Show</span>
+                              <span className="ml-2 text-xs text-corporate-navy-500 dark:text-gray-400">
+                                Show
+                              </span>
                             </label>
                           </div>
                         );
                       })}
-                    </div>
                   </div>
-                  </>
-                )}
+                </NavigationDropdown>
               </div>
             </div>
 
-            {/* Preview/Action Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
-              {actionTabs.map((tab) => {
-                const isActive = pathname === tab.href;
-                return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    className={`rounded-md inline-flex items-center gap-1 disabled:bg-input-bg-disabled group relative text-xs leading-4 h-6 px-2 transition-all ${
-                      isActive 
-                        ? 'bg-orange-600 text-white' 
-                        : 'text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400'
-                    } cursor-pointer`}
-                  >
-                    <div className="w-full overflow-hidden">
-                      <p className="font-semibold uppercase truncate">
-                        {tab.label === 'Preview' ? 'Finish up & Preview' : tab.label}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
+            {/* Action Tabs */}
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-1 py-1 gap-1 shadow-lg">
+              {actionTabs.map((tab) => (
+                <TabButton
+                  key={tab.href}
+                  tab={tab}
+                  isActive={pathname === tab.href}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -548,235 +703,208 @@ const ResumeEditorLayout = memo(function ResumeEditorLayout({
 
       {/* Mobile Navigation */}
       <div className="sm:hidden">
-        {/* Mobile Header */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-lg font-semibold text-corporate-navy-900 dark:text-white truncate max-w-[60%]">
             {currentResume?.title || 'Resume Editor'}
           </h1>
 
-          {/* Mobile User Button */}
           {user && (
             <button
               type="button"
-              className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none h-8 w-8 !text-xs !font-semibold bg-gradient-to-r from-corporate-amber-600 to-corporate-gold-600 text-white rounded-full shadow-md shadow-corporate-gold-500/30"
-              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="relative flex items-center justify-center font-bold uppercase h-8 w-8 bg-gradient-to-r from-corporate-amber-600 to-corporate-gold-600 text-white rounded-full shadow-md"
+              onClick={() => setShowUserMenu(true)}
             >
-              <span>{user.displayName?.[0] || user.email?.[0] || 'U'}</span>
+              <span className="text-xs">
+                {user.displayName?.[0] || user.email?.[0] || 'U'}
+              </span>
             </button>
           )}
         </div>
 
-        {/* Mobile Tab Navigation - Horizontally Scrollable */}
+        {/* Mobile tabs - horizontally scrollable */}
         <div className="overflow-x-auto pb-4 mb-4 -mx-6 px-6">
           <div className="flex flex-row gap-1 w-max">
-            {/* Mobile Resume Selector Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
+            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 bg-white/80 dark:bg-corporate-navy-800/90 px-0.5 py-0.5 shadow-lg">
               <button
-                onClick={() => setShowResumeDropdown(!showResumeDropdown)}
-                className="rounded inline-flex items-center gap-1 whitespace-nowrap group relative text-[10px] leading-3 h-5 px-2 transition-all text-corporate-navy-600 dark:text-gray-300 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400"
+                onClick={() => setShowResumeDropdown(true)}
+                className="rounded inline-flex items-center gap-1 text-[10px] h-5 px-2"
               >
-              <span className="font-semibold uppercase text-[9px] truncate max-w-[100px]">
-                {currentResume ? (
-                  <>
-                    {currentResume.isTargeted && '[T] '}
-                    {currentResume.title}
-                  </>
-                ) : (
-                  'Loading...'
-                )}
-              </span>
-              <i className={`fas fa-chevron-${showResumeDropdown ? 'up' : 'down'} text-[8px]`}></i>
+                <span className="font-semibold uppercase text-[9px] truncate max-w-[100px]">
+                  {currentResume?.title || 'Loading...'}
+                </span>
+                <i className="fas fa-chevron-down text-[8px]" />
               </button>
             </div>
 
-            {/* Mobile Editor Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 gap-0.5 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
-            {visibleTabs.map((tab) => {
-              const isActive = pathname === tab.href || (isMainPage && tab.label === 'Contact');
-              return (
-                <Link
+            {/* Visible tabs */}
+            <div className="relative inline-flex items-center rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 bg-white/80 dark:bg-corporate-navy-800/90 px-0.5 py-0.5 gap-0.5 shadow-lg">
+              {visibleTabs.map((tab) => (
+                <TabButton
                   key={tab.href}
-                  href={tab.href}
-                  className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
-                    isActive 
-                      ? 'bg-corporate-amber-600 text-white' 
-                      : 'text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400'
-                  } cursor-pointer`}
-                >
-                  <div className="w-full overflow-hidden">
-                    <p className="font-semibold uppercase truncate">{tab.label}</p>
-                  </div>
-                </Link>
-              );
-            })}
+                  tab={tab}
+                  isActive={pathname === tab.href || (isMainPage && tab.key === SECTIONS.CONTACT)}
+                />
+              ))}
 
-            {/* Mobile More Button */}
-            <button
-              onClick={() => setShowMoreMenu(true)}
-              className="rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 text-corporate-navy-700 dark:text-gray-300 focus:bg-corporate-amber-50 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-400 cursor-pointer"
-            >
-              <i className="fas fa-ellipsis-h text-[11px]"></i>
-            </button>
+              <button
+                onClick={() => setShowMoreMenu(true)}
+                className="rounded-md inline-flex items-center text-xs h-6 px-2"
+              >
+                <i className="fas fa-ellipsis-h text-[11px]" />
+              </button>
             </div>
 
-            {/* Mobile Action Tabs Group */}
-            <div className="relative inline-flex items-center whitespace-nowrap rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 w-fit h-fit bg-white/80 dark:bg-corporate-navy-800/90 backdrop-blur-sm px-0.5 py-0.5 gap-0.5 shadow-lg shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50">
-              {actionTabs.map((tab) => {
-                const isActive = pathname === tab.href;
-                return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    className={`rounded-md inline-flex items-center gap-1 whitespace-nowrap group relative text-xs leading-4 h-6 px-2 transition-all ${
-                      isActive 
-                        ? 'bg-orange-600 text-white' 
-                        : 'text-gray-700 dark:text-gray-300 focus:bg-tab-focus hover:bg-tab-hover dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
-                    } cursor-pointer`}
-                  >
-                    <div className="w-full overflow-hidden">
-                      <p className="font-semibold uppercase truncate">
-                        {tab.label === 'Preview' ? 'Preview' : tab.label}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
+            {/* Action tabs */}
+            <div className="relative inline-flex items-center rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 bg-white/80 dark:bg-corporate-navy-800/90 px-0.5 py-0.5 gap-0.5 shadow-lg">
+              {actionTabs.map((tab) => (
+                <TabButton
+                  key={tab.href}
+                  tab={{...tab, label: tab.key === SECTIONS.PREVIEW ? 'Preview' : tab.label}}
+                  isActive={pathname === tab.href}
+                />
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Mobile Resume Dropdown */}
-        {showResumeDropdown && (
-          <div className="fixed inset-0 bg-black/50 z-50 sm:hidden" onClick={() => setShowResumeDropdown(false)}>
-            <div className="absolute bottom-0 left-0 right-0 bg-surface-2 rounded-t-2xl border-t border-surface-2-stroke p-4 max-h-[70vh]" onClick={(e) => e.stopPropagation()}>
-              <div className="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4"></div>
-
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">Switch Resume</h3>
-
-              <div className="space-y-1 overflow-y-auto max-h-[50vh]">
-                {resumes.map((resume) => (
-                  <button
-                    key={resume.id}
-                    onClick={() => handleResumeSwitch(resume.id)}
-                    className={`w-full text-left px-3 py-3 rounded-lg hover:bg-surface-3/50 transition-colors flex items-center gap-2 ${
-                      resume.id === resumeId ? 'bg-surface-3/30' : ''
-                    }`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-200">
-                        {resume.isTargeted && (
-                          <span className="text-xs uppercase text-orange-400 mr-1">[TARGETED]</span>
-                        )}
-                        {resume.title}
-                      </div>
-                    </div>
-                    {resume.id === resumeId && (
-                      <i className="fas fa-check text-corporate-amber-600 dark:text-corporate-amber-400 text-sm"></i>
+        {/* Mobile Menus */}
+        <MobileMenu
+          isOpen={showResumeDropdown}
+          onClose={() => setShowResumeDropdown(false)}
+          title="Switch Resume"
+        >
+          <div className="space-y-1 overflow-y-auto max-h-[50vh]">
+            {resumes.map((resume) => (
+              <button
+                key={resume.id}
+                onClick={() => handleResumeSwitch(resume.id)}
+                className={`w-full text-left px-3 py-3 rounded-lg hover:bg-surface-3/50 transition-colors flex items-center gap-2 ${
+                  resume.id === resumeId ? 'bg-surface-3/30' : ''
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    {resume.isTargeted && (
+                      <span className="text-xs uppercase text-orange-400 mr-1">[TARGETED]</span>
                     )}
-                  </button>
-                ))}
-              </div>
-
-              <div className="border-t border-surface-2-stroke mt-3 pt-3">
-                <Link
-                  href="/dashboard/resumes"
-                  className="w-full text-left px-3 py-3 rounded-lg hover:bg-surface-3/50 transition-colors flex items-center gap-2 text-sm text-gray-400"
-                >
-                  <i className="fas fa-arrow-left text-xs"></i>
-                  <span>Back to All Resumes</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile User Menu Modal */}
-        {showUserMenu && (
-          <div className="fixed inset-0 bg-black/50 z-50 sm:hidden" onClick={() => setShowUserMenu(false)}>
-            <div className="absolute bottom-0 left-0 right-0 bg-surface-2 rounded-t-2xl border-t border-surface-2-stroke p-4" onClick={(e) => e.stopPropagation()}>
-              <div className="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4"></div>
-
-              <div className="space-y-2">
-                <div className="text-sm text-gray-500 px-2 pb-2 border-b border-surface-2-stroke">
-                  {user?.email}
+                    {resume.title}
+                  </div>
                 </div>
-
-                <button
-                  className="w-full text-left px-2 py-3 rounded-lg hover:bg-surface-3/50 flex items-center gap-3"
-                  onClick={() => {
-                    toggleTheme();
-                    setShowUserMenu(false);
-                  }}
-                >
-                  <i className="fad fa-palette w-5"></i>
-                  <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                </button>
-
-                <button
-                  className="w-full text-left px-2 py-3 rounded-lg hover:bg-surface-3/50 flex items-center gap-3 text-red-500"
-                  onClick={handleLogout}
-                >
-                  <i className="fad fa-right-from-bracket w-5"></i>
-                  <span>Log out</span>
-                </button>
-              </div>
-            </div>
+                {resume.id === resumeId && (
+                  <i className="fas fa-check text-corporate-amber-600 text-sm" />
+                )}
+              </button>
+            ))}
           </div>
-        )}
 
-        {/* Mobile More Menu Modal */}
-        {showMoreMenu && (
-          <div className="fixed inset-0 bg-black/50 z-50 sm:hidden" onClick={() => setShowMoreMenu(false)}>
-            <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-corporate-navy-800 rounded-t-2xl border-t border-corporate-navy-200 dark:border-corporate-navy-700 p-4 max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
-              <div className="w-12 h-1 bg-corporate-navy-300 dark:bg-gray-600 rounded-full mx-auto mb-4"></div>
+          <div className="border-t border-surface-2-stroke mt-3 pt-3">
+            <Link
+              href="/dashboard/resumes"
+              className="w-full text-left px-3 py-3 rounded-lg hover:bg-surface-3/50 flex items-center gap-2 text-sm"
+            >
+              <i className="fas fa-arrow-left text-xs" />
+              <span>Back to All Resumes</span>
+            </Link>
+          </div>
+        </MobileMenu>
 
-              <h3 className="text-sm font-semibold text-corporate-navy-700 dark:text-gray-300 mb-3">Additional Sections</h3>
-              <p className="text-xs text-corporate-navy-500 dark:text-gray-500 mb-4">Tap to navigate or toggle visibility</p>
+        <MobileMenu
+          isOpen={showUserMenu}
+          onClose={() => setShowUserMenu(false)}
+          title=""
+        >
+          <div className="space-y-2">
+            <div className="text-sm text-gray-500 px-2 pb-2 border-b border-surface-2-stroke">
+              {user?.email}
+            </div>
 
-              <div className="space-y-2 overflow-y-auto max-h-[60vh]">
-                {allEditorTabs.filter(tab => !['contact', 'preview', 'cover-letter'].includes(tab.key)).map((tab) => {
-                  const hasContent = sectionHasContent(tab.key);
-                  const isEnabled = tabVisibility[tab.key];
-                  
-                  return (
-                    <div
-                      key={tab.key}
-                      className="flex items-center justify-between p-3 rounded-lg bg-corporate-amber-50/30 dark:bg-corporate-navy-700/30"
+            <button
+              className="w-full text-left px-2 py-3 rounded-lg hover:bg-surface-3/50 flex items-center gap-3"
+              onClick={() => {
+                toggleTheme();
+                setShowUserMenu(false);
+              }}
+            >
+              <i className="fad fa-palette w-5" />
+              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+
+            <button
+              className="w-full text-left px-2 py-3 rounded-lg hover:bg-surface-3/50 flex items-center gap-3 text-red-500"
+              onClick={handleLogout}
+            >
+              <i className="fad fa-right-from-bracket w-5" />
+              <span>Log out</span>
+            </button>
+          </div>
+        </MobileMenu>
+
+        <MobileMenu
+          isOpen={showMoreMenu}
+          onClose={() => setShowMoreMenu(false)}
+          title="Additional Sections"
+        >
+          <p className="text-xs text-corporate-navy-500 dark:text-gray-500 mb-4">
+            Tap to navigate or toggle visibility
+          </p>
+
+          <div className="space-y-2 overflow-y-auto max-h-[60vh]">
+            {editorTabs
+              .filter(tab => !ALWAYS_VISIBLE_SECTIONS.includes(tab.key as any))
+              .map((tab) => {
+                const hasContent = sectionHasContent(tab.key);
+                const isEnabled = visibility[tab.key];
+
+                return (
+                  <div
+                    key={tab.key}
+                    className="flex items-center justify-between p-3 rounded-lg bg-corporate-amber-50/30 dark:bg-corporate-navy-700/30"
+                  >
+                    <Link
+                      href={tab.href}
+                      className="flex-1 flex items-center gap-2"
+                      onClick={() => setShowMoreMenu(false)}
                     >
-                      <Link
-                        href={tab.href}
-                        className="flex-1 flex items-center gap-2"
-                        onClick={() => setShowMoreMenu(false)}
-                      >
-                        <span className={`text-sm font-medium ${hasContent ? 'text-corporate-navy-700 dark:text-gray-200' : 'text-corporate-navy-500 dark:text-gray-500'}`}>
-                          {tab.label}
+                      <span className={`text-sm font-medium ${
+                        hasContent 
+                          ? 'text-corporate-navy-700 dark:text-gray-200' 
+                          : 'text-corporate-navy-500 dark:text-gray-500'
+                      }`}>
+                        {tab.label}
+                      </span>
+                      {hasContent && (
+                        <span className="text-xs text-corporate-amber-600">
+                          <i className="fas fa-check-circle" />
                         </span>
-                        {hasContent && (
-                          <span className="text-xs text-corporate-amber-600 dark:text-corporate-amber-400">
-                            <i className="fas fa-check-circle"></i>
-                          </span>
-                        )}
-                      </Link>
-                      
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isEnabled}
-                          onChange={() => toggleTabVisibility(tab.key)}
-                          className="w-4 h-4 text-corporate-amber-600 bg-white dark:bg-corporate-navy-700 border-corporate-navy-300 dark:border-corporate-navy-600 rounded focus:ring-corporate-amber-500"
-                        />
-                        <span className="ml-2 text-xs text-corporate-navy-500 dark:text-gray-400">Show</span>
-                      </label>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                      )}
+                    </Link>
+
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isEnabled}
+                        onChange={() => toggleVisibility(tab.key)}
+                        className="w-4 h-4 text-corporate-amber-600 rounded"
+                      />
+                      <span className="ml-2 text-xs text-corporate-navy-500 dark:text-gray-400">
+                        Show
+                      </span>
+                    </label>
+                  </div>
+                );
+              })}
           </div>
-        )}
+
+          <button
+            onClick={resetVisibility}
+            className="w-full mt-4 text-xs text-corporate-amber-600 hover:text-corporate-amber-500 underline"
+          >
+            Reset to Default
+          </button>
+        </MobileMenu>
       </div>
 
-      {/* Main content area with responsive max width for optimal readability */}
+      {/* Main content */}
       <div className="max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto">
         {children}
       </div>
