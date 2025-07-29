@@ -335,6 +335,7 @@ export default function PricingPage() {
                 </div>
               </div>
 
+
               {/* AI Resume Writer Row */}
               <div className="grid grid-cols-4 border-t border-gray-200 bg-gray-50">
                 <div className="p-4 flex items-center gap-2">
