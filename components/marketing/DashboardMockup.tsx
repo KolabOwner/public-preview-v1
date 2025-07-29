@@ -5,36 +5,58 @@ import React, { useState } from 'react';
 // Resume Card Component
 const ResumeCard = ({ title, isDarkMode }: { title: string; isDarkMode: boolean }) => (
   <div className={`relative h-48 w-40 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
-    <div className={`absolute w-full p-4 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
-      <div className="text-[7px] font-semibold">Charles Bloomberg</div>
-      <div className="flex w-full justify-center pb-1.5 text-[4px]">New York City, United States • charlesbloomberg@wisc.edu • (621) 799-5548</div>
+    <div className={`absolute w-full p-2 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+      <div className="text-[5px] font-semibold text-center">Alex Chen</div>
+      <div className="flex w-full justify-center pb-1 text-[3px]">New York, NY • alex.chen@email.com • (555) 123-4567</div>
       <div className="w-full border-b border-slate-200"></div>
-      <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Summary</div>
-      <div className="text-[4px] leading-[5px] text-left w-full pb-1">Digital Media student with experience in Web Design and social media, skilled in creating digital products.</div>
+      <div className={`uppercase text-[3.5px] font-semibold mt-0.5 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[4px] transition-colors duration-300`}>Summary</div>
+      <div className="text-[3px] leading-[3.5px] text-left w-full pb-0.5">Creative Marketing Director with 10+ years of experience leading brand strategy and digital marketing initiatives.</div>
       <div className="w-full border-b border-slate-200"></div>
-      <div className={`uppercase text-[5px] font-semibold mt-1 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[7px] transition-colors duration-300`}>Experience</div>
+      <div className={`uppercase text-[3.5px] font-semibold mt-0.5 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[4px] transition-colors duration-300`}>Experience</div>
       <div>
-        <div className="text-left text-[4px] font-semibold">Product Manager | TechCorp | NY | 2022-Present</div>
-        <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
-          <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Led cross-functional teams and improved user engagement by 35%</span></li>
-          <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Implemented agile methodologies and data-driven processes</span></li>
-          <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Managed multiple priorities in fast-paced environment</span></li>
+        <div className="text-left text-[3px] font-semibold">Marketing Director | TechNova Solutions | NY | 2021-Present</div>
+        <ul className="text-[2.5px] leading-[2.5px] text-left w-full pb-0.5 list-inside">
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Lead comprehensive marketing strategy for $50M B2B SaaS company, managing team of 12 and $5M annual budget</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Increased qualified leads by 250% through implementation of account-based marketing strategy and advanced targeting</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Launched new product line that generated $8M in first-year revenue through strategic go-to-market planning</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Developed and executed content marketing strategy resulting in 400% increase in organic traffic and brand awareness</span></li>
         </ul>
       </div>
       <div>
-        <div className="text-left text-[4px] font-semibold">Intern (Creative) | Company B | NY | 2019-2020</div>
-        <ul className="text-[4px] leading-[5px] text-left w-full pb-1 list-inside">
-          <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Analyzed client accounts and conducted research</span></li>
-          <li className="-pl-2 flex flex-row pb-[1px]"><span className="px-1">•</span><span>Created copy for 100+ social media posts</span></li>
+        <div className="text-left text-[3px] font-semibold">Senior Marketing Manager | Digital Dynamics Inc | NY | 2018-2020</div>
+        <ul className="text-[2.5px] leading-[2.5px] text-left w-full pb-0.5 list-inside">
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Managed integrated marketing campaigns across digital channels for portfolio of enterprise clients worth $25M annually</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Achieved 185% ROI on paid media campaigns through advanced targeting, optimization, and performance analysis</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Built marketing automation workflows that improved lead conversion by 60% and shortened sales cycle by 25%</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Collaborated with sales team to develop enablement materials and processes that increased close rate by 30%</span></li>
         </ul>
+      </div>
+      <div>
+        <div className="text-left text-[3px] font-semibold">Marketing Manager | Creative Agency Partners | Boston | 2015-2018</div>
+        <ul className="text-[2.5px] leading-[2.5px] text-left w-full pb-0.5 list-inside">
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Executed multi-channel marketing campaigns for diverse client portfolio including Fortune 500 companies and startups</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Managed social media strategy resulting in 500% follower growth and 200% engagement increase across platforms</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Developed brand guidelines and messaging frameworks for 20+ client brands in technology and healthcare sectors</span></li>
+          <li className="-pl-1 flex flex-row pb-[0.5px]"><span className="px-0.5">•</span><span>Led rebranding initiative that increased brand awareness by 150% and improved customer perception scores significantly</span></li>
+        </ul>
+      </div>
+      <div className="w-full border-b border-slate-200 mt-0.5"></div>
+      <div className={`uppercase text-[3.5px] font-semibold mt-0.5 mb-0.5 w-full border-b ${isDarkMode ? 'border-gray-400' : 'border-gray-600'} text-left leading-[4px] transition-colors duration-300`}>Skills</div>
+      <div className="overflow-hidden">
+        <div className="text-[2.5px] leading-[3px] text-left w-full">
+          <div><span className="font-semibold">Marketing Strategy:</span> Brand Development, Go-to-Market Strategy, Product Marketing, Positioning</div>
+          <div><span className="font-semibold">Digital Marketing:</span> SEO/SEM, Content Marketing, Email Marketing, Marketing Automation</div>
+          <div><span className="font-semibold">Analytics & Tools:</span> Google Analytics, Salesforce, HubSpot, Tableau, Adobe Creative Suite</div>
+          <div><span className="font-semibold">Leadership:</span> Team Building, Strategic Planning, Budget Management, Stakeholder Relations</div>
+        </div>
       </div>
     </div>
     <div className="absolute bottom-0 left-0 z-10 w-full">
-      <div className={`relative flex min-h-[3.5rem] flex-row items-center justify-between rounded-lg rounded-t-none ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} py-0 transition-colors duration-300`}>
-        <div className="flex max-w-[calc(100%-3rem)] flex-row items-center pl-4">
-          <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-base font-semibold leading-6 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>{title}</div>
+      <div className={`relative flex min-h-[2.5rem] flex-row items-center justify-between rounded-lg rounded-t-none ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} py-0 transition-colors duration-300`}>
+        <div className="flex max-w-[calc(100%-2rem)] flex-row items-center pl-3">
+          <div className={`overflow-hidden overflow-ellipsis whitespace-nowrap text-xs font-semibold leading-4 ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>{title}</div>
         </div>
-        <div className={`flex h-12 min-w-12 items-center justify-center text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+        <div className={`flex h-8 min-w-8 items-center justify-center text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
           <i className="fas fa-ellipsis-vertical" aria-hidden="true"></i>
         </div>
       </div>
