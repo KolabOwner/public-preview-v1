@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf';
+import { RESUME_TEMPLATES } from '@/components/features/resume/templates/resume-templates';
 
 /**
  * Resume data interface for PDF generation
@@ -51,48 +52,13 @@ interface PDFConfiguration {
   };
 }
 
-// Font configurations for different styles
-const FONT_CONFIGURATIONS: Record<string, Partial<PDFConfiguration>> = {
-  professional: {
-    fonts: {
-      name: { family: 'merriweather', size: 12.825, weight: 700 },
-      heading: { family: 'merriweather', size: 8.9395, weight: 700 },
-      subheading: { family: 'merriweather', size: 7.771, weight: 700 },
-      body: { family: 'merriweather', size: 6.6025, weight: 400 },
-      accent: { family: 'merriweather', size: 6.6025, weight: 400 },
-      small: { family: 'merriweather', size: 5.7855, weight: 400 }
-    }
-  },
-  elegant: {
-    fonts: {
-      name: { family: 'merriweather', size: 20, weight: 700 },
-      heading: { family: 'merriweather', size: 13, weight: 600 },
-      subheading: { family: 'merriweather', size: 12, weight: 600 },
-      body: { family: 'merriweather', size: 10, weight: 400 },
-      accent: { family: 'merriweather', size: 9, weight: 300 },
-      small: { family: 'merriweather', size: 8, weight: 300 }
-    }
-  },
-  modern: {
-    fonts: {
-      name: { family: 'inter', size: 19, weight: 700 },
-      heading: { family: 'inter', size: 12, weight: 600 },
-      subheading: { family: 'inter', size: 11, weight: 600 },
-      body: { family: 'inter', size: 10, weight: 400 },
-      accent: { family: 'inter', size: 9, weight: 300 },
-      small: { family: 'inter', size: 8, weight: 300 }
-    }
-  },
-  classic: {
-    fonts: {
-      name: { family: 'times', size: 18, weight: 700 },
-      heading: { family: 'times', size: 12, weight: 700 },
-      subheading: { family: 'times', size: 11, weight: 700 },
-      body: { family: 'times', size: 10, weight: 400 },
-      accent: { family: 'times', size: 9, weight: 400 },
-      small: { family: 'times', size: 8, weight: 400 }
-    }
-  }
+// Font family mapping for template integration
+const FONT_FAMILY_MAP: Record<string, string> = {
+  'Merriweather': 'merriweather',
+  'Inter': 'inter', 
+  'Times': 'times',
+  'Arial': 'arial',
+  'Helvetica': 'helvetica'
 };
 
 // Default configuration
@@ -104,7 +70,14 @@ const DEFAULT_CONFIG: PDFConfiguration = {
     accent: { r: 0, g: 0, b: 0 }
   },
   margins: { top: 36, right: 36, bottom: 36, left: 36 },
-  fonts: FONT_CONFIGURATIONS.professional.fonts!,
+  fonts: {
+    name: { family: 'merriweather', size: 12.825, weight: 700 },
+    heading: { family: 'merriweather', size: 8.9395, weight: 700 },
+    subheading: { family: 'merriweather', size: 7.771, weight: 700 },
+    body: { family: 'merriweather', size: 6.6025, weight: 400 },
+    accent: { family: 'merriweather', size: 6.6025, weight: 400 },
+    small: { family: 'merriweather', size: 5.7855, weight: 400 }
+  },
   spacing: {
     sectionGap: 12,
     itemGap: 8,
@@ -197,13 +170,8 @@ export class PDFGenerator {
   }
 
   private createConfiguration(resumeData: ResumeData): PDFConfiguration {
-    const style = resumeData.fontStyle || 'professional';
-    const baseConfig = { ...DEFAULT_CONFIG };
-
-    // Apply style-specific configuration
-    if (FONT_CONFIGURATIONS[style]) {
-      Object.assign(baseConfig, FONT_CONFIGURATIONS[style]);
-    }
+    const template = resumeData.template || 'professional';
+    const baseConfig = this.getConfigFromTemplate(template);
 
     // Apply document settings overrides to match preview exactly
     if (resumeData.documentSettings) {
@@ -224,8 +192,9 @@ export class PDFGenerator {
         const baseFontSize = documentSettings.fontSize;
         const template = resumeData.template || 'professional';
         
-        // Get template-specific font scales (same as preview uses)
-        const fontScales = this.getTemplateFontScales(template);
+        // Get template-specific font scales from RESUME_TEMPLATES
+        const templateConfig = RESUME_TEMPLATES[template];
+        const fontScales = templateConfig ? templateConfig.styles.fontScales : RESUME_TEMPLATES.professional.styles.fontScales;
         
         // Apply the same scaling logic as the preview - PRESERVE font family from style!
         baseConfig.fonts = {
@@ -250,68 +219,37 @@ export class PDFGenerator {
     return baseConfig;
   }
 
-  // Template font scales matching the preview system exactly
-  private getTemplateFontScales(template: string) {
-    const fontScales: Record<string, any> = {
-      professional: {
-        name: 1.35,        // 14.84pt from 11pt base
-        contact: 0.614,    // 6.75pt from 11pt base
-        sectionHeader: 0.941, // 10.35pt from 11pt base
-        jobTitle: 0.818,   // 9pt from 11pt base
-        body: 0.695,       // 7.65pt from 11pt base
-        detail: 0.609,     // 6.7pt from 11pt base
+  /**
+   * Create PDF configuration from template using existing RESUME_TEMPLATES
+   */
+  private getConfigFromTemplate(templateId: string): PDFConfiguration {
+    const template = RESUME_TEMPLATES[templateId] || RESUME_TEMPLATES.professional;
+    const fontFamily = FONT_FAMILY_MAP[template.defaults.fontFamily || 'Merriweather'] || 'merriweather';
+    const baseFontSize = template.defaults.fontSize || 11;
+    const fontScales = template.styles.fontScales;
+
+    return {
+      colors: {
+        text: { r: 51, g: 51, b: 51 },
+        black: { r: 0, g: 0, b: 0 },
+        gray: { r: 102, g: 102, b: 102 },
+        accent: { r: 0, g: 0, b: 0 }
       },
-      modern: {
-        name: 1.5,
-        contact: 0.7,
-        sectionHeader: 1.1,
-        jobTitle: 0.9,
-        body: 0.8,
-        detail: 0.7,
+      margins: { top: 36, right: 36, bottom: 36, left: 36 },
+      fonts: {
+        name: { family: fontFamily, size: baseFontSize * fontScales.name, weight: template.styles.typography.fontWeights.name },
+        heading: { family: fontFamily, size: baseFontSize * fontScales.sectionHeader, weight: template.styles.typography.fontWeights.section },
+        subheading: { family: fontFamily, size: baseFontSize * fontScales.jobTitle, weight: template.styles.typography.fontWeights.title },
+        body: { family: fontFamily, size: baseFontSize * fontScales.body, weight: template.styles.typography.fontWeights.body },
+        accent: { family: fontFamily, size: baseFontSize * fontScales.detail, weight: template.styles.typography.fontWeights.body },
+        small: { family: fontFamily, size: baseFontSize * fontScales.contact, weight: template.styles.typography.fontWeights.body }
       },
-      creative: {
-        name: 1.6,
-        contact: 0.8,
-        sectionHeader: 1.2,
-        jobTitle: 1.0,
-        body: 0.85,
-        detail: 0.75,
-      },
-      minimal: {
-        name: 1.4,
-        contact: 0.7,
-        sectionHeader: 1.0,
-        jobTitle: 0.9,
-        body: 0.8,
-        detail: 0.7,
-      },
-      alternative: {
-        name: 1.8,
-        contact: 0.65,
-        sectionHeader: 0.95,
-        jobTitle: 0.8,
-        body: 0.7,
-        detail: 0.6,
-      },
-      academic: {
-        name: 1.3,
-        contact: 0.7,
-        sectionHeader: 1.0,
-        jobTitle: 0.9,
-        body: 0.8,
-        detail: 0.7,
-      },
-      technical: {
-        name: 1.4,
-        contact: 0.7,
-        sectionHeader: 1.0,
-        jobTitle: 0.9,
-        body: 0.8,
-        detail: 0.7,
+      spacing: {
+        sectionGap: template.styles.layout.sectionSpacing * 16, // Convert rem to points
+        itemGap: template.styles.layout.bulletSpacing * 16,
+        lineHeight: template.defaults.lineHeight || 1.2
       }
     };
-
-    return fontScales[template] || fontScales.professional;
   }
 
   private async loadCustomFonts(): Promise<boolean> {

@@ -15,6 +15,7 @@ import { promisify } from 'util';
 import { writeFile, unlink, readFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { randomBytes } from 'crypto';
 import {
   detectRMSCompliance,
@@ -22,8 +23,35 @@ import {
   validateRMSMetadata
 } from "@/lib/server/services/resume/pdf-rms-validator";
 const execFileAsync = promisify(execFile);
-// ExifTool configuration
-const EXIFTOOL_PATH = process.env.EXIFTOOL_PATH || 'C:\\Users\\ashto\\OneDrive\\ExifTool\\exiftool.exe';
+
+// ExifTool configuration - handles different environments
+function getExifToolPath(): string {
+  // Check environment variable first
+  if (process.env.EXIFTOOL_PATH) {
+    return process.env.EXIFTOOL_PATH;
+  }
+  
+  // Production/Vercel environment - check for installed binary first
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    const binaryPath = join(process.cwd(), 'bin', 'exiftool');
+    if (existsSync(binaryPath)) {
+      return binaryPath;
+    }
+    return 'exiftool'; // Fall back to system PATH
+  }
+  
+  // Development environment - platform-specific paths
+  const platform = process.platform;
+  if (platform === 'win32') {
+    return 'C:\\Users\\ashto\\OneDrive\\ExifTool\\exiftool.exe';
+  } else if (platform === 'darwin') {
+    return '/usr/local/bin/exiftool'; // macOS with Homebrew
+  } else {
+    return '/usr/bin/exiftool'; // Linux systems
+  }
+}
+
+const EXIFTOOL_PATH = getExifToolPath();
 const EXIFTOOL_CONFIG_PATH = './config/exiftool/rms-config.pl';
 const NUMERIC_COUNT_FIELDS = new Set([
   'rms_experience_count',
@@ -92,11 +120,20 @@ async function executeExifTool(args: string[], options: any = {}): Promise<ExifT
     windowsHide: true,
     encoding: 'utf8' as BufferEncoding,
   };
-  const result = await execFileAsync(EXIFTOOL_PATH, args, { ...defaultOptions, ...options });
-  return {
-    stdout: result.stdout.toString('utf8'),
-    stderr: result.stderr.toString('utf8'),
-  };
+  
+  try {
+    const result = await execFileAsync(EXIFTOOL_PATH, args, { ...defaultOptions, ...options });
+    return {
+      stdout: result.stdout.toString('utf8'),
+      stderr: result.stderr.toString('utf8'),
+    };
+  } catch (error: any) {
+    // Handle ExifTool not found or other execution errors
+    if (error.code === 'ENOENT') {
+      throw new Error(`ExifTool not found at path: ${EXIFTOOL_PATH}. Please install ExifTool or set EXIFTOOL_PATH environment variable.`);
+    }
+    throw error;
+  }
 }
 async function cleanupTempFile(filePath: string | undefined): Promise<void> {
   if (filePath) {
@@ -127,12 +164,22 @@ export async function GET(request: NextRequest) {
       available: true,
       version,
       path: EXIFTOOL_PATH,
-      configPath: EXIFTOOL_CONFIG_PATH,
+      environment: process.env.NODE_ENV,
+      platform: process.platform,
+      isVercel: !!process.env.VERCEL,
       capabilities: ['extract', 'write', 'validate']
     });
   } catch (error) {
     console.error(`${logPrefix} ExifTool not available:`, error);
-    return createResponse(null, false, 'ExifTool not found or not accessible');
+    console.log(`${logPrefix} Environment: ${process.env.NODE_ENV}, Platform: ${process.platform}, Vercel: ${process.env.VERCEL}`);
+    return createResponse({
+      available: false,
+      path: EXIFTOOL_PATH,
+      environment: process.env.NODE_ENV,
+      platform: process.platform,
+      isVercel: !!process.env.VERCEL,
+      error: error instanceof Error ? error.message : 'ExifTool not accessible'
+    }, false, 'ExifTool not found or not accessible');
   }
 }
 // POST - Main RMS operations endpoint
@@ -182,16 +229,17 @@ async function handleExtract(file: File): Promise<NextResponse> {
     tempFilePath = await createTempFile('rms_extract');
     const arrayBuffer = await file.arrayBuffer();
     await writeFile(tempFilePath, Buffer.from(arrayBuffer));
-    // Execute ExifTool to extract metadata
-    const { stdout, stderr } = await executeExifTool([
-      '-config', EXIFTOOL_CONFIG_PATH,
+    // Execute ExifTool to extract metadata (without config file for Vercel compatibility)
+    const args = [
       '-j',
-      '-XMP-rms:all',
+      '-XMP:*rms*',  // Extract any XMP fields containing 'rms'
       '-PDF:Producer',
       '-PDF:Creator',
       '-b',
       tempFilePath
-    ]);
+    ];
+    
+    const { stdout, stderr } = await executeExifTool(args);
     if (stderr) {
       console.warn(`${logPrefix} Warnings:`, stderr);
     }
@@ -233,9 +281,8 @@ async function handleWrite(file: File, metadataJson: string): Promise<NextRespon
     tempFilePath = await createTempFile('rms_write');
     const arrayBuffer = await file.arrayBuffer();
     await writeFile(tempFilePath, Buffer.from(arrayBuffer));
-    // Build ExifTool arguments efficiently
+    // Build ExifTool arguments efficiently (without config file for Vercel compatibility)
     const args = [
-      '-config', EXIFTOOL_CONFIG_PATH,
       '-overwrite_original',
       // Add all metadata fields in one pass
       ...Object.entries(metadata)
@@ -243,7 +290,7 @@ async function handleWrite(file: File, metadataJson: string): Promise<NextRespon
         .map(([key, value]) =>
           key === 'producer'
             ? `-PDF:Producer=${String(value)}`
-            : `-XMP-rms:${key}=${String(value)}`
+            : `-XMP:${key}=${String(value)}`  // Use generic XMP namespace
         ),
       tempFilePath
     ];
@@ -322,9 +369,8 @@ async function verifyWrittenMetadata(filePath: string): Promise<{ writtenFieldCo
   const logPrefix = '[RMS Verify]';
   try {
     const { stdout } = await executeExifTool([
-      '-config', EXIFTOOL_CONFIG_PATH,
       '-j',
-      '-XMP-rms:all',
+      '-XMP:*rms*',  // Extract any XMP fields containing 'rms'
       filePath
     ]);
     const verifiedMetadata = parseJSON<any>(stdout, [{}])[0] || {};
