@@ -94,7 +94,7 @@ main().catch(error => {
  */
 function downloadExifTool(targetPath) {
   return new Promise((resolve, reject) => {
-    const url = 'https://exiftool.org/exiftool-12.76.tar.gz';
+    const url = 'https://exiftool.org/Image-ExifTool-13.33.tar.gz';
     const tempDir = path.join(process.cwd(), 'temp');
     const tarPath = path.join(tempDir, 'exiftool.tar.gz');
     
@@ -123,7 +123,7 @@ function downloadExifTool(targetPath) {
           console.log('📂 Extracting ExifTool...');
           execSync(`cd ${tempDir} && tar -xzf exiftool.tar.gz`, { stdio: 'inherit' });
           
-          // Find extracted directory
+          // Find extracted directory (should be Image-ExifTool-13.33)
           const extractedDir = fs.readdirSync(tempDir).find(dir => 
             dir.startsWith('Image-ExifTool') && fs.statSync(path.join(tempDir, dir)).isDirectory()
           );
