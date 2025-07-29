@@ -256,7 +256,14 @@ async function handleAnalysis(
 
       // Prepare structured result
       const structuredResult: AnalysisResult = {
-        extractedKeywords: analysisResult.extractedKeywords || [],
+        extractedKeywords: (analysisResult.extractedKeywords || []).map((k: any) => ({
+          keyword: k.keyword,
+          frequency: k.frequency || 1,
+          category: k.category || 'general',
+          importance: k.importance || 'medium',
+          variations: k.variations || [],
+          contexts: k.contexts || []
+        })),
         matchedKeywords: (analysisResult.matchedKeywords || []).map((k: any) => ({
           keyword: k.keyword,
           category: k.category || 'general'
