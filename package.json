@@ -11,9 +11,7 @@
     "dev": "next dev",
     "test": "jest",
     "lint": "next lint && eslint . --ext .ts,.tsx",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"app/**/*.{ts,tsx}\"",
-    "install-exiftool": "node scripts/install-exiftool.js",
-    "postinstall": "npm run install-exiftool"
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"app/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@genkit-ai/ai": "^1.12.0",
