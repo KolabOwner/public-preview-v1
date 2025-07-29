@@ -250,10 +250,16 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
         // First try splitting by line breaks or bullet markers
         let splitPoints = description.split(/[\n•·▪]/g);
 
-        // If no line breaks/bullets found, try splitting by sentences that end with periods followed by capital letters
+        // If no line breaks/bullets found, try splitting by sentences that end with periods
         if (splitPoints.length === 1) {
-          // Split on periods followed by capital letters (sentence boundaries)
-          splitPoints = description.split(/\.(?=[A-Z])/g);
+          // Split on periods followed by a space and capital letter (sentence boundaries)
+          // This regex matches: period + one or more spaces + capital letter
+          splitPoints = description.split(/\.\s+(?=[A-Z])/g);
+          
+          // If still no splits, try just periods followed immediately by capital letters
+          if (splitPoints.length === 1) {
+            splitPoints = description.split(/\.(?=[A-Z])/g);
+          }
         }
 
         bulletPoints = splitPoints
@@ -309,17 +315,28 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
     const eduCount = data.Rms_education_count || data.rms_education_count;
     unified.education = [];
     for (let i = 0; i < eduCount; i++) {
+      const dateString = data[`Rms_education_${i}_date`] || '';
+      let dateValue: Date | null = null;
+      
+      if (dateString && dateString.trim()) {
+        const parsedDate = new Date(dateString);
+        // Only set the date if it's valid
+        if (!isNaN(parsedDate.getTime())) {
+          dateValue = parsedDate;
+        }
+      }
+      
       unified.education.push({
         id: `edu_${i}`,
-        institution: data[`Rms_education_${i}_institution`] || data[`rms_education_${i}_institution`] || '',
-        qualification: data[`Rms_education_${i}_qualification`] || data[`rms_education_${i}_qualification`] || '',
-        location: data[`Rms_education_${i}_location`] || data[`rms_education_${i}_location`] || '',
-        date: data[`Rms_education_${i}_date`] || data[`rms_education_${i}_date`] || '',
+        institution: data[`Rms_education_${i}_institution`] || '',
+        qualification: data[`Rms_education_${i}_qualification`] || '',
+        location: data[`Rms_education_${i}_location`] || '',
+        date: dateValue,
         dateFormat: 'MMMM YYYY',
-        minor: '',
-        score: (data[`Rms_education_${i}_score`] || data[`rms_education_${i}_score`])?.toString() || '',
-        scoreType: data[`Rms_education_${i}_scoreType`] || data[`rms_education_${i}_scoreType`] || '',
-        description: ''
+        minor: data[`Rms_education_${i}_fieldOfStudy`] || '',
+        score: data[`Rms_education_${i}_gpa`] || '',
+        scoreType: data[`Rms_education_${i}_gpa`] ? 'GPA' : '',
+        description: data[`Rms_education_${i}_description`] || ''
       });
     }
   }
@@ -385,6 +402,8 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
     const involvementCount = data.rms_involvement_count || data.Rms_involvement_count;
     unified.involvements = [];
     for (let i = 0; i < involvementCount; i++) {
+      const description = data[`rms_involvement_${i}_description`] || data[`Rms_involvement_${i}_description`] || '';
+      
       unified.involvements.push({
         id: `inv_${i}`,
         organization: data[`rms_involvement_${i}_organization`] || data[`Rms_involvement_${i}_organization`] || '',
@@ -393,6 +412,7 @@ const parseToUnifiedFormat = (legacyData: any): UnifiedResumeData => {
         startDate: data[`rms_involvement_${i}_dateBegin`] || data[`rms_involvement_${i}_datebegin`] || data[`Rms_involvement_${i}_dateBegin`] || '',
         endDate: data[`rms_involvement_${i}_dateEnd`] || data[`rms_involvement_${i}_dateend`] || data[`Rms_involvement_${i}_dateEnd`] || '',
         current: false,
+        description: description,
         bulletPoints: []
       });
     }

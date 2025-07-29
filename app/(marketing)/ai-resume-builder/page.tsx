@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Star, CheckCircle, ArrowRight, Target, FileText, Zap, Shield, Download } from 'lucide-react';
 import MainNavbar from '@/components/features/dashboard/main-navbar';
 
@@ -20,8 +21,26 @@ export default function AIResumeBuilderPage() {
               <span className="text-amber-400 block">AI Resume Builder</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-4xl mx-auto leading-relaxed">
-              You'll never stare at a blank screen again. Meet our new-gen AI Resume Builder that writes the perfect resume for you. The kind of resume recruiters actually read. The kind that gets you hired.
+              You&apos;ll never stare at a blank screen again. Meet our new-gen AI Resume Builder that writes the perfect resume for you. The kind of resume recruiters actually read. The kind that gets you hired.
             </p>
+
+            {/* Hero Image */}
+            <div className="mb-12 flex justify-center">
+              <Image
+                src="/images/ai-resume-builder/heroimage.png"
+                alt="AI Resume Builder Hero"
+                width={1400}
+                height={800}
+                quality={95}
+                priority
+                className="rounded-lg shadow-2xl"
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto'
+                }}
+              />
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <a href="/sign-up" className="bg-amber-500 text-white px-10 py-5 rounded-xl font-bold text-xl text-center inline-block">
                 Create my free resume

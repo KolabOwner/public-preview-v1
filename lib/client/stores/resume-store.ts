@@ -40,7 +40,7 @@ export interface EducationEntry {
   institution: string;
   qualification: string;
   location?: string;
-  date?: Date;
+  date?: Date | null;
   dateFormat?: string;
   minor?: string;
   score?: string;
