@@ -104,14 +104,14 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
           name: 700,
           section: 700,
           title: 700,
-          body: 400,
+          body: 600, // Make body text bolder
         },
       },
       colors: {
         primary: '#000000',
-        secondary: '#333333',
+        secondary: '#000000', // Make secondary text black instead of gray
         text: '#000000',
-        muted: '#666666',
+        muted: '#444444', // Professional dark charcoal for bullet points
         accent: '#0066cc',
       },
       decorations: {

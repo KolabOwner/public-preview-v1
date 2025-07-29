@@ -546,24 +546,28 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
                 />
               </div>
 
+              {/* Time Period Container - Consistent with other form containers */}
               <div className="space-y-2">
                 <Label className="resume-label">
                   Time Period <span className="resume-label-required">*</span>
                 </Label>
                 <div className="flex items-start gap-2">
+                  {/* Start Date Container */}
                   <div className="flex-grow">
-                    <Controller
-                      name={`entries.${activeIndex}.startDate`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="Jan 2023"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      )}
-                    />
+                    <div className={`resume-input-container ${getFieldError('startDate') ? 'resume-input-container--error' : ''}`}>
+                      <Controller
+                        name={`entries.${activeIndex}.startDate`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="Jan 2023"
+                            className="resume-input"
+                            disabled={isSaving}
+                          />
+                        )}
+                      />
+                    </div>
                     {getFieldError('startDate') && (
                       <motion.p
                         initial={{ opacity: 0 }}
@@ -576,19 +580,22 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
                     )}
                   </div>
 
+                  {/* End Date Container */}
                   <div className="flex-grow">
-                    <Controller
-                      name={`entries.${activeIndex}.endDate`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder={currentEntry?.current ? "Present" : "Dec 2023"}
-                          disabled={currentEntry?.current || isSaving}
-                          className={`resume-input ${currentEntry?.current ? 'opacity-50' : ''}`}
-                        />
-                      )}
-                    />
+                    <div className={`resume-input-container ${getFieldError('endDate') && !currentEntry?.current ? 'resume-input-container--error' : ''}`}>
+                      <Controller
+                        name={`entries.${activeIndex}.endDate`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder={currentEntry?.current ? "Present" : "Dec 2023"}
+                            disabled={currentEntry?.current || isSaving}
+                            className={`resume-input ${currentEntry?.current ? 'opacity-50' : ''}`}
+                          />
+                        )}
+                      />
+                    </div>
                     {getFieldError('endDate') && !currentEntry?.current && (
                       <motion.p
                         initial={{ opacity: 0 }}
@@ -601,6 +608,7 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
                     )}
                   </div>
 
+                  {/* Current Position Toggle */}
                   <div className="flex flex-col items-center pt-2 gap-1">
                     <Controller
                       name={`entries.${activeIndex}.current`}

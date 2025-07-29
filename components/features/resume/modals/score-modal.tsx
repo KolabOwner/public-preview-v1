@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Lock, XCircle, AlertCircle, CheckCircle } from 'lucide-react';
 import { type ResumeScore, type AuditResult } from '@/lib/server/services/resume/scorer';
+import { useSubscription } from '@/lib/client/hooks/auth/use-subscription';
 
 interface ScoreModalProps {
   isOpen: boolean;
@@ -126,12 +127,12 @@ const ComparisonBarChart = ({ userScore }: { userScore: number }) => {
             return (
               <div 
                 key={index}
-                className={`flex h-full flex-1 flex-col-reverse rounded-t-2xl ${
+                className={`relative flex h-full flex-1 flex-col-reverse rounded-t-2xl ${
                   isUserBar ? '' : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
                 {isUserBar && (
-                  <div className="absolute bottom-0 top-0 w-full rounded-t-2xl opacity-40 bg-teal-500" />
+                  <div className="absolute inset-0 rounded-t-2xl opacity-20 bg-teal-500 pointer-events-none" />
                 )}
                 <div 
                   className={`w-full rounded-t-2xl ${
@@ -199,8 +200,8 @@ const CategoryScoreCircle = ({ score, isActive }: { score: number; isActive: boo
 };
 
 // Audit Item Component
-const AuditItem = ({ audit }: { audit: AuditResult }) => {
-  if (audit.isPro) {
+const AuditItem = ({ audit, isSubscribed }: { audit: AuditResult; isSubscribed: boolean }) => {
+  if (audit.isPro && !isSubscribed) {
     return (
       <div className="flex-start flex cursor-pointer items-baseline gap-x-4 py-4">
         <Lock className="w-4 h-4 text-gray-900 dark:text-gray-100" />
@@ -257,6 +258,8 @@ function ScoreModal({
   resumeData 
 }: ScoreModalProps) {
   const [activeTab, setActiveTab] = useState(0);
+  const { subscription } = useSubscription();
+  const isSubscribed = subscription.isPro || subscription.isEnterprise;
   
   if (!isOpen || !resumeScore) return null;
   
@@ -365,8 +368,8 @@ function ScoreModal({
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                       {activeAudits.length > 0 ? (
                         activeAudits.map((audit) => (
-                          <li key={audit.id} className={audit.isPro ? '' : 'last:border-0'}>
-                            <AuditItem audit={audit} />
+                          <li key={audit.id} className={audit.isPro && !isSubscribed ? '' : 'last:border-0'}>
+                            <AuditItem audit={audit} isSubscribed={isSubscribed} />
                           </li>
                         ))
                       ) : (

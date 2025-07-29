@@ -1,7 +1,10 @@
 import React from 'react';
 import Image from 'next/image';
-import { Star, CheckCircle, ArrowRight, Target, FileText, Zap, Shield, Download } from 'lucide-react';
+import { CheckCircle, ArrowRight, Target } from 'lucide-react';
 import MainNavbar from '@/components/features/dashboard/main-navbar';
+import FaqSection from '@/components/marketing/FaqSection';
+import CtaSection from '@/components/marketing/CtaSection';
+import Footer from '@/components/marketing/Footer';
 
 export default function AIResumeBuilderPage() {
   return (
@@ -76,64 +79,145 @@ export default function AIResumeBuilderPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">How it works</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
-              Smart Resume Building
-              <span className="text-amber-500 block">Powered by AI</span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our advanced AI technology streamlines the resume creation process, 
-              helping you build professional documents efficiently.
-            </p>
+      <section className="bg-gray-50">
+        <div className="py-20 md:py-28">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-20">
+              <div className="mb-4">
+                <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">How it works</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                A new kind of <span className="text-amber-500">AI Resume Builder</span>
+                <br />Powered by ChatGPT
+              </h2>
+              <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                You're great at your job. You don't need to be great at writing resumes. 
+                That's what we're here for—with the most advanced resume-writing AI to do the heavy lifting for you.
+              </p>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-12">
-            {/* Step 1 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-amber-500">1</span>
+          {/* Step 1 */}
+          <div className="pb-20 md:pb-28">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                <div className="order-2 lg:order-1">
+                  <div className="mb-6">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-600 font-semibold text-sm mb-4">
+                      Step 1
+                    </div>
+                    <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                      Fill out Some Basic Info
+                    </h3>
+                    <p className="text-lg text-gray-600 mb-8">
+                      Tell us your field of work and level of experience. If you're targeting a particular job, 
+                      paste the description. This way, the AI Resume Builder will know what to highlight.
+                    </p>
+                    <a href="/sign-up" className="bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold text-lg inline-block hover:bg-amber-600 transition-colors">
+                      Create your resume now
+                    </a>
+                  </div>
+                </div>
+                <div className="order-1 lg:order-2">
+                  <div className="relative">
+                    <div className="absolute -right-4 -bottom-4 w-full h-full bg-amber-100 rounded-2xl opacity-20"></div>
+                    <Image
+                      src="/images/ai-resume-builder/howitworks-1.png"
+                      alt="Fill out Basic Information"
+                      width={500}
+                      height={357}
+                      className="relative rounded-2xl shadow-2xl border border-gray-200"
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto'
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Share Your Information</h3>
-              <p className="text-gray-600 mb-6">
-                Provide your work experience, skills, and career goals. Upload an existing resume 
-                or start fresh with our guided process.
-              </p>
-              <a href="/sign-up" className="text-amber-500 font-semibold">
-                Get Started →
-              </a>
             </div>
+          </div>
 
-            {/* Step 2 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-amber-500">2</span>
+          {/* Step 2 */}
+          <div className="pb-20 md:pb-28">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                <div className="order-2">
+                  <div className="mb-6">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-600 font-semibold text-sm mb-4">
+                      Step 2
+                    </div>
+                    <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                      Add Your Work History
+                    </h3>
+                    <p className="text-lg text-gray-600 mb-8">
+                      Start with the job title and the company name. Writer's block? Easy. 
+                      Our carefully trained AI model will suggest strong bullet points that match your career profile.
+                    </p>
+                    <a href="/sign-up" className="bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold text-lg inline-block hover:bg-amber-600 transition-colors">
+                      Create your resume now
+                    </a>
+                  </div>
+                </div>
+                <div className="order-1">
+                  <div className="relative">
+                    <div className="absolute -left-4 -bottom-4 w-full h-full bg-blue-100 rounded-2xl opacity-20"></div>
+                    <Image
+                      src="/images/ai-resume-builder/howitworks-2.png"
+                      alt="Add Work History with AI"
+                      width={700}
+                      height={500}
+                      className="relative rounded-2xl shadow-2xl border border-gray-200"
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto'
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Enhancement</h3>
-              <p className="text-gray-600 mb-6">
-                Our AI analyzes your information and suggests improvements, optimizes keywords, 
-                and ensures your resume meets industry standards.
-              </p>
-              <a href="/sign-up" className="text-amber-500 font-semibold">
-                Learn More →
-              </a>
             </div>
+          </div>
 
-            {/* Step 3 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-amber-500">3</span>
+          {/* Step 3 */}
+          <div className="pb-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                <div className="order-2 lg:order-1">
+                  <div className="mb-6">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-600 font-semibold text-sm mb-4">
+                      Step 3
+                    </div>
+                    <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                      Get Detailed Feedback
+                    </h3>
+                    <p className="text-lg text-gray-600 mb-8">
+                      The Kolab AI Resume Builder will tell you exactly what to improve to take your resume 
+                      from solid to job-winning. You'll know what keywords to use and how to optimize 
+                      your document for readability.
+                    </p>
+                    <a href="/sign-up" className="bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold text-lg inline-block hover:bg-amber-600 transition-colors">
+                      Create your resume now
+                    </a>
+                  </div>
+                </div>
+                <div className="order-1 lg:order-2">
+                  <div className="relative">
+                    <div className="absolute -right-4 -bottom-4 w-full h-full bg-green-100 rounded-2xl opacity-20"></div>
+                    <Image
+                      src="/images/ai-resume-builder/howitworks-3.png"
+                      alt="Get Detailed Feedback"
+                      width={700}
+                      height={500}
+                      className="relative rounded-2xl shadow-2xl border border-gray-200"
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto'
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Professional Results</h3>
-              <p className="text-gray-600 mb-6">
-                Download your polished resume in multiple formats. Get detailed feedback 
-                and suggestions for continuous improvement.
-              </p>
-              <a href="/sign-up" className="text-amber-500 font-semibold">
-                View Samples →
-              </a>
             </div>
           </div>
         </div>
@@ -249,138 +333,151 @@ export default function AIResumeBuilderPage() {
         </div>
       </section>
 
-      {/* Templates Section */}
-      <section className="py-20 bg-gray-50">
+      {/* Resume Examples Section */}
+      <section className="py-20 bg-navy-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">Resume Templates</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
-              Professional Templates
-              <span className="text-amber-500 block">For Every Industry</span>
-            </h2>
+          <div className="mb-16">
+            <div className="max-w-4xl">
+              <div className="mb-4">
+                <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">Resume Examples</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Over <span className="text-amber-500">900 Sample Resumes</span> You Can Start with
+              </h2>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Template previews */}
-            {[1, 2, 3].map((template) => (
-              <div key={template} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="h-64 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <FileText className="h-16 w-16 text-gray-400" />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Modern Professional</h3>
-                  <p className="text-gray-600 mb-4">Clean and contemporary design perfect for most industries.</p>
-                  <a href="/sign-up" className="text-amber-500 font-semibold flex items-center">
-                    Use Template <ArrowRight className="h-4 w-4 ml-1" />
+          <div className="mb-16 hidden md:block">
+            <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+              <div className="relative">
+                <Image
+                  src="/images/samples/featured-sample.png"
+                  alt="Modern Resume Template"
+                  width={850}
+                  height={1100}
+                  className="rounded-lg border border-gray-700 shadow-xl"
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto'
+                  }}
+                />
+              </div>
+              <div>
+                <h3 className="text-3xl font-bold text-white mb-6">Need a reference point?</h3>
+                <p className="text-lg text-gray-300 mb-8">
+                  Browse our list of sample resumes for 350+ most popular roles. Find one that matches your desired job title, 
+                  see how it's done, and steal some good ideas (we won't tell).
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <a href="/sign-up" className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold inline-block hover:bg-amber-600 transition-colors">
+                    Create my resume
+                  </a>
+                  <a href="/resume-templates" className="border border-gray-600 text-gray-300 px-6 py-3 rounded-lg font-semibold inline-flex items-center hover:bg-gray-800 transition-colors">
+                    View more samples
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </a>
                 </div>
               </div>
-            ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Tech Resume 1 */}
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              <a href="/sign-up" className="block">
+                <div className="relative h-64 bg-white border border-gray-700">
+                  <Image
+                    src="/images/samples/tech-1.png"
+                    alt="Software Engineer Resume"
+                    fill
+                    className="object-cover object-top"
+                  />
+                </div>
+              </a>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-3">Software Engineer</h3>
+                <a href="/sign-up" className="text-amber-500 font-semibold inline-flex items-center hover:text-amber-400">
+                  Use this sample
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </a>
+              </div>
+            </div>
+
+            {/* Business Resume 1 */}
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              <a href="/sign-up" className="block">
+                <div className="relative h-64 bg-white border border-gray-700">
+                  <Image
+                    src="/images/samples/business-1.png"
+                    alt="Business Analyst Resume"
+                    fill
+                    className="object-cover object-top"
+                  />
+                </div>
+              </a>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-3">Business Analyst</h3>
+                <a href="/sign-up" className="text-amber-500 font-semibold inline-flex items-center hover:text-amber-400">
+                  Use this sample
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </a>
+              </div>
+            </div>
+
+            {/* Creative Resume 1 */}
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              <a href="/sign-up" className="block">
+                <div className="relative h-64 bg-white border border-gray-700">
+                  <Image
+                    src="/images/samples/creative-1.png"
+                    alt="Creative Director Resume"
+                    fill
+                    className="object-cover object-top"
+                  />
+                </div>
+              </a>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-3">Creative Director</h3>
+                <a href="/sign-up" className="text-amber-500 font-semibold inline-flex items-center hover:text-amber-400">
+                  Use this sample
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </a>
+              </div>
+            </div>
+
+            {/* Tech Resume 2 */}
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              <a href="/sign-up" className="block">
+                <div className="relative h-64 bg-white border border-gray-700">
+                  <Image
+                    src="/images/samples/tech-2.png"
+                    alt="Data Scientist Resume"
+                    fill
+                    className="object-cover object-top"
+                  />
+                </div>
+              </a>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-3">Data Scientist</h3>
+                <a href="/sign-up" className="text-amber-500 font-semibold inline-flex items-center hover:text-amber-400">
+                  Use this sample
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="h-8 w-8 text-amber-500" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">AI-Powered Writing</h3>
-              <p className="text-gray-600">
-                Generate compelling bullet points and summaries with our advanced AI technology.
-              </p>
-            </div>
-            
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-amber-500" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">ATS Optimization</h3>
-              <p className="text-gray-600">
-                Ensure your resume passes applicant tracking systems with proper formatting.
-              </p>
-            </div>
-            
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Download className="h-8 w-8 text-amber-500" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Multiple Formats</h3>
-              <p className="text-gray-600">
-                Download your resume in PDF, Word, or other formats as needed.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Testimonials */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">What Our Users Say</h2>
-            <div className="flex justify-center items-center mb-8">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-6 w-6 text-yellow-400 fill-current" />
-              ))}
-              <span className="ml-2 text-gray-600">4.8 out of 5 based on 1,200+ reviews</span>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4">
-                &#34;The AI suggestions were incredibly helpful. I landed three interviews within a week 
-                of updating my resume with Kolab AI.&#34;
-              </p>
-              <div className="font-semibold text-gray-900">Sarah Chen</div>
-              <div className="text-gray-600">Software Engineer</div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4">
-                &#34;Simple to use and the results speak for themselves. My resume now passes ATS 
-                systems and looks incredibly professional.&#34;
-              </p>
-              <div className="font-semibold text-gray-900">Michael Rodriguez</div>
-              <div className="text-gray-600">Marketing Manager</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* FAQ Section */}
+      <FaqSection />
 
       {/* CTA Section */}
-      <section className="py-20 bg-amber-500">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Build Your Professional Resume?
-          </h2>
-          <p className="text-xl text-amber-100 mb-8">
-            Join thousands of professionals who have enhanced their careers with Kolab AI.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/sign-up" className="bg-white text-amber-600 px-8 py-4 rounded-lg font-semibold text-lg text-center inline-block">
-              Start Building Now
-            </a>
-            <a href="/sign-up" className="bg-transparent text-white px-8 py-4 rounded-lg font-semibold text-lg border border-white text-center inline-block">
-              View Examples
-            </a>
-          </div>
-        </div>
-      </section>
+      <CtaSection />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

@@ -55,6 +55,7 @@
 .resume-form-nav-button {
   @apply hover:bg-corporate-amber-100 dark:hover:bg-corporate-amber-900/20;
   @apply disabled:opacity-40;
+  @apply text-corporate-navy-700 dark:text-gray-300;
 }
 
 .resume-form-nav-counter {
@@ -257,19 +258,19 @@
   .resume-form-header {
     @apply px-4 py-3;
   }
-  
+
   .resume-form-content {
     @apply p-4;
   }
-  
+
   .resume-form-title {
     @apply text-base;
   }
-  
+
   .resume-form-actions {
     @apply flex-col gap-3;
   }
-  
+
   .resume-button-primary,
   .resume-button-secondary {
     @apply w-full;

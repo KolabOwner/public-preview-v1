@@ -137,7 +137,7 @@ export default function SamplesPage() {
   const error = errors[activeCategory];
 
   return (
-    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 bg-background text-foreground">
+    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 bg-background text-foreground min-h-screen">
       <div className="relative flex w-[100vw] flex-col gap-4 md:gap-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8">
         <main className="w-full sm:h-full lg:h-auto">
           {/* Page Header */}
@@ -150,11 +150,11 @@ export default function SamplesPage() {
             {/* Search Form */}
             <form className="relative flex w-[100%] flex-row items-center justify-start self-stretch">
               <div className="flex w-full flex-col gap-1">
-                <div className="w-[100%] h-10 text-base sm:h-12 flex w-full flex-row items-center self-stretch border-2 rounded transition-all duration-200 border-border px-3 py-1 bg-background gap-1">
+                <div className="w-[100%] h-10 text-base sm:h-12 flex w-full flex-row items-center self-stretch border-2 rounded transition-all duration-200 border-border px-3 py-1 bg-card gap-1">
                   <i className="fad fa-magnifying-glass !flex h-6 !w-6 justify-center items-center text-muted-foreground" aria-hidden="true"></i>
                   <input
                     autoComplete="off"
-                    className="bg-background text-foreground h-6 w-full !border-0 px-1 text-base font-semibold leading-6 placeholder:text-muted-foreground text-ellipsis focus:outline-none focus:ring-0"
+                    className="bg-transparent text-card-foreground h-6 w-full !border-0 px-1 text-base font-semibold leading-6 placeholder:text-muted-foreground text-ellipsis focus:outline-none focus:ring-0"
                     type="text"
                     placeholder="Search resume and cover letter samples by role or skill"
                   />
@@ -165,7 +165,7 @@ export default function SamplesPage() {
             {/* Mobile Category Dropdown */}
             <div className="block w-full sm:hidden">
               <select
-                className="h-10 sm:h-12 pl-4 text-base leading-6 pr-4 py-1 rounded w-full cursor-pointer font-semibold text-foreground bg-background border-2 border-border"
+                className="h-10 sm:h-12 pl-4 text-base leading-6 pr-4 py-1 rounded w-full cursor-pointer font-semibold text-card-foreground bg-card border-2 border-border"
                 style={{ fontWeight: 600 }}
                 value={activeCategory}
                 onChange={(e) => handleCategoryChange(e.target.value as Category)}

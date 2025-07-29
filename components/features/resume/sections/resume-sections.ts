@@ -158,7 +158,7 @@ export function getSectionTitle(
   // Template-specific title variations
   const templateTitles: Record<string, Record<string, string>> = {
     professional: {
-      summary: 'PROFESSIONAL SUMMARY',
+      summary: 'SUMMARY',
       experience: 'EXPERIENCE',
       education: 'EDUCATION',
       skills: 'SKILLS',
@@ -176,7 +176,7 @@ export function getSectionTitle(
       skills: 'What I Bring',
     },
     minimal: {
-      summary: 'PROFESSIONAL SUMMARY',
+      summary: 'SUMMARY',
       experience: 'EXPERIENCE',
       education: 'EDUCATION',
       skills: 'EXPERT-LEVEL SKILLS',

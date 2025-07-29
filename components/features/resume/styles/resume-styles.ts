@@ -332,9 +332,9 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
     .resume-school-info {
       font-size: var(--resume-font-size-body) !important;
       line-height: var(--resume-line-height-body) !important;
-      font-weight: var(--resume-font-weight-body) !important;
+      font-weight: 400 !important;
       color: var(--resume-color-text) !important;
-      font-style: italic !important;
+      font-style: normal !important;
     }
 
     /* Body Text Styles */
@@ -342,7 +342,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
     .resume-body-text {
       font-size: var(--resume-font-size-body) !important;
       line-height: var(--resume-line-height-body) !important;
-      font-weight: var(--resume-font-weight-body) !important;
+      font-weight: 400 !important;
       letter-spacing: var(--resume-letter-spacing-body) !important;
       text-align: var(--resume-text-align-body) !important;
       color: var(--resume-color-text) !important;
@@ -351,19 +351,22 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
     /* Detail Text Styles */
     .resume-detail-text,
     .resume-date {
-      font-size: var(--resume-font-size-detail) !important;
+      font-size: var(--resume-font-size-body) !important;
       line-height: var(--resume-line-height-body) !important;
-      font-weight: var(--resume-font-weight-body) !important;
+      font-weight: 400 !important;
       color: var(--resume-color-muted) !important;
     }
 
     .resume-date {
-      font-style: italic !important;
+      font-style: normal !important;
+      font-weight: 600 !important;
+      color: var(--resume-color-text) !important;
+      font-size: var(--resume-font-size-body) !important;
     }
 
     /* List Styles */
     .resume-bullet-list {
-      margin-left: var(--resume-bullet-indent) !important;
+      margin-left: 0.75rem !important;
       list-style: none !important;
     }
 
@@ -373,16 +376,16 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
       padding-left: 0 !important;
       line-height: var(--resume-line-height-body) !important;
       font-size: var(--resume-font-size-body) !important;
-      font-weight: var(--resume-font-weight-body) !important;
+      font-weight: 400 !important;
       letter-spacing: var(--resume-letter-spacing-body) !important;
       text-align: var(--resume-text-align-body) !important;
-      color: var(--resume-color-text) !important;
+      color: var(--resume-color-muted) !important;
     }
 
     .resume-bullet-list li:before {
       content: "•" !important;
       position: absolute !important;
-      left: -0.75rem !important;
+      left: -0.5rem !important;
       color: var(--resume-color-text) !important;
       font-weight: bold !important;
     }
@@ -408,11 +411,12 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
       font-size: var(--resume-font-size-body) !important;
       line-height: var(--resume-line-height-body) !important;
       margin-bottom: var(--resume-spacing-bullet) !important;
+      font-weight: 400 !important;
     }
 
     .resume-skills-title {
-      font-weight: var(--resume-font-weight-title) !important;
-      display: inline !important;
+      font-weight: 400 !important;
+      display: none !important;
       color: var(--resume-color-secondary) !important;
     }
 
@@ -420,6 +424,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
     .resume-summary {
       text-align: var(--resume-text-align-body) !important;
       margin-bottom: 0 !important;
+      font-weight: 400 !important;
     }
 
     /* Icons Styles (if using icons) */
@@ -547,7 +552,7 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
       lineHeight: styles.lineHeights.body,
       fontWeight: styles.typography.fontWeights.body,
       color: styles.colors.text,
-      fontStyle: 'italic' as const,
+      fontStyle: 'normal' as const,
     },
     bodyText: {
       fontSize: `${styles.fontSizes.body}pt`,
@@ -556,23 +561,25 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
       letterSpacing: styles.typography.letterSpacing.body,
       textAlign: styles.layout.textAlign.body as any,
       color: styles.colors.text,
+      fontStyle: 'normal' as const, // Ensure no italic styling
     },
     detailText: {
-      fontSize: `${styles.fontSizes.detail}pt`,
+      fontSize: `${styles.fontSizes.body}pt`,
       lineHeight: styles.lineHeights.body,
-      fontWeight: styles.typography.fontWeights.body,
+      fontWeight: 400,
       color: styles.colors.muted,
+      fontStyle: 'normal' as const, // Ensure no italic styling
     },
     date: {
       fontSize: `${styles.fontSizes.detail}pt`,
       lineHeight: styles.lineHeights.body,
-      fontWeight: styles.typography.fontWeights.body,
-      fontStyle: 'italic' as const,
+      fontWeight: 600, // Make dates bolder
+      fontStyle: 'normal' as const,
       ...(templateId === 'modern' ? {} : { float: 'right' as const }),
-      color: styles.colors.muted,
+      color: styles.colors.text, // Use normal text color instead of muted
     },
     bulletList: {
-      marginLeft: styles.layout.bulletIndent,
+      marginLeft: '0.75rem',
       listStyle: 'none',
     },
     bulletItem: {
@@ -580,18 +587,19 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
       marginBottom: `${styles.spacing.bulletGap}rem`,
       lineHeight: styles.lineHeights.body,
       fontSize: `${styles.fontSizes.body}pt`,
-      fontWeight: styles.typography.fontWeights.body,
+      fontWeight: 400,
       letterSpacing: styles.typography.letterSpacing.body,
       textAlign: styles.layout.textAlign.body as any,
-      color: styles.colors.text,
+      color: styles.colors.muted,
     },
     bulletPoint: {
       color: styles.colors.text,
       fontWeight: 'bold' as const,
     },
     skillsTitle: {
-      fontWeight: styles.typography.fontWeights.title,
+      fontWeight: 400,
       color: styles.colors.secondary,
+      display: 'none',
     },
     icon: {
       color: styles.colors.accent,

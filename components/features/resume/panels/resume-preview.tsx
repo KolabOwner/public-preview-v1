@@ -480,9 +480,23 @@ export default function ResumePreview({
                       {decodeHTMLEntities(exp.position || exp.title || 'Position')}
                     </h3>
                   </div>
-                  <div className="resume-company" style={inlineStyles.bodyText}>
-                    <span>{decodeHTMLEntities(exp.company || 'Company')}</span>
-                    <span className="resume-date" style={inlineStyles.date}>
+                  <div className="resume-company" style={{
+                    ...inlineStyles.bodyText,
+                    fontWeight: 600,
+                    fontStyle: 'normal',
+                    color: '#000000'
+                  }}>
+                    <span style={{
+                      fontWeight: 600,
+                      fontStyle: 'normal',
+                      color: '#000000'
+                    }}>{decodeHTMLEntities(exp.company || 'Company')}</span>
+                    <span className="resume-date" style={{
+                      ...inlineStyles.date,
+                      fontWeight: 600,
+                      fontStyle: 'normal',
+                      color: '#000000'
+                    }}>
                       {formatDate(exp.dateBegin || exp.startDate)} - {formatDate(exp.dateEnd || exp.endDate)}
                       {exp.location && `, ${decodeHTMLEntities(exp.location)}`}
                     </span>
@@ -752,7 +766,7 @@ export default function ResumePreview({
                     {cert.issuer || 'Issuing Organization'}
                   </p>
                 </div>
-                <p style={{ ...inlineStyles.detailText, fontStyle: 'italic' }}>
+                <p className="resume-date" style={inlineStyles.date}>
                   {formatDate(cert.date)}
                 </p>
               </div>

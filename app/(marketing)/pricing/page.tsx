@@ -1,6 +1,9 @@
 import React from 'react';
-import { CheckCircle, FileText, Zap, Users, Target, X } from 'lucide-react';
+import { CheckCircle, FileText, Zap, Users, Target, X, HelpCircle, Minus } from 'lucide-react';
 import MainNavbar from '@/components/features/dashboard/main-navbar';
+import CtaSection from '@/components/marketing/CtaSection';
+import DashboardMockup from '@/components/marketing/DashboardMockup';
+import Footer from '@/components/marketing/Footer';
 
 export default function PricingPage() {
   const pricingPlans = [
@@ -171,10 +174,11 @@ export default function PricingPage() {
     <div className="min-h-screen bg-white">
       <MainNavbar />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20 pt-32">
+      {/* Hero & Pricing Cards Combined Section */}
+      <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20 pt-32 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
+          {/* Hero Content */}
+          <div className="text-center mb-16">
             <div className="mb-4">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                 Pricing Plans
@@ -189,12 +193,8 @@ export default function PricingPage() {
               Find the plan that fits your job search needs.
             </p>
           </div>
-        </div>
-      </section>
 
-      {/* Pricing Cards */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Pricing Cards */}
           <div className="grid lg:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => (
               <div key={index} className={`relative bg-white rounded-xl border-2 p-8 ${plan.popular ? 'border-blue-500 shadow-xl' : 'border-gray-200'}`}>
@@ -243,31 +243,402 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-gray-50">
+      {/* Detailed Feature Comparison Table */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Our Platform?
+              Detailed Feature Comparison
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our comprehensive suite of career tools helps you stand out in today&#39;s competitive job market.
+              See exactly what's included in each plan
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon;
-              return (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <IconComponent className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+          {/* Desktop Table */}
+          <div className="hidden lg:block overflow-x-auto">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200">
+              {/* Table Header */}
+              <div className="grid grid-cols-4 bg-gray-50 rounded-t-xl">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-700">Features</h3>
                 </div>
-              );
-            })}
+                <div className="p-6 text-center border-l border-gray-200">
+                  <h3 className="text-xl font-bold text-gray-900">Free</h3>
+                  <div className="text-3xl font-bold text-gray-900 mt-2">$0<span className="text-base font-normal text-gray-600">/mo</span></div>
+                  <button className="mt-4 px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                    Get Started
+                  </button>
+                </div>
+                <div className="p-6 text-center border-l border-gray-200">
+                  <h3 className="text-xl font-bold text-gray-900">Lifetime</h3>
+                  <div className="text-3xl font-bold text-gray-900 mt-2">$149</div>
+                  <button className="mt-4 px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                    Get Started
+                  </button>
+                </div>
+                <div className="p-6 text-center border-l border-gray-200 bg-amber-50 rounded-tr-xl">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-500 text-white mb-2">
+                    Most Popular
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Pro</h3>
+                  <div className="text-3xl font-bold text-gray-900 mt-2">$29<span className="text-base font-normal text-gray-600">/mo</span></div>
+                  <button className="mt-4 px-6 py-2 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600 transition-colors">
+                    Get Started
+                  </button>
+                </div>
+              </div>
+
+              {/* Kolab Usage Section */}
+              <div className="border-t border-gray-200">
+                <div className="grid grid-cols-4">
+                  <div className="p-4 bg-blue-50">
+                    <h4 className="font-semibold text-blue-700">Kolab Usage</h4>
+                  </div>
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200 bg-blue-50/50" />
+                </div>
+              </div>
+
+              {/* Resume Builder Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">Kolab Resume Builder</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <span className="text-gray-600">1 Resume Limit</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Features Section */}
+              <div className="border-t border-gray-200">
+                <div className="grid grid-cols-4">
+                  <div className="p-4 bg-green-50">
+                    <h4 className="font-semibold text-green-700">AI Features</h4>
+                  </div>
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200 bg-green-50/50" />
+                </div>
+              </div>
+
+              {/* AI Resume Writer Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200 bg-gray-50">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">AI Resume Writer</span>
+                  <div className="group relative">
+                    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      Let AI perfectly write your bullet points, trained on best practices.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <Minus className="w-5 h-5 text-gray-400 mx-auto" />
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                </div>
+              </div>
+
+              {/* Cover Letter Builder Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">Cover Letter Builder</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Keyword Targeting Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200 bg-gray-50">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">AI Keyword Targeting</span>
+                  <div className="group relative">
+                    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      Automatically optimize your resume with job-specific keywords for ATS systems.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <span className="text-gray-600">Limited</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Full</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Full</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Real Time Content Analysis Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">Real Time Content Analysis</span>
+                  <div className="group relative">
+                    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      Get instant feedback on grammar, tone, and content quality as you type.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <span className="text-gray-600">Limited</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Full</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Full</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Expert Resume Review Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200 bg-gray-50">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">Expert Resume Review</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <span className="text-gray-600">From $5</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <span className="text-gray-600">From $5</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">1 Free per month</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* ATS Score Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">ATS Score</span>
+                  <div className="group relative">
+                    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      Kolab evaluates the strength of your resume with 23 key metrics.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <span className="text-gray-600">Limited</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Full</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Full</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Downloads & Export Section */}
+              <div className="border-t border-gray-200">
+                <div className="grid grid-cols-4">
+                  <div className="p-4 bg-purple-50">
+                    <h4 className="font-semibold text-purple-700">Downloads & Export</h4>
+                  </div>
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200 bg-purple-50/50" />
+                </div>
+              </div>
+
+              {/* PDF Downloads Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200 bg-gray-50">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">PDF Downloads</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <span className="text-gray-600">3 Download Limit</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Microsoft Word Export Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">Microsoft Word .DOCX Export</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Support & Interview Section */}
+              <div className="border-t border-gray-200">
+                <div className="grid grid-cols-4">
+                  <div className="p-4 bg-orange-50">
+                    <h4 className="font-semibold text-orange-700">Support & Interview</h4>
+                  </div>
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200 bg-orange-50/50" />
+                </div>
+              </div>
+
+              {/* AI Interview Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">AI Interview Practice</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <span className="text-gray-600">1 Interview Limit</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-900">Unlimited</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Templates Section */}
+              <div className="border-t border-gray-200">
+                <div className="grid grid-cols-4">
+                  <div className="p-4 bg-indigo-50">
+                    <h4 className="font-semibold text-indigo-700">Resume Templates</h4>
+                  </div>
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200" />
+                  <div className="p-4 border-l border-gray-200 bg-indigo-50/50" />
+                </div>
+              </div>
+
+              {/* Standard Template Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">Standard Resume Template</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                </div>
+                <div className="p-4 text-center border-l border-gray-200 bg-gray-50">
+                  <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                </div>
+              </div>
+
+              {/* Premium Templates Row */}
+              <div className="grid grid-cols-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                <div className="p-4 flex items-center gap-2">
+                  <span className="font-medium text-gray-900">Premium Resume Templates</span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <Minus className="w-5 h-5 text-gray-400 mx-auto" />
+                </div>
+                <div className="p-4 text-center border-l border-gray-200">
+                  <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                </div>
+                <div className="p-4 text-center border-l border-gray-200 rounded-br-xl">
+                  <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile View */}
+          <div className="lg:hidden">
+            <p className="text-center text-gray-600 mb-8">Please view on desktop for full feature comparison</p>
+            <div className="space-y-4">
+              {['Free', 'Lifetime', 'Pro'].map((plan, index) => (
+                <div key={index} className="bg-white rounded-lg border-2 border-gray-200 p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{plan}</h3>
+                  <p className="text-gray-600">View on desktop to see all features</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -300,24 +671,13 @@ export default function PricingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Accelerate Your Career?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands of professionals who have landed their dream jobs with our platform.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors">
-              Start Free Trial
-            </button>
-            <button className="bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-800 transition-colors border border-blue-500">
-              View All Features
-            </button>
-          </div>
-        </div>
-      </section>
+      <CtaSection />
+
+      {/* Dashboard Mockup */}
+      <DashboardMockup />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

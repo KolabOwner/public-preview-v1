@@ -150,24 +150,6 @@ const HeroContent = memo(() => {
           </Button>
         </div>
 
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 pt-4">
-          <div className="flex items-center gap-3" role="group" aria-label="User testimonials">
-            <div className="flex -space-x-2" aria-hidden="true">
-              {[1,2,3,4].map((i) => (
-                <div key={i} className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-white shadow-lg"></div>
-              ))}
-            </div>
-            <span className="font-medium text-corporate-navy-600 font-corporate-sans">Trusted by 1.3M+ professionals</span>
-          </div>
-          <div className="flex items-center gap-2" role="group" aria-label="User ratings">
-            <div className="flex" aria-label="5 out of 5 stars">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 text-corporate-gold-500 fill-current" aria-hidden="true" />
-              ))}
-            </div>
-            <span className="ml-1 font-medium text-corporate-navy-600 font-corporate-sans">4.8/5 from 12,000+ reviews</span>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -889,7 +871,7 @@ const resumeData: ResumeData = {
       <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-corporate-navy-500/3 rounded-full blur-2xl animate-bounce" aria-hidden="true"></div>
       <div className="absolute inset-0 bg-grid-black opacity-[0.01]" aria-hidden="true"></div>
 
-      <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-12 lg:py-20">
+      <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pt-12 lg:pt-16 pb-0">
         {/* Main Hero Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[500px] lg:min-h-[600px]">
           {/* Left Side - Hero Content */}

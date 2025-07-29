@@ -1,16 +1,32 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+/**
+ * SkillsForm Component
+ *
+ * Features:
+ * - Auto-save: Updates store in memory every 2 seconds (doesn't persist to database)
+ * - Manual save: Persists to database via Save button or Ctrl+S
+ * - Navigation: Switch between multiple skill entries
+ * - Validation: Real-time validation with helpful error messages
+ * - Keyboard shortcuts: Save (Ctrl+S), Undo (Ctrl+Z), New (Ctrl+Shift+N), Navigate (Arrow keys)
+ * - Enhanced with better UX patterns from experience/involvement forms
+ */
+
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Palette, Save, Loader2, Info, ChevronLeft, ChevronRight, AlertCircle, Plus, Trash2, Tag, Cpu } from "lucide-react";
+import {
+  Palette, Save, Loader2, Info, ChevronLeft, ChevronRight, AlertCircle,
+  Plus, Trash2, Tag, Cpu, Undo2, Check, Clock
+} from "lucide-react";
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
 import { Textarea } from '@/components/shared/textarea';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
 import { useResumeStore, type SkillEntry } from '@/lib/client/stores/resume-store';
+import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/form-styles.css';
 
 // Schema for a single skill entry
@@ -31,163 +47,302 @@ type SkillsFormData = z.infer<typeof skillsSchema>;
 
 interface SkillsFormProps {
   initialData: SkillEntry[];
-  onSave: (data: SkillEntry[]) => Promise<void>;
+  onSave?: (data: SkillEntry[]) => Promise<void>;
 }
 
-// Helper to clean placeholder values from initial data
+// Constants
+const PLACEHOLDER_VALUES = ['n/a', 'N/A', 'none', 'null', '-', 'NA'];
+const AUTO_SAVE_DELAY = 2000;
+
+// Helper functions
 const cleanValue = (value: string | undefined | null): string => {
   if (!value) return '';
   const trimmed = value.trim();
-  return ['n/a', 'N/A', 'none', 'null', '-', 'NA'].includes(trimmed) ? '' : trimmed;
+  return PLACEHOLDER_VALUES.includes(trimmed) ? '' : trimmed;
 };
 
-// Convert store format to form format
 const convertToFormFormat = (entries: SkillEntry[]): SkillFormEntry[] => {
   return entries.map(entry => ({
     ...entry,
+    id: entry.id || crypto.randomUUID(),
     category: cleanValue(entry.category),
     keywords: cleanValue(entry.keywords),
   }));
 };
 
-// Convert form format to store format
 const convertToStoreFormat = (formData: SkillsFormData): SkillEntry[] => {
   return formData.entries.map(entry => ({
-    id: entry.id || '',
+    id: entry.id || crypto.randomUUID(),
     category: entry.category || '',
     keywords: entry.keywords || '',
   }));
 };
 
+// Auto-save indicator component
+const AutoSaveIndicator = ({ status }: { status: 'saving' | 'saved' | 'error' | null }) => {
+  if (!status) return null;
+
+  const config = {
+    saving: { icon: Clock, text: 'Auto-saving...', className: 'text-blue-600' },
+    saved: { icon: Check, text: 'Changes auto-saved', className: 'text-green-600' },
+    error: { icon: AlertCircle, text: 'Auto-save failed', className: 'text-red-600' },
+  };
+
+  const { icon: Icon, text, className } = config[status];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className={`flex items-center gap-2 text-sm ${className}`}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{text}</span>
+    </motion.div>
+  );
+};
+
+// Custom hook for keyboard shortcuts
+const useKeyboardShortcuts = (callbacks: {
+  save: () => void;
+  undo: () => void;
+  newEntry: () => void;
+  prev: () => void;
+  next: () => void;
+}) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey) {
+        switch (e.key) {
+          case 's':
+            e.preventDefault();
+            callbacks.save();
+            break;
+          case 'z':
+            e.preventDefault();
+            callbacks.undo();
+            break;
+          case 'n':
+            if (e.shiftKey) {
+              e.preventDefault();
+              callbacks.newEntry();
+            }
+            break;
+        }
+      }
+
+      const target = e.target as HTMLElement;
+      if (!['INPUT', 'TEXTAREA'].includes(target.tagName)) {
+        switch (e.key) {
+          case 'ArrowLeft':
+            e.preventDefault();
+            callbacks.prev();
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            callbacks.next();
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [callbacks]);
+};
+
 export default function SkillsForm({ initialData, onSave }: SkillsFormProps) {
   const { toast } = useToast();
-  const { updateSection, saveSection, isSectionDirty, saveStatus } = useResumeStore();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const previousDataRef = useRef<string>('');
+  const {
+    updateSection,
+    saveSection,
+    saveStatus,
+    revertSection
+  } = useResumeStore();
 
-  const isDirty = isSectionDirty('skills');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const isSaving = saveStatus.isSaving && saveStatus.pendingSections.includes('skills');
+
+  // Initialize form
+  const defaultFormValues = useMemo(() => ({
+    entries: initialData?.length > 0
+      ? convertToFormFormat(initialData)
+      : [{
+          id: crypto.randomUUID(),
+          category: '',
+          keywords: ''
+        }]
+  }), [initialData]);
 
   const form = useForm<SkillsFormData>({
     resolver: zodResolver(skillsSchema),
-    defaultValues: {
-      entries: (initialData && initialData.length > 0) 
-        ? convertToFormFormat(initialData)
-        : [{
-            category: '',
-            keywords: ''
-          }]
-    },
-    mode: 'onChange',
+    defaultValues: defaultFormValues,
+    mode: 'onBlur',
   });
 
-  const { register, formState: { errors }, watch, setValue, getValues, reset } = form;
+  const { control, formState: { errors, isDirty }, watch, setValue, reset, getValues, trigger } = form;
 
   const { fields, append, remove } = useFieldArray({
-    control: form.control,
+    control,
     name: "entries",
   });
 
-  // Reset form when initialData changes (when switching resumes)
-  useEffect(() => {
-    const formData = (initialData && initialData.length > 0) 
-      ? convertToFormFormat(initialData)
-      : [{
-          category: '',
-          keywords: ''
-        }];
-    
-    reset({ entries: formData });
-    setActiveIndex(0);
-    previousDataRef.current = JSON.stringify(formData);
-  }, [initialData, reset]);
+  // Watch current entry
+  const currentEntry = watch(`entries.${activeIndex}`);
 
-  // Watch all form values for real-time updates
-  const watchedValues = watch();
+  // Set up auto-save with debouncing
+  const debouncedAutoSave = useCallback(() => {
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
 
-  // Update store when form data changes (no auto-save) - using ref to prevent infinite loops
+    autoSaveTimerRef.current = setTimeout(async () => {
+      setAutoSaveStatus('saving');
+      try {
+        const formData = getValues();
+        const storeData = convertToStoreFormat(formData);
+        // Only update the store, don't save to Firebase yet
+        updateSection('skills', storeData);
+        setAutoSaveStatus('saved');
+        setTimeout(() => setAutoSaveStatus(null), 3000);
+      } catch (error) {
+        setAutoSaveStatus('error');
+        console.error('Auto-save failed:', error);
+      }
+    }, AUTO_SAVE_DELAY);
+  }, [getValues, updateSection]);
+
+  // Trigger auto-save on form changes (but not on mount)
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    // Skip updates when we're just navigating between entries
-    if (isNavigatingRef.current) {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
       return;
     }
-    
-    const currentData = JSON.stringify(watchedValues);
-    const initialFormData = JSON.stringify({ entries: convertToFormFormat(initialData) });
-    
-    if (currentData !== previousDataRef.current && currentData !== initialFormData) {
-      previousDataRef.current = currentData;
-      const storeData = convertToStoreFormat(watchedValues);
-      updateSection('skills', storeData);
-    }
-  }, [watchedValues, updateSection, initialData]);
 
-  // Manual save function
-  const handleManualSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const formData = getValues();
-    
+    const subscription = watch(() => {
+      debouncedAutoSave();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, debouncedAutoSave]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Reset form when switching resumes
+  useEffect(() => {
+    reset(defaultFormValues);
+    setActiveIndex(0);
+    isFirstRender.current = true;
+  }, [initialData, reset, defaultFormValues]);
+
+  // Handlers
+  const handleManualSave = useCallback(async () => {
+    const isValid = await trigger();
+    if (!isValid) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors before saving",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      const formData = getValues();
       const storeData = convertToStoreFormat(formData);
-      await onSave(storeData); // Call the parent callback first to update the data
-      await saveSection('skills'); // Then save to the store
+
+      if (onSave) {
+        await onSave(storeData);
+      }
+
+      updateSection('skills', storeData);
+      await saveSection('skills');
+
+      // Reset form state with current values to mark as clean
+      reset({ entries: formData.entries });
+
       toast({
         title: "Success",
         description: "Skills saved successfully",
       });
     } catch (error) {
-      console.error('Manual save error:', error);
+      console.error('Save error:', error);
       toast({
         title: "Error",
         description: "Failed to save skills",
         variant: "destructive",
       });
     }
-  };
+  }, [trigger, getValues, onSave, updateSection, saveSection, reset, toast]);
 
-  const addNewSkillCategory = () => {
-    append({
+  const handleUndo = useCallback(() => {
+    revertSection('skills');
+    reset(defaultFormValues);
+    toast({
+      title: "Changes reverted",
+      description: "Skills section restored to last saved state",
+    });
+  }, [revertSection, reset, defaultFormValues, toast]);
+
+  const addNewSkillCategory = useCallback(() => {
+    const newEntry = {
+      id: crypto.randomUUID(),
       category: '',
       keywords: ''
-    });
+    };
+    append(newEntry);
     setActiveIndex(fields.length);
-  };
+  }, [append, fields.length]);
 
-  const removeSkillCategory = (index: number) => {
+  const removeSkillCategory = useCallback((index: number) => {
     if (fields.length > 1) {
       remove(index);
-      setActiveIndex(prev => Math.max(0, prev - 1));
+      setActiveIndex(Math.max(0, Math.min(index - 1, fields.length - 2)));
     }
-  };
+  }, [remove, fields.length]);
 
-  const activeEntry = watch(`entries.${activeIndex}`);
-  const headerTitle = activeEntry?.category
-    ? `${activeEntry.category}`
+  const navigatePrev = useCallback(() => {
+    setActiveIndex(prev => Math.max(0, prev - 1));
+  }, []);
+
+  const navigateNext = useCallback(() => {
+    setActiveIndex(prev => Math.min(fields.length - 1, prev + 1));
+  }, [fields.length]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    save: handleManualSave,
+    undo: handleUndo,
+    newEntry: addNewSkillCategory,
+    prev: navigatePrev,
+    next: navigateNext,
+  });
+
+  // Header title
+  const headerTitle = currentEntry?.category
+    ? `${currentEntry.category}`
     : "New Skill Category";
 
-  // Track when we're just navigating (not making actual changes)
-  const isNavigatingRef = useRef(false);
-
-  // Effect to ensure form fields update when navigating between entries
-  useEffect(() => {
-    const currentEntries = getValues("entries");
-    if (currentEntries && currentEntries[activeIndex]) {
-      // Mark that we're navigating to prevent dirty state
-      isNavigatingRef.current = true;
-      
-      const entry = currentEntries[activeIndex];
-      
-      // Use setValue with shouldDirty: false to prevent triggering dirty state
-      setValue(`entries.${activeIndex}.category`, entry.category || '', { shouldDirty: false });
-      setValue(`entries.${activeIndex}.keywords`, entry.keywords || '', { shouldDirty: false });
-      
-      // Reset navigation flag after a short delay
-      setTimeout(() => {
-        isNavigatingRef.current = false;
-      }, 50);
+  // Field error helpers
+  const getFieldErrorMessage = (field: keyof SkillFormEntry): string | undefined => {
+    const error = errors.entries?.[activeIndex]?.[field];
+    if (error && typeof error === 'object' && 'message' in error) {
+      return error.message as string;
     }
-  }, [activeIndex, setValue, getValues]);
+    return undefined;
+  };
 
   // Helper to parse skills for preview
   const parseSkills = (keywords: string): string[] => {
@@ -198,16 +353,13 @@ export default function SkillsForm({ initialData, onSave }: SkillsFormProps) {
       .filter(skill => skill.length > 0);
   };
 
-  const skillsList = parseSkills(activeEntry?.keywords || '');
+  const skillsList = parseSkills(currentEntry?.keywords || '');
 
   return (
     <div className={`resume-form-container ${isSaving ? 'resume-form-container--saving' : ''} ${isDirty ? 'resume-form-container--dirty' : ''}`}>
-      {/* Background gradient effect */}
       <div className="resume-form-background" aria-hidden="true" />
-      
-      {/* Subtle pattern overlay */}
       <div className="resume-form-pattern" aria-hidden="true" />
-      
+
       <div className="resume-form-content">
         {/* Header */}
         <div className="resume-form-header">
@@ -217,143 +369,215 @@ export default function SkillsForm({ initialData, onSave }: SkillsFormProps) {
             </div>
             <span className="truncate pr-4">{headerTitle}</span>
           </h2>
-          <div className="resume-form-nav">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))} 
-              disabled={activeIndex === 0 || isSaving}
-              className="resume-form-nav-button"
-            >
-              <ChevronLeft className="h-4 w-4 text-corporate-navy-700 dark:text-gray-300" />
-            </Button>
-            <span className="resume-form-nav-counter">
-              {activeIndex + 1} / {fields.length}
-            </span>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setActiveIndex(Math.min(fields.length - 1, activeIndex + 1))} 
-              disabled={activeIndex === fields.length - 1 || isSaving}
-              className="resume-form-nav-button"
-            >
-              <ChevronRight className="h-4 w-4 text-corporate-navy-700 dark:text-gray-300" />
-            </Button>
-            {fields.length > 1 && (
-              <>
-                <div className="resume-form-nav-divider" />
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => removeSkillCategory(activeIndex)} 
-                  disabled={isSaving}
-                  className="resume-form-delete-button"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </>
-            )}
+
+          <div className="flex items-center gap-4">
+            <AnimatePresence mode="wait">
+              <AutoSaveIndicator status={autoSaveStatus} />
+            </AnimatePresence>
+
+            <div className="resume-form-nav">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={navigatePrev}
+                disabled={activeIndex === 0 || isSaving}
+                className="resume-form-nav-button"
+                title="Previous entry (← or Ctrl+←)"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              <span className="resume-form-nav-counter">
+                {activeIndex + 1} / {fields.length}
+              </span>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={navigateNext}
+                disabled={activeIndex === fields.length - 1 || isSaving}
+                className="resume-form-nav-button"
+                title="Next entry (→ or Ctrl+→)"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+
+              {fields.length > 1 && (
+                <>
+                  <div className="resume-form-nav-divider" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeSkillCategory(activeIndex)}
+                    disabled={isSaving}
+                    className="resume-form-delete-button"
+                    title="Delete this entry"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleManualSave} className="space-y-6" aria-busy={isSaving}>
-          {/* Skill Category */}
-          <div className="space-y-2">
-            <Label className="resume-label">
-              Skill Category <span className="resume-label-required" aria-label="required">*</span>
-            </Label>
-            <div className={`resume-input-container ${errors.entries?.[activeIndex]?.category ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''}`}>
-              <Tag className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
-              <Input 
-                {...register(`entries.${activeIndex}.category`)} 
-                placeholder="Programming Languages, Design Tools, Soft Skills"
-                className="resume-input px-0 pr-3"
-                disabled={isSaving}
-              />
-            </div>
-            {errors.entries?.[activeIndex]?.category && (
-              <p className="resume-error-message">
-                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                {errors.entries[activeIndex]?.category?.message}
-              </p>
-            )}
-          </div>
+        <div onKeyDown={(e) => {
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            handleManualSave();
+          }
+        }}>
+          <div className="space-y-6">
+            {/* Add key to force re-render when switching entries */}
+            <div key={`skill-${activeIndex}`}>
+              {/* Skill Category */}
+              <div className="space-y-2 mb-6">
+                <Label className="resume-label">
+                  Skill Category <span className="resume-label-required">*</span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.category`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldErrorMessage('category') ? 'resume-input-container--error' : ''}`}>
+                      <Tag className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
+                      <Input
+                        {...field}
+                        placeholder="Programming Languages, Design Tools, Soft Skills"
+                        className="resume-input px-0 pr-3"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+                {getFieldErrorMessage('category') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    <span>{getFieldErrorMessage('category')}</span>
+                  </motion.p>
+                )}
+              </div>
 
-          {/* Skills Keywords */}
-          <div className="space-y-2">
-            <Label className="resume-label">
-              Skills in this Category <span className="resume-label-required" aria-label="required">*</span>
-            </Label>
-            <div className={`resume-input-container ${errors.entries?.[activeIndex]?.keywords ? 'resume-input-container--error' : ''} ${isSaving ? 'resume-input-container--disabled' : ''} relative`}>
-              <Cpu className="absolute left-3 top-3 h-4 w-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 flex-shrink-0" />
-              <Textarea
-                {...register(`entries.${activeIndex}.keywords`)}
-                placeholder="JavaScript, React, Node.js, TypeScript&#10;OR&#10;Figma, Adobe XD, Sketch, Wireframing"
-                className="resume-textarea pl-10 pr-3 py-3 resize-none min-h-[120px]"
-                rows={6}
-                disabled={isSaving}
-              />
-            </div>
-            {errors.entries?.[activeIndex]?.keywords && (
-              <p className="resume-error-message">
-                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                {errors.entries[activeIndex]?.keywords?.message}
-              </p>
-            )}
-            <div className="resume-help-text">
-              <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <span>Enter skills separated by commas or on new lines. Group related skills together in each category.</span>
+              {/* Skills Keywords */}
+              <div className="space-y-2">
+                <Label className="resume-label">
+                  Skills in this Category <span className="resume-label-required">*</span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.keywords`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldErrorMessage('keywords') ? 'resume-input-container--error' : ''} relative`}>
+                      <Cpu className="absolute left-3 top-3 h-4 w-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 flex-shrink-0" />
+                      <Textarea
+                        {...field}
+                        placeholder="JavaScript, React, Node.js, TypeScript&#10;OR&#10;Figma, Adobe XD, Sketch, Wireframing"
+                        className="resume-textarea pl-10 pr-3 py-3 resize-none min-h-[120px]"
+                        rows={6}
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+                {getFieldErrorMessage('keywords') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    <span>{getFieldErrorMessage('keywords')}</span>
+                  </motion.p>
+                )}
+                <div className="resume-help-text">
+                  <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span>Enter skills separated by commas or on new lines. Group related skills together in each category.</span>
+                </div>
+              </div>
+
+              {/* Skills Preview */}
+              {skillsList.length > 0 && (
+                <div className="mt-4">
+                  <Label className="resume-label">Preview</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {skillsList.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-corporate-amber-100 dark:bg-corporate-navy-800 text-corporate-navy-700 dark:text-corporate-amber-200 rounded-full text-sm"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="resume-form-actions">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {isDirty && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleUndo}
+                  disabled={isSaving}
+                  size="sm"
+                  title="Undo changes (Cmd/Ctrl+Z)"
+                >
+                  <Undo2 className="h-4 w-4 mr-1" />
+                  Undo
+                </Button>
+              )}
+
+              {isDirty && !autoSaveStatus && (
                 <span className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-1">
                   <div className="resume-section-dirty-dot" />
                   Unsaved changes
                 </span>
               )}
-              {!isDirty && saveStatus.lastSaved && (
-                <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
-                  <div className="resume-section-clean-dot" />
-                  Saved
-                </span>
-              )}
             </div>
+
             <div className="flex gap-3">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={addNewSkillCategory}
                 disabled={isSaving}
                 className="resume-button-secondary"
+                title="Add new skill category (Cmd/Ctrl+Shift+N)"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Category
               </Button>
-              <Button 
-                type="submit"
+
+              <Button
+                onClick={handleManualSave}
                 disabled={isSaving || !isDirty}
                 className="resume-button-primary"
+                title="Save all changes permanently (Cmd/Ctrl+S)"
               >
                 {isSaving ? (
                   <>
-                    <Loader2 className="resume-button-icon animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <Save className="resume-button-icon" />
-                    Save Skills
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
                   </>
                 )}
               </Button>
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
