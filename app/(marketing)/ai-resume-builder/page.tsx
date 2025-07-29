@@ -91,8 +91,8 @@ export default function AIResumeBuilderPage() {
                 <br />Powered by ChatGPT
               </h2>
               <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-                You're great at your job. You don't need to be great at writing resumes. 
-                That's what we're here for—with the most advanced resume-writing AI to do the heavy lifting for you.
+                You&apos;re great at your job. You don&apos;t need to be great at writing resumes. 
+                That&apos;s what we&apos;re here for—with the most advanced resume-writing AI to do the heavy lifting for you.
               </p>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function AIResumeBuilderPage() {
                       Fill out Some Basic Info
                     </h3>
                     <p className="text-lg text-gray-600 mb-8">
-                      Tell us your field of work and level of experience. If you're targeting a particular job, 
+                      Tell us your field of work and level of experience. If you&apos;re targeting a particular job, 
                       paste the description. This way, the AI Resume Builder will know what to highlight.
                     </p>
                     <a href="/sign-up" className="bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold text-lg inline-block hover:bg-amber-600 transition-colors">
@@ -151,7 +151,7 @@ export default function AIResumeBuilderPage() {
                       Add Your Work History
                     </h3>
                     <p className="text-lg text-gray-600 mb-8">
-                      Start with the job title and the company name. Writer's block? Easy. 
+                      Start with the job title and the company name. Writer&apos;s block? Easy. 
                       Our carefully trained AI model will suggest strong bullet points that match your career profile.
                     </p>
                     <a href="/sign-up" className="bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold text-lg inline-block hover:bg-amber-600 transition-colors">
@@ -193,7 +193,7 @@ export default function AIResumeBuilderPage() {
                     </h3>
                     <p className="text-lg text-gray-600 mb-8">
                       The Kolab AI Resume Builder will tell you exactly what to improve to take your resume 
-                      from solid to job-winning. You'll know what keywords to use and how to optimize 
+                      from solid to job-winning. You&apos;ll know what keywords to use and how to optimize 
                       your document for readability.
                     </p>
                     <a href="/sign-up" className="bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold text-lg inline-block hover:bg-amber-600 transition-colors">
@@ -366,7 +366,7 @@ export default function AIResumeBuilderPage() {
                 <h3 className="text-3xl font-bold text-white mb-6">Need a reference point?</h3>
                 <p className="text-lg text-gray-300 mb-8">
                   Browse our list of sample resumes for 350+ most popular roles. Find one that matches your desired job title, 
-                  see how it's done, and steal some good ideas (we won't tell).
+                  see how it&apos;s done, and steal some good ideas (we won&apos;t tell).
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <a href="/sign-up" className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold inline-block hover:bg-amber-600 transition-colors">

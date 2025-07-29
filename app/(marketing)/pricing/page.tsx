@@ -251,7 +251,7 @@ export default function PricingPage() {
               Detailed Feature Comparison
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              See exactly what's included in each plan
+              See exactly what&apos;s included in each plan
             </p>
           </div>
 
