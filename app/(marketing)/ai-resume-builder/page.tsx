@@ -7,40 +7,49 @@ export default function AIResumeBuilderPage() {
     <div className="min-h-screen bg-white">
       <MainNavbar />
       {/* Header/Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20 pt-32">
+      <section className="bg-navy-900 py-20 pt-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="mb-4">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            <div className="mb-6">
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-500 text-white">
                 AI Resume Builder
               </span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Professional
-              <span className="text-blue-600 block">AI Resume Builder</span>
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight">
+              The Best Free
+              <span className="text-amber-400 block">AI Resume Builder</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Create compelling resumes that get noticed. Our AI technology helps you craft professional resumes 
-              that pass ATS systems and impress hiring managers.
+            <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-4xl mx-auto leading-relaxed">
+              You'll never stare at a blank screen again. Meet our new-gen AI Resume Builder that writes the perfect resume for you. The kind of resume recruiters actually read. The kind that gets you hired.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors">
-                Build Your Resume
-              </button>
-              <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg border border-blue-600 hover:bg-blue-50 transition-colors">
-                View Examples
-              </button>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+              <a href="/sign-up" className="bg-amber-500 text-white px-10 py-5 rounded-xl font-bold text-xl text-center inline-block">
+                Create my free resume
+              </a>
             </div>
             
             {/* Trust indicators */}
             <div className="text-center">
-              <p className="text-gray-500 mb-6">Trusted by professionals at leading companies</p>
-              <div className="flex justify-center items-center space-x-8 opacity-60">
-                <div className="text-2xl font-bold text-gray-400">Microsoft</div>
-                <div className="text-2xl font-bold text-gray-400">Google</div>
-                <div className="text-2xl font-bold text-gray-400">Apple</div>
-                <div className="text-2xl font-bold text-gray-400">Amazon</div>
-                <div className="text-2xl font-bold text-gray-400">Meta</div>
+              <p className="text-gray-400 mb-8 font-medium">Engineered to get you hired at top companies</p>
+              <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+                <div className="h-8 flex items-center opacity-60">
+                  <span className="text-2xl font-bold text-gray-300">Facebook</span>
+                </div>
+                <div className="h-8 flex items-center opacity-60">
+                  <span className="text-2xl font-bold text-gray-300">Deloitte</span>
+                </div>
+                <div className="h-8 flex items-center opacity-60">
+                  <span className="text-2xl font-bold text-gray-300">Atlassian</span>
+                </div>
+                <div className="h-8 flex items-center opacity-60">
+                  <span className="text-2xl font-bold text-gray-300">LinkedIn</span>
+                </div>
+                <div className="h-8 flex items-center opacity-60">
+                  <span className="text-2xl font-bold text-gray-300">Microsoft</span>
+                </div>
+                <div className="h-8 flex items-center opacity-60">
+                  <span className="text-2xl font-bold text-gray-300">HubSpot</span>
+                </div>
               </div>
             </div>
           </div>
@@ -51,10 +60,10 @@ export default function AIResumeBuilderPage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-blue-600 font-semibold text-sm uppercase tracking-wide">How it works</span>
+            <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">How it works</span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
               Smart Resume Building
-              <span className="text-blue-600 block">Powered by AI</span>
+              <span className="text-amber-500 block">Powered by AI</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our advanced AI technology streamlines the resume creation process, 
@@ -65,47 +74,47 @@ export default function AIResumeBuilderPage() {
           <div className="grid md:grid-cols-3 gap-12">
             {/* Step 1 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-blue-600">1</span>
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-amber-500">1</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Share Your Information</h3>
               <p className="text-gray-600 mb-6">
                 Provide your work experience, skills, and career goals. Upload an existing resume 
                 or start fresh with our guided process.
               </p>
-              <button className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+              <a href="/sign-up" className="text-amber-500 font-semibold">
                 Get Started →
-              </button>
+              </a>
             </div>
 
             {/* Step 2 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-blue-600">2</span>
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-amber-500">2</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Enhancement</h3>
               <p className="text-gray-600 mb-6">
                 Our AI analyzes your information and suggests improvements, optimizes keywords, 
                 and ensures your resume meets industry standards.
               </p>
-              <button className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+              <a href="/sign-up" className="text-amber-500 font-semibold">
                 Learn More →
-              </button>
+              </a>
             </div>
 
             {/* Step 3 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-blue-600">3</span>
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-amber-500">3</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Professional Results</h3>
               <p className="text-gray-600 mb-6">
                 Download your polished resume in multiple formats. Get detailed feedback 
                 and suggestions for continuous improvement.
               </p>
-              <button className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+              <a href="/sign-up" className="text-amber-500 font-semibold">
                 View Samples →
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -117,7 +126,7 @@ export default function AIResumeBuilderPage() {
           <div className="grid md:grid-cols-2 gap-16 items-center">
             {/* AI Keyword Optimization */}
             <div>
-              <span className="text-blue-600 font-semibold text-sm uppercase tracking-wide">AI Keyword Optimization</span>
+              <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">AI Keyword Optimization</span>
               <h3 className="text-3xl font-bold text-gray-900 mt-2 mb-4">
                 Optimize for Applicant Tracking Systems
               </h3>
@@ -135,9 +144,9 @@ export default function AIResumeBuilderPage() {
                   <span className="text-gray-700">ATS compatibility analysis</span>
                 </li>
               </ul>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              <a href="/sign-up" className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold inline-block">
                 Try Now
-              </button>
+              </a>
             </div>
             <div className="bg-white p-8 rounded-lg shadow-lg">
               <div className="bg-gray-100 p-4 rounded mb-4">
@@ -170,7 +179,7 @@ export default function AIResumeBuilderPage() {
             <div className="order-2 md:order-1">
               <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-8 rounded-lg">
                 <div className="mb-6">
-                  <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-2xl font-bold text-white">85</span>
                   </div>
                   <div className="text-center">
@@ -195,7 +204,7 @@ export default function AIResumeBuilderPage() {
               </div>
             </div>
             <div className="order-1 md:order-2">
-              <span className="text-blue-600 font-semibold text-sm uppercase tracking-wide">Content Analysis</span>
+              <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">Content Analysis</span>
               <h3 className="text-3xl font-bold text-gray-900 mt-2 mb-4">
                 Instant Feedback and Scoring
               </h3>
@@ -213,9 +222,9 @@ export default function AIResumeBuilderPage() {
                   <span className="text-gray-700">Professional formatting standards</span>
                 </li>
               </ul>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              <a href="/sign-up" className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold inline-block">
                 Analyze My Resume
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -225,10 +234,10 @@ export default function AIResumeBuilderPage() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-blue-600 font-semibold text-sm uppercase tracking-wide">Resume Templates</span>
+            <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">Resume Templates</span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
               Professional Templates
-              <span className="text-blue-600 block">For Every Industry</span>
+              <span className="text-amber-500 block">For Every Industry</span>
             </h2>
           </div>
 
@@ -242,9 +251,9 @@ export default function AIResumeBuilderPage() {
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Modern Professional</h3>
                   <p className="text-gray-600 mb-4">Clean and contemporary design perfect for most industries.</p>
-                  <button className="text-blue-600 font-semibold hover:text-blue-700 transition-colors flex items-center">
+                  <a href="/sign-up" className="text-amber-500 font-semibold flex items-center">
                     Use Template <ArrowRight className="h-4 w-4 ml-1" />
-                  </button>
+                  </a>
                 </div>
               </div>
             ))}
@@ -257,8 +266,8 @@ export default function AIResumeBuilderPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="h-8 w-8 text-blue-600" />
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Zap className="h-8 w-8 text-amber-500" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">AI-Powered Writing</h3>
               <p className="text-gray-600">
@@ -267,8 +276,8 @@ export default function AIResumeBuilderPage() {
             </div>
             
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-blue-600" />
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-8 w-8 text-amber-500" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">ATS Optimization</h3>
               <p className="text-gray-600">
@@ -277,8 +286,8 @@ export default function AIResumeBuilderPage() {
             </div>
             
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Download className="h-8 w-8 text-blue-600" />
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Download className="h-8 w-8 text-amber-500" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Multiple Formats</h3>
               <p className="text-gray-600">
@@ -335,21 +344,21 @@ export default function AIResumeBuilderPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
+      <section className="py-20 bg-amber-500">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Ready to Build Your Professional Resume?
           </h2>
-          <p className="text-xl text-blue-100 mb-8">
+          <p className="text-xl text-amber-100 mb-8">
             Join thousands of professionals who have enhanced their careers with Kolab AI.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+            <a href="/sign-up" className="bg-white text-amber-600 px-8 py-4 rounded-lg font-semibold text-lg text-center inline-block">
               Start Building Now
-            </button>
-            <button className="bg-transparent text-white px-8 py-4 rounded-lg font-semibold text-lg border border-white hover:bg-white hover:text-blue-600 transition-colors">
+            </a>
+            <a href="/sign-up" className="bg-transparent text-white px-8 py-4 rounded-lg font-semibold text-lg border border-white text-center inline-block">
               View Examples
-            </button>
+            </a>
           </div>
         </div>
       </section>

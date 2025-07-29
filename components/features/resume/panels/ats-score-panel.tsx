@@ -50,63 +50,50 @@ export default function ATSScorePanel({ className = '', resumeData, resumeId }: 
                 ATS Score
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {hasJobInfo ? 'Resume optimization score' : 'Add a job to see your score'}
+                Resume optimization score
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {atsScore}
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">/100</span>
-              </div>
-              <div className={`text-sm font-medium ${scoreStatus.color}`}>
-                {scoreStatus.label}
-              </div>
+          <div className="text-right">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                {atsScore}
+              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">/100</span>
             </div>
-            
-            {hasJobInfo && (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-2"
-              >
-                <TrendingUp className="w-4 h-4" />
-                Explore Score
-              </button>
-            )}
+            <div className={`text-sm font-medium ${scoreStatus.color}`}>
+              {scoreStatus.label}
+            </div>
           </div>
         </div>
         
-        {hasJobInfo && (
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-              <div 
-                className={`h-full transition-all duration-1000 ease-out ${
-                  atsScore >= 80 ? 'bg-teal-500' : 
-                  atsScore >= 60 ? 'bg-amber-500' : 
-                  'bg-red-500'
-                }`}
-                style={{ width: `${atsScore}%` }}
-              />
-            </div>
-            <div className="flex justify-between mt-1">
-              <span className="text-xs text-gray-500 dark:text-gray-400">0</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">100</span>
-            </div>
+        <div className="mt-4">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-1000 ease-out ${
+                atsScore >= 80 ? 'bg-teal-500' : 
+                atsScore >= 60 ? 'bg-amber-500' : 
+                'bg-red-500'
+              }`}
+              style={{ width: `${atsScore}%` }}
+            />
           </div>
-        )}
+          <div className="flex justify-between mt-1">
+            <span className="text-xs text-gray-500 dark:text-gray-400">0</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">100</span>
+          </div>
+        </div>
         
-        {!hasJobInfo && (
-          <div className={`mt-4 p-3 rounded-md ${scoreStatus.bgColor} flex items-center gap-2`}>
-            <AlertCircle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Add a job description below to calculate your ATS score
-            </p>
-          </div>
-        )}
+        <div className="mt-4">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+          >
+            <TrendingUp className="w-4 h-4" />
+            Explore Score
+          </button>
+        </div>
       </div>
       
       <ScoreModal

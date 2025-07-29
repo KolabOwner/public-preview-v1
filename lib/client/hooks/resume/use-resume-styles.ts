@@ -69,7 +69,7 @@ interface UseResumeStylesReturn {
 }
 
 const DEFAULT_SETTINGS: DocumentSettings = {
-  zoom: 115,
+  zoom: 120,
   fontFamily: 'Merriweather', // Professional template default
   primaryColor: '#000000',
   textColor: '#000000',
@@ -167,10 +167,10 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
   // Initialize settings with persisted values, defaults, and initial overrides
   const [documentSettings, setDocumentSettings] = useState<DocumentSettings>(() => {
     const { settings: persisted } = loadPersistedSettings();
-    // If no persisted zoom setting, use the new default of 115
+    // If no persisted zoom setting, use the default of 120
     const persistedWithDefaults = {
       ...persisted,
-      zoom: persisted.zoom || 115,
+      zoom: persisted.zoom || DEFAULT_SETTINGS.zoom,
     };
     return {
       ...DEFAULT_SETTINGS,
@@ -648,7 +648,7 @@ export function useResumeFont(fontFamily: string) {
 
 export function useResumeTheme(isDarkMode: boolean) {
   return useMemo(() => ({
-    background: isDarkMode ? '#1a202c' : '#f7fafc',
+    background: isDarkMode ? '#1a202c' : '#e2e8f0',
     surface: isDarkMode ? '#2d3748' : '#ffffff',
     border: isDarkMode ? '#4a5568' : '#e2e8f0',
     text: {

@@ -19,14 +19,6 @@ interface JobData {
 }
 
 interface AnalysisResult {
-  atsScore: number;
-  breakdown: {
-    keywordMatch: number;
-    skillsAlignment: number;
-    experienceRelevance: number;
-    educationMatch: number;
-    formatting: number;
-  };
   extractedKeywords: Array<{
     keyword: string;
     frequency: number;
@@ -38,15 +30,13 @@ interface AnalysisResult {
   matchedKeywords: Array<{
     keyword: string;
     category: string;
-    importance: string;
-    context?: string;
   }>;
   missingKeywords: Array<{
     keyword: string;
     category: string;
     importance: string;
   }>;
-  summary?: string;
+  summary: string;
 }
 
 interface HistoryItem {
@@ -254,7 +244,7 @@ async function handleAnalysis(
       const resumeDoc = await transaction.get(resumeRef);
       const resumeData = resumeDoc.data();
 
-      // Extract and analyze-for-keywords resume
+      // Extract and analyze resume
       const resumeText = extractResumeText(resumeData);
       const analysisResult = await analyzeAts({
         resumeText,
@@ -266,29 +256,17 @@ async function handleAnalysis(
 
       // Prepare structured result
       const structuredResult: AnalysisResult = {
-        atsScore: analysisResult.atsScore || 0,
-        breakdown: analysisResult.breakdown || {
-          keywordMatch: 0,
-          skillsAlignment: 0,
-          experienceRelevance: 0,
-          educationMatch: 0,
-          formatting: 0
-        },
         extractedKeywords: analysisResult.extractedKeywords || [],
         matchedKeywords: (analysisResult.matchedKeywords || []).map((k: any) => ({
           keyword: k.keyword,
-          category: k.category || 'general',
-          importance: k.relevanceScore > 0.8 ? 'high' : k.relevanceScore > 0.5 ? 'medium' : 'low',
-          context: k.matchedVariations?.join(', ')
+          category: k.category || 'general'
         })),
         missingKeywords: (analysisResult.missingKeywords || []).map((k: any) => ({
           keyword: k.keyword,
           category: k.category || 'general',
           importance: k.importance || 'medium'
         })),
-        summary: typeof analysisResult.summary === 'string'
-          ? analysisResult.summary
-          : analysisResult.summary?.overallFit || 'Analysis completed'
+        summary: analysisResult.summary || 'Analysis completed'
       };
 
       // Update resume document
@@ -311,7 +289,8 @@ async function handleAnalysis(
         userId: body.userId,
         jobTitle: jobData.title,
         jobCompany: jobData.company,
-        atsScore: structuredResult.atsScore,
+        matchedCount: structuredResult.matchedKeywords.length,
+        totalKeywords: structuredResult.extractedKeywords.length,
         timestamp: new Date().toISOString()
       });
 

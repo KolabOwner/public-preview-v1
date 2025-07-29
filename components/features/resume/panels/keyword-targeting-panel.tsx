@@ -371,25 +371,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
     <div className={containerClasses}>
       {/* Keywords list */}
       <div className="divide-y divide-gray-100 dark:divide-gray-700">
-        {/* Missing keywords section */}
-        {missingCount > 0 && (
-          <>
-            {displayedKeywords.filter(k => !k.isMatching).length > 1 && (
-              <div className="px-6 py-4 text-sm leading-5 text-gray-600 dark:text-gray-400">
-                Want to improve your chances of getting this role? Consider adding the following keywords to your resume:
-              </div>
-            )}
-            {displayedKeywords.filter(k => !k.isMatching).map((keyword, index) => (
-              <KeywordItem
-                key={`missing-${index}`}
-                keyword={keyword.keyword}
-                isMatching={keyword.isMatching}
-              />
-            ))}
-          </>
-        )}
-        
-        {/* Matching keywords section */}
+        {/* Matching keywords section - Show positive results first */}
         {matchedCount > 0 && displayedKeywords.some(k => k.isMatching) && (
           <>
             {displayedKeywords.filter(k => k.isMatching).length > 1 && (
@@ -400,6 +382,24 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
             {displayedKeywords.filter(k => k.isMatching).map((keyword, index) => (
               <KeywordItem
                 key={`matching-${index}`}
+                keyword={keyword.keyword}
+                isMatching={keyword.isMatching}
+              />
+            ))}
+          </>
+        )}
+        
+        {/* Missing keywords section - Show improvement areas second */}
+        {missingCount > 0 && (
+          <>
+            {displayedKeywords.filter(k => !k.isMatching).length > 1 && (
+              <div className="px-6 py-4 text-sm leading-5 text-gray-600 dark:text-gray-400">
+                Want to improve your chances of getting this role? Consider adding the following keywords to your resume:
+              </div>
+            )}
+            {displayedKeywords.filter(k => !k.isMatching).map((keyword, index) => (
+              <KeywordItem
+                key={`missing-${index}`}
                 keyword={keyword.keyword}
                 isMatching={keyword.isMatching}
               />

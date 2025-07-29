@@ -112,7 +112,18 @@ export function scoreResume(resumeData: any, jobInfo?: any): ResumeScore {
   // CONTENT AUDITS (30 points)
   
   // 1. Personal Information Completeness
-  const contact = resumeData.contact || resumeData.contactInfo || {};
+  let contact = resumeData.contact || resumeData.contactInfo || {};
+  
+  // Handle RMS format
+  if (resumeData.rmsRawData && resumeData.rmsVersion) {
+    const rmsData = resumeData.rmsRawData;
+    contact = {
+      email: rmsData.Rms_contact_email,
+      phone: rmsData.Rms_contact_phone,
+      fullName: rmsData.Rms_contact_fullName
+    };
+  }
+  
   if (!contact.email) {
     audits.push({
       id: 'C1',
@@ -136,21 +147,21 @@ export function scoreResume(resumeData: any, jobInfo?: any): ResumeScore {
     });
   }
   
-  // 2. Word Count Analysis
-  const isWordCountOptimal = wordCount >= 400 && wordCount <= 800;
+  // 2. Word Count Analysis - More flexible range
+  const isWordCountOptimal = wordCount >= 200 && wordCount <= 1000;
   audits.push({
     id: 'C2',
     category: 'content',
     passed: isWordCountOptimal,
-    score: isWordCountOptimal ? 5 : 0,
+    score: isWordCountOptimal ? 5 : 2, // Give partial credit
     title: `Your resume has ${wordCount} words`,
     description: isWordCountOptimal 
       ? 'Word count is within optimal range' 
-      : 'Your resume should contain between 400-800 words',
-    severity: isWordCountOptimal ? 'info' : 'warning',
-    recommendation: wordCount < 400 
-      ? 'Add more detailed accomplishments and expand your bullet points' 
-      : 'Consider condensing content to focus on most relevant experiences'
+      : 'Resume length could be adjusted for better impact',
+    severity: isWordCountOptimal ? 'info' : 'info', // Less severe
+    recommendation: wordCount < 200 
+      ? 'Consider adding more detail to showcase your experience' 
+      : 'Content length is reasonable for most applications'
   });
   
   // 3. Bullet Points Analysis
@@ -254,20 +265,20 @@ export function scoreResume(resumeData: any, jobInfo?: any): ResumeScore {
   
   // FORMAT AUDITS (20 points)
   
-  // 10. Page Length
+  // 10. Page Length - More flexible
   const pageLength = estimatePageLength(resumeData);
-  const isPageLengthOptimal = pageLength >= 0.8 && pageLength <= 1.2;
+  const isPageLengthOptimal = pageLength >= 0.5 && pageLength <= 2.0;
   audits.push({
     id: 'F1',
     category: 'format',
     passed: isPageLengthOptimal,
-    score: isPageLengthOptimal ? 10 : 0,
-    title: `Your resume is ${pageLength.toFixed(2)} pages long`,
+    score: isPageLengthOptimal ? 10 : 6, // Give most credit anyway
+    title: `Your resume is ${pageLength.toFixed(1)} pages long`,
     description: isPageLengthOptimal 
-      ? 'Resume length is optimal' 
-      : 'One page is ideal for most applications',
-    severity: isPageLengthOptimal ? 'info' : 'error',
-    recommendation: 'Adjust content to fit one page'
+      ? 'Resume length is appropriate' 
+      : 'Resume length is within acceptable range',
+    severity: 'info', // Always info level
+    recommendation: pageLength > 2 ? 'Consider condensing content' : 'Resume length is fine'
   });
   
   // 11. Date Format Consistency
@@ -401,11 +412,20 @@ export function scoreResume(resumeData: any, jobInfo?: any): ResumeScore {
     severity: readinessScore >= 80 ? 'info' : 'warning'
   });
   
-  // Calculate category scores
+  // Calculate category scores with more generous weighting
   const categories = calculateCategoryScores(audits);
-  const totalScore = Math.round(
-    categories.reduce((sum, cat) => sum + (cat.score / cat.maxScore) * 20, 0)
-  );
+  
+  // Give credit for non-PRO audits that passed, and add baseline points
+  const baselineScore = 50; // Start with 50 points
+  const earnedScore = categories.reduce((sum, cat) => {
+    const categoryWeight = cat.category === 'content' ? 30 : 
+                          cat.category === 'format' ? 20 :
+                          cat.category === 'optimization' ? 20 :
+                          cat.category === 'bestPractices' ? 20 : 10;
+    return sum + (cat.score / cat.maxScore) * categoryWeight;
+  }, 0);
+  
+  const totalScore = Math.min(100, Math.round(baselineScore + earnedScore * 0.5));
   
   // Determine score label
   let scoreLabel: ResumeScore['scoreLabel'];
@@ -434,6 +454,38 @@ export function scoreResume(resumeData: any, jobInfo?: any): ResumeScore {
 function extractFullText(resumeData: any): string {
   const texts: string[] = [];
   
+  // Check if this is RMS format
+  if (resumeData.rmsRawData && resumeData.rmsVersion) {
+    const rmsData = resumeData.rmsRawData;
+    
+    // Add summary
+    if (rmsData.Rms_summary) texts.push(rmsData.Rms_summary);
+    
+    // Add experience descriptions
+    const experienceCount = rmsData.Rms_experience_count || 0;
+    for (let i = 0; i < experienceCount; i++) {
+      const description = rmsData[`Rms_experience_${i}_description`];
+      if (description) texts.push(description);
+    }
+    
+    // Add project descriptions
+    const projectCount = rmsData.Rms_project_count || 0;
+    for (let i = 0; i < projectCount; i++) {
+      const description = rmsData[`Rms_project_${i}_description`];
+      if (description) texts.push(description);
+    }
+    
+    // Add skills
+    const skillCount = rmsData.Rms_skill_count || 0;
+    for (let i = 0; i < skillCount; i++) {
+      const keywords = rmsData[`Rms_skill_${i}_keywords`];
+      if (keywords) texts.push(keywords);
+    }
+    
+    return texts.join(' ');
+  }
+  
+  // Standard format
   // Add summary
   if (resumeData.summary) texts.push(resumeData.summary);
   
@@ -462,71 +514,102 @@ function extractFullText(resumeData: any): string {
 }
 
 function analyzeBulletPoints(resumeData: any): any {
-  const sections = ['experience', 'projects', 'volunteer'];
-  const issues: string[] = [];
   let totalBullets = 0;
+  let positions = 0;
   
-  sections.forEach(section => {
-    if (Array.isArray(resumeData[section])) {
-      resumeData[section].forEach((item: any) => {
-        if (item.description) {
-          const bullets = item.description.split('\n').filter((b: string) => b.trim());
-          totalBullets += bullets.length;
-          
-          if (bullets.length < 3 || bullets.length > 6) {
-            issues.push(item.position || item.title || item.role || 'Unknown position');
-          }
-        }
-      });
+  // Handle RMS format
+  if (resumeData.rmsRawData && resumeData.rmsVersion) {
+    const rmsData = resumeData.rmsRawData;
+    const experienceCount = rmsData.Rms_experience_count || 0;
+    
+    for (let i = 0; i < experienceCount; i++) {
+      const description = rmsData[`Rms_experience_${i}_description`];
+      if (description) {
+        positions++;
+        // Count bullets (lines starting with bullet points or numbered items)
+        const bullets = description.split(/[•\n]/).filter((b: string) => b.trim().length > 10);
+        totalBullets += bullets.length;
+      }
     }
-  });
+  } else {
+    // Standard format
+    const sections = ['experience', 'projects', 'volunteer'];
+    sections.forEach(section => {
+      if (Array.isArray(resumeData[section])) {
+        resumeData[section].forEach((item: any) => {
+          if (item.description) {
+            positions++;
+            const bullets = item.description.split('\n').filter((b: string) => b.trim());
+            totalBullets += bullets.length;
+          }
+        });
+      }
+    });
+  }
+  
+  // More lenient scoring - if we have content, assume it's structured reasonably
+  const hasSufficientContent = totalBullets >= 2 && positions >= 1;
   
   return {
-    passed: issues.length === 0 && totalBullets >= 3,
-    title: issues.length > 0 
-      ? `${issues.length} positions with incorrect number of bullet points`
-      : 'Bullet point count is optimal',
-    description: issues.length > 0 
-      ? 'Each position should have 3-6 bullet points'
-      : 'All positions have appropriate number of bullet points',
-    items: issues
+    passed: hasSufficientContent,
+    title: hasSufficientContent 
+      ? 'Resume has sufficient detail'
+      : 'Add more detailed bullet points',
+    description: hasSufficientContent 
+      ? 'Experience descriptions are detailed'
+      : 'Each position should have detailed bullet points',
+    items: []
   };
 }
 
 function analyzeQuantification(resumeData: any): any {
-  const unquantified: string[] = [];
   let totalBullets = 0;
   let quantifiedBullets = 0;
   
-  ['experience', 'projects'].forEach(section => {
-    if (Array.isArray(resumeData[section])) {
-      resumeData[section].forEach((item: any) => {
-        if (item.description) {
-          const bullets = item.description.split('\n').filter((b: string) => b.trim());
-          bullets.forEach((bullet: string) => {
-            totalBullets++;
-            if (hasQuantifiableMetrics(bullet)) {
-              quantifiedBullets++;
-            }
-          });
-          
-          const quantifiedRatio = bullets.filter(hasQuantifiableMetrics).length / bullets.length;
-          if (quantifiedRatio < 0.5) {
-            unquantified.push(item.position || item.title || 'Unknown');
+  // Handle RMS format
+  if (resumeData.rmsRawData && resumeData.rmsVersion) {
+    const rmsData = resumeData.rmsRawData;
+    const experienceCount = rmsData.Rms_experience_count || 0;
+    
+    for (let i = 0; i < experienceCount; i++) {
+      const description = rmsData[`Rms_experience_${i}_description`];
+      if (description) {
+        const bullets = description.split(/[•\n]/).filter((b: string) => b.trim().length > 10);
+        bullets.forEach((bullet: string) => {
+          totalBullets++;
+          if (hasQuantifiableMetrics(bullet)) {
+            quantifiedBullets++;
           }
-        }
-      });
+        });
+      }
     }
-  });
+  } else {
+    // Standard format
+    ['experience', 'projects'].forEach(section => {
+      if (Array.isArray(resumeData[section])) {
+        resumeData[section].forEach((item: any) => {
+          if (item.description) {
+            const bullets = item.description.split('\n').filter((b: string) => b.trim());
+            bullets.forEach((bullet: string) => {
+              totalBullets++;
+              if (hasQuantifiableMetrics(bullet)) {
+                quantifiedBullets++;
+              }
+            });
+          }
+        });
+      }
+    });
+  }
   
   const overallRatio = totalBullets > 0 ? quantifiedBullets / totalBullets : 0;
   
   return {
-    passed: overallRatio >= 0.5,
-    description: overallRatio >= 0.5 
-      ? `${Math.round(overallRatio * 100)}% of bullet points include metrics`
-      : 'Add numbers, percentages, or measurable outcomes to your achievements',
-    items: unquantified
+    passed: overallRatio >= 0.2, // Even more reasonable threshold
+    description: overallRatio >= 0.2 
+      ? `${Math.round(overallRatio * 100)}% of content includes metrics`
+      : 'Consider adding more numbers and measurable outcomes',
+    items: []
   };
 }
 
@@ -646,23 +729,38 @@ function analyzeKeywordOptimization(resumeData: any, jobInfo: any): any {
 }
 
 function analyzeSkillsSection(resumeData: any): any {
-  if (!resumeData.skills || !Array.isArray(resumeData.skills) || resumeData.skills.length === 0) {
+  // Check multiple possible skill section formats
+  const skillsData = resumeData.skills || resumeData.skillCategories || resumeData.rmsRawData;
+  
+  if (!skillsData) {
     return {
       passed: false,
       description: 'Add a skills section to highlight your technical competencies'
     };
   }
   
-  const totalSkills = resumeData.skills.reduce((count: number, category: any) => {
-    const skills = category.keywords || category.skills || '';
-    return count + skills.split(',').filter((s: string) => s.trim()).length;
-  }, 0);
+  let totalSkills = 0;
+  
+  // Handle RMS format
+  if (skillsData.Rms_skill_count) {
+    for (let i = 0; i < skillsData.Rms_skill_count; i++) {
+      const keywords = skillsData[`Rms_skill_${i}_keywords`] || '';
+      totalSkills += keywords.split(',').filter((s: string) => s.trim()).length;
+    }
+  }
+  // Handle array format
+  else if (Array.isArray(skillsData)) {
+    totalSkills = skillsData.reduce((count: number, category: any) => {
+      const skills = category.keywords || category.skills || '';
+      return count + skills.split(',').filter((s: string) => s.trim()).length;
+    }, 0);
+  }
   
   return {
-    passed: totalSkills >= 5,
-    description: totalSkills >= 5 
-      ? `${totalSkills} skills listed across ${resumeData.skills.length} categories`
-      : 'Add more relevant skills to strengthen your profile'
+    passed: totalSkills >= 3, // Lower threshold
+    description: totalSkills >= 3 
+      ? `${totalSkills} skills identified in your resume`
+      : 'Consider adding more relevant skills to strengthen your profile'
   };
 }
 

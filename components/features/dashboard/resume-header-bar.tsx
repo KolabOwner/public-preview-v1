@@ -394,7 +394,8 @@ const ResumeHeaderBar = memo(
               }`}
               aria-hidden={!isExpanded}
             >
-              <div className="px-6 flex flex-wrap items-center gap-4" role="toolbar">
+              {/* First Row - Core Layout Controls */}
+              <div className="px-6 flex flex-wrap items-center gap-3" role="toolbar">
                   {/* Display Options */}
                   <div className="flex items-center gap-1">
                     <Tooltip>
@@ -438,7 +439,7 @@ const ResumeHeaderBar = memo(
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-36 justify-between`}>
+                            <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-32 justify-between`}>
                               <span className="truncate">{documentSettings.fontFamily}</span>
                               <ChevronDown />
                             </Button>
@@ -494,7 +495,7 @@ const ResumeHeaderBar = memo(
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <DropdownMenuTrigger asChild>
-                             <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-28 justify-between`}>
+                             <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-24 justify-between`}>
                                 <AlignLeft />
                                 <span>{documentSettings.lineHeight}</span>
                                 <ChevronDown />
@@ -525,7 +526,7 @@ const ResumeHeaderBar = memo(
                        <Tooltip>
                          <TooltipTrigger asChild>
                            <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-28 justify-between`}>
+                              <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-24 justify-between`}>
                                  <MoreHorizontal />
                                  <span>{documentSettings.sectionSpacing}</span>
                                  <ChevronDown />
@@ -555,13 +556,67 @@ const ResumeHeaderBar = memo(
                   </div>
                   <Separator className="h-6 bg-gray-300 dark:bg-gray-600" />
 
-                  {/* Page Layout Controls */}
+                  {/* Color Pickers */}
+                  <div className="flex items-center gap-1">
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                              <Label htmlFor="text-color-picker" className="cursor-pointer rounded-md p-2 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                  <Type />
+                                  <div className="w-4 h-1 mt-0.5 rounded-sm" style={{ backgroundColor: documentSettings.textColor, border: '1px solid hsl(var(--border))' }}/>
+                                  <input id="text-color-picker" type="color" value={documentSettings.textColor} onChange={(e) => handleSettingChange('textColor', e.target.value)} className="sr-only"/>
+                              </Label>
+                          </TooltipTrigger>
+                          <TooltipContent>Text Color</TooltipContent>
+                      </Tooltip>
+                       <Tooltip>
+                          <TooltipTrigger asChild>
+                              <Label htmlFor="accent-color-picker" className="cursor-pointer rounded-md p-2 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                  <Palette />
+                                  <div className="w-4 h-1 mt-0.5 rounded-sm" style={{ backgroundColor: documentSettings.primaryColor, border: '1px solid hsl(var(--border))' }}/>
+                                  <input id="accent-color-picker" type="color" value={documentSettings.primaryColor} onChange={(e) => handleSettingChange('primaryColor', e.target.value)} className="sr-only"/>
+                              </Label>
+                          </TooltipTrigger>
+                          <TooltipContent>Accent Color</TooltipContent>
+                      </Tooltip>
+                  </div>
+                  <Separator className="h-6 bg-gray-300 dark:bg-gray-600" />
+
+                  {/* Zoom Controls */}
+                  <div className="flex items-center gap-1">
+                      <div className="flex items-center">
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button onClick={() => handleZoomChange(documentSettings.zoom - ZOOM_CONFIG.STEP)} variant="ghost" size="icon" className="w-8 h-8 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" disabled={documentSettings.zoom <= ZOOM_CONFIG.MIN}>
+                                      <Minus/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Zoom Out</TooltipContent>
+                          </Tooltip>
+                          <div className="w-12 text-center text-sm font-semibold">{documentSettings.zoom}%</div>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button onClick={() => handleZoomChange(documentSettings.zoom + ZOOM_CONFIG.STEP)} variant="ghost" size="icon" className="w-8 h-8 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" disabled={documentSettings.zoom >= ZOOM_CONFIG.MAX}>
+                                      <Plus/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Zoom In</TooltipContent>
+                          </Tooltip>
+                      </div>
+                       <div className="flex items-center space-x-2">
+                        <Switch id="view-as-pages-toggle" checked={documentSettings.viewAsPages} onCheckedChange={(checked) => handleSettingChange('viewAsPages', checked)} />
+                        <Label htmlFor="view-as-pages-toggle" className="text-xs">Pages</Label>
+                      </div>
+                  </div>
+              </div>
+              
+              {/* Second Row - Page Layout (when needed) */}
+              <div className="px-6 pt-2 flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-1">
                       <DropdownMenu>
                           <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-32 justify-between`}>
+                                  <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-28 justify-between`}>
                                     <span>{documentSettings.paperSize}</span>
                                     <ChevronDown/>
                                   </Button>
@@ -591,7 +646,7 @@ const ResumeHeaderBar = memo(
                           <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-32 justify-between`}>
+                                  <Button variant="outline" size="sm" className={`${buttonBaseClasses} w-28 justify-between`}>
                                     <span>Margins</span>
                                     <ChevronDown/>
                                   </Button>
@@ -618,60 +673,6 @@ const ResumeHeaderBar = memo(
                           </DropdownMenuPortal>
                       </DropdownMenu>
                   </div>
-                  <Separator className="h-6 bg-gray-300 dark:bg-gray-600" />
-
-                  {/* Color Pickers */}
-                  <div className="flex items-center gap-2">
-                      <Tooltip>
-                          <TooltipTrigger asChild>
-                              <Label htmlFor="text-color-picker" className="cursor-pointer rounded-md p-2 hover:bg-gray-200 dark:hover:bg-gray-700">
-                                  <Type />
-                                  <div className="w-5 h-1 mt-0.5 rounded-sm" style={{ backgroundColor: documentSettings.textColor, border: '1px solid hsl(var(--border))' }}/>
-                                  <input id="text-color-picker" type="color" value={documentSettings.textColor} onChange={(e) => handleSettingChange('textColor', e.target.value)} className="sr-only"/>
-                              </Label>
-                          </TooltipTrigger>
-                          <TooltipContent>Text Color</TooltipContent>
-                      </Tooltip>
-                       <Tooltip>
-                          <TooltipTrigger asChild>
-                              <Label htmlFor="accent-color-picker" className="cursor-pointer rounded-md p-2 hover:bg-gray-200 dark:hover:bg-gray-700">
-                                  <Palette />
-                                  <div className="w-5 h-1 mt-0.5 rounded-sm" style={{ backgroundColor: documentSettings.primaryColor, border: '1px solid hsl(var(--border))' }}/>
-                                  <input id="accent-color-picker" type="color" value={documentSettings.primaryColor} onChange={(e) => handleSettingChange('primaryColor', e.target.value)} className="sr-only"/>
-                              </Label>
-                          </TooltipTrigger>
-                          <TooltipContent>Accent Color</TooltipContent>
-                      </Tooltip>
-                  </div>
-                  <Separator className="h-6 bg-gray-300 dark:bg-gray-600" />
-
-                  {/* Zoom & View Toggle */}
-                  <div className="flex items-center gap-2">
-                      <div className="flex items-center">
-                          <Tooltip>
-                              <TooltipTrigger asChild>
-                                  <Button onClick={() => handleZoomChange(documentSettings.zoom - ZOOM_CONFIG.STEP)} variant="ghost" size="icon" className="w-8 h-8 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" disabled={documentSettings.zoom <= ZOOM_CONFIG.MIN}>
-                                      <Minus/>
-                                  </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Zoom Out</TooltipContent>
-                          </Tooltip>
-                          <div className="w-12 text-center text-sm font-semibold">{documentSettings.zoom}%</div>
-                          <Tooltip>
-                              <TooltipTrigger asChild>
-                                  <Button onClick={() => handleZoomChange(documentSettings.zoom + ZOOM_CONFIG.STEP)} variant="ghost" size="icon" className="w-8 h-8 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" disabled={documentSettings.zoom >= ZOOM_CONFIG.MAX}>
-                                      <Plus/>
-                                  </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Zoom In</TooltipContent>
-                          </Tooltip>
-                      </div>
-                       <div className="flex items-center space-x-2">
-                        <Switch id="view-as-pages-toggle" checked={documentSettings.viewAsPages} onCheckedChange={(checked) => handleSettingChange('viewAsPages', checked)} />
-                        <Label htmlFor="view-as-pages-toggle" className="text-xs">Pages</Label>
-                      </div>
-                  </div>
-
               </div>
             </div>
           </div>

@@ -21,67 +21,26 @@ const AnalyzeEnterpriseInputSchema = z.object({
 });
 export type AnalyzeEnterpriseInput = z.infer<typeof AnalyzeEnterpriseInputSchema>;
 
-// Enhanced output schema with detailed analysis
+// Simplified keyword analysis schema for performance
 const AnalyzeEnterpriseOutputSchema = z.object({
-  // Overall ATS Analysis
-  atsScore: z.number().min(0).max(100).describe('Overall ATS compatibility score (0-100)'),
-  breakdown: z.object({
-    keywordMatch: z.number().min(0).max(100).describe('Keyword matching score'),
-    skillsAlignment: z.number().min(0).max(100).describe('Skills alignment score'),
-    experienceRelevance: z.number().min(0).max(100).describe('Experience relevance score'),
-    educationMatch: z.number().min(0).max(100).describe('Education requirements match'),
-    formatting: z.number().min(0).max(100).describe('ATS-friendly formatting score'),
-  }).describe('Detailed breakdown of the ATS score'),
-
-  // Keyword Analysis
   extractedKeywords: z.array(z.object({
     keyword: z.string(),
-    frequency: z.number().min(1),
-    category: z.enum(['skill', 'tool', 'qualification', 'soft_skill', 'certification', 'industry_term']),
-    importance: z.enum(['required', 'preferred', 'nice_to_have']),
-    variations: z.array(z.string()),
-    contexts: z.array(z.string()),
-  })).describe('Keywords extracted from the job description'),
+    category: z.enum(['skill', 'tool', 'certification', 'soft_skill', 'industry_term']),
+    importance: z.enum(['required', 'preferred']),
+  })),
 
   matchedKeywords: z.array(z.object({
     keyword: z.string(),
     category: z.string(),
-    resumeFrequency: z.number().min(0),
-    jobFrequency: z.number().min(1),
-    relevanceScore: z.number().min(0).max(100),
-    isExactMatch: z.boolean(),
-    isSynonymMatch: z.boolean(),
-    matchedVariations: z.array(z.string()),
-  })).describe('Keywords that match between resume and job description'),
+  })),
 
   missingKeywords: z.array(z.object({
     keyword: z.string(),
     category: z.string(),
-    importance: z.enum(['critical', 'high', 'medium', 'low']),
-    suggestions: z.array(z.string()),
-    relatedTermsInResume: z.array(z.string()),
-    impactOnScore: z.number().min(0).max(20),
-  })).describe('Important keywords missing from the resume'),
+    importance: z.string(),
+  })),
 
-  // Recommendations for improvement
-  recommendations: z.array(z.object({
-    type: z.enum(['add_keyword', 'rephrase', 'quantify', 'format', 'structure', 'skills_emphasis']),
-    priority: z.enum(['high', 'medium', 'low']),
-    section: z.string(),
-    currentText: z.string().optional(),
-    suggestedText: z.string(),
-    reason: z.string(),
-    keywords: z.array(z.string()),
-    estimatedImpact: z.number().min(0).max(20),
-  })).describe('Actionable recommendations to improve ATS score'),
-
-  // Summary and insights
-  summary: z.object({
-    strengths: z.array(z.string()).describe('Key strengths of the resume for this position'),
-    weaknesses: z.array(z.string()).describe('Areas that need improvement'),
-    quickWins: z.array(z.string()).describe('Easy changes that would have high impact'),
-    overallFit: z.string().describe('Overall assessment of candidate fit'),
-  }).describe('Executive summary of the analysis'),
+  summary: z.string(),
 });
 export type AnalyzeEnterpriseOutput = z.infer<typeof AnalyzeEnterpriseOutputSchema>;
 
@@ -94,85 +53,19 @@ const analyzeEnterprisePrompt = ai.definePrompt({
   name: 'analyzeEnterprisePrompt',
   input: { schema: AnalyzeEnterpriseInputSchema },
   output: { schema: AnalyzeEnterpriseOutputSchema },
-  prompt: `You are an expert ATS (Applicant Tracking System) analyst and senior career coach with deep knowledge of recruiting, hiring practices, and resume optimization. Your task is to perform a comprehensive analysis of a resume against a specific job description.
+  prompt: `Extract 30 keywords from the job description and check which ones appear in the resume.
 
-**Job Information:**
-Position: {{jobTitle}}
-{{#jobCompany}}Company: {{jobCompany}}{{/jobCompany}}
-{{#industryContext}}Industry: {{industryContext}}{{/industryContext}}
-{{#targetATSScore}}Target ATS Score: {{targetATSScore}}{{/targetATSScore}}
+**Job:** {{jobTitle}}
+**Job Description:** {{jobDescription}}
+**Resume:** {{resumeText}}
 
-**Job Description:**
----
-{{jobDescription}}
----
+**Extract keywords:** Skills, tools, certifications, soft skills, and industry terms from the job description.
 
-**Resume Content:**
----
-{{resumeText}}
----
+**Match keywords:** Search resume text for each keyword (case-insensitive). Only mark as matched if the exact keyword appears in the resume.
 
-**Analysis Instructions:**
+**Categorize:** Every keyword goes in either matchedKeywords OR missingKeywords.
 
-1. **Keyword Extraction & Analysis:**
-   - **CRITICAL REQUIREMENT: Extract AT LEAST 25-40 keywords from the job description**
-   - Be comprehensive and thorough - include ALL relevant terms:
-     * Technical skills and tools (e.g., Python, SQL, AWS, Docker, Git, APIs, REST, GraphQL)
-     * Soft skills and competencies (e.g., leadership, communication, problem-solving, teamwork)
-     * Qualifications and certifications (e.g., Bachelor's degree, MBA, PMP, AWS Certified)
-     * Industry-specific terms and domain knowledge (e.g., SaaS, B2B, fintech, healthcare)
-     * Experience requirements (e.g., "5+ years", "senior level", "team management")
-     * Action verbs and responsibilities (e.g., "develop", "implement", "optimize", "lead")
-     * Methodologies and frameworks (e.g., Agile, Scrum, DevOps, CI/CD, SDLC)
-     * Business concepts (e.g., ROI, KPIs, stakeholder management, strategic planning)
-   - Include both single-word and multi-word phrases as keywords
-   - Extract variations, abbreviations, and related terms (e.g., "JavaScript" → also include "JS", "Node.js")
-   - Don't filter out keywords - include all relevant terms regardless of perceived importance
-   - Categorize each keyword by type and importance level
-   - Identify variations and synonyms that should be recognized
-
-2. **Keyword Matching:**
-   - Compare resume content against extracted keywords
-   - Account for variations, plurals, and synonyms (e.g., "API" matches "APIs", "JavaScript" matches "JS")
-   - Calculate relevance scores based on context and frequency
-   - Distinguish between exact matches and synonym matches
-
-3. **Missing Keywords Analysis:**
-   - Identify critical keywords absent from the resume
-   - Prioritize by impact on hiring decision
-   - Suggest related terms already present in resume
-   - Estimate score impact of each missing keyword
-
-4. **ATS Score Calculation:**
-   - **Keyword Match (40%):** Percentage of important keywords found
-   - **Skills Alignment (25%):** How well candidate's skills match requirements
-   - **Experience Relevance (20%):** Relevance of work history to role
-   - **Education Match (10%):** Education requirements satisfaction
-   - **Formatting (5%):** ATS-friendly structure and formatting
-
-5. **Optimization Recommendations:**
-   - Provide specific, actionable suggestions
-   - Focus on highest-impact changes first
-   - Include exact text suggestions where appropriate
-   - Consider both keyword inclusion and natural readability
-
-6. **Executive Summary:**
-   - Highlight key strengths that align with the role
-   - Identify critical gaps and weaknesses
-   - Suggest quick wins for immediate improvement
-   - Provide overall fit assessment
-
-**Output Requirements:**
-- **MANDATORY: The extractedKeywords array MUST contain at least 25-40 keywords**
-- If the job description is brief, still extract compound phrases, related terms, and implied skills
-- Be specific and actionable in all recommendations
-- Use exact keywords from the job description
-- Provide realistic improvement estimates
-- Focus on changes that maintain authenticity
-- Consider ATS parsing limitations and best practices
-- Ensure comprehensive keyword coverage across all categories
-
-Return a comprehensive JSON analysis following the specified schema.`,
+Return JSON with extractedKeywords, matchedKeywords, missingKeywords, and brief summary.`,
 });
 
 const analyzeEnterpriseFlow = ai.defineFlow(
@@ -190,6 +83,13 @@ const analyzeEnterpriseFlow = ai.defineFlow(
 // Helper function to extract resume text from resume data
 export function extractResumeText(resumeData: any): string {
   const sections: string[] = [];
+
+  // Check if this is RMS format data
+  const isRMSFormat = resumeData.rmsRawData && resumeData.rmsVersion;
+
+  if (isRMSFormat) {
+    return extractRMSResumeText(resumeData.rmsRawData);
+  }
 
   // Add contact information
   if (resumeData.contactInfo || resumeData.contact) {
@@ -287,6 +187,124 @@ export function extractResumeText(resumeData: any): string {
       const proficiency = lang.proficiency ? ` - ${lang.proficiency}` : '';
       sections.push(`${lang.name}${proficiency}`);
     });
+  }
+
+  return sections.join('\n');
+}
+
+// Helper function to extract resume text from RMS format data
+function extractRMSResumeText(rmsData: any): string {
+  const sections: string[] = [];
+
+  // Add contact information
+  if (rmsData.Rms_contact_fullName) {
+    sections.push(`Name: ${rmsData.Rms_contact_fullName}`);
+  }
+  if (rmsData.Rms_contact_email) {
+    sections.push(`Email: ${rmsData.Rms_contact_email}`);
+  }
+  if (rmsData.Rms_contact_phone) {
+    sections.push(`Phone: ${rmsData.Rms_contact_phone}`);
+  }
+  if (rmsData.Rms_contact_city && rmsData.Rms_contact_state) {
+    sections.push(`Location: ${rmsData.Rms_contact_city}, ${rmsData.Rms_contact_state}`);
+  }
+  if (rmsData.Rms_contact_linkedin) {
+    sections.push(`LinkedIn: ${rmsData.Rms_contact_linkedin}`);
+  }
+
+  // Add summary
+  if (rmsData.Rms_summary) {
+    sections.push(`\nSUMMARY:\n${rmsData.Rms_summary}`);
+  }
+
+  // Add work experience
+  const experienceCount = rmsData.Rms_experience_count || 0;
+  if (experienceCount > 0) {
+    sections.push('\nWORK EXPERIENCE:');
+    for (let i = 0; i < experienceCount; i++) {
+      const role = rmsData[`Rms_experience_${i}_role`];
+      const company = rmsData[`Rms_experience_${i}_company`];
+      const dateBegin = rmsData[`Rms_experience_${i}_dateBegin`];
+      const dateEnd = rmsData[`Rms_experience_${i}_dateEnd`];
+      const location = rmsData[`Rms_experience_${i}_location`];
+      const description = rmsData[`Rms_experience_${i}_description`];
+
+      if (role || company) {
+        sections.push(`\n${role || 'Position'} at ${company || 'Company'}`);
+        if (dateBegin) sections.push(`${dateBegin}${dateEnd ? ` - ${dateEnd}` : ''}`);
+        if (location) sections.push(`Location: ${location}`);
+        if (description) sections.push(`${description}`);
+      }
+    }
+  }
+
+  // Add education
+  const educationCount = rmsData.Rms_education_count || 0;
+  if (educationCount > 0) {
+    sections.push('\nEDUCATION:');
+    for (let i = 0; i < educationCount; i++) {
+      const qualification = rmsData[`Rms_education_${i}_qualification`];
+      const institution = rmsData[`Rms_education_${i}_institution`];
+      const date = rmsData[`Rms_education_${i}_date`];
+      const location = rmsData[`Rms_education_${i}_location`];
+      const score = rmsData[`Rms_education_${i}_score`];
+
+      if (qualification || institution) {
+        sections.push(`\n${qualification || 'Degree'}`);
+        sections.push(`${institution || 'Institution'}`);
+        if (date) sections.push(`${date}`);
+        if (location) sections.push(`Location: ${location}`);
+        if (score) sections.push(`Score: ${score}`);
+      }
+    }
+  }
+
+  // Add skills
+  const skillCount = rmsData.Rms_skill_count || 0;
+  if (skillCount > 0) {
+    sections.push('\nSKILLS:');
+    for (let i = 0; i < skillCount; i++) {
+      const category = rmsData[`Rms_skill_${i}_category`];
+      const keywords = rmsData[`Rms_skill_${i}_keywords`];
+      
+      if (keywords) {
+        sections.push(`${category || 'Skills'}: ${keywords}`);
+      }
+    }
+  }
+
+  // Add certifications
+  const certificationCount = rmsData.Rms_certification_count || 0;
+  if (certificationCount > 0) {
+    sections.push('\nCERTIFICATIONS:');
+    for (let i = 0; i < certificationCount; i++) {
+      const name = rmsData[`Rms_certification_${i}_name`];
+      const department = rmsData[`Rms_certification_${i}_department`];
+      const date = rmsData[`Rms_certification_${i}_date`];
+
+      if (name) {
+        sections.push(`${name}${department ? ` - ${department}` : ''}`);
+        if (date) sections.push(`Date: ${date}`);
+      }
+    }
+  }
+
+  // Add projects
+  const projectCount = rmsData.Rms_project_count || 0;
+  if (projectCount > 0) {
+    sections.push('\nPROJECTS:');
+    for (let i = 0; i < projectCount; i++) {
+      const title = rmsData[`Rms_project_${i}_title`];
+      const description = rmsData[`Rms_project_${i}_description`];
+      const technologies = rmsData[`Rms_project_${i}_technologies`];
+
+      if (title) {
+        sections.push(`\n${title}`);
+        if (description) sections.push(`${description}`);
+        if (technologies) sections.push(`Technologies: ${technologies}`);
+      }
+    }
   }
 
   return sections.join('\n');

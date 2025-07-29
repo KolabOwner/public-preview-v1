@@ -109,14 +109,12 @@ export default function ResumePreview({
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark') || mediaQuery.matches;
+      const isDark = document.documentElement.classList.contains('dark');
       setIsDarkMode(isDark);
     };
 
     checkDarkMode();
-    const handleChange = () => checkDarkMode();
-    mediaQuery.addEventListener('change', handleChange);
-
+    
     const observer = new MutationObserver(mutations => {
       mutations.forEach(mutation => {
         if (mutation.attributeName === 'class') {
@@ -128,7 +126,6 @@ export default function ResumePreview({
     observer.observe(document.documentElement, { attributes: true });
 
     return () => {
-      mediaQuery.removeEventListener('change', handleChange);
       observer.disconnect();
     };
   }, []);
@@ -350,6 +347,7 @@ export default function ResumePreview({
       console.error('Error changing template:', error);
     }
   };
+
 
 
   // Early return if no data
