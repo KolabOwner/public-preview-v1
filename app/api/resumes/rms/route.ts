@@ -34,7 +34,10 @@ function getExifToolPath(): string {
   // Production/Vercel environment - check for installed binary first
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     const binaryPath = join(process.cwd(), 'bin', 'exiftool');
-    if (existsSync(binaryPath)) {
+    const libPath = join(process.cwd(), 'bin', 'lib');
+    if (existsSync(binaryPath) && existsSync(libPath)) {
+      // Set PERL5LIB environment variable for ExifTool modules
+      process.env.PERL5LIB = libPath;
       return binaryPath;
     }
     return 'exiftool'; // Fall back to system PATH

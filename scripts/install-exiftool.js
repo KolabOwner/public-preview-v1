@@ -132,9 +132,18 @@ function downloadExifTool(targetPath) {
             throw new Error('Could not find extracted ExifTool directory');
           }
           
-          // Copy exiftool script
+          // Copy exiftool script and lib directory
           const sourcePath = path.join(tempDir, extractedDir, 'exiftool');
+          const libSourcePath = path.join(tempDir, extractedDir, 'lib');
+          const libTargetPath = path.join(path.dirname(targetPath), 'lib');
+          
           fs.copyFileSync(sourcePath, targetPath);
+          
+          // Copy the entire lib directory (contains Image/ExifTool.pm)
+          if (fs.existsSync(libSourcePath)) {
+            fs.cpSync(libSourcePath, libTargetPath, { recursive: true });
+            console.log('📚 Copied ExifTool Perl libraries');
+          }
           
           // Cleanup
           fs.rmSync(tempDir, { recursive: true, force: true });
