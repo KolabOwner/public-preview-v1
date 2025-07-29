@@ -164,10 +164,10 @@ export function getSectionTitle(
       skills: 'SKILLS',
     },
     modern: {
-      summary: 'Profile',
-      experience: 'Professional Experience',
+      summary: 'Summary',
+      experience: 'Experience',
       education: 'Education',
-      skills: 'Expert-Level Skills',
+      skills: 'Skills',
     },
     creative: {
       summary: 'About Me',
@@ -179,7 +179,7 @@ export function getSectionTitle(
       summary: 'SUMMARY',
       experience: 'EXPERIENCE',
       education: 'EDUCATION',
-      skills: 'EXPERT-LEVEL SKILLS',
+      skills: 'SKILLS',
     },
     academic: {
       summary: 'Research Interests',

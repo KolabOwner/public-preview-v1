@@ -130,7 +130,7 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
     defaults: {
       fontFamily: 'Inter',
       fontSize: 10,
-      lineHeight: 1.4,
+      lineHeight: 1.15,
       sectionSpacing: 1,
       primaryColor: '#2563eb',
       textColor: '#1f2937',
@@ -139,7 +139,7 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
     },
     styles: {
       fontScales: {
-        name: 1.8,
+        name: 2.0,
         contact: 0.65,
         sectionHeader: 1.0,
         jobTitle: 0.85,
@@ -166,17 +166,17 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
           body: 'normal',
         },
         fontWeights: {
-          name: 600,
+          name: 700,
           section: 600,
           title: 600,
           body: 400,
         },
       },
       colors: {
-        primary: '#2563eb',
-        secondary: '#3b82f6',
+        primary: '#000000',
+        secondary: '#2563eb',
         text: '#1f2937',
-        muted: '#9ca3af',
+        muted: '#4b5563',
         accent: '#3b82f6',
       },
       decorations: {
@@ -260,8 +260,8 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
     defaults: {
       fontFamily: 'Merriweather',
       fontSize: 10,
-      lineHeight: 1.4,
-      sectionSpacing: 1.2,
+      lineHeight: 1.2,
+      sectionSpacing: 1.0,
       primaryColor: '#000000',
       textColor: '#000000',
       showDividers: true,
@@ -277,8 +277,8 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
         detail: 0.7,
       },
       layout: {
-        sectionSpacing: 1.2,
-        bulletSpacing: 0.3,
+        sectionSpacing: 1.0,
+        bulletSpacing: 0.2,
         headerAlignment: 'center',
         contactAlignment: 'center',
         bodyAlignment: 'left',
@@ -296,17 +296,17 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
           body: '0.01em',
         },
         fontWeights: {
-          name: 500,
+          name: 700,
           section: 500,
-          title: 500,
-          body: 400,
+          title: 600,
+          body: 600,
         },
       },
       colors: {
         primary: '#000000',
         secondary: '#000000',
         text: '#000000',
-        muted: '#737373',
+        muted: '#444444',
         accent: '#000000',
       },
       decorations: {

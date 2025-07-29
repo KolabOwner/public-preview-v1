@@ -397,7 +397,7 @@ export default function ResumePreview({
                       {decodeHTMLEntities(exp.position || exp.title || 'Position')}
                     </span>
                     <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem' }}>|</span>
-                    <span className="resume-company" style={{ ...inlineStyles.bodyText, fontStyle: 'normal', color: '#1f2937' }}>
+                    <span className="resume-company" style={{ ...inlineStyles.company, fontStyle: 'normal', color: '#1f2937', fontWeight: 600, fontSize: `${parseFloat(inlineStyles.company.fontSize) * 1.05}pt` }}>
                       {decodeHTMLEntities(exp.company || 'Company')}
                     </span>
                   </div>
@@ -413,15 +413,15 @@ export default function ResumePreview({
                       {decodeHTMLEntities(exp.position || exp.title || 'Position')}
                     </span>
                     <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
-                    <span className="resume-company" style={{ ...inlineStyles.bodyText, fontStyle: 'normal', fontWeight: 400 }}>
+                    <span className="resume-company" style={{ ...inlineStyles.company, fontStyle: 'normal' }}>
                       {decodeHTMLEntities(exp.company || 'Company')}
                     </span>
                     <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
-                    <span style={{ ...inlineStyles.bodyText, fontWeight: 400 }}>
+                    <span style={{ ...inlineStyles.bodyText, fontWeight: 600 }}>
                       {exp.location ? decodeHTMLEntities(exp.location) : 'Location'}
                     </span>
                     <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
-                    <span style={{ ...inlineStyles.bodyText, fontWeight: 400 }}>
+                    <span style={{ ...inlineStyles.bodyText, fontWeight: 600 }}>
                       {formatDate(exp.dateBegin || exp.startDate)} - {formatDate(exp.dateEnd || exp.endDate)}
                     </span>
                   </div>
@@ -481,7 +481,7 @@ export default function ResumePreview({
                     </h3>
                   </div>
                   <div className="resume-company" style={{
-                    ...inlineStyles.bodyText,
+                    ...inlineStyles.company,
                     fontWeight: 600,
                     fontStyle: 'normal',
                     color: '#000000'
@@ -545,7 +545,7 @@ export default function ResumePreview({
                           edu.qualification || edu.degree || 'Degree'}
                       </span>
                       <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem' }}>|</span>
-                      <span className="resume-school-info" style={{ ...inlineStyles.bodyText, fontStyle: 'normal', color: '#1f2937' }}>
+                      <span className="resume-school-info" style={{ ...inlineStyles.company, fontStyle: 'normal', color: '#1f2937', fontWeight: 600, fontSize: `${parseFloat(inlineStyles.company.fontSize) * 1.05}pt` }}>
                         {institutionName}
                       </span>
                     </div>
@@ -594,7 +594,7 @@ export default function ResumePreview({
                   </>
                 ) : currentTemplate === 'minimal' || currentTemplate === 'bold' ? (
                   <>
-                    <div style={{ marginBottom: '0.1rem', lineHeight: '1.2' }}>
+                    <div style={{ marginBottom: '0.1rem', lineHeight: '1.1' }}>
                       <span className="resume-degree-title" style={{ ...inlineStyles.jobTitle, fontWeight: 500 }}>
                         {edu.qualification && edu.fieldOfStudy ?
                           `${edu.qualification} in ${edu.fieldOfStudy}` :
@@ -613,12 +613,12 @@ export default function ResumePreview({
                         {institutionName}
                       </span>
                       <span style={{ ...inlineStyles.bodyText, margin: '0 0.4rem', fontWeight: 400 }}> | </span>
-                      <span style={{ ...inlineStyles.bodyText, fontWeight: 400 }}>
+                      <span style={{ ...inlineStyles.bodyText, fontWeight: 600 }}>
                         {edu.date ? formatDate(edu.date, edu.dateFormat) : 'Graduation Date'}
                       </span>
                     </div>
                     {(edu.gpa || location || edu.description) && (
-                      <div style={{ ...inlineStyles.detailText, marginBottom: '0.1rem', lineHeight: '1.2' }}>
+                      <div style={{ ...inlineStyles.detailText, marginBottom: '0.1rem', lineHeight: '1.1' }}>
                         {edu.gpa && <span>GPA: {edu.gpa}</span>}
                         {edu.gpa && location && <span style={{ margin: '0 0.4rem' }}> | </span>}
                         {location && <span>{location}</span>}
@@ -686,7 +686,7 @@ export default function ResumePreview({
                     {/* Right column: Organization, dates, description */}
                     <div>
                       {project.organization && (
-                        <div className="resume-company" style={{ ...inlineStyles.bodyText, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.body * 0.9}pt`, fontStyle: 'normal' }}>
+                        <div className="resume-company" style={{ ...inlineStyles.company, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.body * 0.9}pt`, fontStyle: 'normal' }}>
                           <span style={{ fontWeight: 500, fontStyle: 'normal' }}>{decodeHTMLEntities(project.organization)}</span>
                           {(project.dateBegin || project.dateEnd) && (
                             <>
@@ -730,7 +730,7 @@ export default function ResumePreview({
                     </div>
                   </div>
                   {project.organization && (
-                    <div className="resume-company" style={{ ...inlineStyles.bodyText, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
+                    <div className="resume-company" style={{ ...inlineStyles.company, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
                       {decodeHTMLEntities(project.organization)}
                     </div>
                   )}
@@ -965,7 +965,7 @@ export default function ResumePreview({
                   {decodeHTMLEntities(vol.role || vol.title || 'Volunteer Position')}
                 </h3>
               </div>
-              <div className="resume-company" style={inlineStyles.bodyText}>
+              <div className="resume-company" style={inlineStyles.company}>
                 <span>{decodeHTMLEntities(vol.organization || 'Organization')}</span>
                 <span className="resume-date" style={inlineStyles.date}>
                   {formatDate(vol.startDate)} - {formatDate(vol.endDate || (vol.current ? 'Present' : ''))}

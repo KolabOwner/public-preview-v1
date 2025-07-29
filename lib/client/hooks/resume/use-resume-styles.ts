@@ -460,7 +460,7 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
   }, [documentSettings, currentTemplate]);
 
   // Generate CSS
-  const css = useMemo(() => generateResumeCSS(styles), [styles]);
+  const css = useMemo(() => generateResumeCSS(styles, currentTemplate), [styles, currentTemplate]);
 
   // Generate inline styles
   const inlineStyles = useMemo(() => generateInlineStyles(styles, currentTemplate), [styles, currentTemplate]);

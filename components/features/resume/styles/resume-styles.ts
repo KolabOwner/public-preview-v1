@@ -122,7 +122,7 @@ export function generateResumeStyles(
       blockGap: settings.sectionSpacing * 0.5,
       bulletGap: styles.layout.bulletSpacing,
       headerMarginTop: settings.sectionSpacing * 0.5,
-      headerMarginBottom: templateId === 'modern' ? 0 : templateId === 'minimal' ? 0.1 : settings.sectionSpacing * 0.3,
+      headerMarginBottom: templateId === 'modern' ? 0 : templateId === 'minimal' ? 0 : settings.sectionSpacing * 0.3,
       documentPadding: `${settings.margins.top}in ${settings.margins.right}in ${settings.margins.bottom}in ${settings.margins.left}in`,
     },
     colors: {
@@ -289,7 +289,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
       text-align: var(--resume-text-align-name) !important;
       letter-spacing: var(--resume-letter-spacing-name) !important;
       margin-bottom: var(--resume-spacing-header-bottom) !important;
-      color: var(--resume-color-text) !important;
+      color: ${templateId === 'modern' ? '#2563eb' : 'var(--resume-color-text)'} !important;
       ${templateId === 'bold' ? 'border-bottom: 1px solid #9ca3af; padding-bottom: 0.5rem;' : ''}
     }
 
@@ -332,7 +332,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
     .resume-school-info {
       font-size: var(--resume-font-size-body) !important;
       line-height: var(--resume-line-height-body) !important;
-      font-weight: 400 !important;
+      font-weight: ${templateId === 'modern' ? '600' : templateId === 'minimal' ? '600' : '400'} !important;
       color: var(--resume-color-text) !important;
       font-style: normal !important;
     }
@@ -359,7 +359,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
 
     .resume-date {
       font-style: normal !important;
-      font-weight: 600 !important;
+      font-weight: ${templateId === 'minimal' ? '600' : '600'} !important;
       color: var(--resume-color-text) !important;
       font-size: var(--resume-font-size-body) !important;
     }
@@ -379,7 +379,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
       font-weight: 400 !important;
       letter-spacing: var(--resume-letter-spacing-body) !important;
       text-align: var(--resume-text-align-body) !important;
-      color: var(--resume-color-muted) !important;
+      color: var(--resume-color-text) !important;
     }
 
     .resume-bullet-list li:before {
@@ -388,6 +388,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
       left: -0.5rem !important;
       color: var(--resume-color-text) !important;
       font-weight: bold !important;
+      font-size: ${templateId === 'modern' ? '0.8em' : '1em'} !important;
     }
 
     /* Block Spacing */
@@ -507,8 +508,8 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
       textTransform: styles.typography.textTransform.name as any,
       textAlign: styles.layout.textAlign.name as any,
       letterSpacing: styles.typography.letterSpacing.name,
-      marginBottom: templateId === 'modern' ? '0.4rem' : `${styles.spacing.headerMarginBottom}rem`,
-      color: templateId === 'bold' ? styles.colors.text : styles.colors.primary,
+      marginBottom: templateId === 'modern' ? '0.4rem' : templateId === 'minimal' ? '0rem' : `${styles.spacing.headerMarginBottom}rem`,
+      color: templateId === 'bold' ? styles.colors.text : templateId === 'modern' ? '#2563eb' : styles.colors.primary,
       ...(templateId === 'bold' && {
         borderBottom: '1px solid #9ca3af',
         paddingBottom: '0.5rem'
@@ -550,7 +551,7 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
     company: {
       fontSize: `${styles.fontSizes.body}pt`,
       lineHeight: styles.lineHeights.body,
-      fontWeight: styles.typography.fontWeights.body,
+      fontWeight: templateId === 'modern' ? 600 : templateId === 'minimal' ? 600 : 400,
       color: styles.colors.text,
       fontStyle: 'normal' as const,
     },
@@ -590,11 +591,12 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
       fontWeight: 400,
       letterSpacing: styles.typography.letterSpacing.body,
       textAlign: styles.layout.textAlign.body as any,
-      color: styles.colors.muted,
+      color: templateId === 'modern' ? styles.colors.text : styles.colors.muted,
     },
     bulletPoint: {
       color: styles.colors.text,
       fontWeight: 'bold' as const,
+      fontSize: templateId === 'modern' ? '0.8em' : '1em',
     },
     skillsTitle: {
       fontWeight: 400,
