@@ -160,6 +160,20 @@ function createResponse<T>(data: T | null, success = true, error?: string, statu
 // GET - Check ExifTool availability and API status
 export async function GET(request: NextRequest) {
   const logPrefix = '[RMS API]';
+  
+  // Disable ExifTool in Vercel production environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    console.log(`${logPrefix} ExifTool disabled in production environment`);
+    return createResponse({
+      available: false,
+      path: EXIFTOOL_PATH,
+      environment: process.env.NODE_ENV,
+      platform: process.platform,
+      isVercel: !!process.env.VERCEL,
+      reason: 'ExifTool disabled in production - using Gemini AI parsing instead'
+    }, false, 'ExifTool disabled in production environment');
+  }
+  
   try {
     const { stdout } = await executeExifTool(['-ver'], { timeout: 5000 });
     const version = stdout.trim();
@@ -188,6 +202,17 @@ export async function GET(request: NextRequest) {
 // POST - Main RMS operations endpoint
 export async function POST(request: NextRequest) {
   const logPrefix = '[RMS API]';
+  
+  // Disable ExifTool operations in production
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    return createResponse({
+      hasExifRMSMetadata: false,
+      fieldCount: 0,
+      sampleFields: [],
+      message: 'ExifTool disabled in production - using Gemini AI parsing instead'
+    }, true);
+  }
+  
   try {
     const formData = await request.formData();
     const action = formData.get('action') as string;
