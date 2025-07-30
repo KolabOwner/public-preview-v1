@@ -34,7 +34,7 @@ export default function KeywordScannerPage() {
                   AI Keyword Scanner for Your Resume
                 </h1>
                 <p className="text-lg text-gray-600 max-w-xl">
-                  Scan your resume for relevant keywords based on the job you're applying for. Automatically add the right phrases to navigate ATS, impress recruiters, and land you more interviews.
+                  Scan your resume for relevant keywords based on the job you&apos;re applying for. Automatically add the right phrases to navigate ATS, impress recruiters, and land you more interviews.
                 </p>
                 <div className="pt-4">
                   <Link 
@@ -266,7 +266,7 @@ export default function KeywordScannerPage() {
                       </h3>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      The smart Rezi AI make sure your resume reads naturally. This isn't keyword stuffing, it's professional rephrasing.
+                      The smart Rezi AI make sure your resume reads naturally. This isn&apos;t keyword stuffing, it&apos;s professional rephrasing.
                     </p>
                   </div>
                 </div>
@@ -319,7 +319,7 @@ export default function KeywordScannerPage() {
                   </h3>
                 </div>
                 <p className="text-base lg:text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
-                  If you have an existing resume, upload it to Rezi (as a bonus, we'll perfectly auto-format it). If you don't have one, with our builder you'll create a new resume in under 10 minutes.
+                  If you have an existing resume, upload it to Rezi (as a bonus, we&apos;ll perfectly auto-format it). If you don&apos;t have one, with our builder you&apos;ll create a new resume in under 10 minutes.
                   <br /><br />
                   Alternatively, use the LinkedIn profile import feature to get a resume based on your LinkedIn with a single click.
                 </p>
@@ -443,9 +443,9 @@ export default function KeywordScannerPage() {
                   </h3>
                 </div>
                 <p className="text-base lg:text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
-                  We'll highlight the most impactful terms from the job description. Rezi uses this data to suggest missing keywords and can even generate new bullet points using AI.
+                  We&apos;ll highlight the most impactful terms from the job description. Rezi uses this data to suggest missing keywords and can even generate new bullet points using AI.
                   <br /><br />
-                  This helps you naturally incorporate those terms into your resume—ensuring a stronger match with the role you're targeting.
+                  This helps you naturally incorporate those terms into your resume—ensuring a stronger match with the role you&apos;re targeting.
                 </p>
                 <div>
                   <Link href="/sign-up" className="bg-green-500 text-white px-6 py-3 rounded-xl font-bold text-base hover:bg-green-600 transition-colors inline-block">
@@ -533,7 +533,7 @@ export default function KeywordScannerPage() {
                   Advanced Semantic Analysis Through Deep Learning Architecture
                 </h2>
                 <p className="mb-6">
-                  Our keyword scanner employs cutting-edge natural language processing that goes beyond simple word matching. We've built a comprehensive system that interprets job descriptions with the analytical depth of a seasoned hiring manager combined with the processing power of advanced AI, ensuring your resume aligns perfectly with employer expectations.
+                  Our keyword scanner employs cutting-edge natural language processing that goes beyond simple word matching. We&apos;ve built a comprehensive system that interprets job descriptions with the analytical depth of a seasoned hiring manager combined with the processing power of advanced AI, ensuring your resume aligns perfectly with employer expectations.
                 </p>
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -561,12 +561,12 @@ export default function KeywordScannerPage() {
 
                 <p className="mb-4">
                   <strong>Layer 3: Semantic Expansion & Disambiguation</strong><br />
-                  This is where our system truly excels. When encountering complex phrases like "financial modeling, forecasting and risk assessment," it intelligently separates them into distinct, actionable keywords: "financial modeling," "financial forecasting," and "risk assessment." This prevents missed opportunities due to varied formatting approaches.
+                  This is where our system truly excels. When encountering complex phrases like &ldquo;financial modeling, forecasting and risk assessment,&ldquo; it intelligently separates them into distinct, actionable keywords: &ldquo;financial modeling,&ldquo; &ldquo;financial forecasting,&ldquo; and &ldquo;risk assessment.&ldquo; This prevents missed opportunities due to varied formatting approaches.
                 </p>
 
                 <p className="mb-6">
                   <strong>Layer 4: Hierarchical Classification with Impact Scoring</strong><br />
-                  Each identified keyword receives classification into one of twelve strategic categories that we've determined are essential for contemporary recruitment, with every keyword assigned an impact score from 1-4 where 4 represents critical requirements, 3 indicates strong preferences, 2 suggests moderate relevance, and 1 denotes supplementary qualifications.
+                  Each identified keyword receives classification into one of twelve strategic categories that we&apos;ve determined are essential for contemporary recruitment, with every keyword assigned an impact score from 1-4 where 4 represents critical requirements, 3 indicates strong preferences, 2 suggests moderate relevance, and 1 denotes supplementary qualifications.
                 </p>
 
                 <div className="bg-gray-50 rounded-lg p-6 mb-6">
@@ -591,14 +591,14 @@ export default function KeywordScannerPage() {
                   The Science of Intelligent Prioritization
                 </h2>
                 <p className="mb-6">
-                  What distinguishes our platform is our sophisticated prioritization methodology. We don't merely locate keywords—we comprehend their strategic significance through our advanced ranking algorithms:
+                  What distinguishes our platform is our sophisticated prioritization methodology. We don&apos;t merely locate keywords—we comprehend their strategic significance through our advanced ranking algorithms:
                 </p>
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
                   Dynamic Category Weighting
                 </h3>
                 <p className="mb-4">
-                  Our AI calculates category importance scores specific to each position. For instance, "Technical Proficiencies" will score significantly higher for a Software Engineer role than "Educational Credentials." This targeted approach ensures you optimize your resume where it will generate maximum impact for each unique opportunity.
+                  Our AI calculates category importance scores specific to each position. For instance, &ldquo;Technical Proficiencies&ldquo; will score significantly higher for a Software Engineer role than &ldquo;Educational Credentials.&ldquo; This targeted approach ensures you optimize your resume where it will generate maximum impact for each unique opportunity.
                 </p>
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -613,7 +613,7 @@ export default function KeywordScannerPage() {
                 </p>
 
                 <p className="mb-6">
-                  For a data science position, "Python" might receive an impact score of 4 (mission-critical) while "R" receives a score of 2 (moderate relevance), despite both appearing in the job description. This detailed understanding enables strategic emphasis of the most impactful qualifications.
+                  For a data science position, &ldquo;Python&ldquo; might receive an impact score of 4 (mission-critical) while &ldquo;R&ldquo; receives a score of 2 (moderate relevance), despite both appearing in the job description. This detailed understanding enables strategic emphasis of the most impactful qualifications.
                 </p>
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -882,7 +882,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                An AI resume keyword scanner is a tool that analyzes a job posting and your resume, identifies the key terms and skills the employer is looking for, and shows you which of those keywords are missing. By suggesting relevant keywords to add, it helps ensure your resume is tailored to the job and passes Applicant Tracking Systems (ATS). Including the right keywords makes your resume more visible to recruiters, since ATS software typically auto-rejects resumes that don't match the job description.
+                An AI resume keyword scanner is a tool that analyzes a job posting and your resume, identifies the key terms and skills the employer is looking for, and shows you which of those keywords are missing. By suggesting relevant keywords to add, it helps ensure your resume is tailored to the job and passes Applicant Tracking Systems (ATS). Including the right keywords makes your resume more visible to recruiters, since ATS software typically auto-rejects resumes that don&apos;t match the job description.
               </p>
             </div>
 
@@ -893,7 +893,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Simply upload your current resume (or paste it) and paste the job description for the position you're targeting. The tool will quickly compare the two and give you instant feedback. In a few seconds, you'll receive a detailed analysis that highlights which relevant keywords you already have and which important ones are missing. It will break down the suggestions (often as "High Priority" keywords vs. other keywords) so you can easily add them to your resume for that specific job.
+                Simply upload your current resume (or paste it) and paste the job description for the position you&apos;re targeting. The tool will quickly compare the two and give you instant feedback. In a few seconds, you&apos;ll receive a detailed analysis that highlights which relevant keywords you already have and which important ones are missing. It will break down the suggestions (often as &ldquo;High Priority&ldquo; keywords vs. other keywords) so you can easily add them to your resume for that specific job.
               </p>
             </div>
 
@@ -904,7 +904,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Focus on concrete, job-specific terms from the job description. These often include the exact job title and required hard skills (like specific software, technical abilities, tools or certifications). For example, if a posting asks for "Project Manager" or skills like "Python" or "CPA," those should appear on your resume. You should include the job title near the top of your resume (data shows candidates who do this are over ten times more likely to get an interview). Use the exact wording from the posting for software names or qualifications. Avoid vague buzzwords (e.g. "hardworking" or "team player"), as ATS filters ignore those.
+                Focus on concrete, job-specific terms from the job description. These often include the exact job title and required hard skills (like specific software, technical abilities, tools or certifications). For example, if a posting asks for &ldquo;Project Manager&ldquo; or skills like &ldquo;Python&ldquo; or &ldquo;CPA,&ldquo; those should appear on your resume. You should include the job title near the top of your resume (data shows candidates who do this are over ten times more likely to get an interview). Use the exact wording from the posting for software names or qualifications. Avoid vague buzzwords (e.g. &ldquo;hardworking&ldquo; or &ldquo;team player&ldquo;), as ATS filters ignore those.
               </p>
             </div>
 
@@ -915,7 +915,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Keywords drive ATS filters: most companies use ATS to screen resumes, so if your resume lacks the right keywords, it may never be seen by a human recruiter. In fact, studies show about 88% of qualified candidates are filtered out by ATS if they don't precisely match the job description. One report found 99.7% of Fortune 500 recruiters use keyword filters in their ATS. Having an ATS-friendly resume with the right keywords ensures your resume doesn't get lost in the system. Tailoring keywords to the job therefore dramatically improves your chances of landing an interview.
+                Keywords drive ATS filters: most companies use ATS to screen resumes, so if your resume lacks the right keywords, it may never be seen by a human recruiter. In fact, studies show about 88% of qualified candidates are filtered out by ATS if they don&apos;t precisely match the job description. One report found 99.7% of Fortune 500 recruiters use keyword filters in their ATS. Having an ATS-friendly resume with the right keywords ensures your resume doesn&apos;t get lost in the system. Tailoring keywords to the job therefore dramatically improves your chances of landing an interview.
               </p>
             </div>
 
@@ -937,7 +937,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                The tool works for <strong>any</strong> industry or job function. Although it's popular with tech, marketing, and customer-service applicants, it's designed to handle a wide range of fields. The AI identifies the key components that matter in your specific role, whether you're in engineering, finance, healthcare or any other sector. In short, any jobseeker can benefit from optimizing keywords for their particular position.
+                The tool works for <strong>any</strong> industry or job function. Although it&apos;s popular with tech, marketing, and customer-service applicants, it&apos;s designed to handle a wide range of fields. The AI identifies the key components that matter in your specific role, whether you&apos;re in engineering, finance, healthcare or any other sector. In short, any jobseeker can benefit from optimizing keywords for their particular position.
               </p>
             </div>
 
@@ -948,7 +948,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Not at all. The scanner is very user-friendly. You don't need any technical expertise. Simply provide your resume and a job description, the AI does the hard work. It will analyze your documents and give you clear, actionable feedback on which keywords to add. No coding or special resume-writing knowledge is required.
+                Not at all. The scanner is very user-friendly. You don&apos;t need any technical expertise. Simply provide your resume and a job description, the AI does the hard work. It will analyze your documents and give you clear, actionable feedback on which keywords to add. No coding or special resume-writing knowledge is required.
               </p>
             </div>
 
@@ -959,7 +959,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Very quickly. The AI analysis is almost instant. You'll immediately see a report of missing keywords and suggestions, saving you from hours of manual searching and analysis.
+                Very quickly. The AI analysis is almost instant. You&apos;ll immediately see a report of missing keywords and suggestions, saving you from hours of manual searching and analysis.
               </p>
             </div>
 
@@ -970,7 +970,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Yes. You can run as many scans as you need. It's especially useful to tailor your resume for each job application. For example, you might upload different versions of your resume or try different job descriptions. Resume scanning tools generally allow multiple uploads — you can test each resume version or job listing to see which keywords to emphasize. Using the scanner repeatedly (for each job you apply to) will help ensure every resume is as targeted as possible.
+                Yes. You can run as many scans as you need. It&apos;s especially useful to tailor your resume for each job application. For example, you might upload different versions of your resume or try different job descriptions. Resume scanning tools generally allow multiple uploads — you can test each resume version or job listing to see which keywords to emphasize. Using the scanner repeatedly (for each job you apply to) will help ensure every resume is as targeted as possible.
               </p>
             </div>
 
@@ -981,7 +981,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Absolutely. By adding the exact keywords that ATS and recruiters look for, you greatly improve the chance that your resume will be seen and shortlisted. Users report that aligning their resume to the job description leads to many more callbacks. For example, including a job's exact title in your resume can make you over 10 times more likely to get an interview. Resume scanners aim to make your resume <em>"look like a match"</em> to the employer — tools like this have helped jobseekers land more interviews and offers.
+                Absolutely. By adding the exact keywords that ATS and recruiters look for, you greatly improve the chance that your resume will be seen and shortlisted. Users report that aligning their resume to the job description leads to many more callbacks. For example, including a job&apos;s exact title in your resume can make you over 10 times more likely to get an interview. Resume scanners aim to make your resume <em>&ldquo;look like a match&ldquo;</em> to the employer — tools like this have helped jobseekers land more interviews and offers.
               </p>
             </div>
 
@@ -1003,7 +1003,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                No — it doesn't blindly "keyword-stuff." The AI is designed to integrate keywords in a natural, professional way. In fact, advice from ATS experts is to avoid obvious stuffing and focus on real skills and accomplishments. The keyword scanner suggests relevant terms and often provides context so you can weave them into your resume naturally. This way your resume remains easy to read for humans while still satisfying ATS filters.
+                No — it doesn&apos;t blindly &ldquo;keyword-stuff.&ldquo; The AI is designed to integrate keywords in a natural, professional way. In fact, advice from ATS experts is to avoid obvious stuffing and focus on real skills and accomplishments. The keyword scanner suggests relevant terms and often provides context so you can weave them into your resume naturally. This way your resume remains easy to read for humans while still satisfying ATS filters.
               </p>
             </div>
           </div>

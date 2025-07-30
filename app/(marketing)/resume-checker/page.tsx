@@ -33,7 +33,7 @@ export default function ResumeCheckerPage() {
                   ATS Resume Checker: Free & Instant
                 </h1>
                 <p className="text-lg text-gray-600 max-w-xl">
-                  Use this free ATS resume checker & scanner to see if your resume is compatible with today's ATS software. Make sure you're not sabotaging your chances with a poorly formatted resume and get tips on best practices you should follow.
+                  Use this free ATS resume checker & scanner to see if your resume is compatible with today&apos;s ATS software. Make sure you&apos;re not sabotaging your chances with a poorly formatted resume and get tips on best practices you should follow.
                 </p>
               </div>
 
@@ -148,7 +148,7 @@ export default function ResumeCheckerPage() {
                   Real-time content analysis
                 </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Compare your resume's language to industry standards, highlighting missing skills, certifications, and power phrases employers demand. For a more detailed analysis, paste your target job description and check if your resume shows a strong fit.
+                  Compare your resume&apos;s language to industry standards, highlighting missing skills, certifications, and power phrases employers demand. For a more detailed analysis, paste your target job description and check if your resume shows a strong fit.
                 </p>
               </div>
             </div>
@@ -792,7 +792,7 @@ export default function ResumeCheckerPage() {
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      No expertise required. Simply upload or paste your resume, click "Analyze," and receive your detailed report. Every recommendation includes clear, step-by-step implementation guidance.
+                      No expertise required. Simply upload or paste your resume, click &ldquo;Analyze,&ldquo; and receive your detailed report. Every recommendation includes clear, step-by-step implementation guidance.
                     </p>
                   </div>
                 </div>
@@ -804,7 +804,7 @@ export default function ResumeCheckerPage() {
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      Analysis completes instantly—usually within 3-5 seconds of submission. You'll receive an immediate detailed scorecard with prioritized recommendations for improvement.
+                      Analysis completes instantly—usually within 3-5 seconds of submission. You&apos;ll receive an immediate detailed scorecard with prioritized recommendations for improvement.
                     </p>
                   </div>
                 </div>
@@ -824,11 +824,11 @@ export default function ResumeCheckerPage() {
                   <div className="faq-item">
                     <div className="margin-bottom margin-xsmall mb-3">
                       <div className="text-size-medium-61 text-weight-semibold text-color-gray900 text-lg font-semibold text-gray-900">
-                        Does using this checker ensure I'll get interviews?
+                        Does using this checker ensure I&apos;ll get interviews?
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      While no service can guarantee interviews, following ATS optimization principles dramatically increases your resume's visibility to hiring managers. Users consistently report improved response rates after implementing our parsing and content recommendations.
+                      While no service can guarantee interviews, following ATS optimization principles dramatically increases your resume&apos;s visibility to hiring managers. Users consistently report improved response rates after implementing our parsing and content recommendations.
                     </p>
                   </div>
                 </div>

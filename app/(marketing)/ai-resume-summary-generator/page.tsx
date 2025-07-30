@@ -232,7 +232,7 @@ export default function AIResumeSummaryGeneratorPage() {
                   Start Tailoring Your Resume Summary to the Job
                 </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Every facet of your resume should be tailored to the individual position you're applying for. That includes your resume summary.
+                  Every facet of your resume should be tailored to the individual position you&apos;re applying for. That includes your resume summary.
                   <br /><br />
                   Simply match your resume to a specific job posting, then generate a summary to customize and align it with the needs of the role.
                   <br /><br />
@@ -480,7 +480,7 @@ export default function AIResumeSummaryGeneratorPage() {
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               We&apos;ve partnered up with OpenAI to use their GPT-3 technology. Every time you generate content, 
-              we&apos;re buying "AI power" from OpenAI. To cover our costs, we have to charge you per usage.
+              we&apos;re buying &ldquo;AI power&ldquo; from OpenAI. To cover our costs, we have to charge you per usage.
             </p>
           </div>
 

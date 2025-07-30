@@ -344,7 +344,7 @@ export default function ResumeBulletPointGenerator() {
                   One‑Click Edits & Regenerations
                 </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Don't like the result? Instantly re‑generate new versions or tweak suggestions manually until they fit your voice perfectly.
+                  Don&apos;t like the result? Instantly re‑generate new versions or tweak suggestions manually until they fit your voice perfectly.
                 </p>
               </div>
             </div>
@@ -398,7 +398,7 @@ export default function ResumeBulletPointGenerator() {
                 <p className="text-base lg:text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
                   Tell the AI what position you held and where you worked. This helps generate bullet points with the right context and tone.
                   <br /><br />
-                  The more specific your input (like "Marketing Manager at Google"), the smarter the AI's results will be. Use common job titles for best accuracy.
+                  The more specific your input (like &ldquo;Marketing Manager at Google&ldquo;), the smarter the AI&apos;s results will be. Use common job titles for best accuracy.
                 </p>
                 <div>
                   <Link href="/sign-up" className="bg-amber-500 text-white px-6 py-3 rounded-xl font-bold text-base hover:bg-amber-600 transition-colors inline-block">
@@ -463,9 +463,9 @@ export default function ResumeBulletPointGenerator() {
                   </h3>
                 </div>
                 <p className="text-base lg:text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
-                  Click the "Generate Bullet" button. The AI instantly writes a compelling bullet point tailored to your role—no need to write from scratch.
+                  Click the &ldquo;Generate Bullet&ldquo; button. The AI instantly writes a compelling bullet point tailored to your role—no need to write from scratch.
                   <br /><br />
-                  You'll get a result that includes strong action verbs, measurable impact, and concise phrasing optimized for recruiters and ATS.
+                  You&apos;ll get a result that includes strong action verbs, measurable impact, and concise phrasing optimized for recruiters and ATS.
                 </p>
                 <div>
                   <Link href="/sign-up" className="bg-amber-500 text-white px-6 py-3 rounded-xl font-bold text-base hover:bg-amber-600 transition-colors inline-block">
@@ -526,7 +526,7 @@ export default function ResumeBulletPointGenerator() {
                   </h3>
                 </div>
                 <p className="text-base lg:text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
-                  Happy with your bullet? Click "Apply Suggestion" to save it to your resume. Need a different tone or phrasing? Regenerate a new option instantly.
+                  Happy with your bullet? Click &ldquo;Apply Suggestion&ldquo; to save it to your resume. Need a different tone or phrasing? Regenerate a new option instantly.
                   <br /><br />
                   Edit any suggestion to fine‑tune the wording or align with your personal style.
                 </p>
@@ -863,7 +863,7 @@ export default function ResumeBulletPointGenerator() {
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      It uses AI to write professional bullet points for your resume based on your job title and company. These bullet points follow best practices for resume writing: they're concise, achievement‑focused, and tailored to your role.
+                      It uses AI to write professional bullet points for your resume based on your job title and company. These bullet points follow best practices for resume writing: they&apos;re concise, achievement‑focused, and tailored to your role.
                     </p>
                   </div>
                 </div>
@@ -875,7 +875,7 @@ export default function ResumeBulletPointGenerator() {
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      Just enter your job title and company, then hit "Generate Bullet." The tool will instantly return a suggested line. If you want something different, regenerate until it feels right. When you're satisfied, apply the suggestions.
+                      Just enter your job title and company, then hit &ldquo;Generate Bullet.&ldquo; The tool will instantly return a suggested line. If you want something different, regenerate until it feels right. When you&apos;re satisfied, apply the suggestions.
                     </p>
                   </div>
                 </div>
@@ -883,11 +883,11 @@ export default function ResumeBulletPointGenerator() {
                   <div className="faq-item">
                     <div className="margin-bottom margin-xsmall mb-3">
                       <div className="text-size-medium-61 text-weight-semibold text-color-gray900 text-lg font-semibold text-gray-900">
-                        Can I customize the bullet point after it's generated?
+                        Can I customize the bullet point after it&apos;s generated?
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      Yes. Every bullet is editable. You can reword any part, add data or accomplishments, or adjust the tone. You're in full control, and the tool helps you get 90% there instantly.
+                      Yes. Every bullet is editable. You can reword any part, add data or accomplishments, or adjust the tone. You&apos;re in full control, and the tool helps you get 90% there instantly.
                     </p>
                   </div>
                 </div>
@@ -911,7 +911,7 @@ export default function ResumeBulletPointGenerator() {
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      Nope. Just job title and company. If you want to include specific tasks or achievements, you can, but it's not required (although recommended). The AI is designed to work with minimal input, but the more detailed your input, the better the output.
+                      Nope. Just job title and company. If you want to include specific tasks or achievements, you can, but it&apos;s not required (although recommended). The AI is designed to work with minimal input, but the more detailed your input, the better the output.
                     </p>
                   </div>
                 </div>
@@ -938,7 +938,7 @@ export default function ResumeBulletPointGenerator() {
                     </div>
                     <p className="text-gray-600 leading-relaxed">
                       <Link href="/sign-up" className="text-amber-600 hover:text-amber-700">
-                        Yes, you can generate and re‑generate bullet points for free. There's no cost to use the core functionality.
+                        Yes, you can generate and re‑generate bullet points for free. There&apos;s no cost to use the core functionality.
                       </Link>
                     </p>
                   </div>
