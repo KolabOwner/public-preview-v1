@@ -9,8 +9,8 @@ import {
 } from "@/lib/server/services/resume/pdf-generator";
 
 
-// Increase timeout for API route
-export const maxDuration = 30; // 30-second timeout
+// Increase timeout for API route to handle complex PDFs
+export const maxDuration = 60; // 60-second timeout for complex resumes
 export const dynamic = 'force-dynamic';
 // Handle CORS preflight requests
 export async function OPTIONS(request: NextRequest) {
