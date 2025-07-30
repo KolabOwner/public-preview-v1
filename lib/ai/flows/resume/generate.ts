@@ -21,7 +21,7 @@
  * @exports ExtractResumeDataInput - Input schema requiring PDF data URI
  * @exports ExtractResumeDataOutput - Structured output following RMS schema
  */
-import { ai, resumeParsingConfig, fastParsingConfig } from '@/lib/ai/genkit';
+import { ai } from '@/lib/ai/genkit';
 import { z } from 'genkit';
 
 
@@ -74,112 +74,29 @@ const ExtractResumeDataOutputSchema = z.object({
 export type ExtractResumeDataOutput = z.infer<typeof ExtractResumeDataOutputSchema>;
 export async function extractResumeData(input: ExtractResumeDataInput): Promise<ExtractResumeDataOutput> {
   console.log('🔍 Starting Gemini multimodal PDF extraction');
-  
   // Validate input data URI format
   if (!input.resumeDataUri.startsWith('data:')) {
     throw new Error('Invalid data URI format. Expected data URI with MIME type and base64 encoding');
   }
-  
-  // Extract MIME type and base64 data
-  const mimeMatch = input.resumeDataUri.match(/^data:([^;]+);base64,(.+)$/);
+  // Extract MIME type to ensure we're processing a PDF
+  const mimeMatch = input.resumeDataUri.match(/^data:([^;]+);base64,/);
   if (!mimeMatch) {
-    throw new Error('Invalid data URI format. Missing MIME type or base64 data');
+    throw new Error('Invalid data URI format. Missing MIME type');
   }
-  
   const mimeType = mimeMatch[1];
-  const base64Data = mimeMatch[2];
-  
-  if (mimeType !== 'application/pdf' && mimeType !== 'text/plain') {
-    console.warn(`⚠️ Unexpected MIME type: ${mimeType}. Expected application/pdf or text/plain`);
+  if (mimeType !== 'application/pdf') {
+    console.warn(`⚠️ Unexpected MIME type: ${mimeType}. Expected application/pdf`);
   }
 
-  // Check payload size and implement smart parsing strategy
-  const payloadSizeKB = Math.ceil((base64Data.length * 3) / 4 / 1024);
-  console.log(`📊 Processing payload: ${payloadSizeKB}KB`);
 
-  // Strategy selection based on size
-  let strategy: 'fast' | 'standard' | 'chunked' = 'standard';
-  
-  if (payloadSizeKB < 500) {
-    strategy = 'fast';
-  } else if (payloadSizeKB > 2000) {
-    strategy = 'chunked';
-  }
-
-  console.log(`📋 Using parsing strategy: ${strategy.toUpperCase()}`);
 
   try {
-    switch (strategy) {
-      case 'fast':
-        return await extractWithFastPath(input);
-      case 'chunked':
-        return await extractWithChunking(input, base64Data);
-      default:
-        return await extractWithRetries(input, 2);
-    }
-  } catch (error) {
-    console.error('❌ All parsing strategies failed:', error);
-    throw new Error(`Resume parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-// Fast path for simple resumes
-async function extractWithFastPath(input: ExtractResumeDataInput): Promise<ExtractResumeDataOutput> {
-  console.log('🚀 Using fast path extraction');
-  try {
-    const result = await extractResumeDataFlow(input, fastParsingConfig);
-    console.log('✅ Fast path extraction completed');
+    const result = await extractResumeDataFlow(input);
+    console.log('✅ Gemini multimodal PDF extraction completed successfully');
     return result;
   } catch (error) {
-    console.log('⚠️ Fast path failed, falling back to standard');
-    return await extractWithRetries(input, 1);
-  }
-}
-
-// Standard extraction with retries
-async function extractWithRetries(input: ExtractResumeDataInput, maxRetries: number): Promise<ExtractResumeDataOutput> {
-  let lastError: Error | null = null;
-  
-  for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
-    try {
-      console.log(`🔄 Extraction attempt ${attempt}/${maxRetries + 1}`);
-      const result = await extractResumeDataFlow(input, resumeParsingConfig);
-      console.log(`✅ Standard extraction completed on attempt ${attempt}`);
-      return result;
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Unknown error');
-      console.warn(`⚠️ Attempt ${attempt} failed:`, lastError.message);
-      
-      if (attempt <= maxRetries) {
-        // Progressive backoff: 2s, 4s, 8s
-        const delay = Math.pow(2, attempt) * 1000;
-        console.log(`⏳ Waiting ${delay}ms before retry...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-    }
-  }
-  
-  throw lastError || new Error('All extraction attempts failed');
-}
-
-// Chunked extraction for large PDFs
-async function extractWithChunking(input: ExtractResumeDataInput, base64Data: string): Promise<ExtractResumeDataOutput> {
-  console.log('📄 Using chunked extraction for large PDF');
-  
-  try {
-    // For now, try a compressed version by reducing quality
-    const compressedInput = {
-      ...input,
-      resumeDataUri: input.resumeDataUri, // TODO: Implement PDF compression if needed
-    };
-    
-    return await extractWithRetries(compressedInput, 1);
-  } catch (error) {
-    console.error('❌ Chunked extraction failed:', error);
-    
-    // Last resort: Extract text first, then parse text
-    console.log('🔄 Falling back to text extraction + parsing');
-    throw new Error('PDF too complex for multimodal parsing. Please try a simpler format or contact support.');
+    console.error('❌ Gemini multimodal PDF extraction failed:', error);
+    throw error;
   }
 }
 const extractResumeDataPrompt = ai.definePrompt({
@@ -238,9 +155,8 @@ const extractResumeDataFlow = ai.defineFlow(
     inputSchema: ExtractResumeDataInputSchema,
     outputSchema: ExtractResumeDataOutputSchema,
   },
-  async (input, config?) => {
-    const promptConfig = config || resumeParsingConfig;
-    const {output} = await extractResumeDataPrompt(input, promptConfig);
+  async input => {
+    const {output} = await extractResumeDataPrompt(input);
     return output!;
   }
 );
