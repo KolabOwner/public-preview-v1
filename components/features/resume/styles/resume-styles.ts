@@ -112,17 +112,17 @@ export function generateResumeStyles(
     },
     lineHeights: {
       name: 1.2,
-      contact: settings.lineHeight,
-      sectionHeader: 1.2,
-      jobTitle: 1.2,
-      body: settings.lineHeight,
+      contact: templateId === 'bold' ? 1.2 : settings.lineHeight,
+      sectionHeader: templateId === 'bold' ? 1.0 : 1.2,
+      jobTitle: templateId === 'bold' ? 1.2 : 1.2,
+      body: templateId === 'bold' ? 1.2 : settings.lineHeight,
     },
     spacing: {
       sectionGap: settings.sectionSpacing,
-      blockGap: settings.sectionSpacing * 0.5,
+      blockGap: templateId === 'bold' ? 0.2 : settings.sectionSpacing * 0.5,
       bulletGap: styles.layout.bulletSpacing,
       headerMarginTop: settings.sectionSpacing * 0.5,
-      headerMarginBottom: templateId === 'modern' ? 0 : templateId === 'minimal' ? 0 : settings.sectionSpacing * 0.3,
+      headerMarginBottom: templateId === 'modern' ? 0 : templateId === 'minimal' ? 0 : templateId === 'bold' ? 0.2 : settings.sectionSpacing * 0.3,
       documentPadding: `${settings.margins.top}in ${settings.margins.right}in ${settings.margins.bottom}in ${settings.margins.left}in`,
     },
     colors: {
@@ -290,7 +290,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
       letter-spacing: var(--resume-letter-spacing-name) !important;
       margin-bottom: var(--resume-spacing-header-bottom) !important;
       color: ${templateId === 'modern' ? '#2563eb' : 'var(--resume-color-text)'} !important;
-      ${templateId === 'bold' ? 'border-bottom: 1px solid #9ca3af; padding-bottom: 0.5rem;' : ''}
+      ${templateId === 'bold' ? 'border-bottom: 1px solid #9ca3af; padding-bottom: 0.75rem; margin-bottom: 1.2rem;' : ''}
     }
 
     /* Contact Styles */
@@ -299,7 +299,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
       line-height: var(--resume-line-height-contact) !important;
       text-align: var(--resume-text-align-contact) !important;
       margin-bottom: var(--resume-spacing-section) !important;
-      color: var(--resume-color-muted) !important;
+      color: ${templateId === 'bold' || templateId === 'minimal' ? 'var(--resume-color-text)' : 'var(--resume-color-muted)'} !important;
     }
 
     /* Section Header Styles */
@@ -332,7 +332,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
     .resume-school-info {
       font-size: var(--resume-font-size-body) !important;
       line-height: var(--resume-line-height-body) !important;
-      font-weight: ${templateId === 'modern' ? '600' : templateId === 'minimal' ? '600' : '400'} !important;
+      font-weight: ${templateId === 'modern' ? '600' : templateId === 'minimal' ? '600' : templateId === 'bold' ? '600' : '400'} !important;
       color: var(--resume-color-text) !important;
       font-style: normal !important;
     }
@@ -388,7 +388,7 @@ export function generateResumeCSS(styles: ResumeStyleConfig, templateId = 'profe
       left: -0.5rem !important;
       color: var(--resume-color-text) !important;
       font-weight: bold !important;
-      font-size: ${templateId === 'modern' ? '0.8em' : '1em'} !important;
+      font-size: ${templateId === 'modern' ? '0.8em' : templateId === 'bold' ? '0.7em' : '1em'} !important;
     }
 
     /* Block Spacing */
@@ -508,11 +508,12 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
       textTransform: styles.typography.textTransform.name as any,
       textAlign: styles.layout.textAlign.name as any,
       letterSpacing: styles.typography.letterSpacing.name,
-      marginBottom: templateId === 'modern' ? '0.4rem' : templateId === 'minimal' ? '0rem' : `${styles.spacing.headerMarginBottom}rem`,
+      marginBottom: templateId === 'modern' ? '0.4rem' : templateId === 'minimal' ? '0rem' : templateId === 'bold' ? '0.2rem' : `${styles.spacing.headerMarginBottom}rem`,
       color: templateId === 'bold' ? styles.colors.text : templateId === 'modern' ? '#2563eb' : styles.colors.primary,
       ...(templateId === 'bold' && {
         borderBottom: '1px solid #9ca3af',
-        paddingBottom: '0.5rem'
+        paddingBottom: '0.75rem',
+        marginBottom: '1.2rem'
       }),
     },
     contact: {
@@ -520,7 +521,7 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
       lineHeight: styles.lineHeights.contact,
       textAlign: styles.layout.textAlign.contact as any,
       marginBottom: `${styles.spacing.sectionGap}rem`,
-      color: styles.colors.muted,
+      color: templateId === 'bold' || templateId === 'minimal' ? styles.colors.text : styles.colors.muted,
     },
     sectionHeader: {
       fontSize: `${styles.fontSizes.sectionHeader}pt`,
@@ -529,7 +530,7 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
       textTransform: styles.typography.textTransform.section as any,
       letterSpacing: styles.typography.letterSpacing.section,
       marginTop: `${styles.spacing.headerMarginTop}rem`,
-      marginBottom: `${styles.spacing.headerMarginBottom}rem`,
+      marginBottom: templateId === 'bold' ? '0.2rem' : `${styles.spacing.headerMarginBottom}rem`,
       paddingBottom: '2px',
       color: styles.colors.primary,
       ...(styles.layout.showDividers && {
@@ -551,7 +552,7 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
     company: {
       fontSize: `${styles.fontSizes.body}pt`,
       lineHeight: styles.lineHeights.body,
-      fontWeight: templateId === 'modern' ? 600 : templateId === 'minimal' ? 600 : 400,
+      fontWeight: templateId === 'modern' ? 600 : templateId === 'minimal' ? 600 : templateId === 'bold' ? 600 : 400,
       color: styles.colors.text,
       fontStyle: 'normal' as const,
     },
@@ -596,7 +597,7 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
     bulletPoint: {
       color: styles.colors.text,
       fontWeight: 'bold' as const,
-      fontSize: templateId === 'modern' ? '0.8em' : '1em',
+      fontSize: templateId === 'modern' ? '0.8em' : templateId === 'bold' ? '0.7em' : '1em',
     },
     skillsTitle: {
       fontWeight: 400,

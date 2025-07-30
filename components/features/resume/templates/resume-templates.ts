@@ -520,7 +520,7 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
     defaults: {
       fontFamily: 'Inter',
       fontSize: 11,
-      lineHeight: 1.3,
+      lineHeight: 1.2,
       sectionSpacing: 0.8,
       primaryColor: '#3b82f6',
       textColor: '#000000',
@@ -538,7 +538,7 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
       },
       layout: {
         sectionSpacing: 0.8,
-        bulletSpacing: 0.3,
+        bulletSpacing: 0.2,
         headerAlignment: 'left',
         contactAlignment: 'left',
         bodyAlignment: 'left',
@@ -549,14 +549,14 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
       },
       typography: {
         nameStyle: 'normal',
-        sectionStyle: 'normal',
+        sectionStyle: 'uppercase',
         letterSpacing: {
           name: '-0.025em',
-          section: 'normal',
+          section: '0.05em',
           body: 'normal',
         },
         fontWeights: {
-          name: 600,
+          name: 700,
           section: 600,
           title: 600,
           body: 400,
@@ -566,7 +566,7 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
         primary: '#000000',
         secondary: '#000000',
         text: '#000000',
-        muted: '#9ca3af',
+        muted: '#444444',
         accent: '#000000',
       },
       decorations: {

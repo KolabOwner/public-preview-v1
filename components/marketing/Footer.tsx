@@ -87,12 +87,7 @@ const defaultFooterSections: FooterSection[] = [
   {
     title: 'RESOURCES',
     links: [
-      { href: '/pricing', label: 'Pricing' },
-      { href: '/enterprise', label: 'Kolab Enterprise' },
-      { href: '/linkedin-resume-builder', label: 'LinkedIn Extension' },
-      { href: '/rezi-reviews', label: 'User Reviews' },
-      { href: '/rezi-docs', label: 'User Guides' },
-      { href: '/blog', label: 'Career Blog' }
+      { href: '/pricing', label: 'Pricing' }
     ]
   },
   {
@@ -102,8 +97,7 @@ const defaultFooterSections: FooterSection[] = [
       { href: '/authors', label: 'Authors' },
       { href: '/editorial-process', label: 'Editorial Process' },
       { href: '/legal', label: 'Terms & Privacy' },
-      { href: '/contact', label: 'Contact Support', 'aria-label': 'Contact customer support' },
-      { href: '/contact-sales', label: 'Contact Sales' }
+      { href: '/contact', label: 'Contact Support', 'aria-label': 'Contact customer support' }
     ]
   },
   {
@@ -112,9 +106,7 @@ const defaultFooterSections: FooterSection[] = [
       { href: '/resume-templates', label: 'Resume Templates' },
       { href: '/resume-examples', label: 'Resume Examples' },
       { href: '/cover-letter-templates', label: 'Cover Letter Templates' },
-      { href: '/ai-cover-letter-builder', label: 'Cover Letter Writer' },
-      { href: '/ai-interview', label: 'Interview Practice' },
-      { href: '/job-search', label: 'Job Search' }
+      { href: '/ai-cover-letter-builder', label: 'Cover Letter Writer' }
     ]
   }
 ];

@@ -139,7 +139,7 @@ const MainNavbar = () => {
                             </div>
                           </Link>
 
-                          <Link href="/ai-resume-editor" className="group flex items-start p-4 rounded-2xl hover:bg-amber-50 transition-all duration-300 border border-transparent hover:border-corporate-amber-200 hover:border-corporate-amber-600/30">
+                          <Link href="/resume-checker" className="group flex items-start p-4 rounded-2xl hover:bg-amber-50 transition-all duration-300 border border-transparent hover:border-corporate-amber-200 hover:border-corporate-amber-600/30">
                             <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-green-100 rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
                               <CheckCircle className="w-6 h-6 text-emerald-600" />
                             </div>
@@ -187,20 +187,8 @@ const MainNavbar = () => {
                             </div>
                           </Link>
 
-                          <Link href="/job-search" className="group flex items-start p-4 rounded-2xl hover:bg-amber-50 transition-all duration-300 border border-transparent hover:border-corporate-amber-200 hover:border-corporate-amber-600/30">
-                            <div className="w-12 h-12 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
-                              <Search className="w-6 h-6 text-yellow-600" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <div className="font-bold text-gray-900 group-hover:text-amber-600 transition-colors">Job Search</div>
-                                <span className="px-2 py-0.5 bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-700 text-xs font-bold rounded-full">New!</span>
-                              </div>
-                              <div className="text-sm text-gray-600 mt-1">Discover opportunities</div>
-                            </div>
-                          </Link>
 
-                          <Link href="/dashboard" className="group flex items-start p-4 rounded-2xl hover:bg-amber-50 transition-all duration-300 border border-transparent hover:border-corporate-amber-200 hover:border-corporate-amber-600/30">
+                          <Link href="/sign-up" className="group flex items-start p-4 rounded-2xl hover:bg-amber-50 transition-all duration-300 border border-transparent hover:border-corporate-amber-200 hover:border-corporate-amber-600/30">
                             <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-gray-100 rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
                               <Grid3X3 className="w-6 h-6 text-slate-600" />
                             </div>

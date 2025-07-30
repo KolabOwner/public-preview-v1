@@ -189,10 +189,10 @@ export function getSectionTitle(
       publications: 'Selected Publications',
     },
     bold: {
-      summary: 'Professional Summary',
-      experience: 'Professional Experience',
-      education: 'Education',
-      skills: 'Skills',
+      summary: 'SUMMARY',
+      experience: 'EXPERIENCE',
+      education: 'EDUCATION',
+      skills: 'SKILLS',
     },
   };
 
