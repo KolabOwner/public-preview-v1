@@ -216,14 +216,15 @@ function ResumesPageContent() {
                       >
                         {canDownloadPdf() ? 'Create Resume' : 'Limit Reached'}
                       </button>
-                      <a
-                        href="/resumes/upload"
+                      <button
+                        onClick={() => canDownloadPdf() ? setShowCreateModal(true) : setShowUpgradeModal(true)}
                         className={`border-2 border-slate-300 dark:border-navy-600 bg-white/70 dark:bg-navy-700/50 text-slate-700 dark:text-slate-300 font-bold py-3 px-6 rounded-lg shadow-md ${
-                          !canDownloadPdf() ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                          !canDownloadPdf() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-navy-700 transition-colors'
                         }`}
+                        disabled={!canDownloadPdf()}
                       >
                         Upload Existing Resume
-                      </a>
+                      </button>
                     </div>
                   </div>
                 )}

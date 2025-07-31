@@ -162,6 +162,29 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
+  // Helper function to ensure user document exists after social login
+  const ensureUserDocument = async (user: User) => {
+    try {
+      const idToken = await user.getIdToken();
+      const response = await fetch('/api/auth/create-user-document', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        console.warn('Failed to create user document:', data.error);
+        // Don't throw error here to avoid disrupting the login flow
+      }
+    } catch (error) {
+      console.warn('Error ensuring user document:', error);
+      // Don't throw error here to avoid disrupting the login flow
+    }
+  };
+
   const logout = async () => {
     try {
       setError(null);
@@ -177,7 +200,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const signInWithGoogle = async () => {
     try {
       setError(null);
-      await signInWithProvider(googleProvider);
+      const result = await signInWithProvider(googleProvider);
+      
+      // Ensure user document is created after successful social login
+      await ensureUserDocument(result.user);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -188,7 +214,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const signInWithFacebook = async () => {
     try {
       setError(null);
-      await signInWithProvider(facebookProvider);
+      const result = await signInWithProvider(facebookProvider);
+      
+      // Ensure user document is created after successful social login
+      await ensureUserDocument(result.user);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -199,7 +228,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const signInWithGithub = async () => {
     try {
       setError(null);
-      await signInWithProvider(githubProvider);
+      const result = await signInWithProvider(githubProvider);
+      
+      // Ensure user document is created after successful social login
+      await ensureUserDocument(result.user);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));

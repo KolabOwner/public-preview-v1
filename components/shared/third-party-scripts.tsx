@@ -17,7 +17,7 @@ export default function ThirdPartyScripts({
   return (
     <>
       {/* Google Tag Manager - Load with delay and only after user interaction */}
-      {enableGTM && (
+      {enableGTM && process.env.NEXT_PUBLIC_GTM_ID && (
         <Script
           id="gtm-script"
           strategy="lazyOnload"
@@ -49,7 +49,7 @@ export default function ThirdPartyScripts({
       )}
 
       {/* Google Analytics - Load only when needed */}
-      {enableGA && (
+      {enableGA && process.env.NEXT_PUBLIC_GA_ID && (
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
@@ -71,7 +71,7 @@ export default function ThirdPartyScripts({
       )}
 
       {/* reCAPTCHA - Load only when authentication pages are accessed */}
-      {enableRecaptcha && (
+      {enableRecaptcha && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
         <Script
           src={`https://www.google.com/recaptcha/enterprise.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
           strategy="lazyOnload"
