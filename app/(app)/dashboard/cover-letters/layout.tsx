@@ -1,6 +1,6 @@
 'use client';
 
-import { AuthProvider } from '@/contexts/firebase-auth-context';
+import { FirebaseAuthProvider } from '@/contexts/firebase-auth-context';
 import ProtectedRoute from '@/components/features/auth/protected-route';
 
 export default function CoverLettersLayout({ 
@@ -9,10 +9,10 @@ export default function CoverLettersLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
+    <FirebaseAuthProvider>
       <ProtectedRoute>
         {children}
       </ProtectedRoute>
-    </AuthProvider>
+    </FirebaseAuthProvider>
   );
 }

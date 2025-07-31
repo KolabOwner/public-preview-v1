@@ -374,7 +374,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   };
 
   // Email link authentication
-  const sendSignInLinkToEmail = async (email: string) => {
+  const sendSignInLink = async (email: string) => {
     try {
       setError(null);
       const actionCodeSettings: ActionCodeSettings = {
@@ -382,7 +382,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
         handleCodeInApp: true,
       };
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      // Save email locally to complete sign-in on same device
+      // Save email locally to complete sign-in on the same device
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('emailForSignIn', email);
       }
@@ -507,7 +507,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     signInWithGithub,
     resetPassword,
     changePassword,
-    sendSignInLink: sendSignInLinkToEmail,
+    sendSignInLink,
     completeSignInWithLink,
     updateProfile: updateUserProfile,
     updateEmail: updateUserEmail,
