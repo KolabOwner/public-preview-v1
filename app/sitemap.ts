@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://kolab-app.vercel.app';
+  const baseUrl = 'https://rezum-app.vercel.app';
   
   // High priority marketing pages
   const marketingRoutes = [

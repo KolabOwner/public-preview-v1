@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Technology Resume & Cover Letter Samples | Kolab AI',
+  title: 'Technology Resume & Cover Letter Samples | Rezum AI',
   description: 'Modern technology resume and cover letter templates for IT professionals, tech managers, system administrators, and technology specialists. ATS-friendly designs.',
   keywords: [
     'technology resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'system administrator resume samples',
     'tech industry templates',
     'technology specialist resumes',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Technology Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Technology Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Modern technology resume and cover letter templates for IT professionals, tech managers, system administrators, and technology specialists. ATS-friendly designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/technology',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/technology',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/technology-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Technology Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Technology Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Technology Resume & Cover Letter Samples - Kolab AI',
+    title: 'Technology Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for technology professionals, IT specialists, system administrators, and tech managers.',
     images: ['/images/technology-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/technology',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/technology',
   },
 };
 
@@ -72,7 +72,7 @@ export default function TechnologySamplesLayout({
             '@type': 'WebPage',
             name: 'Technology Resume & Cover Letter Samples',
             description: 'Modern technology resume and cover letter templates for IT professionals, tech managers, system administrators, and technology specialists. ATS-friendly designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/technology',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/technology',
             about: {
               '@type': 'Service',
               name: 'Technology Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function TechnologySamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

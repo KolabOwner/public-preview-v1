@@ -30,30 +30,30 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     id: "1",
-    name: "Jennifer Williams",
-    role: "Product Manager",
-    company: "Google",
-    quote: "Kolab transformed my marketing background into a compelling product management story. I landed my dream role at Google within a month.",
+    name: "Jordan Blake",
+    role: "Account Executive",
+    company: "Summit Digital",
+    quote: "I was laid off after 6 years and had to dust off my ancient resume. Rezum's suggestions helped me highlight achievements I'd forgotten about. The new format made me feel confident applying again.",
     rating: 5,
-    image: "/images/avatars/jennifer-williams.jpg"
+    image: "/images/avatars/jordan-blake.jpg"
   },
   {
     id: "2", 
-    name: "David Thompson",
-    role: "Engineering Director",
-    company: "Microsoft",
-    quote: "The AI insights helped me position my technical experience for leadership roles. The difference in interview responses was immediate.",
+    name: "Marcus Rodriguez",
+    role: "Software Developer",
+    company: "Brightline Media",
+    quote: "As a recent bootcamp grad, I had no idea how to present my projects professionally. Rezum helped me showcase my skills in a way that actually got recruiters' attention. Took me 3 months to land my first dev job.",
     rating: 5,
-    image: "/images/avatars/david-thompson.jpg"
+    image: "/images/avatars/marcus-rodriguez.jpg"
   },
   {
     id: "3",
-    name: "Jessica Martinez", 
-    role: "Data Scientist",
-    company: "Netflix",
-    quote: "I never thought I could transition from business analysis to data science. Kolab showed me how to bridge that gap effectively.",
+    name: "Emily Park", 
+    role: "Operations Manager",
+    company: "Wellness First",
+    quote: "I'd been using the same resume format for 8 years and wasn't getting anywhere. The modern templates and content suggestions helped me stand out. Finally got promoted to the management role I wanted.",
     rating: 5,
-    image: "/images/avatars/jessica-martinez.jpg"
+    image: "/images/avatars/emily-park.jpg"
   }
 ];
 
@@ -150,7 +150,7 @@ const TestimonialSection = () => {
             {/* Quote */}
             <div className="mb-6">
               <h3 className="text-lg lg:text-xl font-semibold text-gray-900 leading-relaxed">
-                &quot;Kolab is an exceptional AI-powered resume builder that includes smart templates and optimization features to help you create a resume that stands out to both hiring managers and applicant tracking systems. This is the perfect tool to transform your career prospects.&quot;
+                &quot;After months of sending out resumes with zero response, I was getting desperate. Rezum's ATS optimization and modern templates completely changed my results. I went from 0 callbacks to 3 interviews in my first week. Worth every penny.&quot;
               </h3>
             </div>
             
@@ -158,18 +158,18 @@ const TestimonialSection = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-corporate-gold-100 to-corporate-amber-100 rounded-full flex items-center justify-center">
-                  <span className="text-corporate-gold-700 font-bold text-sm">MS</span>
+                  <span className="text-corporate-gold-700 font-bold text-sm">AJ</span>
                 </div>
                 <div>
-                  <div className="text-base font-semibold text-gray-900">Michael Stevens</div>
-                  <div className="text-sm text-gray-600">Career Development Expert</div>
+                  <div className="text-base font-semibold text-gray-900">Alex Johnson</div>
+                  <div className="text-sm text-gray-600">Project Manager</div>
                 </div>
               </div>
               
               <div className="hidden sm:block w-px h-8 bg-gray-200"></div>
               
               <div className="flex items-center">
-                <div className="text-corporate-gold-600 font-bold text-base">CareerAdvice</div>
+                <div className="text-corporate-gold-600 font-bold text-base">Rezum Pro User</div>
               </div>
             </div>
           </div>
@@ -237,23 +237,69 @@ const TestimonialSection = () => {
           ))}
         </div>
 
-        {/* Simple Stats */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div>
-            <div className="text-3xl font-bold text-corporate-gold-600 mb-2">50K+</div>
-            <p className="text-gray-600">Success Stories</p>
+        {/* Enhanced Impact Stats */}
+        <div className="mt-20 bg-gradient-to-r from-corporate-navy-50 via-white to-corporate-gold-50/30 rounded-2xl p-8 md:p-12">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl md:text-3xl font-bold text-corporate-navy-900 mb-3">
+              Built for Real Results
+            </h3>
+            <p className="text-corporate-navy-600">
+              Powered by advanced AI and industry best practices
+            </p>
           </div>
-          <div>
-            <div className="text-3xl font-bold text-corporate-gold-600 mb-2">89%</div>
-            <p className="text-gray-600">Interview Rate</p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="text-3xl md:text-4xl font-bold text-corporate-navy-900 mb-2">8x</div>
+              <p className="text-corporate-navy-600 font-medium">Faster Creation</p>
+              <p className="text-sm text-corporate-navy-400 mt-1">vs. building from scratch</p>
+            </div>
+            
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="text-3xl md:text-4xl font-bold text-corporate-navy-900 mb-2">10 min</div>
+              <p className="text-corporate-navy-600 font-medium">Average Build Time</p>
+              <p className="text-sm text-corporate-navy-400 mt-1">from start to finish</p>
+            </div>
+            
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="text-3xl md:text-4xl font-bold text-corporate-navy-900 mb-2">98%</div>
+              <p className="text-corporate-navy-600 font-medium">ATS Compatible</p>
+              <p className="text-sm text-corporate-navy-400 mt-1">optimized for all systems</p>
+            </div>
+            
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <div className="text-3xl md:text-4xl font-bold text-corporate-navy-900 mb-2">1200+</div>
+              <p className="text-corporate-navy-600 font-medium">Professional Templates</p>
+              <p className="text-sm text-corporate-navy-400 mt-1">resumes + cover letters</p>
+            </div>
           </div>
-          <div>
-            <div className="text-3xl font-bold text-corporate-gold-600 mb-2">95%</div>
-            <p className="text-gray-600">Pass ATS Systems</p>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-corporate-gold-600 mb-2">32 Days</div>
-            <p className="text-gray-600">Time to Land</p>
+          
+          {/* Supporting text */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-corporate-navy-500 max-w-2xl mx-auto">
+              Statistics based on internal testing, industry benchmarks, and ATS compatibility analysis. 
+              Templates designed by career experts and optimized for modern hiring practices.
+            </p>
           </div>
         </div>
       </div>
@@ -263,7 +309,7 @@ const TestimonialSection = () => {
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
-          "name": "Kolab AI Resume Builder",
+          "name": "Rezum AI Resume Builder",
           "aggregateRating": {
             "@type": "AggregateRating",
             "ratingValue": "5",

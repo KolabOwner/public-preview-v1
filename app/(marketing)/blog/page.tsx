@@ -19,7 +19,7 @@ export default function BlogPage() {
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               The Official
-              <span className="text-blue-600 block">Kolab Blog</span>
+              <span className="text-blue-600 block">Rezum Blog</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Take your resume, job search, and career to new heights with our blog! 
@@ -102,7 +102,7 @@ export default function BlogPage() {
                       </div>
                       <div>
                         <div className="text-sm font-medium text-gray-900">Lauren Bedford</div>
-                        <div className="text-sm text-gray-500">Kolab Content Team</div>
+                        <div className="text-sm text-gray-500">Rezum Content Team</div>
                       </div>
                     </div>
                     

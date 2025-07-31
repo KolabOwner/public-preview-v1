@@ -73,7 +73,7 @@ const DashboardMockup = () => {
   const resumeTitles = [
     'Junior QA Engineer',
     'Mechanical Engineer Student', 
-    'Kolab Resume',
+    'Rezum Resume',
     'AI CTO',
     'Director of Content Marketing'
   ];
@@ -100,12 +100,12 @@ const DashboardMockup = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-xl opacity-60"></div>
                   <div className="relative bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 p-2.5 rounded-2xl shadow-xl shadow-corporate-gold-500/20">
                     <div className="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
-                      <span className="text-corporate-gold-600 font-bold text-sm">K</span>
+                      <span className="text-corporate-gold-600 font-bold text-sm">R</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-baseline">
-                  <span className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-corporate-navy-900'} transition-colors duration-300 tracking-tight`}>Kolab</span>
+                  <span className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-corporate-navy-900'} transition-colors duration-300 tracking-tight`}>Rezum</span>
                   <span className="text-2xl font-bold bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-transparent bg-clip-text ml-0.5">AI</span>
                 </div>
               </div>

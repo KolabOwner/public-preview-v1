@@ -27,7 +27,7 @@ import { Target, Zap, BarChart3, CheckCircle2, ArrowRight } from 'lucide-react';
 const features = [
   {
     title: 'ATS Keyword Targeting',
-    description: 'Instantly improve your chances of being selected for an interview by using the targeted keywords identified by Kolab.',
+    description: 'Instantly improve your chances of being selected for an interview by using the targeted keywords identified by Rezum.',
     icon: <Target className="w-8 h-8" />,
     highlights: [
       'AI-powered keyword extraction from job descriptions',
@@ -38,7 +38,7 @@ const features = [
   },
   {
     title: 'Real-Time Content Analysis',
-    description: 'Kolab instantly identifies common content errors such as missing bullet points, buzz words, useful content, and more.',
+    description: 'Rezum instantly identifies common content errors such as missing bullet points, buzz words, useful content, and more.',
     icon: <Zap className="w-8 h-8" />,
     highlights: [
       'Grammar and spell checking',
@@ -48,8 +48,8 @@ const features = [
     image: '/images/features/feature-analysis.png',
   },
   {
-    title: 'The Kolab Score',
-    description: 'The Kolab Score critiques how well you\'ve created your resume across 23 criteria points - translating the result into a score rated from 1 - 100.',
+    title: 'The Rezum Score',
+    description: 'The Rezum Score critiques how well you\'ve created your resume across 23 criteria points - translating the result into a score rated from 1 - 100.',
     icon: <BarChart3 className="w-8 h-8" />,
     highlights: [
       '23-point comprehensive analysis',
@@ -153,7 +153,7 @@ const ContentFocusedFeatures = () => {
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
-          "name": "Kolab Resume Features",
+          "name": "Rezum Resume Features",
           "description": "AI-powered resume optimization features including ATS keyword targeting, real-time content analysis, and comprehensive scoring.",
           "applicationCategory": "BusinessApplication",
           "featureList": features.map(f => f.title)

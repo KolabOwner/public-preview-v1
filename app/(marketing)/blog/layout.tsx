@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'The Official Kolab Blog | Career Advice, Resume Tips & Job Search Guidance',
+  title: 'The Official Rezum Blog | Career Advice, Resume Tips & Job Search Guidance',
   description: 'Take your resume, job search, and career to new heights with our blog! Expert career advice, resume tips, cover letter guidance, and job search strategies.',
   keywords: [
     'career advice',
@@ -13,22 +13,22 @@ export const metadata: Metadata = {
     'professional development',
     'resume examples',
     'job hunting',
-    'kolab ai blog'
+    'rezum ai blog'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'The Official Kolab Blog | Career Advice & Resume Tips',
+    title: 'The Official Rezum Blog | Career Advice & Resume Tips',
     description: 'Take your resume, job search, and career to new heights with our blog! Expert career advice and professional development tips.',
     url: 'https://yourdomain.com/blog',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/blog-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Kolab AI Blog - Career Advice & Resume Tips',
+        alt: 'Rezum AI Blog - Career Advice & Resume Tips',
       },
     ],
     locale: 'en_US',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Official Kolab Blog | Career Advice & Resume Tips',
+    title: 'The Official Rezum Blog | Career Advice & Resume Tips',
     description: 'Take your resume, job search, and career to new heights with our blog!',
     images: ['/images/blog-og.jpg'],
     creator: '@kolabai',
@@ -71,12 +71,12 @@ export default function BlogLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Blog',
-            name: 'The Official Kolab Blog',
-            description: 'Career advice, resume tips, and job search guidance from Kolab AI experts',
+            name: 'The Official Rezum Blog',
+            description: 'Career advice, resume tips, and job search guidance from Rezum AI experts',
             url: 'https://yourdomain.com/blog',
             publisher: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
               logo: {
                 '@type': 'ImageObject',
@@ -112,11 +112,11 @@ export default function BlogLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
-            name: 'Kolab AI',
+            name: 'Rezum AI',
             url: 'https://yourdomain.com',
             sameAs: [
               'https://twitter.com/kolabai',
-              'https://linkedin.com/company/kolab-ai',
+              'https://linkedin.com/company/rezum-ai',
             ],
             contactPoint: {
               '@type': 'ContactPoint',

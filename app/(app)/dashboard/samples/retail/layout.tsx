@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Retail Resume & Cover Letter Samples | Kolab AI',
+  title: 'Retail Resume & Cover Letter Samples | Rezum AI',
   description: 'Professional retail resume and cover letter templates for retail managers, sales associates, and retail professionals. Customer-focused designs.',
   keywords: [
     'retail resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'retail professional resume samples',
     'customer service resume templates',
     'retail industry examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Retail Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Retail Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional retail resume and cover letter templates for retail managers, sales associates, and retail professionals. Customer-focused designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/retail',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/retail',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/retail-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Retail Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Retail Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Retail Resume & Cover Letter Samples - Kolab AI',
+    title: 'Retail Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for retail professionals, store managers, sales associates, and customer service representatives.',
     images: ['/images/retail-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/retail',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/retail',
   },
 };
 
@@ -72,7 +72,7 @@ export default function RetailSamplesLayout({
             '@type': 'WebPage',
             name: 'Retail Resume & Cover Letter Samples',
             description: 'Professional retail resume and cover letter templates for retail managers, sales associates, and retail professionals. Customer-focused designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/retail',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/retail',
             about: {
               '@type': 'Service',
               name: 'Retail Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function RetailSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Free AI Resume Bullet Point Generator | Kolab AI',
+  title: 'Free AI Resume Bullet Point Generator | Rezum AI',
   description: 'Transform your job responsibilities into compelling, ATS-friendly bullet points with our free AI-powered generator. Create professional resume bullet points in seconds.',
   keywords: [
     'resume bullet point generator',
@@ -13,22 +13,22 @@ export const metadata: Metadata = {
     'job description to bullet points',
     'resume writing tool',
     'AI resume assistant',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Free AI Resume Bullet Point Generator | Kolab AI',
+    title: 'Free AI Resume Bullet Point Generator | Rezum AI',
     description: 'Create compelling, ATS-friendly resume bullet points instantly with our AI-powered generator. Transform your experience into professional achievement statements.',
     url: 'https://yourdomain.com/resume-bullet-point-generator',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/bullet-point-generator-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'AI Resume Bullet Point Generator by Kolab AI',
+        alt: 'AI Resume Bullet Point Generator by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Resume Bullet Point Generator - Kolab AI',
+    title: 'AI Resume Bullet Point Generator - Rezum AI',
     description: 'Create professional, ATS-friendly resume bullet points instantly with AI. Free tool for job seekers.',
     images: ['/images/bullet-point-generator-og.jpg'],
     creator: '@kolabai',
@@ -84,7 +84,7 @@ export default function ResumeBulletPointGeneratorLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
             },
             featureList: [

@@ -66,7 +66,7 @@ export default function ResumeCheckerPage() {
                 {/* Main Resume Document - Center */}
                 <div className="relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-10">
                   <Image
-                    src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                    src="/images/keyword-scanner/techvision-resume-stacked.png"
                     alt="Resume Document"
                     width={400}
                     height={500}
@@ -124,7 +124,7 @@ export default function ResumeCheckerPage() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                      src="/images/keyword-scanner/techvision-resume-stacked.png"
                       alt="Resume Document"
                       width={400}
                       height={500}
@@ -160,7 +160,7 @@ export default function ResumeCheckerPage() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                      src="/images/keyword-scanner/techvision-resume-stacked.png"
                       alt="Resume Document"
                       width={400}
                       height={500}
@@ -196,7 +196,7 @@ export default function ResumeCheckerPage() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                      src="/images/keyword-scanner/techvision-resume-stacked.png"
                       alt="Resume Document"
                       width={400}
                       height={500}
@@ -297,7 +297,7 @@ export default function ResumeCheckerPage() {
                     {/* Background Image */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Step 1: Upload Resume"
                         width={600}
                         height={400}
@@ -360,7 +360,7 @@ export default function ResumeCheckerPage() {
                     {/* Background Image */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Step 2: ATS Analysis"
                         width={600}
                         height={400}
@@ -423,7 +423,7 @@ export default function ResumeCheckerPage() {
                     {/* Background Image */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Step 3: Apply Recommendations"
                         width={600}
                         height={400}
@@ -764,7 +764,7 @@ export default function ResumeCheckerPage() {
                   <div className="faq-item">
                     <div className="margin-bottom margin-xsmall mb-3">
                       <div className="text-size-medium-61 text-weight-semibold text-color-gray900 text-lg font-semibold text-gray-900">
-                        Is the Kolab ATS Resume Checker completely free?
+                        Is the Rezum ATS Resume Checker completely free?
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">

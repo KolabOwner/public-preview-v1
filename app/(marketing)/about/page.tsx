@@ -50,7 +50,7 @@ const Footer = () => {
             <h4 className="font-semibold text-slate-900">Resources</h4>
             <ul className="space-y-2 text-sm">
               <li><a href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</a></li>
-              <li><a href="/enterprise" className="hover:text-slate-900 transition-colors">Kolab Enterprise</a></li>
+              <li><a href="/enterprise" className="hover:text-slate-900 transition-colors">Rezum Enterprise</a></li>
               <li><a href="/linkedin-resume-builder" className="hover:text-slate-900 transition-colors">Linkedin Extension</a></li>
               <li><a href="/rezi-reviews" className="hover:text-slate-900 transition-colors">User Reviews</a></li>
               <li><a href="/rezi-docs" className="hover:text-slate-900 transition-colors">User Guides</a></li>
@@ -78,7 +78,7 @@ const Footer = () => {
             </div>
           </div>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <div className="text-sm text-slate-500">© 2025 Kolab</div>
+            <div className="text-sm text-slate-500">© 2025 Rezum</div>
             <a href="/legal" className="text-sm hover:text-slate-900 transition-colors">Terms & Privacy</a>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function AboutPage() {
           <div className="max-w-4xl">
             <div className="mb-6">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                Kolab AI started as a passion project in 2024
+                Rezum AI started as a passion project in 2024
               </span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
@@ -173,7 +173,7 @@ export default function AboutPage() {
                   out qualified candidates.
                 </p>
                 <p>
-                  This research became the foundation for Kolab AI. I didn&apos;t just want to create another 
+                  This research became the foundation for Rezum AI. I didn&apos;t just want to create another 
                   resume builder—I wanted to build an intelligent system that understands modern hiring 
                   practices and gives every job seeker a fighting chance.
                 </p>
@@ -214,7 +214,7 @@ export default function AboutPage() {
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               As a solo founder and developer, every decision I make is guided by these core principles 
-              that shape how I build and evolve Kolab AI.
+              that shape how I build and evolve Rezum AI.
             </p>
           </div>
           
@@ -258,7 +258,7 @@ export default function AboutPage() {
                 the world.
               </p>
               <p className="text-lg text-blue-100">
-                Through Kolab AI, I&apos;m building that future—one where artificial intelligence serves as 
+                Through Rezum AI, I&apos;m building that future—one where artificial intelligence serves as 
                 a career coach, resume optimizer, and strategic advisor for everyone, regardless of their 
                 background or budget.
               </p>
@@ -293,7 +293,7 @@ export default function AboutPage() {
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Continuous Learning</h3>
               <p className="text-gray-600 mb-4">
                 I&apos;m constantly studying hiring trends, AI advancements, and user behavior to ensure 
-                Kolab AI stays at the forefront of career technology.
+                Rezum AI stays at the forefront of career technology.
               </p>
               <p className="text-gray-600">
                 Every user interaction, every piece of feedback, and every success story teaches me 
@@ -311,12 +311,12 @@ export default function AboutPage() {
             Join Me on This Journey
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Every user who finds success with Kolab AI validates this mission. Your career advancement 
+            Every user who finds success with Rezum AI validates this mission. Your career advancement 
             is not just a business metric—it&apos;s the reason I built this platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors">
-              Try Kolab AI Free
+              Try Rezum AI Free
             </button>
             <button className="bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-800 transition-colors border border-blue-500">
               Share Your Story

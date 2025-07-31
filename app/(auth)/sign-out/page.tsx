@@ -181,7 +181,7 @@ export default function SignOutPage() {
       {/* Brand Logo */}
       <div className="absolute top-8 left-8 z-20">
         <Link href="/" className="group flex items-center gap-3">
-          <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent">Kolab</span>
+          <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent">Rezum</span>
         </Link>
       </div>
 

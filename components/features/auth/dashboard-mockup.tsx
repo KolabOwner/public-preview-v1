@@ -14,7 +14,7 @@ const features = [
   { name: 'Continuous improvement', active: true },
 ];
 
-const KolabLogo = () => (
+const RezumLogo = () => (
   <svg width="36" height="36" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
     <circle cx="100" cy="100" r="90" fill="#48c9b0" stroke="#16a085" strokeWidth="3"/>
     <g fill="#000000">
@@ -264,10 +264,10 @@ export default function DashboardMockup({ mounted = false }: { mounted?: boolean
                 <div className="relative z-10 flex w-full flex-col gap-y-5 p-5">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="relative">
-                      <KolabLogo />
+                      <RezumLogo />
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-xl font-bold text-white">Kolab</span>
+                      <span className="text-xl font-bold text-white">Rezum</span>
                     </div>
                   </div>
                   

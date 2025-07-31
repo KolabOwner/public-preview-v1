@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Education Resume & Cover Letter Samples | Kolab AI',
+  title: 'Education Resume & Cover Letter Samples | Rezum AI',
   description: 'Professional education resume and cover letter templates for teachers, administrators, professors, and education professionals. Academic-focused designs.',
   keywords: [
     'education resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'educational professional resume samples',
     'teaching resume templates',
     'academic professional examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Education Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Education Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional education resume and cover letter templates for teachers, administrators, professors, and education professionals. Academic-focused designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/education',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/education',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/education-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Education Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Education Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Education Resume & Cover Letter Samples - Kolab AI',
+    title: 'Education Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for educators, teachers, professors, and academic professionals.',
     images: ['/images/education-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/education',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/education',
   },
 };
 
@@ -72,7 +72,7 @@ export default function EducationSamplesLayout({
             '@type': 'WebPage',
             name: 'Education Resume & Cover Letter Samples',
             description: 'Professional education resume and cover letter templates for teachers, administrators, professors, and education professionals. Academic-focused designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/education',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/education',
             about: {
               '@type': 'Service',
               name: 'Education Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function EducationSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

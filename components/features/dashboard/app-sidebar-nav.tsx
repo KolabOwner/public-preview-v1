@@ -168,78 +168,16 @@ const AppSidebarNav = () => {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-xl opacity-60 group-hover:opacity-80 transition-all duration-300" />
                 <div className="relative bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 p-2.5 rounded-2xl shadow-xl shadow-corporate-gold-500/20">
-                  {/* Premium Modern K Logo */}
-                  <svg className={`${isResumeEditorRoute ? 'w-5 h-5' : 'w-7 h-7'}`} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      {/* Premium metallic gradient */}
-                      <linearGradient id="h-metal" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#ffffff" />
-                        <stop offset="50%" stopColor="#f3f4f6" />
-                        <stop offset="100%" stopColor="#e5e7eb" />
-                      </linearGradient>
-                      {/* Accent gradient for depth */}
-                      <linearGradient id="h-accent" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-                        <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
-                      </linearGradient>
-                      {/* Shadow gradient */}
-                      <radialGradient id="h-shadow-grad">
-                        <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="#1e40af" stopOpacity="0" />
-                      </radialGradient>
-                      {/* Mask for cut effect */}
-                      <mask id="h-mask">
-                        <rect width="40" height="40" fill="white" />
-                        <path d="M12 18h16v4h-16z" fill="black" />
-                      </mask>
-                    </defs>
-                    {/* Subtle shadow base */}
-                    <ellipse cx="20" cy="38" rx="12" ry="2" fill="url(#h-shadow-grad)" />
-                    {/* Main K structure - modern geometric design */}
-                    <g>
-                      {/* Left vertical pillar */}
-                      <path
-                        d="M8 8 Q8 6 10 6 L14 6 Q16 6 16 8 L16 32 Q16 34 14 34 L10 34 Q8 34 8 32 Z"
-                        fill="url(#h-metal)"
-                        filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                      />
-                      {/* Upper diagonal arm */}
-                      <path
-                        d="M16 18 L26 8 Q27 7 28 7 L30 7 Q32 7 32 9 L32 11 Q32 12 31 13 L22 22 Q21 22 20 21 L17 19 Q16 18 16 18 Z"
-                        fill="url(#h-metal)"
-                        filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                      />
-                      {/* Lower diagonal arm */}
-                      <path
-                        d="M16 22 L20 19 Q21 18 22 18 L31 27 Q32 28 32 29 L32 31 Q32 33 30 33 L28 33 Q27 33 26 32 L16 22 Z"
-                        fill="url(#h-metal)"
-                        filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                      />
-                    </g>
-                    {/* Premium highlights */}
-                    <path
-                      d="M10 8 Q10 7 11 7 L13 7 Q14 7 14 8 L14 10 Q14 11 13 11 L11 11 Q10 11 10 10 Z"
-                      fill="url(#h-accent)"
-                      opacity="0.8"
-                    />
-                    <path
-                      d="M28 8 Q28 7.5 28.5 7.5 L29.5 7.5 Q30 7.5 30 8 L30 9 Q30 9.5 29.5 9.5 L28.5 9.5 Q28 9.5 28 9 Z"
-                      fill="url(#h-accent)"
-                      opacity="0.8"
-                    />
-                    {/* Subtle inner stroke for definition */}
-                    <g fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5">
-                      <path d="M9 7 Q9 6.5 9.5 6.5 L14.5 6.5 Q15 6.5 15 7 L15 33 Q15 33.5 14.5 33.5 L9.5 33.5 Q9 33.5 9 33 Z" />
-                      <path d="M16.5 18.5 L26.5 8.5 Q27 8 27.5 8 L29.5 8 Q30.5 8 30.5 9 L30.5 10.5 Q30.5 11 30 11.5 L21.5 21.5" />
-                      <path d="M16.5 21.5 L21 18.5 Q21.5 18 22 18 L30 26.5 Q30.5 27 30.5 27.5 L30.5 30.5 Q30.5 31.5 29.5 31.5 L27.5 31.5 Q27 31.5 26.5 31 L16.5 21.5" />
-                    </g>
-                  </svg>
+                  {/* Simple R Logo */}
+                  <div className={`${isResumeEditorRoute ? 'w-5 h-5' : 'w-7 h-7'} bg-white rounded-lg flex items-center justify-center text-corporate-gold-600 font-bold ${isResumeEditorRoute ? 'text-sm' : 'text-lg'}`}>
+                    R
+                  </div>
                 </div>
               </div>
               {/* Company Name - Hidden in collapsed state */}
               {!isResumeEditorRoute && (
                 <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-corporate-navy-900 dark:text-white tracking-tight">Kolab</span>
+                  <span className="text-2xl font-bold text-corporate-navy-900 dark:text-white tracking-tight">Rezum</span>
                   <span className="text-2xl font-bold bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-transparent bg-clip-text ml-0.5">AI</span>
                 </div>
               )}

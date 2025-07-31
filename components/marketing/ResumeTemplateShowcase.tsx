@@ -121,7 +121,7 @@ const ResumeTemplateShowcase = () => {
     {
       id: 'modern',
       name: 'Modern Resume Template',
-      description: 'Our newest resume template developed with attractive colors, clean lines, and high content density. Kolab recommends this format for all users.',
+      description: 'Our newest resume template developed with attractive colors, clean lines, and high content density. Rezum recommends this format for all users.',
       imageSrc: '/images/templates/ModernTemplate.png',
       downloadTypes: ['PDF'],
       isPopular: true,
@@ -158,7 +158,7 @@ const ResumeTemplateShowcase = () => {
     {
       id: 'alternative',
       name: 'Alternative Resume Template',
-      description: "We've created an alternative Kolab format that is designed to be printed and viewed on paper. Well suited for when you need modern resume templates.",
+      description: "We've created an alternative Rezum format that is designed to be printed and viewed on paper. Well suited for when you need modern resume templates.",
       imageSrc: '/images/templates/AlternativeTemplate.png',
       downloadTypes: ['PDF'],
       category: 'minimal',

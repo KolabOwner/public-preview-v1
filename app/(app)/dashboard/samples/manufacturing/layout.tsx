@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Manufacturing Resume & Cover Letter Samples | Kolab AI',
+  title: 'Manufacturing Resume & Cover Letter Samples | Rezum AI',
   description: 'Industrial manufacturing resume and cover letter templates for production managers, quality control, and manufacturing professionals. Technical designs.',
   keywords: [
     'manufacturing resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'industrial resume samples',
     'production resume templates',
     'manufacturing industry examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Manufacturing Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Manufacturing Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Industrial manufacturing resume and cover letter templates for production managers, quality control, and manufacturing professionals. Technical designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/manufacturing',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/manufacturing',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/manufacturing-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Manufacturing Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Manufacturing Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Manufacturing Resume & Cover Letter Samples - Kolab AI',
+    title: 'Manufacturing Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for manufacturing professionals, production managers, quality control specialists, and industrial workers.',
     images: ['/images/manufacturing-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/manufacturing',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/manufacturing',
   },
 };
 
@@ -72,7 +72,7 @@ export default function ManufacturingSamplesLayout({
             '@type': 'WebPage',
             name: 'Manufacturing Resume & Cover Letter Samples',
             description: 'Industrial manufacturing resume and cover letter templates for production managers, quality control, and manufacturing professionals. Technical designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/manufacturing',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/manufacturing',
             about: {
               '@type': 'Service',
               name: 'Manufacturing Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function ManufacturingSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

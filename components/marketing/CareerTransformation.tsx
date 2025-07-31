@@ -179,7 +179,7 @@ const BeforeAfterComparison = ({ scenario }: { scenario: TransformationScenario 
                 : 'text-corporate-navy-600 hover:text-corporate-navy-900'
             }`}
           >
-            Before Kolab
+            Before Rezum
           </button>
           <button
             onClick={() => setActiveView('after')}
@@ -189,7 +189,7 @@ const BeforeAfterComparison = ({ scenario }: { scenario: TransformationScenario 
                 : 'text-corporate-navy-600 hover:text-corporate-navy-900'
             }`}
           >
-            After Kolab
+            After Rezum
           </button>
         </div>
       </div>
@@ -410,7 +410,7 @@ const CareerTransformation = () => {
           </h2>
 
           <p className="text-xl text-corporate-navy-600 max-w-4xl mx-auto leading-relaxed">
-            See how Kolab transforms resumes across different career stages and challenges.
+            See how Rezum transforms resumes across different career stages and challenges.
             Real improvements, measurable results.
           </p>
         </motion.div>

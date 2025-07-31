@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Professional Resume & Cover Letter Samples | Kolab AI',
+  title: 'Professional Resume & Cover Letter Samples | Rezum AI',
   description: 'Versatile professional resume and cover letter templates for various industries and career paths. Adaptable designs for any profession.',
   keywords: [
     'professional resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'multi-industry resume samples',
     'adaptable resume templates',
     'professional examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Professional Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Professional Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Versatile professional resume and cover letter templates for various industries and career paths. Adaptable designs for any profession.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/other',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/other',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/other-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Professional Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Professional Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Professional Resume & Cover Letter Samples - Kolab AI',
+    title: 'Professional Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for professionals across various industries and career paths.',
     images: ['/images/other-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/other',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/other',
   },
 };
 
@@ -72,7 +72,7 @@ export default function OtherSamplesLayout({
             '@type': 'WebPage',
             name: 'Professional Resume & Cover Letter Samples',
             description: 'Versatile professional resume and cover letter templates for various industries and career paths. Adaptable designs for any profession.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/other',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/other',
             about: {
               '@type': 'Service',
               name: 'Professional Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function OtherSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

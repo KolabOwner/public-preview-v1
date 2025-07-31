@@ -6,10 +6,10 @@ import MainNavbar from '@/components/features/dashboard/main-navbar';
 export default function ResumeDocsPage() {
   const featuredGuides = [
     {
-      title: 'Kolab Score',
-      description: 'Your Kolab Score holds valuable insights into the quality of your resume.',
+      title: 'Rezum Score',
+      description: 'Your Rezum Score holds valuable insights into the quality of your resume.',
       image: 'score',
-      href: '/resume-docs/kolab-score-explained',
+      href: '/resume-docs/rezum-score-explained',
       color: 'from-blue-50 to-blue-100'
     },
     {
@@ -21,7 +21,7 @@ export default function ResumeDocsPage() {
     },
     {
       title: 'Subscription Plans',
-      description: 'For more functionality, Kolab does have additional subscriptions available.',
+      description: 'For more functionality, Rezum does have additional subscriptions available.',
       image: 'plans',
       href: '/resume-docs/subscription-plans-explained',
       color: 'from-green-50 to-green-100'
@@ -31,7 +31,7 @@ export default function ResumeDocsPage() {
   const guideCategories = [
     {
       title: 'Plans & Billing',
-      description: 'Get help upgrading or cancelling a Kolab plan and fixing billing errors.',
+      description: 'Get help upgrading or cancelling a Rezum plan and fixing billing errors.',
       icon: CreditCard,
       guides: [
         { title: 'Subscription Plans', href: '/resume-docs/subscription-plans-explained' },
@@ -57,7 +57,7 @@ export default function ResumeDocsPage() {
     },
     {
       title: 'Features',
-      description: 'Discover Kolab\'s supercharged features that harness the power of AI.',
+      description: 'Discover Rezum\'s supercharged features that harness the power of AI.',
       icon: Star,
       guides: [
         { title: 'Resume Review', href: '/resume-docs/expert-review-explained' },
@@ -67,14 +67,14 @@ export default function ResumeDocsPage() {
         { title: 'AI Resume Summary Writer', href: '/resume-docs/ai-resume-summary-writer-explained' },
         { title: 'Blockchain Verification', href: '/resume-docs/blockchain-verification-explained' },
         { title: 'Real-Time Analysis', href: '/resume-docs/real-time-content-analysis-explained' },
-        { title: 'Kolab Score', href: '/resume-docs/kolab-score-explained' },
+        { title: 'Rezum Score', href: '/resume-docs/rezum-score-explained' },
         { title: 'Download', href: '/resume-docs/download-resume' },
         { title: 'AI Bullet Points', href: '/resume-docs/ai-bullet-points' }
       ]
     },
     {
       title: 'Resume',
-      description: 'Learn how to take full advantage of Kolab when building your resume.',
+      description: 'Learn how to take full advantage of Rezum when building your resume.',
       icon: Award,
       guides: [
         { title: 'Photo', href: '/resume-docs/how-to-add-resume-photo' },
@@ -104,10 +104,10 @@ export default function ResumeDocsPage() {
     },
     {
       title: 'Account',
-      description: 'Get help changing your password or email and creating your Kolab account.',
+      description: 'Get help changing your password or email and creating your Rezum account.',
       icon: Settings,
       guides: [
-        { title: 'Kolab Enterprise – User Guide', href: '/resume-docs/kolab-enterprise' },
+        { title: 'Rezum Enterprise – User Guide', href: '/resume-docs/rezum-enterprise' },
         { title: 'Create Account', href: '/resume-docs/how-to-create-account' },
         { title: 'Language Settings', href: '/resume-docs/how-to-change-account-language' },
         { title: 'Change Password', href: '/resume-docs/how-to-change-password' },
@@ -131,14 +131,14 @@ export default function ResumeDocsPage() {
               </span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Kolab
+              Rezum
               <span className="text-blue-600 block">User Guides</span>
             </h1>
             <div className="max-w-4xl mx-auto">
               <p className="text-xl text-gray-600 mb-8">
-                Welcome to Kolab User Guides! Whether you&apos;re creating your first resume, optimizing your current one, 
+                Welcome to Rezum User Guides! Whether you&apos;re creating your first resume, optimizing your current one, 
                 or exploring advanced AI features, we&apos;ve got you covered. Our comprehensive guides will help you navigate 
-                Kolab&apos;s tools effortlessly—from understanding your Kolab Score to maximizing your AI Credits. 
+                Rezum&apos;s tools effortlessly—from understanding your Rezum Score to maximizing your AI Credits. 
                 Unlock the full potential of our platform and create professional, ATS-optimized resumes with ease. 
                 Dive into the guides below to get started!
               </p>
@@ -146,7 +146,7 @@ export default function ResumeDocsPage() {
 
             {/* Trust indicators */}
             <div className="text-center">
-              <p className="text-gray-500 mb-6">Comprehensive documentation for all Kolab features</p>
+              <p className="text-gray-500 mb-6">Comprehensive documentation for all Rezum features</p>
               <div className="flex justify-center items-center space-x-8 opacity-60">
                 <div className="text-lg font-bold text-gray-400">50+ Guides</div>
                 <div className="text-lg font-bold text-gray-400">Step-by-Step</div>
@@ -161,7 +161,7 @@ export default function ResumeDocsPage() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Start with The Most Popular Kolab Guides</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Start with The Most Popular Rezum Guides</h2>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -246,7 +246,7 @@ export default function ResumeDocsPage() {
               Can&apos;t Find What You&apos;re Looking For?
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Our support team is here to help you make the most of Kolab AI&apos;s features.
+              Our support team is here to help you make the most of Rezum AI&apos;s features.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/contact" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
@@ -267,7 +267,7 @@ export default function ResumeDocsPage() {
             Ready to Build Your Professional Resume?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Put your knowledge to work and create a resume that gets results with Kolab AI.
+            Put your knowledge to work and create a resume that gets results with Rezum AI.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/ai-resume-builder" className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">

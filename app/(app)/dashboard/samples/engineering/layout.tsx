@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Engineering Resume & Cover Letter Samples | Kolab AI',
+  title: 'Engineering Resume & Cover Letter Samples | Rezum AI',
   description: 'Technical engineering resume and cover letter templates for mechanical, electrical, civil, and software engineers. Professional engineering designs.',
   keywords: [
     'engineering resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'electrical engineer resume samples',
     'civil engineer templates',
     'engineering professional examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Engineering Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Engineering Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Technical engineering resume and cover letter templates for mechanical, electrical, civil, and software engineers. Professional engineering designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/engineering',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/engineering',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/engineering-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Engineering Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Engineering Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Engineering Resume & Cover Letter Samples - Kolab AI',
+    title: 'Engineering Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for engineers, technical professionals, and engineering specialists.',
     images: ['/images/engineering-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/engineering',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/engineering',
   },
 };
 
@@ -72,7 +72,7 @@ export default function EngineeringSamplesLayout({
             '@type': 'WebPage',
             name: 'Engineering Resume & Cover Letter Samples',
             description: 'Technical engineering resume and cover letter templates for mechanical, electrical, civil, and software engineers. Professional engineering designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/engineering',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/engineering',
             about: {
               '@type': 'Service',
               name: 'Engineering Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function EngineeringSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'AI Resume Builder - Kolab AI | Create Professional Resumes',
+  title: 'AI Resume Builder - Rezum AI | Create Professional Resumes',
   description: 'Build professional resumes with AI assistance. Get ATS-optimized resumes, keyword suggestions, and expert feedback. Start creating your standout resume today.',
   keywords: [
     'AI resume builder',
@@ -11,22 +11,22 @@ export const metadata: Metadata = {
     'resume optimization',
     'career tools',
     'job search',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'AI Resume Builder - Create Professional Resumes | Kolab AI',
+    title: 'AI Resume Builder - Create Professional Resumes | Rezum AI',
     description: 'Build professional resumes with AI assistance. ATS-optimized templates and smart suggestions.',
     url: 'https://yourdomain.com/ai-resume-builder',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/ai-resume-builder-og.jpg', // You'll need to create this image
         width: 1200,
         height: 630,
-        alt: 'AI Resume Builder by Kolab AI',
+        alt: 'AI Resume Builder by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Resume Builder - Kolab AI',
+    title: 'AI Resume Builder - Rezum AI',
     description: 'Build professional resumes with AI assistance. ATS-optimized and expert-reviewed.',
     images: ['/images/ai-resume-builder-og.jpg'],
     creator: '@kolabai', // Replace with your actual Twitter handle
@@ -69,7 +69,7 @@ export default function AIResumeBuilderLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
-            name: 'Kolab AI Resume Builder',
+            name: 'Rezum AI Resume Builder',
             description: 'AI-powered resume builder that creates professional, ATS-optimized resumes',
             url: 'https://yourdomain.com/ai-resume-builder',
             applicationCategory: 'BusinessApplication',
@@ -82,7 +82,7 @@ export default function AIResumeBuilderLayout({
             },
             author: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
             },
             aggregateRating: {

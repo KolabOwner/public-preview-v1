@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Marketing Resume & Cover Letter Samples | Kolab AI',
+  title: 'Marketing Resume & Cover Letter Samples | Rezum AI',
   description: 'Creative marketing resume and cover letter templates for digital marketers, brand managers, content creators, and marketing professionals. Stand out designs.',
   keywords: [
     'marketing resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'social media manager templates',
     'marketing professional templates',
     'creative marketing resumes',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Marketing Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Marketing Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Creative marketing resume and cover letter templates for digital marketers, brand managers, content creators, and marketing professionals. Stand out designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/marketing',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/marketing',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/marketing-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Marketing Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Marketing Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Marketing Resume & Cover Letter Samples - Kolab AI',
+    title: 'Marketing Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for marketing professionals, digital marketers, brand managers, and content creators.',
     images: ['/images/marketing-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/marketing',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/marketing',
   },
 };
 
@@ -72,7 +72,7 @@ export default function MarketingSamplesLayout({
             '@type': 'WebPage',
             name: 'Marketing Resume & Cover Letter Samples',
             description: 'Creative marketing resume and cover letter templates for digital marketers, brand managers, content creators, and marketing professionals. Stand out designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/marketing',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/marketing',
             about: {
               '@type': 'Service',
               name: 'Marketing Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function MarketingSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

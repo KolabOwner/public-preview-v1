@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Creative Resume & Cover Letter Samples | Kolab AI',
+  title: 'Creative Resume & Cover Letter Samples | Rezum AI',
   description: 'Artistic creative resume and cover letter templates for artists, writers, content creators, and creative professionals. Unique, standout designs.',
   keywords: [
     'creative resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'content creator resume samples',
     'artistic resume templates',
     'creative industry examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Creative Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Creative Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Artistic creative resume and cover letter templates for artists, writers, content creators, and creative professionals. Unique, standout designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/creative',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/creative',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/creative-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Creative Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Creative Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Creative Resume & Cover Letter Samples - Kolab AI',
+    title: 'Creative Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for creative professionals, artists, writers, and content creators.',
     images: ['/images/creative-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/creative',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/creative',
   },
 };
 
@@ -72,7 +72,7 @@ export default function CreativeSamplesLayout({
             '@type': 'WebPage',
             name: 'Creative Resume & Cover Letter Samples',
             description: 'Artistic creative resume and cover letter templates for artists, writers, content creators, and creative professionals. Unique, standout designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/creative',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/creative',
             about: {
               '@type': 'Service',
               name: 'Creative Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function CreativeSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

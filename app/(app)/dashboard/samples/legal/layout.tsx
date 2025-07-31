@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Legal Resume & Cover Letter Samples | Kolab AI',
+  title: 'Legal Resume & Cover Letter Samples | Rezum AI',
   description: 'Professional legal resume and cover letter templates for lawyers, attorneys, paralegals, and legal professionals. Conservative, professional designs.',
   keywords: [
     'legal resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'legal professional resume samples',
     'law firm resume templates',
     'legal industry examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Legal Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Legal Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional legal resume and cover letter templates for lawyers, attorneys, paralegals, and legal professionals. Conservative, professional designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/legal',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/legal',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/legal-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Legal Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Legal Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Legal Resume & Cover Letter Samples - Kolab AI',
+    title: 'Legal Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for legal professionals, lawyers, attorneys, and paralegals.',
     images: ['/images/legal-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/legal',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/legal',
   },
 };
 
@@ -72,7 +72,7 @@ export default function LegalSamplesLayout({
             '@type': 'WebPage',
             name: 'Legal Resume & Cover Letter Samples',
             description: 'Professional legal resume and cover letter templates for lawyers, attorneys, paralegals, and legal professionals. Conservative, professional designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/legal',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/legal',
             about: {
               '@type': 'Service',
               name: 'Legal Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function LegalSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

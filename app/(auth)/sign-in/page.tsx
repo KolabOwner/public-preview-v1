@@ -197,7 +197,7 @@ export default function LoginPage() {
       {/* Brand Logo */}
       <div className="absolute top-8 left-8 z-20">
         <Link href="/" className="group flex items-center gap-3">
-          <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent">Kolab</span>
+          <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent">Rezum</span>
         </Link>
       </div>
 
@@ -218,7 +218,7 @@ export default function LoginPage() {
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg text-white text-xl font-bold"
               >
-                K
+                R
               </motion.div>
               <h1 className="text-2xl font-bold text-white mb-1">
                 Welcome Back

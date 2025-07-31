@@ -436,7 +436,7 @@ export default function ResumeExamplesPage() {
             Ready to create your standout resume?
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Join over 3 million professionals who trust Kolab AI to build resumes that get interviews.
+            Join over 3 million professionals who trust Rezum AI to build resumes that get interviews.
             Our AI-powered builder uses insights from these examples to create your perfect resume.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -121,7 +121,7 @@ const HeroContent = memo(() => {
         </h1>
 
         <p className="text-lg md:text-xl text-corporate-navy-600 leading-relaxed max-w-2xl font-corporate-sans">
-          Join over 1.3M job seekers using Kolab&apos;s AI-powered platform to create resumes that get noticed.
+          Join over 1.3M job seekers using Rezum&apos;s AI-powered platform to create resumes that get noticed.
           Our technology automates everything: writing, editing, optimizing, and formatting.
         </p>
 

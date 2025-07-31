@@ -8,6 +8,7 @@ import { Providers } from './Providers';
 import { ThemeScript } from '@/components/shared/theme-script';
 import ThirdPartyScripts from '@/components/shared/third-party-scripts';
 import AsyncCSS from '@/components/shared/async-css';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // Optimize font loading with Next.js font optimization
 const inter = Inter({ 
@@ -80,6 +81,7 @@ export default function RootLayout({
             enableGTM={process.env.NODE_ENV === 'production'}
             enableGA={process.env.NODE_ENV === 'production'}
           />
+          <SpeedInsights />
       </body>
     </html>
   );

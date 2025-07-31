@@ -427,7 +427,7 @@ export default function MoreReasons({
         {/* Features by Category */}
         <div className="space-y-16">
           <h2 id="main-features-heading" className="sr-only">
-            Complete list of Kolab features organized by category
+            Complete list of Rezum features organized by category
           </h2>
 
           {Object.entries(groupedFeatures).map(([category, features]) => (

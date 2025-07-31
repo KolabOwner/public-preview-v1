@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'AI Resume Summary Generator - Kolab AI | Instantly Generate Professional Resume Summaries',
+  title: 'AI Resume Summary Generator - Rezum AI | Instantly Generate Professional Resume Summaries',
   description: 'Create compelling resume summaries instantly with AI. Generate professional, job-specific summaries that grab recruiters\' attention and pass ATS systems.',
   keywords: [
     'AI resume summary generator',
@@ -11,22 +11,22 @@ export const metadata: Metadata = {
     'automatic resume summary',
     'resume profile generator',
     'career summary writer',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'AI Resume Summary Generator - Create Professional Summaries | Kolab AI',
+    title: 'AI Resume Summary Generator - Create Professional Summaries | Rezum AI',
     description: 'Generate professional resume summaries instantly with AI. Job-specific, ATS-optimized summaries that get you noticed.',
     url: 'https://yourdomain.com/ai-resume-summary-generator',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/placeholder-og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'AI Resume Summary Generator by Kolab AI',
+        alt: 'AI Resume Summary Generator by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Resume Summary Generator - Kolab AI',
+    title: 'AI Resume Summary Generator - Rezum AI',
     description: 'Generate professional resume summaries instantly with AI. Job-specific and ATS-optimized.',
     images: ['/images/ai-resume-summary-generator-og.jpg'],
     creator: '@kolabai',
@@ -68,7 +68,7 @@ export default function AIResumeSummaryGeneratorLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
-            name: 'Kolab AI Resume Summary Generator',
+            name: 'Rezum AI Resume Summary Generator',
             description: 'AI-powered tool that generates professional resume summaries tailored to specific job positions',
             url: 'https://yourdomain.com/ai-resume-summary-generator',
             applicationCategory: 'BusinessApplication',
@@ -81,7 +81,7 @@ export default function AIResumeSummaryGeneratorLayout({
             },
             author: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
             },
             aggregateRating: {

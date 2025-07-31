@@ -156,7 +156,7 @@ export default function ResumeBulletPointGenerator() {
                 {/* Main Resume Document - Center */}
                 <div className="relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-10">
                   <Image
-                    src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                    src="/images/keyword-scanner/techvision-resume-stacked.png"
                     alt="Resume Document"
                     width={400}
                     height={500}
@@ -244,7 +244,7 @@ export default function ResumeBulletPointGenerator() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                      src="/images/keyword-scanner/techvision-resume-stacked.png"
                       alt="Resume Document"
                       width={400}
                       height={500}
@@ -279,7 +279,7 @@ export default function ResumeBulletPointGenerator() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                      src="/images/keyword-scanner/techvision-resume-stacked.png"
                       alt="Resume Document"
                       width={400}
                       height={500}
@@ -302,7 +302,7 @@ export default function ResumeBulletPointGenerator() {
                   Role‑Specific Bullet Suggestions
                 </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Just enter your job title and company—Kolab AI will suggest bullet points that reflect your actual responsibilities and achievements.
+                  Just enter your job title and company—Rezum AI will suggest bullet points that reflect your actual responsibilities and achievements.
                 </p>
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function ResumeBulletPointGenerator() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                      src="/images/keyword-scanner/techvision-resume-stacked.png"
                       alt="Resume Document"
                       width={400}
                       height={500}
@@ -419,7 +419,7 @@ export default function ResumeBulletPointGenerator() {
                     {/* Background Image */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Step 1: Enter Role"
                         width={600}
                         height={400}
@@ -486,7 +486,7 @@ export default function ResumeBulletPointGenerator() {
                     {/* Background Image */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Step 2: Generate Bullet"
                         width={600}
                         height={400}
@@ -549,7 +549,7 @@ export default function ResumeBulletPointGenerator() {
                     {/* Background Image */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Step 3: Apply or Edit"
                         width={600}
                         height={400}
@@ -923,9 +923,7 @@ export default function ResumeBulletPointGenerator() {
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      <Link href="/sign-up" className="text-amber-600 hover:text-amber-700">
-                        Once you find a version you like, click Apply Suggestion. This adds it to your resume so you can keep building without missing a beat.
-                      </Link>
+                      Once you find a version you like, click Apply Suggestion. This adds it to your resume so you can keep building without missing a beat.
                     </p>
                   </div>
                 </div>
@@ -937,9 +935,7 @@ export default function ResumeBulletPointGenerator() {
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      <Link href="/sign-up" className="text-amber-600 hover:text-amber-700">
-                        Yes, you can generate and re‑generate bullet points for free. There&apos;s no cost to use the core functionality.
-                      </Link>
+                      Yes, you can generate and re‑generate bullet points for free. There&apos;s no cost to use the core functionality.
                     </p>
                   </div>
                 </div>
@@ -951,9 +947,7 @@ export default function ResumeBulletPointGenerator() {
                       </div>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      <Link href="/sign-up" className="text-amber-600 hover:text-amber-700">
-                        Yes, it works across all industries: tech, healthcare, education, retail, you name it. The AI adapts to different job types and tones depending on your input.
-                      </Link>
+                      Yes, it works across all industries: tech, healthcare, education, retail, you name it. The AI adapts to different job types and tones depending on your input.
                     </p>
                   </div>
                 </div>

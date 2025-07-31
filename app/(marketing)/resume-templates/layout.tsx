@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Resume Templates - Professional ATS-Friendly Templates | Kolab AI',
+  title: 'Resume Templates - Professional ATS-Friendly Templates | Rezum AI',
   description: 'Choose from our collection of ATS-friendly resume templates. Modern, simple, creative, and compact designs built for the modern job hunt. Get hired faster.',
   keywords: [
     'resume templates',
@@ -13,22 +13,22 @@ export const metadata: Metadata = {
     'compact resume templates',
     'resume formats',
     'job application templates',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'ATS-Friendly Resume Templates - Professional Designs | Kolab AI',
+    title: 'ATS-Friendly Resume Templates - Professional Designs | Rezum AI',
     description: 'Browse our collection of professional resume templates designed to pass ATS scanners and impress hiring managers.',
     url: 'https://yourdomain.com/resume-templates',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/resume-templates-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Professional Resume Templates by Kolab AI',
+        alt: 'Professional Resume Templates by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Resume Templates - Kolab AI',
+    title: 'Resume Templates - Rezum AI',
     description: 'Professional, ATS-friendly resume templates designed for modern job seekers.',
     images: ['/images/resume-templates-og.jpg'],
     creator: '@kolabai',
@@ -81,7 +81,7 @@ export default function ResumeTemplatesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
             },
             mainEntity: {

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Healthcare Resume & Cover Letter Samples | Kolab AI',
+  title: 'Healthcare Resume & Cover Letter Samples | Rezum AI',
   description: 'Professional healthcare resume and cover letter templates for nurses, doctors, medical professionals, and healthcare workers. Industry-specific designs.',
   keywords: [
     'healthcare resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'medical professional resume samples',
     'healthcare worker templates',
     'clinical resume examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Healthcare Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Healthcare Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional healthcare resume and cover letter templates for nurses, doctors, medical professionals, and healthcare workers. Industry-specific designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/healthcare',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/healthcare',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/healthcare-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Healthcare Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Healthcare Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Healthcare Resume & Cover Letter Samples - Kolab AI',
+    title: 'Healthcare Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for healthcare professionals, medical workers, nurses, and clinical staff.',
     images: ['/images/healthcare-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/healthcare',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/healthcare',
   },
 };
 
@@ -72,7 +72,7 @@ export default function HealthcareSamplesLayout({
             '@type': 'WebPage',
             name: 'Healthcare Resume & Cover Letter Samples',
             description: 'Professional healthcare resume and cover letter templates for nurses, doctors, medical professionals, and healthcare workers. Industry-specific designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/healthcare',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/healthcare',
             about: {
               '@type': 'Service',
               name: 'Healthcare Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function HealthcareSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

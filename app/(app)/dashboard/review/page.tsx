@@ -35,9 +35,9 @@ export default function ReviewPage() {
             One Step Away From A Perfect Resume
           </h1>
           <p className="text-base text-gray-900 dark:text-gray-300 max-w-4xl">
-            The Kolab Resume Review is your resume&#39;s last stop before being submitted for any job application.
+            The Rezum Resume Review is your resume&#39;s last stop before being submitted for any job application.
             Often, we see talented job seekers create their resume with mistakes that might ruin an otherwise
-            perfect resume. With the Kolab Resume Review, we will review your indicated resume directly in your dashboard.
+            perfect resume. With the Rezum Resume Review, we will review your indicated resume directly in your dashboard.
           </p>
         </div>
 

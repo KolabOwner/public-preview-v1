@@ -133,15 +133,15 @@ export default function PricingPage() {
 
   const faqs = [
     {
-      question: 'What are the main differences between Kolab\'s Free, Pro, and Lifetime plans?',
+      question: 'What are the main differences between Rezum\'s Free, Pro, and Lifetime plans?',
       answer: 'Free: 1 resume, limited AI tools, unlimited cover/resignation letters, 1 PDF download. Pro: Unlimited resumes, AI-powered optimization, featuring free resume review, 1 lifetime ($149 one-time). All Pro features except monthly review, or upgrade to Pro for additional features.'
     },
     {
-      question: 'What is Kolab Lifetime, and is it worth it?',
+      question: 'What is Rezum Lifetime, and is it worth it?',
       answer: 'Lifetime gives you unlimited access to premium features without recurring fees, but AI tools like writers and interviews for 1 flat purchase. Also includes advanced integration with our massive job boards and salary info database.'
     },
     {
-      question: 'Is Kolab Lifetime the same as Kolab Pro?',
+      question: 'Is Rezum Lifetime the same as Rezum Pro?',
       answer: 'Similar, but Lifetime includes all available resume building/downloads. Otherwise, it includes 1 free monthly expert review letters from AI. Lifetime changes from ~$8 per month. Both have all key review guarantee.'
     },
     {
@@ -157,7 +157,7 @@ export default function PricingPage() {
       answer: '100% refund promise—no questions asked on all paid plans. For Pro, refund request emails is unavailable. Exact requirements published on our dashboard.'
     },
     {
-      question: 'How does billing work for Kolab plans?',
+      question: 'How does billing work for Rezum plans?',
       answer: 'Free: No billing. Pro: $29/month (no credit card required anytime). Lifetime: $149 one-time. Share is no Middle Eastern access. Use billing for more details.'
     },
     {
@@ -289,11 +289,11 @@ export default function PricingPage() {
                 </div>
               </div>
 
-              {/* Kolab Usage Section */}
+              {/* Rezum Usage Section */}
               <div className="border-t border-gray-200">
                 <div className="grid grid-cols-4">
                   <div className="p-4 bg-blue-50">
-                    <h4 className="font-semibold text-blue-700">Kolab Usage</h4>
+                    <h4 className="font-semibold text-blue-700">Rezum Usage</h4>
                   </div>
                   <div className="p-4 border-l border-gray-200" />
                   <div className="p-4 border-l border-gray-200" />
@@ -304,7 +304,7 @@ export default function PricingPage() {
               {/* Resume Builder Row */}
               <div className="grid grid-cols-4 border-t border-gray-200">
                 <div className="p-4 flex items-center gap-2">
-                  <span className="font-medium text-gray-900">Kolab Resume Builder</span>
+                  <span className="font-medium text-gray-900">Rezum Resume Builder</span>
                 </div>
                 <div className="p-4 text-center border-l border-gray-200">
                   <span className="text-gray-600">1 Resume Limit</span>
@@ -468,7 +468,7 @@ export default function PricingPage() {
                   <div className="group relative">
                     <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                      Kolab evaluates the strength of your resume with 23 key metrics.
+                      Rezum evaluates the strength of your resume with 23 key metrics.
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                     </div>
                   </div>

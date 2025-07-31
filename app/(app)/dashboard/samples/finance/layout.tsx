@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Finance Resume & Cover Letter Samples | Kolab AI',
+  title: 'Finance Resume & Cover Letter Samples | Rezum AI',
   description: 'Professional finance resume and cover letter templates for financial analysts, accountants, bankers, and finance professionals. Corporate-ready designs.',
   keywords: [
     'finance resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'financial professional resume samples',
     'finance industry templates',
     'investment resume examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Finance Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Finance Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional finance resume and cover letter templates for financial analysts, accountants, bankers, and finance professionals. Corporate-ready designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/finance',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/finance',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/finance-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Finance Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Finance Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Finance Resume & Cover Letter Samples - Kolab AI',
+    title: 'Finance Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for finance professionals, financial analysts, accountants, and banking specialists.',
     images: ['/images/finance-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/finance',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/finance',
   },
 };
 
@@ -72,7 +72,7 @@ export default function FinanceSamplesLayout({
             '@type': 'WebPage',
             name: 'Finance Resume & Cover Letter Samples',
             description: 'Professional finance resume and cover letter templates for financial analysts, accountants, bankers, and finance professionals. Corporate-ready designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/finance',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/finance',
             about: {
               '@type': 'Service',
               name: 'Finance Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function FinanceSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

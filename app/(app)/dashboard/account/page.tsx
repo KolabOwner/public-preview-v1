@@ -413,7 +413,7 @@ export default function AccountPage() {
               <CardHeader>
                 <CardTitle>Language Settings</CardTitle>
                 <CardDescription>
-                  Select the language to be used in the Kolab AI web app
+                  Select the language to be used in the Rezum AI web app
                 </CardDescription>
               </CardHeader>
               <CardContent>

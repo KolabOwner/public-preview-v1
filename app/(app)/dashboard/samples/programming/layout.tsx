@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Programming Resume & Cover Letter Samples | Kolab AI',
+  title: 'Programming Resume & Cover Letter Samples | Rezum AI',
   description: 'Developer-focused resume and cover letter templates for software engineers, full-stack developers, programmers, and coding professionals. Clean, technical designs.',
   keywords: [
     'programming resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'software developer resume samples',
     'coding professional templates',
     'programmer resume examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Programming Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Programming Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Developer-focused resume and cover letter templates for software engineers, full-stack developers, programmers, and coding professionals. Clean, technical designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/programming',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/programming',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/programming-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Programming Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Programming Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Programming Resume & Cover Letter Samples - Kolab AI',
+    title: 'Programming Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for programmers, software engineers, developers, and coding professionals.',
     images: ['/images/programming-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/programming',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/programming',
   },
 };
 
@@ -72,7 +72,7 @@ export default function ProgrammingSamplesLayout({
             '@type': 'WebPage',
             name: 'Programming Resume & Cover Letter Samples',
             description: 'Developer-focused resume and cover letter templates for software engineers, full-stack developers, programmers, and coding professionals. Clean, technical designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/programming',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/programming',
             about: {
               '@type': 'Service',
               name: 'Programming Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function ProgrammingSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

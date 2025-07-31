@@ -31,8 +31,8 @@ const faqItems: FAQItem[] = [
     answer: "While you can resubmit resumes, we recommend incorporating previous feedback before requesting another review. This ensures you receive fresh insights and maximize the value of each review session. Each submission is treated as a new review with our current expert pool."
   },
   {
-    question: "Do you review resumes created with Kolab templates?",
-    answer: "Yes! Our experts are familiar with Kolab's template library and can provide valuable feedback on resumes created with our platform. However, we don't review sample resumes from our template gallery - only personalized resumes with your actual experience and information."
+    question: "Do you review resumes created with Rezum templates?",
+    answer: "Yes! Our experts are familiar with Rezum's template library and can provide valuable feedback on resumes created with our platform. However, we don't review sample resumes from our template gallery - only personalized resumes with your actual experience and information."
   },
   {
     question: "What happens if I'm not satisfied with my review?",
@@ -59,7 +59,7 @@ export default function FAQSection() {
     <div className="space-y-8">
       <div className="text-center space-y-3">
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">
-          Frequently Asked Questions
+          Frequently Asked Questions (FAQs)
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Everything you need to know about our professional resume review service

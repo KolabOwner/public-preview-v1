@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Kolab User Guides | Resume Builder Documentation & Tutorials',
-  description: 'Comprehensive user guides for Kolab AI resume builder. Learn how to create professional resumes, use AI features, manage your account, and maximize your job search success.',
+  title: 'Rezum User Guides | Resume Builder Documentation & Tutorials',
+  description: 'Comprehensive user guides for Rezum AI resume builder. Learn how to create professional resumes, use AI features, manage your account, and maximize your job search success.',
   keywords: [
     'resume builder tutorial',
-    'kolab user guide',
+    'rezum user guide',
     'AI resume help',
     'resume documentation',
     'how to create resume',
@@ -13,22 +13,22 @@ export const metadata: Metadata = {
     'ATS optimization help',
     'resume writing tips',
     'job search guide',
-    'kolab ai help'
+    'rezum ai help'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Kolab User Guides | Resume Builder Documentation & Tutorials',
-    description: 'Comprehensive user guides for Kolab AI resume builder. Learn how to create professional resumes and maximize your job search success.',
+    title: 'Rezum User Guides | Resume Builder Documentation & Tutorials',
+    description: 'Comprehensive user guides for Rezum AI resume builder. Learn how to create professional resumes and maximize your job search success.',
     url: 'https://yourdomain.com/resume-docs',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/docs-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Kolab AI User Guides - Resume Builder Documentation',
+        alt: 'Rezum AI User Guides - Resume Builder Documentation',
       },
     ],
     locale: 'en_US',
@@ -36,8 +36,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kolab User Guides | Resume Builder Documentation',
-    description: 'Comprehensive user guides for Kolab AI resume builder and career tools.',
+    title: 'Rezum User Guides | Resume Builder Documentation',
+    description: 'Comprehensive user guides for Rezum AI resume builder and career tools.',
     images: ['/images/docs-og.jpg'],
     creator: '@kolabai',
   },
@@ -71,12 +71,12 @@ export default function ResumeDocsLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebSite',
-            name: 'Kolab AI User Guides',
-            description: 'Comprehensive documentation and tutorials for Kolab AI resume builder and career tools',
+            name: 'Rezum AI User Guides',
+            description: 'Comprehensive documentation and tutorials for Rezum AI resume builder and career tools',
             url: 'https://yourdomain.com/resume-docs',
             publisher: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
               logo: {
                 '@type': 'ImageObject',
@@ -115,7 +115,7 @@ export default function ResumeDocsLayout({
             mainEntity: [
               {
                 '@type': 'Question',
-                name: 'How do I create a resume with Kolab AI?',
+                name: 'How do I create a resume with Rezum AI?',
                 acceptedAnswer: {
                   '@type': 'Answer',
                   text: 'Use our AI Resume Builder to create professional resumes. Start by entering your information, choose a template, and let our AI optimize your content for ATS systems.',
@@ -123,10 +123,10 @@ export default function ResumeDocsLayout({
               },
               {
                 '@type': 'Question',
-                name: 'What is the Kolab Score?',
+                name: 'What is the Rezum Score?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'The Kolab Score is our proprietary scoring system that evaluates your resume quality based on multiple factors including ATS compatibility, content quality, and formatting.',
+                  text: 'The Rezum Score is our proprietary scoring system that evaluates your resume quality based on multiple factors including ATS compatibility, content quality, and formatting.',
                 },
               },
               {
@@ -149,11 +149,11 @@ export default function ResumeDocsLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
-            name: 'Kolab AI',
+            name: 'Rezum AI',
             url: 'https://yourdomain.com',
             sameAs: [
               'https://twitter.com/kolabai',
-              'https://linkedin.com/company/kolab-ai',
+              'https://linkedin.com/company/rezum-ai',
             ],
             contactPoint: {
               '@type': 'ContactPoint',

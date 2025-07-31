@@ -86,7 +86,7 @@ export default function KeywordScannerPage() {
                 {/* Main Charles Schwab Resume - Center */}
                 <div className="relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-10">
                   <Image
-                    src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                    src="/images/keyword-scanner/techvision-resume-stacked.png"
                     alt="Charles Schwab Resume"
                     width={400}
                     height={500}
@@ -139,7 +139,7 @@ export default function KeywordScannerPage() {
                         {/* Main Resume Document */}
                         <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                           <Image
-                            src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                            src="/images/keyword-scanner/techvision-resume-stacked.png"
                             alt="Charles Schwab Resume"
                             width={400}
                             height={500}
@@ -179,7 +179,7 @@ export default function KeywordScannerPage() {
                         {/* Main Resume Document */}
                         <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                           <Image
-                            src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                            src="/images/keyword-scanner/techvision-resume-stacked.png"
                             alt="Charles Schwab Resume"
                             width={400}
                             height={500}
@@ -229,7 +229,7 @@ export default function KeywordScannerPage() {
                         {/* Main Resume Document */}
                         <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                           <Image
-                            src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                            src="/images/keyword-scanner/techvision-resume-stacked.png"
                             alt="Charles Schwab Resume"
                             width={400}
                             height={500}
@@ -342,7 +342,7 @@ export default function KeywordScannerPage() {
                     {/* Background Resume */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Charles Schwab Resume"
                         width={400}
                         height={500}
@@ -404,7 +404,7 @@ export default function KeywordScannerPage() {
                     {/* Background Resume */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Charles Schwab Resume"
                         width={400}
                         height={500}
@@ -466,7 +466,7 @@ export default function KeywordScannerPage() {
                     {/* Background Resume */}
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                       <Image
-                        src="/images/keyword-scanner/charles-schwab-resume-stacked.png"
+                        src="/images/keyword-scanner/techvision-resume-stacked.png"
                         alt="Charles Schwab Resume"
                         width={400}
                         height={500}
@@ -926,14 +926,14 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Yes, Kolab offers free keyword scanning capabilities to help job seekers optimize their resumes without any upfront cost.
+                Yes, Rezum offers free keyword scanning capabilities to help job seekers optimize their resumes without any upfront cost.
               </p>
             </div>
 
             <div className="faq-item">
               <div className="mb-3">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Which industries or job roles can use the Kolab keyword scanner?
+                  Which industries or job roles can use the Rezum keyword scanner?
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
@@ -992,7 +992,7 @@ export default function KeywordScannerPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Yes. Resumes are scanned securely on our servers, not shared publicly, and are kept completely private to you. Kolab takes data security seriously and follows industry best practices to protect your information.
+                Yes. Resumes are scanned securely on our servers, not shared publicly, and are kept completely private to you. Rezum takes data security seriously and follows industry best practices to protect your information.
               </p>
             </div>
 

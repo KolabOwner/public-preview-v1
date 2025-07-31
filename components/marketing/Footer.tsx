@@ -55,21 +55,21 @@ interface FooterProps {
 
 const defaultSocialLinks: SocialLink[] = [
   {
-    href: 'https://twitter.com/kolab',
+    href: 'https://twitter.com/rezum',
     label: 'Twitter',
-    'aria-label': 'Follow Kolab on Twitter',
+    'aria-label': 'Follow Rezum on Twitter',
     icon: <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
   },
   {
-    href: 'https://linkedin.com/company/kolab',
+    href: 'https://linkedin.com/company/rezum',
     label: 'LinkedIn',
-    'aria-label': 'Follow Kolab on LinkedIn',
+    'aria-label': 'Follow Rezum on LinkedIn',
     icon: <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
   },
   {
-    href: 'https://facebook.com/kolab',
+    href: 'https://facebook.com/rezum',
     label: 'Facebook',
-    'aria-label': 'Follow Kolab on Facebook',
+    'aria-label': 'Follow Rezum on Facebook',
     icon: <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.374 0 0 5.373 0 12s5.374 12 12 12 12-5.373 12-12S18.626 0 12 0zm5.568 8.16c-.169 1.858-.896 3.175-2.043 3.921-.287.185-.619.281-.956.281-.715 0-1.417-.345-1.942-.953-.525.608-1.227.953-1.942.953-.337 0-.669-.096-.956-.281-1.147-.746-1.874-2.063-2.043-3.921C7.537 7.219 7.352 6.237 7.352 5.352c0-.885.185-1.867.334-2.808C8.034 1.017 9.447 0 12 0s3.966 1.017 4.314 2.544c.149.941.334 1.923.334 2.808 0 .885-.185 1.867-.334 2.808z"/></svg>
   }
 ];
@@ -94,7 +94,6 @@ const defaultFooterSections: FooterSection[] = [
     title: 'ABOUT',
     links: [
       { href: '/about', label: 'About Us' },
-      { href: '/authors', label: 'Authors' },
       { href: '/editorial-process', label: 'Editorial Process' },
       { href: '/legal', label: 'Terms & Privacy' },
       { href: '/contact', label: 'Contact Support', 'aria-label': 'Contact customer support' }
@@ -112,8 +111,8 @@ const defaultFooterSections: FooterSection[] = [
 ];
 
 const defaultCompanyInfo = {
-  name: 'Kolab',
-  address: ['1309 Coffeen Avenue STE', '6995 Sheridan, Wyoming', '82801'],
+  name: 'Rezum',
+  address: [],
   tagline: 'Your next career move starts here'
 };
 
@@ -200,20 +199,11 @@ const Footer = memo<FooterProps>(({
           "@context": "https://schema.org",
           "@type": "Organization",
           "name": companyInfo.name,
-          "url": "https://kolab.ai",
-          "logo": "https://kolab.ai/logo.png",
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": companyInfo.address[0],
-            "addressLocality": "Sheridan",
-            "addressRegion": "Wyoming",
-            "postalCode": "82801",
-            "addressCountry": "US"
-          },
+          "url": "https://rezum.ai",
+          "logo": "https://rezum.ai/logo.png",
           "sameAs": socialLinks.map(social => social.href),
           "contactPoint": {
             "@type": "ContactPoint",
-            "telephone": "+1-555-0123",
             "contactType": "customer service",
             "areaServed": "US",
             "availableLanguage": "en"

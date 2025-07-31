@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Design Resume & Cover Letter Samples | Kolab AI',
+  title: 'Design Resume & Cover Letter Samples | Rezum AI',
   description: 'Creative design resume and cover letter templates for graphic designers, UX/UI designers, web designers, and creative professionals. Visually striking designs.',
   keywords: [
     'design resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'web designer resume samples',
     'creative professional templates',
     'design industry examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Design Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Design Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Creative design resume and cover letter templates for graphic designers, UX/UI designers, web designers, and creative professionals. Visually striking designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/design',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/design',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/design-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Design Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Design Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Design Resume & Cover Letter Samples - Kolab AI',
+    title: 'Design Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for designers, creative professionals, UX/UI designers, and visual artists.',
     images: ['/images/design-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/design',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/design',
   },
 };
 
@@ -72,7 +72,7 @@ export default function DesignSamplesLayout({
             '@type': 'WebPage',
             name: 'Design Resume & Cover Letter Samples',
             description: 'Creative design resume and cover letter templates for graphic designers, UX/UI designers, web designers, and creative professionals. Visually striking designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/design',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/design',
             about: {
               '@type': 'Service',
               name: 'Design Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function DesignSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Pricing Plans - Professional Resume Builder & AI Tools | Kolab AI',
+  title: 'Pricing Plans - Professional Resume Builder & AI Tools | Rezum AI',
   description: 'Choose from Free, Pro, or Lifetime plans. Get unlimited AI-powered resume building, cover letter writing, and career tools. Start free or upgrade for advanced features.',
   keywords: [
     'resume builder pricing',
@@ -14,22 +14,22 @@ export const metadata: Metadata = {
     'AI career assistant cost',
     'resume templates pricing',
     'job application tools pricing',
-    'kolab ai pricing'
+    'rezum ai pricing'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Affordable Resume Builder & AI Career Tools Pricing | Kolab AI',
+    title: 'Affordable Resume Builder & AI Career Tools Pricing | Rezum AI',
     description: 'Start free or choose Pro/Lifetime plans for unlimited AI-powered resume building, cover letters, and career optimization tools.',
     url: 'https://yourdomain.com/pricing',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/pricing-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Kolab AI Pricing Plans - Resume Builder & Career Tools',
+        alt: 'Rezum AI Pricing Plans - Resume Builder & Career Tools',
       },
     ],
     locale: 'en_US',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pricing Plans - Kolab AI',
+    title: 'Pricing Plans - Rezum AI',
     description: 'Professional resume builder starting free. Upgrade for AI-powered career tools and unlimited features.',
     images: ['/images/pricing-og.jpg'],
     creator: '@kolabai',
@@ -82,7 +82,7 @@ export default function PricingLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
             },
             mainEntity: {
@@ -198,11 +198,11 @@ export default function PricingLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
-            name: 'Kolab AI',
+            name: 'Rezum AI',
             url: 'https://yourdomain.com',
             sameAs: [
               'https://twitter.com/kolabai',
-              'https://linkedin.com/company/kolab-ai',
+              'https://linkedin.com/company/rezum-ai',
             ],
             contactPoint: {
               '@type': 'ContactPoint',

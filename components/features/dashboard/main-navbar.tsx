@@ -57,7 +57,7 @@ const MainNavbar = () => {
             
             {/* Logo Section */}
             <Link href="/" className="flex items-center group">
-              <span className="text-3xl font-bold text-gray-900 tracking-tight">Kolab</span>
+              <span className="text-3xl font-bold text-gray-900 tracking-tight">Rezum</span>
             </Link>
 
             {/* Desktop Navigation - Completely New Layout */}

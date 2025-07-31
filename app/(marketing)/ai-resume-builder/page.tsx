@@ -192,7 +192,7 @@ export default function AIResumeBuilderPage() {
                       Get Detailed Feedback
                     </h3>
                     <p className="text-lg text-gray-600 mb-8">
-                      The Kolab AI Resume Builder will tell you exactly what to improve to take your resume 
+                      The Rezum AI Resume Builder will tell you exactly what to improve to take your resume 
                       from solid to job-winning. You&apos;ll know what keywords to use and how to optimize 
                       your document for readability.
                     </p>

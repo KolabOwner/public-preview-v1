@@ -43,39 +43,39 @@ const faqData = [
   },
   {
     question: "What is the best AI resume builder?",
-    answer: "Kolab stands out as the premier AI resume builder, offering advanced keyword targeting, real-time ATS optimization, and industry-specific templates. With over 1.3 million successful users and a 4.8/5 rating, Kolab delivers results that get you hired."
+    answer: "Rezum stands out as the premier AI resume builder, offering advanced keyword targeting, real-time ATS optimization, and industry-specific templates. With over 1.3 million successful users and a 4.8/5 rating, Rezum delivers results that get you hired."
   },
   {
     question: "Can I use AI to optimize an existing resume?",
     answer: "Yes, using AI to optimize your current resume is highly effective. You just need to upload your resume, share details about your career goals and the job you want, and let the AI refine everything to elevate your resume's impact and ATS compatibility."
   },
   {
-    question: "How does Kolab tailor my resume to specific job descriptions?",
-    answer: "Kolab uses advanced AI Keyword Targeting technology that analyzes job descriptions to identify crucial keywords and naturally incorporates them into your resume. This ensures optimal keyword density without stuffing, giving your resume the perfect focus for each application."
+    question: "How does Rezum tailor my resume to specific job descriptions?",
+    answer: "Rezum uses advanced AI Keyword Targeting technology that analyzes job descriptions to identify crucial keywords and naturally incorporates them into your resume. This ensures optimal keyword density without stuffing, giving your resume the perfect focus for each application."
   },
   {
     question: "What is the role of ATS (Applicant Tracking Systems) in the AI resume-building process?",
-    answer: "ATS systems are software that many employers use to screen resumes before human review. AI resume builders like Kolab are specifically designed to ensure ATS compatibility through proper formatting, keyword optimization, and structure. This guarantees your resume passes initial screening and reaches hiring managers."
+    answer: "ATS systems are software that many employers use to screen resumes before human review. AI resume builders like Rezum are specifically designed to ensure ATS compatibility through proper formatting, keyword optimization, and structure. This guarantees your resume passes initial screening and reaches hiring managers."
   },
   {
-    question: "Can Kolab help with cover letters too?",
-    answer: "Absolutely! Kolab creates highly personalized cover letters that perfectly complement your resume and match the specific job description. This cohesive approach significantly boosts your application's impact and increases your chances of landing interviews."
+    question: "Can Rezum help with cover letters too?",
+    answer: "Absolutely! Rezum creates highly personalized cover letters that perfectly complement your resume and match the specific job description. This cohesive approach significantly boosts your application's impact and increases your chances of landing interviews."
   },
   {
     question: "How can I ensure my AI-generated resume passes ATS scanning?",
-    answer: "Use reputable AI resume builders like Kolab that prioritize ATS compatibility. Ensure clean, simple formatting with proper heading structure, include relevant keywords naturally, and avoid graphics or complex layouts. Kolab automatically handles these technical requirements for optimal ATS performance."
+    answer: "Use reputable AI resume builders like Rezum that prioritize ATS compatibility. Ensure clean, simple formatting with proper heading structure, include relevant keywords naturally, and avoid graphics or complex layouts. Rezum automatically handles these technical requirements for optimal ATS performance."
   },
   {
     question: "What should I do if my AI-generated resume feels too generic?",
-    answer: "Provide more specific, detailed information about your accomplishments, quantify your achievements with numbers, and include industry-specific terminology. Kolab's advanced AI learns from your input to create increasingly personalized content that reflects your unique professional story."
+    answer: "Provide more specific, detailed information about your accomplishments, quantify your achievements with numbers, and include industry-specific terminology. Rezum's advanced AI learns from your input to create increasingly personalized content that reflects your unique professional story."
   },
   {
-    question: "Does Kolab offer industry-specific templates?",
-    answer: "Kolab provides professionally designed templates that can be extensively customized for any industry. While we offer versatile base designs, our AI intelligently adapts content, formatting, and emphasis based on your target industry and role, ensuring optimal presentation for your field."
+    question: "Does Rezum offer industry-specific templates?",
+    answer: "Rezum provides professionally designed templates that can be extensively customized for any industry. While we offer versatile base designs, our AI intelligently adapts content, formatting, and emphasis based on your target industry and role, ensuring optimal presentation for your field."
   },
   {
-    question: "Can I update my resume in Kolab as my career progresses?",
-    answer: "Yes! With an active Kolab subscription, you can maintain multiple resume versions, continuously update your master resume, and create targeted variations for different opportunities. Our AI learns from your career progression to suggest improvements and new achievements to highlight."
+    question: "Can I update my resume in Rezum as my career progresses?",
+    answer: "Yes! With an active Rezum subscription, you can maintain multiple resume versions, continuously update your master resume, and create targeted variations for different opportunities. Our AI learns from your career progression to suggest improvements and new achievements to highlight."
   }
 ];
 
@@ -117,16 +117,13 @@ const FaqSection = () => {
             <span className="text-corporate-navy-700 font-medium">Expert Support</span>
           </div>
 
-          <h2 className="text-5xl md:text-7xl font-bold font-corporate-display leading-tight mb-8">
-            <span className="block text-corporate-navy-900">Got</span>
+          <h2 className="text-3xl md:text-5xl font-bold font-corporate-display leading-tight mb-8">
+            <span className="block text-corporate-navy-900">Frequently Asked</span>
             <span className="block bg-gradient-to-r from-corporate-gold-600 via-corporate-amber-500 to-corporate-gold-600 bg-clip-text text-transparent">
-              Questions?
+              Questions (FAQs)
             </span>
           </h2>
 
-          <p className="text-xl text-corporate-navy-600 leading-relaxed max-w-3xl mx-auto">
-            Everything you need to know about building career-changing resumes with AI
-          </p>
         </div>
 
         {/* Clean FAQ Grid */}
@@ -191,8 +188,8 @@ const FaqSection = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
-            "name": "Kolab AI Resume Builder - Frequently Asked Questions",
-            "description": "Get answers to common questions about AI resume building, ATS optimization, and job search success with Kolab.",
+            "name": "Rezum AI Resume Builder - Frequently Asked Questions",
+            "description": "Get answers to common questions about AI resume building, ATS optimization, and job search success with Rezum.",
             "mainEntity": faqData.map(faq => ({
               "@type": "Question",
               "name": faq.question,

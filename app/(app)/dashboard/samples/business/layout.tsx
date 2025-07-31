@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Business Resume & Cover Letter Samples | Kolab AI',
+  title: 'Business Resume & Cover Letter Samples | Rezum AI',
   description: 'Professional business resume and cover letter templates for executives, managers, consultants, and business professionals. ATS-optimized designs for corporate success.',
   keywords: [
     'business resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'consultant resume samples',
     'business professional templates',
     'corporate cover letters',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Business Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Business Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional business resume and cover letter templates for executives, managers, consultants, and business professionals. ATS-optimized designs for corporate success.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/business',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/business',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/business-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Business Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Business Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Business Resume & Cover Letter Samples - Kolab AI',
+    title: 'Business Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for business executives, managers, consultants, and corporate professionals.',
     images: ['/images/business-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/business',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/business',
   },
 };
 
@@ -72,7 +72,7 @@ export default function BusinessSamplesLayout({
             '@type': 'WebPage',
             name: 'Business Resume & Cover Letter Samples',
             description: 'Professional business resume and cover letter templates for executives, managers, consultants, and business professionals. ATS-optimized designs for corporate success.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/business',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/business',
             about: {
               '@type': 'Service',
               name: 'Business Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function BusinessSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

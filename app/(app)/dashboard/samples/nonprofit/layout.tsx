@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Nonprofit Resume & Cover Letter Samples | Kolab AI',
+  title: 'Nonprofit Resume & Cover Letter Samples | Rezum AI',
   description: 'Mission-driven nonprofit resume and cover letter templates for nonprofit workers, program managers, and social impact professionals. Purpose-focused designs.',
   keywords: [
     'nonprofit resume templates',
@@ -12,22 +12,22 @@ export const metadata: Metadata = {
     'charity resume samples',
     'nonprofit sector templates',
     'social good resume examples',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Nonprofit Resume & Cover Letter Samples - Professional Templates | Kolab AI',
+    title: 'Nonprofit Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Mission-driven nonprofit resume and cover letter templates for nonprofit workers, program managers, and social impact professionals. Purpose-focused designs.',
-    url: 'https://kolab-app.vercel.app/dashboard/samples/nonprofit',
-    siteName: 'Kolab AI',
+    url: 'https://rezum-app.vercel.app/dashboard/samples/nonprofit',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/nonprofit-resume-samples-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Nonprofit Resume & Cover Letter Samples by Kolab AI',
+        alt: 'Nonprofit Resume & Cover Letter Samples by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Nonprofit Resume & Cover Letter Samples - Kolab AI',
+    title: 'Nonprofit Resume & Cover Letter Samples - Rezum AI',
     description: 'Professional resume and cover letter templates for nonprofit professionals, program managers, social workers, and community organizers.',
     images: ['/images/nonprofit-resume-samples-og.jpg'],
     creator: '@kolabai',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kolab-app.vercel.app/dashboard/samples/nonprofit',
+    canonical: 'https://rezum-app.vercel.app/dashboard/samples/nonprofit',
   },
 };
 
@@ -72,7 +72,7 @@ export default function NonprofitSamplesLayout({
             '@type': 'WebPage',
             name: 'Nonprofit Resume & Cover Letter Samples',
             description: 'Mission-driven nonprofit resume and cover letter templates for nonprofit workers, program managers, and social impact professionals. Purpose-focused designs.',
-            url: 'https://kolab-app.vercel.app/dashboard/samples/nonprofit',
+            url: 'https://rezum-app.vercel.app/dashboard/samples/nonprofit',
             about: {
               '@type': 'Service',
               name: 'Nonprofit Resume & Cover Letter Template Library',
@@ -80,8 +80,8 @@ export default function NonprofitSamplesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
-              url: 'https://kolab-app.vercel.app',
+              name: 'Rezum AI',
+              url: 'https://rezum-app.vercel.app',
             },
             mainEntity: {
               '@type': 'ItemList',

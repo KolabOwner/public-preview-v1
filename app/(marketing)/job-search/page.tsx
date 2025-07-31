@@ -124,7 +124,7 @@ export default function JobSearchPage() {
               <span className="text-blue-600 block">get hired fast</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Use Kolab&apos;s new job search tool. Find the right opportunity, create a perfect resume, track your application
+              Use Rezum&apos;s new job search tool. Find the right opportunity, create a perfect resume, track your application
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors">
@@ -204,7 +204,7 @@ export default function JobSearchPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Kolab Job Search is Different
+              Why Rezum Job Search is Different
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               We&apos;ve revolutionized job searching by connecting you directly with real opportunities from company websites.
@@ -404,7 +404,7 @@ export default function JobSearchPage() {
             Ready to Find Your Dream Job?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of job seekers who have found better opportunities with Kolab&apos;s job search tool.
+            Join thousands of job seekers who have found better opportunities with Rezum&apos;s job search tool.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors">

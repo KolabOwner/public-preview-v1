@@ -85,7 +85,7 @@ export default function AIResumeSummaryGeneratorPage() {
                 {/* Main Charles Schwab Resume - Center */}
                 <div className="relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-10">
                   <Image
-                    src="/images/ai-resume-summary-generator/charles-schwab-resume-stacked.png"
+                    src="/images/ai-resume-summary-generator/techvision-resume-stacked.png"
                     alt="Charles Schwab Resume"
                     width={400}
                     height={500}
@@ -130,7 +130,7 @@ export default function AIResumeSummaryGeneratorPage() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/ai-resume-summary-generator/charles-schwab-resume-stacked.png"
+                      src="/images/ai-resume-summary-generator/techvision-resume-stacked.png"
                       alt="Charles Schwab Resume"
                       width={400}
                       height={500}
@@ -168,7 +168,7 @@ export default function AIResumeSummaryGeneratorPage() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/ai-resume-summary-generator/charles-schwab-resume-stacked.png"
+                      src="/images/ai-resume-summary-generator/techvision-resume-stacked.png"
                       alt="Charles Schwab Resume"
                       width={400}
                       height={500}
@@ -208,7 +208,7 @@ export default function AIResumeSummaryGeneratorPage() {
                   {/* Main Resume Document */}
                   <div className="absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                     <Image
-                      src="/images/ai-resume-summary-generator/charles-schwab-resume-stacked.png"
+                      src="/images/ai-resume-summary-generator/techvision-resume-stacked.png"
                       alt="Charles Schwab Resume"
                       width={400}
                       height={500}

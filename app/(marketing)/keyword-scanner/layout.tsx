@@ -2,7 +2,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Resume Keyword Scanner - ATS Optimizer | Kolab AI',
+  title: 'Resume Keyword Scanner - ATS Optimizer | Rezum AI',
   description: 'Free resume keyword scanner and ATS optimizer. Analyze your resume against job descriptions to identify missing keywords and improve your chances of getting interviews.',
   keywords: [
     'resume keyword scanner',
@@ -14,22 +14,22 @@ export const metadata: Metadata = {
     'job description matcher',
     'applicant tracking system',
     'resume keywords',
-    'kolab ai scanner'
+    'rezum ai scanner'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Free Resume Keyword Scanner & ATS Optimizer | Kolab AI',
+    title: 'Free Resume Keyword Scanner & ATS Optimizer | Rezum AI',
     description: 'Scan your resume against job descriptions. Get instant keyword analysis and ATS optimization tips.',
     url: 'https://yourdomain.com/keyword-scanner',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/keyword-scanner-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Resume Keyword Scanner by Kolab AI',
+        alt: 'Resume Keyword Scanner by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Resume Keyword Scanner - Kolab AI',
+    title: 'Resume Keyword Scanner - Rezum AI',
     description: 'Free ATS scanner to optimize your resume with the right keywords. Improve your interview chances.',
     images: ['/images/keyword-scanner-og.jpg'],
     creator: '@kolabai',
@@ -72,7 +72,7 @@ export default function KeywordScannerLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
-            name: 'Kolab AI Resume Keyword Scanner',
+            name: 'Rezum AI Resume Keyword Scanner',
             description: 'Free tool to scan resumes for keywords and optimize for ATS systems',
             url: 'https://yourdomain.com/keyword-scanner',
             applicationCategory: 'BusinessApplication',
@@ -93,7 +93,7 @@ export default function KeywordScannerLayout({
             ],
             author: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
             },
             aggregateRating: {

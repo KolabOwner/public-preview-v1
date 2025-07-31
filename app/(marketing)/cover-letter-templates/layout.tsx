@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cover Letter Templates - Professional Templates for All Industries | Kolab AI',
+  title: 'Cover Letter Templates - Professional Templates for All Industries | Rezum AI',
   description: 'Create compelling cover letters with our professional templates. ATS-optimized, industry-specific designs with AI-powered writing assistance. Land your dream job faster.',
   keywords: [
     'cover letter templates',
@@ -13,22 +13,22 @@ export const metadata: Metadata = {
     'industry-specific cover letters',
     'AI cover letter writer',
     'cover letter builder',
-    'kolab ai'
+    'rezum ai'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'Professional Cover Letter Templates - Stand Out to Employers | Kolab AI',
+    title: 'Professional Cover Letter Templates - Stand Out to Employers | Rezum AI',
     description: 'Create impressive cover letters with our collection of professional templates. AI-powered writing assistance and industry-specific designs.',
     url: 'https://yourdomain.com/cover-letter-templates',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/cover-letter-templates-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Professional Cover Letter Templates by Kolab AI',
+        alt: 'Professional Cover Letter Templates by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cover Letter Templates - Kolab AI',
+    title: 'Cover Letter Templates - Rezum AI',
     description: 'Professional cover letter templates with AI writing assistance. Create compelling letters that get results.',
     images: ['/images/cover-letter-templates-og.jpg'],
     creator: '@kolabai',
@@ -81,7 +81,7 @@ export default function CoverLetterTemplatesLayout({
             },
             provider: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
             },
             mainEntity: {

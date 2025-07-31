@@ -2,7 +2,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'AI Cover Letter Builder - Generate Professional Cover Letters | Kolab AI',
+  title: 'AI Cover Letter Builder - Generate Professional Cover Letters | Rezum AI',
   description: 'Create tailored cover letters in seconds with our AI-powered builder. Generate professional cover letters based on your resume and job descriptions. 255+ templates included.',
   keywords: [
     'AI cover letter builder',
@@ -14,22 +14,22 @@ export const metadata: Metadata = {
     'cover letter examples',
     'automated cover letter',
     'resume cover letter',
-    'kolab ai cover letter'
+    'rezum ai cover letter'
   ],
-  authors: [{ name: 'Kolab AI' }],
-  creator: 'Kolab AI',
-  publisher: 'Kolab AI',
+  authors: [{ name: 'Rezum AI' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
   openGraph: {
-    title: 'AI Cover Letter Builder - Create Professional Cover Letters | Kolab AI',
+    title: 'AI Cover Letter Builder - Create Professional Cover Letters | Rezum AI',
     description: 'Generate tailored cover letters in seconds. AI-powered builder with 255+ templates and examples.',
     url: 'https://yourdomain.com/ai-cover-letter-builder',
-    siteName: 'Kolab AI',
+    siteName: 'Rezum AI',
     images: [
       {
         url: '/images/ai-cover-letter-builder-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'AI Cover Letter Builder by Kolab AI',
+        alt: 'AI Cover Letter Builder by Rezum AI',
       },
     ],
     locale: 'en_US',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Cover Letter Builder - Kolab AI',
+    title: 'AI Cover Letter Builder - Rezum AI',
     description: 'Create professional cover letters in seconds with AI. Based on your resume and job descriptions.',
     images: ['/images/ai-cover-letter-builder-og.jpg'],
     creator: '@kolabai',
@@ -72,7 +72,7 @@ export default function AICoverLetterBuilderLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
-            name: 'Kolab AI Cover Letter Builder',
+            name: 'Rezum AI Cover Letter Builder',
             description: 'AI-powered cover letter builder that creates professional, tailored cover letters based on your resume and job descriptions',
             url: 'https://yourdomain.com/ai-cover-letter-builder',
             applicationCategory: 'BusinessApplication',
@@ -95,7 +95,7 @@ export default function AICoverLetterBuilderLayout({
             ],
             author: {
               '@type': 'Organization',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
               url: 'https://yourdomain.com',
             },
             aggregateRating: {
@@ -160,7 +160,7 @@ export default function AICoverLetterBuilderLayout({
                 name: 'What Are AI Credits?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Kolab AI Writer is powered by advanced AI technology. AI credits are used to generate high-quality cover letter content tailored to your specific needs.',
+                  text: 'Rezum AI Writer is powered by advanced AI technology. AI credits are used to generate high-quality cover letter content tailored to your specific needs.',
                 },
               },
               {
@@ -168,7 +168,7 @@ export default function AICoverLetterBuilderLayout({
                 name: 'How Does Our AI Work?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Kolab uses advanced neural networks trained on successful cover letters and best practices. We\'ve integrated this AI to transfer expert-quality cover letter writing at almost no cost.',
+                  text: 'Rezum uses advanced neural networks trained on successful cover letters and best practices. We\'ve integrated this AI to transfer expert-quality cover letter writing at almost no cost.',
                 },
               },
               {
@@ -176,7 +176,7 @@ export default function AICoverLetterBuilderLayout({
                 name: 'How Do I Get AI Credits?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'You can get credits by subscribing to Kolab Pro or purchasing AI Credits directly. Pro subscribers get monthly credits included in their subscription.',
+                  text: 'You can get credits by subscribing to Rezum Pro or purchasing AI Credits directly. Pro subscribers get monthly credits included in their subscription.',
                 },
               },
             ],
@@ -195,7 +195,7 @@ export default function AICoverLetterBuilderLayout({
             description: 'Professional cover letter builder powered by AI',
             brand: {
               '@type': 'Brand',
-              name: 'Kolab AI',
+              name: 'Rezum AI',
             },
             offers: {
               '@type': 'AggregateOffer',
@@ -232,7 +232,7 @@ export default function AICoverLetterBuilderLayout({
                   '@type': 'Person',
                   name: 'Ashley Stahl',
                 },
-                reviewBody: 'Kolab AI is an awesome AI-based cover letter builder that includes templates to help you design a cover letter that is sure to check the boxes when it comes to applicant tracking systems.',
+                reviewBody: 'Rezum AI is an awesome AI-based cover letter builder that includes templates to help you design a cover letter that is sure to check the boxes when it comes to applicant tracking systems.',
               },
             ],
           }),

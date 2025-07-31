@@ -49,7 +49,7 @@ const Footer = () => {
             <h4 className="font-semibold text-slate-900">Resources</h4>
             <ul className="space-y-2 text-sm">
               <li><a href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</a></li>
-              <li><a href="/enterprise" className="hover:text-slate-900 transition-colors">Kolab Enterprise</a></li>
+              <li><a href="/enterprise" className="hover:text-slate-900 transition-colors">Rezum Enterprise</a></li>
               <li><a href="/linkedin-resume-builder" className="hover:text-slate-900 transition-colors">Linkedin Extension</a></li>
               <li><a href="/rezi-reviews" className="hover:text-slate-900 transition-colors">User Reviews</a></li>
               <li><a href="/rezi-docs" className="hover:text-slate-900 transition-colors">User Guides</a></li>
@@ -77,7 +77,7 @@ const Footer = () => {
             </div>
           </div>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <div className="text-sm text-slate-500">© 2025 Kolab</div>
+            <div className="text-sm text-slate-500">© 2025 Rezum</div>
             <a href="/legal" className="text-sm hover:text-slate-900 transition-colors">Terms & Privacy</a>
           </div>
         </div>
@@ -175,9 +175,9 @@ export default function LegalPage() {
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">4. Limitations</h3>
                 <p>
-                  In no event shall Kolab AI or its suppliers be liable for any damages (including, without limitation, 
+                  In no event shall Rezum AI or its suppliers be liable for any damages (including, without limitation, 
                   damages for loss of data or profit, or due to business interruption) arising out of the use or inability 
-                  to use the materials on our website, even if Kolab AI or our authorized representative has been notified orally 
+                  to use the materials on our website, even if Rezum AI or our authorized representative has been notified orally 
                   or in writing of the possibility of such damage. Because some jurisdictions do not allow limitations on 
                   implied warranties, or limitations of liability for consequential or incidental damages, these limitations 
                   may not apply to you.
@@ -215,7 +215,7 @@ export default function LegalPage() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">8. Governing Law</h3>
                 <p>
                   These Terms of Use and your use of this website are governed by and construed in accordance with 
-                  the laws of the jurisdiction in which Kolab AI operates, without regard to its conflict of law provisions.
+                  the laws of the jurisdiction in which Rezum AI operates, without regard to its conflict of law provisions.
                 </p>
               </div>
             </div>
@@ -232,7 +232,7 @@ export default function LegalPage() {
             <div className="prose prose-lg max-w-none text-gray-700 space-y-8">
               <div>
                 <p className="text-lg">
-                  Your privacy is important to us. This Privacy Policy explains how Kolab AI collects, uses, and protects 
+                  Your privacy is important to us. This Privacy Policy explains how Rezum AI collects, uses, and protects 
                   your information when you use our services. We are committed to the following principles:
                 </p>
                 <div className="bg-blue-50 border-l-4 border-blue-500 pl-4 py-4 mt-4 space-y-2">
@@ -246,7 +246,7 @@ export default function LegalPage() {
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Who We Are and What This Policy Covers</h3>
                 <p>
-                  This Privacy Policy applies to information that Kolab AI collects about you when you use our website, 
+                  This Privacy Policy applies to information that Rezum AI collects about you when you use our website, 
                   mobile applications, and related services (collectively, our &quot;Services&quot;).
                 </p>
               </div>
@@ -426,8 +426,8 @@ export default function LegalPage() {
                   If you have any questions about this Privacy Policy or our privacy practices, please contact us at:
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg mt-4">
-                  <p className="font-medium">Email: privacy@kolab.ai</p>
-                  <p className="font-medium">Company: Kolab AI</p>
+                  <p className="font-medium">Email: privacy@rezum.ai</p>
+                  <p className="font-medium">Company: Rezum AI</p>
                 </div>
               </div>
             </div>

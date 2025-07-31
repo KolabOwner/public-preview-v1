@@ -50,7 +50,7 @@ const Footer = () => {
             <h4 className="font-semibold text-slate-900">Resources</h4>
             <ul className="space-y-2 text-sm">
               <li><a href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</a></li>
-              <li><a href="/enterprise" className="hover:text-slate-900 transition-colors">Kolab Enterprise</a></li>
+              <li><a href="/enterprise" className="hover:text-slate-900 transition-colors">Rezum Enterprise</a></li>
               <li><a href="/linkedin-resume-builder" className="hover:text-slate-900 transition-colors">Linkedin Extension</a></li>
               <li><a href="/rezi-reviews" className="hover:text-slate-900 transition-colors">User Reviews</a></li>
               <li><a href="/rezi-docs" className="hover:text-slate-900 transition-colors">User Guides</a></li>
@@ -78,7 +78,7 @@ const Footer = () => {
             </div>
           </div>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <div className="text-sm text-slate-500">© 2025 Kolab</div>
+            <div className="text-sm text-slate-500">© 2025 Rezum</div>
             <a href="/legal" className="text-sm hover:text-slate-900 transition-colors">Terms & Privacy</a>
           </div>
         </div>

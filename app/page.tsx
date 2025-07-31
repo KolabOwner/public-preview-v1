@@ -35,20 +35,20 @@ import Footer from "@/components/marketing/Footer";
 
 // SEO Metadata for the landing page
 export const metadata: Metadata = {
-  title: 'Professional AI Resume Builder - Build ATS-Optimized Resumes | Kolab',
+  title: 'Professional AI Resume Builder - Build ATS-Optimized Resumes | Rezum',
   description: 'Create professional, ATS-optimized resumes with our AI-powered resume builder. Expert-designed templates, keyword optimization, and career guidance.',
   keywords: ['AI resume builder', 'ATS resume', 'professional resume', 'resume templates', 'career development'],
   openGraph: {
     title: 'Professional AI Resume Builder - Build ATS-Optimized Resumes',
     description: 'Create professional, ATS-optimized resumes with our AI-powered resume builder.',
     type: 'website',
-    url: 'https://kolab.ai',
+    url: 'https://rezum.ai',
     images: [
       {
-        url: 'https://kolab.ai/og-image.jpg',
+        url: 'https://rezum.ai/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Kolab AI Resume Builder',
+        alt: 'Rezum AI Resume Builder',
       },
     ],
   },
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Professional AI Resume Builder - Build ATS-Optimized Resumes',
     description: 'Create professional, ATS-optimized resumes with our AI-powered resume builder.',
-    images: ['https://kolab.ai/og-image.jpg'],
+    images: ['https://rezum.ai/og-image.jpg'],
   },
 };
 
@@ -115,9 +115,9 @@ export default function LandingPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "Kolab AI Resume Builder",
+            "name": "Rezum AI Resume Builder",
             "description": "Professional AI-powered resume builder with ATS optimization",
-            "url": "https://kolab.ai",
+            "url": "https://rezum.ai",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "Web",
             "offers": {
@@ -135,15 +135,15 @@ export default function LandingPage() {
             },
             "author": {
               "@type": "Organization",
-              "name": "Kolab",
-              "url": "https://kolab.ai"
+              "name": "Rezum",
+              "url": "https://rezum.ai"
             },
             "publisher": {
               "@type": "Organization",
-              "name": "Kolab",
+              "name": "Rezum",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://kolab.ai/logo.png"
+                "url": "https://rezum.ai/logo.png"
               }
             }
           })
