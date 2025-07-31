@@ -128,7 +128,7 @@ const ContactPage = () => {
               Contact Us
             </h1>
             <p className="text-lg text-corporate-navy-600">
-              Send us a message and we'll respond within 24 hours
+              Send us a message and we&apos;ll respond within 24 hours
             </p>
           </motion.div>
         </div>
@@ -158,7 +158,7 @@ const ContactPage = () => {
                     Message Sent Successfully!
                   </h3>
                   <p className="text-corporate-navy-600 mb-8">
-                    Thank you for contacting us. We've received your message and will respond within 24 hours.
+                    Thank you for contacting us. We&apos;ve received your message and will respond within 24 hours.
                   </p>
                   <button
                     onClick={() => setSubmissionState({ isSubmitting: false, isSuccess: false, error: null })}

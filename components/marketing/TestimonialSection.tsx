@@ -150,7 +150,7 @@ const TestimonialSection = () => {
             {/* Quote */}
             <div className="mb-6">
               <h3 className="text-lg lg:text-xl font-semibold text-gray-900 leading-relaxed">
-                &quot;After months of sending out resumes with zero response, I was getting desperate. Rezum's ATS optimization and modern templates completely changed my results. I went from 0 callbacks to 3 interviews in my first week. Worth every penny.&quot;
+                &quot;After months of sending out resumes with zero response, I was getting desperate. Rezum&apos;s ATS optimization and modern templates completely changed my results. I went from 0 callbacks to 3 interviews in my first week. Worth every penny.&quot;
               </h3>
             </div>
             
