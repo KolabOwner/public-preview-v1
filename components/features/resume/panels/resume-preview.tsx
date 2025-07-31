@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { AlertCircle } from "lucide-react";
 import { useToast } from "@/lib/client/hooks/ui/use-toast";
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { useJobInfo } from '@/contexts/job-info-context';
 
 import JobInfoPanel from "@/components/features/resume/panels/job-info-panel";

@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { useJobInfo } from '@/contexts/job-info-context';
 import { JobInfoProvider } from '@/contexts/job-info-context';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';

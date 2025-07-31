@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
 import DashboardNav from '@/components/shared/dashboard-nav';

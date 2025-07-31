@@ -9,7 +9,7 @@ import { Label } from '@/components/shared/label';
 import { Checkbox } from '@/components/shared/checkbox';
 import { toast } from '@/lib/client/hooks/ui/use-toast';
 import { Loader2, FileText, ChevronDown, Plus } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
 import FAQSection from "./faq-section";

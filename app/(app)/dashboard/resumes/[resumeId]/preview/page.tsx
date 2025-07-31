@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { JobInfoProvider } from '@/contexts/job-info-context';
 import ResumePreview from "@/components/features/resume/panels/resume-preview";
 

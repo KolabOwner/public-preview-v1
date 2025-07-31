@@ -13,7 +13,7 @@ import {
   FileText,
   LogOut
 } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { userService } from '@/lib/server/auth/user-service';
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';

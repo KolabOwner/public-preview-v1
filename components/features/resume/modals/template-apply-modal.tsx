@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
 import { useUserUsage } from '@/lib/client/hooks/auth/use-user-usage';

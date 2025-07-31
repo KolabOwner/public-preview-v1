@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { useTheme } from "@/components/shared/theme-provider";
 import { collection, getDocs, query, where, orderBy, doc, getDoc, DocumentData } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";

@@ -6,7 +6,7 @@ import { FileText, MoreVertical, Eye, Download, Copy, Trash2, ChevronRight, Chev
 import { deleteDoc, doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase-config';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import UpgradeModal from './modals/upgrade-modal';
 
 interface Resume {

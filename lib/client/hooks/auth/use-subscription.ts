@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebase-config';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 
 export type SubscriptionPlan = 'free' | 'pro' | 'enterprise';
 

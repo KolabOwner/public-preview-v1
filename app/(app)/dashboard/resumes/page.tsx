@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { useUserUsage } from '@/lib/client/hooks/auth/use-user-usage';
 import { JobInfoProvider } from '@/contexts/job-info-context';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';

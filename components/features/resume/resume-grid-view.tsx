@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { doc, deleteDoc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import UpgradeModal from './modals/upgrade-modal';
 import dynamic from 'next/dynamic';
 

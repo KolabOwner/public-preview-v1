@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/config/firebase-config';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 
 interface UserUsage {
   aiGenerations: number;

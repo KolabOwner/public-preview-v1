@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import UpgradeModal from '../resume/modals/upgrade-modal';
 import { useUserUsage } from '@/lib/client/hooks/auth/use-user-usage';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { STRIPE_PRICE_IDS } from '@/lib/stripe';
 import dynamic from 'next/dynamic';
 // Dynamic import with no SSR to fix serialization error

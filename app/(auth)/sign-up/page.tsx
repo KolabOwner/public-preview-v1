@@ -34,7 +34,7 @@ import {
   Shield,
   ArrowRight
 } from 'lucide-react';
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/firebase-auth-context";
 import { recaptchaEnterprise } from "@/lib/client/recaptcha-enterprise";
 import { PasswordStrengthIndicator } from "@/components/features/auth/password-strength-indicator";
 import { AccessibleFormField, LiveRegion, ScreenReaderOnly } from "@/components/features/auth/accessible-form-field";

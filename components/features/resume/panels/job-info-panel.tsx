@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Loader2 } from 'lucide-react';
 import { useJobInfo } from '@/contexts/job-info-context';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
 interface JobInfoPanelProps {
   resumeId?: string; // Add this prop

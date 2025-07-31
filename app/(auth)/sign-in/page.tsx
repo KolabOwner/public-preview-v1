@@ -32,9 +32,8 @@ import {
   Shield,
   ArrowRight
 } from 'lucide-react';
-import { onAuthStateChange } from "@/lib/client/api/auth-client";
 import { userService } from "@/lib/server/auth/user-service";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/firebase-auth-context";
 import { recaptchaEnterprise } from "@/lib/client/recaptcha-enterprise";
 
 
@@ -96,25 +95,9 @@ export default function LoginPage() {
 
       await login(email, password, rememberMe);
 
-      // Wait for auth state to update
-      const unsubscribe = onAuthStateChange(async (currentUser) => {
-        if (currentUser) {
-          unsubscribe();
-
-          // Update last login time
-          await userService.updateLastLogin(currentUser.uid);
-
-          // Create session cookie
-          const idToken = await currentUser.getIdToken();
-          if (idToken) {
-            await fetch('/api/auth/session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken }),
-            });
-          }
-        }
-      });
+      // Redirect to dashboard - auth context handles session management
+      const from = searchParams.get('from') || '/dashboard';
+      router.push(decodeURIComponent(from));
     } catch (err: any) {
       setLocalError(err.message || 'Login failed');
       setIsLoading(false);
@@ -138,26 +121,7 @@ export default function LoginPage() {
           break;
       }
 
-      // Wait for auth state to update
-      const unsubscribe = onAuthStateChange(async (currentUser) => {
-        if (currentUser) {
-          unsubscribe();
-
-          // Create user document if it doesn't exist (for first-time social login)
-          // or update last login time
-          await userService.createUserDocument(currentUser);
-
-          // Create session cookie
-          const idToken = await currentUser.getIdToken();
-          if (idToken) {
-            await fetch('/api/auth/session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken }),
-            });
-          }
-        }
-      });
+      // Auth context handles user document creation and session management
     } catch (err: any) {
       setLocalError(err.message || `${provider} login failed`);
       setIsLoading(false);

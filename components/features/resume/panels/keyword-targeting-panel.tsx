@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { X, Lock, Circle, RefreshCw, Loader, Target, AlertCircle } from 'lucide-react';
 import { useJobInfo } from "@/contexts/job-info-context";
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { useUserUsage } from '@/lib/client/hooks/auth/use-user-usage';
 import JobUpdateModal from '../modals/job-update-modal';
 

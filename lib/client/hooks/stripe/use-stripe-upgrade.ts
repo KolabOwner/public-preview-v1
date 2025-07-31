@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { createCheckoutSession, redirectToCheckout, STRIPE_PRICE_IDS } from '@/lib/stripe';
 
 interface UseStripeUpgradeOptions {

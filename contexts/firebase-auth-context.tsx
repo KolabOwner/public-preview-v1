@@ -6,25 +6,62 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { User, AuthError } from 'firebase/auth';
-import {
-  onTokenChange,
-  loginWithEmail,
-  logout as firebaseLogout,
-  signInWithProvider,
-  googleProvider,
-  facebookProvider,
-  githubProvider,
-  resetPassword as firebaseResetPassword,
-  sendSignInLink,
-  completeSignInWithEmailLink,
-  updateUserProfile,
-  updateUserEmail,
-  changePassword as firebaseChangePassword,
-  deleteAccount as firebaseDeleteAccount,
-  setPersistenceLevel,
-  getAuthErrorMessage,
-} from '@/lib/client/api/auth-client';
+import { 
+  User, 
+  AuthError,
+  onIdTokenChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  signInWithPopup,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  GithubAuthProvider,
+  sendPasswordResetEmail,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+  updateProfile,
+  updateEmail,
+  updatePassword,
+  deleteUser,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  ActionCodeSettings
+} from 'firebase/auth';
+import { auth } from '@/config/firebase-config';
+
+// Auth Providers
+const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
+const githubProvider = new GithubAuthProvider();
+
+// Configure providers
+googleProvider.addScope('profile');
+googleProvider.addScope('email');
+
+// Auth Error codes
+const AUTH_ERROR_CODES = {
+  'auth/invalid-email': 'Invalid email address format.',
+  'auth/user-disabled': 'This account has been disabled.',
+  'auth/user-not-found': 'No account found with this email.',
+  'auth/wrong-password': 'Incorrect password.',
+  'auth/email-already-in-use': 'An account already exists with this email.',
+  'auth/weak-password': 'Password should be at least 6 characters.',
+  'auth/operation-not-allowed': 'This sign-in method is not enabled.',
+  'auth/popup-closed-by-user': 'Sign-in popup was closed before completion.',
+  'auth/account-exists-with-different-credential': 'An account already exists with the same email but different sign-in credentials.',
+  'auth/network-request-failed': 'Network error. Please check your connection.',
+  'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
+  'auth/requires-recent-login': 'Please sign in again to complete this action.'
+} as const;
+
+// Helper to get friendly error messages
+function getAuthErrorMessage(error: AuthError): string {
+  return AUTH_ERROR_CODES[error.code as keyof typeof AUTH_ERROR_CODES] || error.message;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -157,7 +194,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     let mounted = true;
     let tokenRefreshInterval: NodeJS.Timeout | null = null;
 
-    const unsubscribe = onTokenChange(async (user) => {
+    const unsubscribe = onIdTokenChanged(auth, async (user) => {
       if (!mounted) return;
 
       setUser(user);
@@ -221,12 +258,9 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const login = async (email: string, password: string, remember = true) => {
     try {
       setError(null);
-      if (remember) {
-        await setPersistenceLevel('local');
-      } else {
-        await setPersistenceLevel('session');
-      }
-      await loginWithEmail(email, password);
+      const persistence = remember ? browserLocalPersistence : browserSessionPersistence;
+      await setPersistence(auth, persistence);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -260,7 +294,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const logout = async () => {
     try {
       setError(null);
-      await firebaseLogout();
+      await signOut(auth);
       // Clear processed users on logout
       processedUsers.current.clear();
       lastProcessedUid.current = null;
@@ -276,8 +310,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const signInWithGoogle = async () => {
     try {
       setError(null);
-      await signInWithProvider(googleProvider);
-      // User document creation is handled in the auth state listener
+      await signInWithPopup(auth, googleProvider);
       // User document creation is handled in the auth state listener
     } catch (err) {
       const authError = err as AuthError;
@@ -289,8 +322,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const signInWithFacebook = async () => {
     try {
       setError(null);
-      await signInWithProvider(facebookProvider);
-      // User document creation is handled in the auth state listener
+      await signInWithPopup(auth, facebookProvider);
       // User document creation is handled in the auth state listener
     } catch (err) {
       const authError = err as AuthError;
@@ -302,8 +334,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const signInWithGithub = async () => {
     try {
       setError(null);
-      await signInWithProvider(githubProvider);
-      // User document creation is handled in the auth state listener
+      await signInWithPopup(auth, githubProvider);
       // User document creation is handled in the auth state listener
     } catch (err) {
       const authError = err as AuthError;
@@ -315,7 +346,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const resetPassword = async (email: string) => {
     try {
       setError(null);
-      await firebaseResetPassword(email);
+      await sendPasswordResetEmail(auth, email);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -326,7 +357,15 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const changePassword = async (currentPassword: string, newPassword: string) => {
     try {
       setError(null);
-      await firebaseChangePassword(currentPassword, newPassword);
+      const user = auth.currentUser;
+      if (!user || !user.email) throw new Error('No authenticated user');
+
+      // Re-authenticate user
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // Update password
+      await updatePassword(user, newPassword);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -338,11 +377,15 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const sendSignInLinkToEmail = async (email: string) => {
     try {
       setError(null);
-      const actionCodeSettings = {
+      const actionCodeSettings: ActionCodeSettings = {
         url: `${window.location.origin}/auth/email-link-complete`,
         handleCodeInApp: true,
       };
-      await sendSignInLink(email, actionCodeSettings);
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      // Save email locally to complete sign-in on same device
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('emailForSignIn', email);
+      }
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -353,7 +396,18 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const completeSignInWithLink = async (email: string, link: string) => {
     try {
       setError(null);
-      await completeSignInWithEmailLink(email, link);
+      // Confirm the link is a sign-in with email link
+      if (!isSignInWithEmailLink(auth, link)) {
+        throw new Error('Invalid sign-in link');
+      }
+
+      await signInWithEmailLink(auth, email, link);
+
+      // Clear email from storage
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('emailForSignIn');
+      }
+
       router.push('/dashboard');
     } catch (err) {
       const authError = err as AuthError;
@@ -363,10 +417,13 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   };
 
   // Profile management
-  const updateProfile = async (data: { displayName?: string; photoURL?: string }) => {
+  const updateUserProfile = async (data: { displayName?: string; photoURL?: string }) => {
     try {
       setError(null);
-      await updateUserProfile(data);
+      const user = auth.currentUser;
+      if (!user) throw new Error('No authenticated user');
+
+      await updateProfile(user, data);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -374,10 +431,18 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  const updateEmail = async (newEmail: string, password: string) => {
+  const updateUserEmail = async (newEmail: string, password: string) => {
     try {
       setError(null);
-      await updateUserEmail(newEmail, password);
+      const user = auth.currentUser;
+      if (!user || !user.email) throw new Error('No authenticated user');
+
+      // Re-authenticate user
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+
+      // Update email
+      await updateEmail(user, newEmail);
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -388,7 +453,15 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const deleteAccount = async (password: string) => {
     try {
       setError(null);
-      await firebaseDeleteAccount(password);
+      const user = auth.currentUser;
+      if (!user || !user.email) throw new Error('No authenticated user');
+
+      // Re-authenticate user
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+
+      // Delete user
+      await deleteUser(user);
       router.push('/');
     } catch (err) {
       const authError = err as AuthError;
@@ -400,8 +473,9 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   // Token management
   const getIdToken = async (forceRefresh = false): Promise<string | null> => {
     try {
-      if (!user) return null;
-      return await user.getIdToken(forceRefresh);
+      const currentUser = auth.currentUser;
+      if (!currentUser) return null;
+      return await currentUser.getIdToken(forceRefresh);
     } catch (err) {
       console.error('Error getting ID token:', err);
       return null;
@@ -411,8 +485,9 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   // Get custom claims
   const getClaims = async () => {
     try {
-      if (!user) return {};
-      const tokenResult = await user.getIdTokenResult();
+      const currentUser = auth.currentUser;
+      if (!currentUser) return {};
+      const tokenResult = await currentUser.getIdTokenResult();
       return tokenResult?.claims || {};
     } catch (err) {
       console.error('Error getting claims:', err);
@@ -434,8 +509,8 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     changePassword,
     sendSignInLink: sendSignInLinkToEmail,
     completeSignInWithLink,
-    updateProfile,
-    updateEmail,
+    updateProfile: updateUserProfile,
+    updateEmail: updateUserEmail,
     deleteAccount,
     getIdToken,
     getClaims,

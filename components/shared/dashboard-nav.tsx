@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { useTheme } from '@/components/shared/theme-provider';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase-config';
