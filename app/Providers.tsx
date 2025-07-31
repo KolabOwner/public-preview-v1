@@ -12,6 +12,7 @@ import { QueryProvider } from "@/lib/client/providers/query-provider";
 
 function ProvidersWithAuth({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth();
+  
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">

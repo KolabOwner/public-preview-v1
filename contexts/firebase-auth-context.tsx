@@ -1,10 +1,10 @@
 // ==========================================
-// 2. Fixed contexts/auth-context.tsx
+// Fixed contexts/auth-context.tsx - Bulletproof deduplication
 // ==========================================
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { User, AuthError } from 'firebase/auth';
 import {
@@ -56,63 +56,158 @@ interface AuthContextType {
   clearError: () => void;
 }
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-  // Authentication methods
-  login: (email: string, password: string, remember?: boolean) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  // Social login
-  signInWithGoogle: () => Promise<void>;
-  signInWithFacebook: () => Promise<void>;
-  signInWithGithub: () => Promise<void>;
-  // Password management
-  resetPassword: (email: string) => Promise<void>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
-  // Email link authentication
-  sendSignInLink: (email: string) => Promise<void>;
-  completeSignInWithLink: (email: string, link: string) => Promise<void>;
-  // Profile management
-  updateProfile: (data: { displayName?: string; photoURL?: string }) => Promise<void>;
-  updateEmail: (newEmail: string, password: string) => Promise<void>;
-  // Account management
-  deleteAccount: (password: string) => Promise<void>;
-  // Token management
-  getIdToken: (forceRefresh?: boolean) => Promise<string | null>;
-  getClaims: () => Promise<any>;
-  // Utility
-  clearError: () => void;
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Global tracking to prevent duplicate API calls across all component instances
+// This is outside the component to ensure true singleton behavior
+const globalUserDocumentPromises = new Map<string, Promise<void>>();
+const globalUserDocumentCompleted = new Set<string>();
+const globalProcessingUsers = new Set<string>();
 
 export function FirebaseAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Track if this specific component instance has already processed a user
+  const processedUsers = useRef<Set<string>>(new Set());
+  const lastProcessedUid = useRef<string | null>(null);
+
   const router = useRouter();
   const pathname = usePathname();
 
+  // Helper function to ensure user document exists after social login
+  const ensureUserDocument = async (user: User) => {
+    // Immediate synchronous check to prevent race conditions
+    if (globalProcessingUsers.has(user.uid)) {
+      console.log('User document creation already being processed for:', user.uid);
+      return globalUserDocumentPromises.get(user.uid);
+    }
+
+    // Check if we've already completed the document creation for this user
+    if (globalUserDocumentCompleted.has(user.uid)) {
+      console.log('User document already ensured for:', user.uid);
+      return;
+    }
+
+    // Check if there's already a pending promise for this user
+    const existingPromise = globalUserDocumentPromises.get(user.uid);
+    if (existingPromise) {
+      console.log('Returning existing promise for:', user.uid);
+      return existingPromise;
+    }
+
+    // Mark as processing immediately to prevent race conditions
+    globalProcessingUsers.add(user.uid);
+
+    // Create a new promise for this user
+    const documentPromise = (async () => {
+      try {
+        console.log('Creating user document for:', user.uid);
+
+        // Add a small delay to debounce rapid calls
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Double-check after the delay
+        if (globalUserDocumentCompleted.has(user.uid)) {
+          console.log('User document was created by another call during delay');
+          return;
+        }
+
+        const idToken = await user.getIdToken();
+        console.log('Got ID token, calling API...');
+
+        const response = await fetch('/api/auth/create-user-document', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${idToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+        console.log('API response:', { status: response.status, data });
+
+        if (!response.ok) {
+          console.error('Failed to create user document:', data.error);
+          // Don't throw error here to avoid disrupting the login flow
+        } else {
+          console.log('User document created successfully');
+          // Mark this user as having their document created
+          globalUserDocumentCompleted.add(user.uid);
+        }
+      } catch (error) {
+        console.error('Error ensuring user document:', error);
+        // Don't throw error here to avoid disrupting the login flow
+      } finally {
+        // Clean up the promise and processing flag
+        globalUserDocumentPromises.delete(user.uid);
+        globalProcessingUsers.delete(user.uid);
+      }
+    })();
+
+    // Store the promise to prevent duplicate calls
+    globalUserDocumentPromises.set(user.uid, documentPromise);
+
+    return documentPromise;
+  };
+
   // Initialize auth listener
   useEffect(() => {
-    const unsubscribe = onTokenChange((user) => {
+    let mounted = true;
+    let tokenRefreshInterval: NodeJS.Timeout | null = null;
+
+    const unsubscribe = onTokenChange(async (user) => {
+      if (!mounted) return;
+
       setUser(user);
       setLoading(false);
 
-      // Set up token refresh
-      if (user) {
-        // Force token refresh every 55 minutes (tokens expire after 1 hour)
-        const interval = setInterval(() => {
-          user.getIdToken(true).catch(console.error);
-        }, 55 * 60 * 1000);
+      // Clear interval if user logs out
+      if (!user && tokenRefreshInterval) {
+        clearInterval(tokenRefreshInterval);
+        tokenRefreshInterval = null;
+        lastProcessedUid.current = null;
+        return;
+      }
 
-        return () => clearInterval(interval);
+      // Set up token refresh and ensure user document exists
+      if (user) {
+        // Only process if this is a different user or we haven't processed this user yet
+        if (user.uid !== lastProcessedUid.current && !processedUsers.current.has(user.uid)) {
+          console.log('Processing new user:', user.uid);
+          lastProcessedUid.current = user.uid;
+          processedUsers.current.add(user.uid);
+
+          // Ensure user document is created (for social logins or any missing documents)
+          try {
+            await ensureUserDocument(user);
+          } catch (error) {
+            console.warn('Failed to ensure user document in auth listener:', error);
+          }
+        } else {
+          console.log('Skipping user document creation - already processed:', user.uid);
+        }
+
+        // Set up token refresh if not already set
+        if (!tokenRefreshInterval) {
+          // Force token refresh every 55 minutes (tokens expire after 1 hour)
+          tokenRefreshInterval = setInterval(() => {
+            if (user) {
+              user.getIdToken(true).catch(console.error);
+            }
+          }, 55 * 60 * 1000);
+        }
       }
     });
 
-    return unsubscribe;
+    return () => {
+      mounted = false;
+      if (tokenRefreshInterval) {
+        clearInterval(tokenRefreshInterval);
+      }
+      unsubscribe();
+    };
   }, []);
 
   // Clear error after 5 seconds
@@ -162,33 +257,13 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  // Helper function to ensure user document exists after social login
-  const ensureUserDocument = async (user: User) => {
-    try {
-      const idToken = await user.getIdToken();
-      const response = await fetch('/api/auth/create-user-document', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        console.warn('Failed to create user document:', data.error);
-        // Don't throw error here to avoid disrupting the login flow
-      }
-    } catch (error) {
-      console.warn('Error ensuring user document:', error);
-      // Don't throw error here to avoid disrupting the login flow
-    }
-  };
-
   const logout = async () => {
     try {
       setError(null);
       await firebaseLogout();
+      // Clear processed users on logout
+      processedUsers.current.clear();
+      lastProcessedUid.current = null;
       router.push('/sign-in');
     } catch (err) {
       const authError = err as AuthError;
@@ -197,13 +272,13 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
+
   const signInWithGoogle = async () => {
     try {
       setError(null);
-      const result = await signInWithProvider(googleProvider);
-      
-      // Ensure user document is created after successful social login
-      await ensureUserDocument(result.user);
+      await signInWithProvider(googleProvider);
+      // User document creation is handled in the auth state listener
+      // User document creation is handled in the auth state listener
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -214,10 +289,9 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const signInWithFacebook = async () => {
     try {
       setError(null);
-      const result = await signInWithProvider(facebookProvider);
-      
-      // Ensure user document is created after successful social login
-      await ensureUserDocument(result.user);
+      await signInWithProvider(facebookProvider);
+      // User document creation is handled in the auth state listener
+      // User document creation is handled in the auth state listener
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));
@@ -228,10 +302,9 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const signInWithGithub = async () => {
     try {
       setError(null);
-      const result = await signInWithProvider(githubProvider);
-      
-      // Ensure user document is created after successful social login
-      await ensureUserDocument(result.user);
+      await signInWithProvider(githubProvider);
+      // User document creation is handled in the auth state listener
+      // User document creation is handled in the auth state listener
     } catch (err) {
       const authError = err as AuthError;
       setError(getAuthErrorMessage(authError));

@@ -305,33 +305,36 @@ const TestimonialSection = () => {
       </div>
 
       {/* Schema Markup */}
-      <script type="application/ld+json">
-        {JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          "name": "Rezum AI Resume Builder",
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "5",
-            "reviewCount": testimonials.length,
-            "bestRating": "5"
-          },
-          "review": testimonials.map(testimonial => ({
-            "@type": "Review",
-            "author": {
-              "@type": "Person",
-              "name": testimonial.name,
-              "jobTitle": testimonial.role,
-              "worksFor": testimonial.company
+      <script 
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Rezum AI Resume Builder",
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "5",
+              "reviewCount": testimonials.length,
+              "bestRating": "5"
             },
-            "reviewRating": {
-              "@type": "Rating",
-              "ratingValue": testimonial.rating.toString()
-            },
-            "reviewBody": testimonial.quote
-          }))
-        })}
-      </script>
+            "review": testimonials.map(testimonial => ({
+              "@type": "Review",
+              "author": {
+                "@type": "Person",
+                "name": testimonial.name,
+                "jobTitle": testimonial.role,
+                "worksFor": testimonial.company
+              },
+              "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": testimonial.rating.toString()
+              },
+              "reviewBody": testimonial.quote
+            }))
+          })
+        }}
+      />
     </section>
   );
 };

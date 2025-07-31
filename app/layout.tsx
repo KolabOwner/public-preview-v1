@@ -40,6 +40,11 @@ const merriweather = Merriweather({
 export const metadata: Metadata = {
   title: 'Resume Analysis Service',
   description: 'Modern resume analysis and parsing service',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

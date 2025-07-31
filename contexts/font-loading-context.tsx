@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 
 interface FontLoadingState {
   fontsLoaded: boolean;
@@ -14,14 +14,6 @@ interface FontLoadingContextValue extends FontLoadingState {
 }
 
 const FontLoadingContext = createContext<FontLoadingContextValue | null>(null);
-
-export function useFontLoading() {
-  const context = useContext(FontLoadingContext);
-  if (!context) {
-    throw new Error('useFontLoading must be used within FontLoadingProvider');
-  }
-  return context;
-}
 
 interface FontLoadingProviderProps {
   children: React.ReactNode;
@@ -191,55 +183,5 @@ export function FontLoadingProvider({
     <FontLoadingContext.Provider value={value}>
       {children}
     </FontLoadingContext.Provider>
-  );
-}
-
-// Font loading indicator component
-export function FontLoadingIndicator() {
-  const { fontsLoaded, loadingProgress, error } = useFontLoading();
-
-  if (fontsLoaded && !error) return null;
-
-  return (
-    <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 z-50">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 relative">
-          <svg
-            className="w-8 h-8 transform -rotate-90"
-            viewBox="0 0 32 32"
-          >
-            <circle
-              cx="16"
-              cy="16"
-              r="14"
-              stroke="currentColor"
-              strokeWidth="2"
-              fill="none"
-              className="text-gray-200 dark:text-gray-700"
-            />
-            <circle
-              cx="16"
-              cy="16"
-              r="14"
-              stroke="currentColor"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray={`${loadingProgress * 0.879} 87.9`}
-              className="text-blue-600 dark:text-blue-400 transition-all duration-300"
-            />
-          </svg>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            {error ? 'Font loading error' : 'Loading fonts...'}
-          </p>
-          {!error && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {loadingProgress}% complete
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
   );
 }

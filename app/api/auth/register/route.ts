@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         emailVerified: false, // Firebase Admin SDK does not send a verification email by default
       });
 
-      // Create user document in Firestore with complete profile
+      // Create a user document in Firestore with complete profile
       await createUserDocumentServer(userRecord);
 
       return NextResponse.json({ success: true, uid: userRecord.uid });
