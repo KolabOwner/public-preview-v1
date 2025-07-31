@@ -30,28 +30,28 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     id: "1",
-    name: "Jordan Blake",
+    name: "Aiden Lopez",
     role: "Account Executive",
-    company: "Summit Digital",
+    company: "Nexus Marketing Group",
     quote: "I was laid off after 6 years and had to dust off my ancient resume. Rezum's suggestions helped me highlight achievements I'd forgotten about. The new format made me feel confident applying again.",
     rating: 5,
     image: "/images/avatars/jordan-blake.jpg"
   },
   {
-    id: "2", 
-    name: "Marcus Rodriguez",
-    role: "Software Developer",
-    company: "Brightline Media",
-    quote: "As a recent bootcamp grad, I had no idea how to present my projects professionally. Rezum helped me showcase my skills in a way that actually got recruiters' attention. Took me 3 months to land my first dev job.",
+    id: "2",
+    name: "Evan Strother",
+    role: "Customer Success Specialist",
+    company: "Mailchimp",
+    quote: "As a recent college grad, I had no idea how to make my internships and part-time jobs sound impressive. Rezum helped me turn my restaurant experience into customer service skills that employers actually valued. Landed my first office job within 6 weeks.",
     rating: 5,
     image: "/images/avatars/marcus-rodriguez.jpg"
   },
   {
     id: "3",
-    name: "Emily Park", 
-    role: "Operations Manager",
-    company: "Wellness First",
-    quote: "I'd been using the same resume format for 8 years and wasn't getting anywhere. The modern templates and content suggestions helped me stand out. Finally got promoted to the management role I wanted.",
+    name: "Emily Parker",
+    role: "Marketing Coordinator",
+    company: "Thrive Collective",
+    quote: "I'd been stuck in entry-level roles for 4 years and my resume wasn't showing my growth. Rezum helped me articulate the campaigns I'd managed and the results I'd driven. Within 2 months, I landed a senior coordinator position with a 20% salary bump.",
     rating: 5,
     image: "/images/avatars/emily-park.jpg"
   }
@@ -161,8 +161,8 @@ const TestimonialSection = () => {
                   <span className="text-corporate-gold-700 font-bold text-sm">AJ</span>
                 </div>
                 <div>
-                  <div className="text-base font-semibold text-gray-900">Alex Johnson</div>
-                  <div className="text-sm text-gray-600">Project Manager</div>
+                  <div className="text-base font-semibold text-gray-900">Samuel Polkenhorn</div>
+                  <div className="text-sm text-gray-600">Marketing Assistant</div>
                 </div>
               </div>
               
