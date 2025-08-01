@@ -16,7 +16,7 @@ export interface Sample {
 }
 
 // Categories for UI display
-type Category = Industry | 'student' | 'medical';
+type Category = Industry;
 
 // Map categories to industries (some categories map to existing industries)
 const categoryToIndustryMap: Record<Category, Industry> = {
@@ -25,19 +25,12 @@ const categoryToIndustryMap: Record<Category, Industry> = {
   engineering: 'engineering',
   marketing: 'marketing',
   design: 'design',
-  student: 'education', // Map student to education industry
-  medical: 'healthcare', // Map medical to medical industry
+  student: 'student',
+  medical: 'medical',
   finance: 'finance',
   education: 'education',
   legal: 'legal',
   other: 'other',
-  technology: 'technology',
-  healthcare: 'healthcare',
-  creative: 'creative',
-  hospitality: 'hospitality',
-  retail: 'retail',
-  manufacturing: 'manufacturing',
-  nonprofit: 'nonprofit',
   government: 'government',
 };
 
