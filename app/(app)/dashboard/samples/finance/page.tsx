@@ -1,7 +1,7 @@
-import SamplesPage from '../page';
+import { redirect } from 'next/navigation';
 
 // This page exists for SEO purposes - the layout.tsx contains all the metadata
-// We render the samples page directly with the finance category pre-selected
+// Redirect to main samples page with category parameter
 export default function FinanceSamplesPage() {
-  return <SamplesPage defaultCategory="finance" />;
+  redirect('/dashboard/samples?category=finance');
 }

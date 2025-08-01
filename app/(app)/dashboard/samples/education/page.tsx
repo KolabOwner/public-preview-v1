@@ -1,7 +1,7 @@
-import SamplesPage from '../page';
+import { redirect } from 'next/navigation';
 
 // This page exists for SEO purposes - the layout.tsx contains all the metadata
-// We render the samples page directly with the education category pre-selected
+// Redirect to main samples page with category parameter
 export default function EducationSamplesPage() {
-  return <SamplesPage defaultCategory="education" />;
+  redirect('/dashboard/samples?category=education');
 }
