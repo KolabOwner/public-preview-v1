@@ -1,6 +1,6 @@
 // app/api/auth/claims/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuthToken } from '@/lib/firebase/middleware-helpers';
+import { verifyAuthToken } from "@/lib/server/auth/middleware";
 import { setCustomClaims } from '@/lib/server/auth/firebase-admin';
 
 // Set custom claims (admin only)

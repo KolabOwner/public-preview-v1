@@ -165,19 +165,22 @@ export default function MyReviewsTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5b7cfd]"></div>
+          <div className="absolute inset-0 rounded-full bg-[#5b7cfd]/20 blur-xl animate-pulse"></div>
+        </div>
       </div>
     );
   }
   if (reviews.length === 0) {
     return (
-      <div className="text-center py-12">
-        <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No reviews yet</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">You haven&apos;t submitted any resumes for review.</p>
+      <div className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-navy-700 p-12 text-center shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50">
+        <FileText className="w-20 h-20 text-slate-400 dark:text-slate-500 mx-auto mb-6" />
+        <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-3">No reviews yet</h3>
+        <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto">You haven&apos;t submitted any resumes for review yet.</p>
         <Button
           onClick={() => window.location.href = '/dashboard/review?tab=review-options'}
-          className="bg-blue-600 hover:bg-blue-500 text-white"
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-xl shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300"
         >
           Submit Your First Resume
         </Button>
@@ -185,13 +188,13 @@ export default function MyReviewsTab() {
     );
   }
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
           Review History ({reviews.length})
         </h2>
       </div>
-      <div className="grid gap-4">
+      <div className="grid gap-6">
         {reviews.map((review) => (
           <motion.div
             key={review.id}
@@ -199,51 +202,51 @@ export default function MyReviewsTab() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="border-gray-200 dark:border-gray-700">
+            <Card className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 rounded-2xl">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-blue-600" />
+                  <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                    <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     {review.resumeName}
                   </CardTitle>
                   {getStatusBadge(review.status)}
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <Calendar className="w-4 h-4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="flex items-center gap-3 text-base text-slate-600 dark:text-slate-400 font-medium">
+                    <Calendar className="w-5 h-5" />
                     Submitted: {formatDate(review.submittedDate)}
                   </div>
                   {review.completedDate && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <CheckCircle className="w-4 h-4" />
+                    <div className="flex items-center gap-3 text-base text-slate-600 dark:text-slate-400 font-medium">
+                      <CheckCircle className="w-5 h-5" />
                       Completed: {formatDate(review.completedDate)}
                     </div>
                   )}
                 </div>
                 {review.overallScore && (
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Overall Score: <span className="font-semibold text-blue-600">{review.overallScore}/10</span>
+                  <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-l-4 border-green-500">
+                    <p className="text-lg text-slate-700 dark:text-slate-300 font-medium">
+                      Overall Score: <span className="font-bold text-green-600 dark:text-green-400 text-xl">{review.overallScore}/10</span>
                     </p>
                   </div>
                 )}
                 {review.commentsCount !== undefined && (
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="mb-6">
+                    <p className="text-base text-slate-600 dark:text-slate-400 font-medium">
                       {review.commentsCount} review comments
                     </p>
                   </div>
                 )}
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   {review.status === 'COMPLETED' && (
                     <Button
                       size="sm"
                       onClick={() => handleDownloadReview(review.id)}
-                      className="bg-blue-600 hover:bg-blue-500 text-white"
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300"
                     >
-                      <Download className="w-4 h-4 mr-1" />
+                      <Download className="w-4 h-4 mr-2" />
                       Download
                     </Button>
                   )}
@@ -252,9 +255,9 @@ export default function MyReviewsTab() {
                       size="sm"
                       variant="outline"
                       onClick={() => handleViewReview(review.id)}
-                      className="border-gray-300 dark:border-gray-600"
+                      className="border-slate-300 dark:border-navy-600 bg-white/80 dark:bg-navy-800/80 backdrop-blur-sm hover:bg-slate-50 dark:hover:bg-navy-700 font-bold py-3 px-6 rounded-xl shadow-md transition-all duration-300"
                     >
-                      <Eye className="w-4 h-4 mr-1" />
+                      <Eye className="w-4 h-4 mr-2" />
                       View Review
                     </Button>
                   )}

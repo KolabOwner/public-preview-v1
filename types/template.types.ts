@@ -2,22 +2,16 @@
 
 export type Industry = 
   | 'business'
-  | 'marketing'
-  | 'technology'
-  | 'programming'
-  | 'healthcare'
-  | 'finance'
+  | 'design'
   | 'education'
   | 'engineering'
+  | 'finance'
   | 'legal'
-  | 'design'
-  | 'creative'
-  | 'hospitality'
-  | 'retail'
-  | 'manufacturing'
-  | 'nonprofit'
-  | 'government'
-  | 'other';
+  | 'marketing'
+  | 'medical'
+  | 'other'
+  | 'programming'
+  | 'student';
 
 export type ExperienceLevel = 'entry' | 'mid' | 'senior' | 'executive';
 

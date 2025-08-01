@@ -57,38 +57,38 @@ export default function FAQSection() {
 
   return (
     <div className="space-y-8">
-      <div className="text-center space-y-3">
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">
-          Frequently Asked Questions (FAQs)
+      <div className="text-center space-y-4">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-800 dark:text-slate-100">
+          Frequently Asked Questions
         </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+        <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
           Everything you need to know about our professional resume review service
         </p>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-navy-700 shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 overflow-hidden">
         {faqItems.map((item, index) => (
-          <div key={index} className={`${index !== faqItems.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''}`}>
+          <div key={index} className={`${index !== faqItems.length - 1 ? 'border-b border-slate-200 dark:border-navy-700' : ''}`}>
             <button
               onClick={() => toggleItem(index)}
-              className="w-full py-6 px-6 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
+              className="w-full py-6 px-8 flex items-center justify-between text-left hover:bg-slate-50/50 dark:hover:bg-navy-700/50 transition-all duration-300 group"
             >
-              <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 pr-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <span className="text-lg font-bold text-slate-800 dark:text-slate-100 pr-4 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                 {item.question}
               </span>
-              <div className={`flex-shrink-0 transition-transform duration-200 ${expandedItems.includes(index) ? 'rotate-180' : ''}`}>
-                <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+              <div className={`flex-shrink-0 transition-transform duration-300 ${expandedItems.includes(index) ? 'rotate-180' : ''}`}>
+                <ChevronDown className="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" />
               </div>
             </button>
 
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
               expandedItems.includes(index) 
                 ? 'max-h-96 opacity-100' 
                 : 'max-h-0 opacity-0'
             }`}>
-              <div className="px-6 pb-6">
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border-l-4 border-blue-500">
-                  <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+              <div className="px-8 pb-6">
+                <div className="bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/10 rounded-xl p-6 border-l-4 border-amber-500 shadow-lg">
+                  <p className="text-base text-slate-700 dark:text-slate-300 leading-relaxed">
                     {item.answer}
                   </p>
                 </div>
@@ -99,8 +99,8 @@ export default function FAQSection() {
       </div>
 
       <div className="text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Still have questions? <a href="/contact" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Contact our support team</a>
+        <p className="text-base text-slate-500 dark:text-slate-400">
+          Still have questions? <a href="/contact" className="text-amber-600 dark:text-amber-400 hover:text-amber-500 dark:hover:text-amber-300 hover:underline font-bold transition-colors">Contact our support team</a>
         </p>
       </div>
     </div>

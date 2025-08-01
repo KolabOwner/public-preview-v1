@@ -150,7 +150,7 @@ export default function JobSearchLayout({
                 '@type': 'ListItem',
                 position: 2,
                 name: 'Healthcare Jobs',
-                description: '32,000+ healthcare job opportunities',
+                description: '32,000+ medical job opportunities',
                 url: 'https://yourdomain.com/job-search?category=healthcare',
               },
               {

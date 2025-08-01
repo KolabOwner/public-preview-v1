@@ -131,7 +131,7 @@ export default function CoverLetterTemplatesLayout({
                   itemOffered: {
                     '@type': 'Service',
                     name: 'Healthcare Cover Letter Templates',
-                    description: 'Professional templates for healthcare professionals',
+                    description: 'Professional templates for medical professionals',
                   },
                 },
                 {

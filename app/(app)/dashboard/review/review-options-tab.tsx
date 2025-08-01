@@ -253,32 +253,32 @@ export default function ReviewOptionsTab() {
       <div className="w-full pb-10">
         <div className={`flex flex-col items-start justify-start gap-6 self-stretch p-0 ${selectedResume ? 'md:flex-row' : ''}`}>
           {/* Form Section */}
-          <div className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm ${
+          <div className={`bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-navy-700 p-8 shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 ${
             selectedResume 
               ? 'mx-auto w-full sm:mx-0 sm:w-full md:w-[23.5625rem] lg:w-[25rem] xl:w-[25rem] xl:max-w-[34rem] 2xl:w-[35rem]'
               : 'mx-auto max-w-md'
           }`}>
             <div className="flex flex-col gap-6">
               {/* Resume Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="resume-select" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <div className="space-y-3">
+                <Label htmlFor="resume-select" className="text-xl font-bold text-slate-800 dark:text-slate-100">
                   Select Resume For Review
                   <span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Select value={selectedResume} onValueChange={handleResumeSelection}>
-                  <SelectTrigger className="h-12 w-full font-semibold bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-colors">
+                  <SelectTrigger className="h-14 w-full font-bold bg-white/90 dark:bg-navy-800/90 backdrop-blur-sm border-2 border-slate-300 dark:border-navy-600 text-slate-800 dark:text-slate-100 focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all duration-300 rounded-xl shadow-md">
                     <SelectValue placeholder="Choose a resume to review" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+                  <SelectContent className="bg-white/95 dark:bg-navy-800/95 backdrop-blur-sm border border-slate-200 dark:border-navy-700 shadow-2xl rounded-xl">
                     {resumes.map((resume) => (
                       <SelectItem
                         key={resume.id}
                         value={resume.id}
-                        className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700"
+                        className="cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/20 focus:bg-amber-50 dark:focus:bg-amber-900/20 rounded-lg m-1"
                       >
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                          <span className="font-medium text-gray-900 dark:text-gray-100">{resume.title}</span>
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          <span className="font-bold text-slate-800 dark:text-slate-100">{resume.title}</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -288,30 +288,30 @@ export default function ReviewOptionsTab() {
 
               {/* Default State Info */}
               {!selectedResume && (
-                <div className="space-y-4 text-center py-6">
-                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto">
-                    <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                <div className="space-y-6 text-center py-8">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                    <FileText className="w-10 h-10 text-white" />
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                       Ready to get expert feedback?
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto">
+                    <p className="text-base text-slate-600 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
                       Choose a resume above to see pricing options and get professional review feedback to improve your job applications.
                     </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-center pt-4">
-                    <div>
-                      <div className="text-lg font-bold text-blue-600 dark:text-blue-400">Expert</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Review</div>
+                  <div className="grid grid-cols-3 gap-6 text-center pt-6">
+                    <div className="space-y-2">
+                      <div className="text-xl font-bold text-blue-600 dark:text-blue-400">Expert</div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">Review</div>
                     </div>
-                    <div>
-                      <div className="text-lg font-bold text-blue-600 dark:text-blue-400">Fast</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Turnaround</div>
+                    <div className="space-y-2">
+                      <div className="text-xl font-bold text-amber-600 dark:text-amber-400">Fast</div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">Turnaround</div>
                     </div>
-                    <div>
-                      <div className="text-lg font-bold text-blue-600 dark:text-blue-400">Better</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Results</div>
+                    <div className="space-y-2">
+                      <div className="text-xl font-bold text-green-600 dark:text-green-400">Better</div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">Results</div>
                     </div>
                   </div>
                 </div>
@@ -319,8 +319,8 @@ export default function ReviewOptionsTab() {
 
               {/* Timing Options - Only show when resume is selected */}
               {selectedResume && (
-                <div className="space-y-3 animate-in slide-in-from-top-2 duration-300">
-                  <Label className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                  <Label className="text-xl font-bold text-slate-800 dark:text-slate-100">
                     How fast do you need your review?
                   </Label>
                   <div className="space-y-2">
@@ -328,37 +328,37 @@ export default function ReviewOptionsTab() {
                       <div
                         key={option.id}
                         onClick={() => setSelectedTiming(option.id)}
-                        className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                        className={`flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 shadow-md ${
                           selectedTiming === option.id 
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                            ? 'border-amber-500 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/10 shadow-amber-500/20' 
+                            : 'border-slate-200 dark:border-navy-700 bg-white/90 dark:bg-navy-800/90 backdrop-blur-sm hover:border-slate-300 dark:hover:border-navy-600 hover:shadow-lg'
                         }`}
                       >
                         <div className="flex-shrink-0">
                           {selectedTiming === option.id ? (
-                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 flex items-center justify-center shadow-md">
+                              <div className="w-3 h-3 rounded-full bg-white"></div>
                             </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-600"></div>
+                            <div className="w-7 h-7 rounded-full border-2 border-slate-300 dark:border-navy-600"></div>
                           )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-900 dark:text-gray-100 capitalize">
+                            <span className="font-bold text-slate-800 dark:text-slate-100 capitalize text-lg">
                               {option.duration}
                             </span>
                             {option.badge && (
-                              <span className="px-2 py-1 text-xs font-semibold bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 rounded-full uppercase">
+                              <span className="px-3 py-1 text-xs font-bold bg-gradient-to-r from-green-400 to-green-500 text-white rounded-full uppercase shadow-md">
                                 {option.badge}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center justify-between mt-1">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-base font-bold text-slate-700 dark:text-slate-300">
                               ${option.price.toFixed(2)}
                             </span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                            <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
                               ${option.pricePerWord.toFixed(2)} per word
                             </span>
                           </div>
@@ -373,8 +373,8 @@ export default function ReviewOptionsTab() {
               {selectedResume && (
                 <div className="space-y-6 animate-in slide-in-from-top-2 duration-500">
                   {/* Notes for reviewer */}
-                  <div className="space-y-2">
-                    <Label htmlFor="reviewer-notes" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <div className="space-y-3">
+                    <Label htmlFor="reviewer-notes" className="text-xl font-bold text-slate-800 dark:text-slate-100">
                       Notes for reviewer
                     </Label>
                     <Input
@@ -382,19 +382,19 @@ export default function ReviewOptionsTab() {
                       value={reviewerNotes}
                       onChange={(e) => setReviewerNotes(e.target.value)}
                       placeholder="Explain anything you'd like us to know"
-                      className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                      className="h-14 bg-white/90 dark:bg-navy-800/90 backdrop-blur-sm border-2 border-slate-300 dark:border-navy-600 text-slate-800 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all duration-300 rounded-xl shadow-md font-medium"
                     />
                   </div>
 
                   {/* Preserve Formatting */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-navy-700/50 border border-slate-200 dark:border-navy-600">
                     <Checkbox
                       id="preserve-formatting"
                       checked={preserveFormatting}
                       onCheckedChange={(checked) => setPreserveFormatting(checked === true)}
-                      className="w-5 h-5 border-2 border-gray-300 dark:border-gray-600 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                      className="w-6 h-6 border-2 border-slate-300 dark:border-navy-600 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 rounded-md shadow-sm"
                     />
-                    <Label htmlFor="preserve-formatting" className="text-base font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                    <Label htmlFor="preserve-formatting" className="text-lg font-bold text-slate-800 dark:text-slate-100 cursor-pointer">
                       Preserve resume formatting
                     </Label>
                   </div>
@@ -430,15 +430,15 @@ export default function ReviewOptionsTab() {
                   <Button
                     onClick={handleSubmitReview}
                     disabled={loading || !selectedResume}
-                    className="w-full h-12 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400 text-white font-bold uppercase text-sm transition-colors"
+                    className="w-full h-16 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 disabled:bg-slate-300 dark:disabled:bg-navy-600 disabled:text-slate-500 dark:disabled:text-slate-400 text-white font-bold uppercase text-base tracking-wide transition-all duration-300 shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 rounded-xl"
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
+                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                        Processing Review...
                       </>
                     ) : (
-                      'Continue'
+                      'Submit for Review'
                     )}
                   </Button>
                 </div>

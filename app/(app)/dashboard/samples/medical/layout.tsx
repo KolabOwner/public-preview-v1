@@ -2,15 +2,15 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Healthcare Resume & Cover Letter Samples | Rezum AI',
-  description: 'Professional healthcare resume and cover letter templates for nurses, doctors, medical professionals, and healthcare workers. Industry-specific designs.',
+  description: 'Professional medical resume and cover letter templates for nurses, doctors, medical professionals, and medical workers. Industry-specific designs.',
   keywords: [
-    'healthcare resume templates',
+    'medical resume templates',
     'medical resume samples',
     'nursing resume templates',
-    'healthcare cover letter examples',
+    'medical cover letter examples',
     'doctor resume templates',
     'medical professional resume samples',
-    'healthcare worker templates',
+    'medical worker templates',
     'clinical resume examples',
     'rezum ai'
   ],
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   publisher: 'Rezum AI',
   openGraph: {
     title: 'Healthcare Resume & Cover Letter Samples - Professional Templates | Rezum AI',
-    description: 'Professional healthcare resume and cover letter templates for nurses, doctors, medical professionals, and healthcare workers. Industry-specific designs.',
+    description: 'Professional medical resume and cover letter templates for nurses, doctors, medical professionals, and medical workers. Industry-specific designs.',
     url: 'https://rezum-app.vercel.app/dashboard/samples/healthcare',
     siteName: 'Rezum AI',
     images: [
@@ -36,8 +36,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Healthcare Resume & Cover Letter Samples - Rezum AI',
-    description: 'Professional resume and cover letter templates for healthcare professionals, medical workers, nurses, and clinical staff.',
-    images: ['/images/healthcare-resume-samples-og.jpg'],
+    description: 'Professional resume and cover letter templates for medical professionals, medical workers, nurses, and clinical staff.',
+    images: ['/images/medical-resume-samples-og.jpg'],
     creator: '@kolabai',
   },
   robots: {
@@ -71,12 +71,12 @@ export default function HealthcareSamplesLayout({
             '@context': 'https://schema.org',
             '@type': 'WebPage',
             name: 'Healthcare Resume & Cover Letter Samples',
-            description: 'Professional healthcare resume and cover letter templates for nurses, doctors, medical professionals, and healthcare workers. Industry-specific designs.',
+            description: 'Professional medical resume and cover letter templates for nurses, doctors, medical professionals, and medical workers. Industry-specific designs.',
             url: 'https://rezum-app.vercel.app/dashboard/samples/healthcare',
             about: {
               '@type': 'Service',
               name: 'Healthcare Resume & Cover Letter Template Library',
-              description: 'Professional resume and cover letter templates for healthcare professionals, medical workers, nurses, and clinical staff',
+              description: 'Professional resume and cover letter templates for medical professionals, medical workers, nurses, and clinical staff',
             },
             provider: {
               '@type': 'Organization',
@@ -91,13 +91,13 @@ export default function HealthcareSamplesLayout({
                   '@type': 'ListItem',
                   position: 1,
                   name: 'Healthcare Resume Templates',
-                  description: 'Professional resume templates designed for healthcare professionals, medical workers, nurses, and clinical staff',
+                  description: 'Professional resume templates designed for medical professionals, medical workers, nurses, and clinical staff',
                 },
                 {
                   '@type': 'ListItem',
                   position: 2,
                   name: 'Healthcare Cover Letter Templates',
-                  description: 'Professional cover letter templates for healthcare professionals, medical workers, nurses, and clinical staff',
+                  description: 'Professional cover letter templates for medical professionals, medical workers, nurses, and clinical staff',
                 }
               ],
             },
@@ -110,7 +110,7 @@ export default function HealthcareSamplesLayout({
                   itemOffered: {
                     '@type': 'Service',
                     name: 'Healthcare Resume Templates',
-                    description: 'ATS-optimized resume templates for healthcare professionals, medical workers, nurses, and clinical staff',
+                    description: 'ATS-optimized resume templates for medical professionals, medical workers, nurses, and clinical staff',
                   },
                 },
                 {
@@ -118,7 +118,7 @@ export default function HealthcareSamplesLayout({
                   itemOffered: {
                     '@type': 'Service', 
                     name: 'Healthcare Cover Letter Templates',
-                    description: 'Professional cover letter templates for healthcare professionals, medical workers, nurses, and clinical staff',
+                    description: 'Professional cover letter templates for medical professionals, medical workers, nurses, and clinical staff',
                   },
                 }
               ],

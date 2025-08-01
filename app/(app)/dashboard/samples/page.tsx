@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SampleCard from '@/components/features/resume/samples/SampleCard';
 import { TemplateClient } from '@/lib/client/services/template/template-client';
@@ -26,7 +26,7 @@ const categoryToIndustryMap: Record<Category, Industry> = {
   marketing: 'marketing',
   design: 'design',
   student: 'education', // Map student to education industry
-  medical: 'healthcare', // Map medical to healthcare industry
+  medical: 'healthcare', // Map medical to medical industry
   finance: 'finance',
   education: 'education',
   legal: 'legal',
@@ -55,13 +55,19 @@ const CATEGORIES = [
   { key: 'other' as Category, label: 'Other' },
 ] as const;
 
-export default function SamplesPage() {
+interface SamplesPageProps {
+  defaultCategory?: Category;
+}
+
+export default function SamplesPage({ defaultCategory }: SamplesPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Get category from URL or default to 'business'
+  // Get category from URL, props, or default to 'business'
   const categoryFromUrl = searchParams.get('category') as Category | null;
-  const [activeCategory, setActiveCategory] = useState<Category>(categoryFromUrl || 'business');
+  const [activeCategory, setActiveCategory] = useState<Category>(
+    categoryFromUrl || defaultCategory || 'business'
+  );
   
   // Cache for loaded samples by category
   const [samplesCache, setSamplesCache] = useState<Record<Category, Sample[]>>({} as Record<Category, Sample[]>);
@@ -112,6 +118,13 @@ export default function SamplesPage() {
     }
   }, [samplesCache]);
 
+  // Set initial category from props if provided and no URL param
+  useEffect(() => {
+    if (defaultCategory && !categoryFromUrl && activeCategory !== defaultCategory) {
+      setActiveCategory(defaultCategory);
+    }
+  }, [defaultCategory, categoryFromUrl, activeCategory]);
+
   // Load samples when category changes
   useEffect(() => {
     loadSamplesForCategory(activeCategory);
@@ -137,12 +150,12 @@ export default function SamplesPage() {
   const error = errors[activeCategory];
 
   return (
-    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 bg-background text-foreground min-h-screen">
-      <div className="relative flex w-[100vw] flex-col gap-4 md:gap-6 lg:min-h-[calc(100dvh_-_16px)] lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8">
+    <div className="flex justify-center px-0 pt-16 lg:pt-0 lg:px-16 min-h-screen">
+      <div className="relative w-full max-w-full flex flex-col justify-start gap-4 px-4 md:px-6 lg:max-w-[824px] lg:px-6 xl1:max-w-[968px] xl:max-w-[1248px] xl:px-8">
         <main className="w-full sm:h-full lg:h-auto">
           {/* Page Header */}
           <div className="mt-6 flex flex-row items-center justify-between self-stretch">
-            <div className="text-3xl font-semibold leading-9 text-foreground">Search Sample Library</div>
+            <div className="text-3xl font-bold leading-9 text-slate-800 dark:text-slate-100">Search Sample Library</div>
           </div>
 
           {/* Search and Filter Section */}
@@ -150,11 +163,11 @@ export default function SamplesPage() {
             {/* Search Form */}
             <form className="relative flex w-[100%] flex-row items-center justify-start self-stretch">
               <div className="flex w-full flex-col gap-1">
-                <div className="w-[100%] h-10 text-base sm:h-12 flex w-full flex-row items-center self-stretch border-2 rounded transition-all duration-200 border-border px-3 py-1 bg-card gap-1">
-                  <i className="fad fa-magnifying-glass !flex h-6 !w-6 justify-center items-center text-muted-foreground" aria-hidden="true"></i>
+                <div className="w-[100%] h-10 text-base sm:h-12 flex w-full flex-row items-center self-stretch border-2 rounded-xl transition-all duration-200 border-slate-200 dark:border-navy-700 px-3 py-1 bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm shadow-lg gap-1 focus-within:border-amber-400 dark:focus-within:border-amber-500">
+                  <i className="fad fa-magnifying-glass !flex h-6 !w-6 justify-center items-center text-slate-500 dark:text-slate-400" aria-hidden="true"></i>
                   <input
                     autoComplete="off"
-                    className="bg-transparent text-card-foreground h-6 w-full !border-0 px-1 text-base font-semibold leading-6 placeholder:text-muted-foreground text-ellipsis focus:outline-none focus:ring-0"
+                    className="bg-transparent text-slate-800 dark:text-slate-200 h-6 w-full !border-0 px-1 text-base font-semibold leading-6 placeholder:text-slate-500 dark:placeholder:text-slate-400 text-ellipsis focus:outline-none focus:ring-0"
                     type="text"
                     placeholder="Search resume and cover letter samples by role or skill"
                   />
@@ -165,7 +178,7 @@ export default function SamplesPage() {
             {/* Mobile Category Dropdown */}
             <div className="block w-full sm:hidden">
               <select
-                className="h-10 sm:h-12 pl-4 text-base leading-6 pr-4 py-1 rounded w-full cursor-pointer font-semibold text-card-foreground bg-card border-2 border-border"
+                className="h-10 sm:h-12 pl-4 text-base leading-6 pr-4 py-1 rounded-xl w-full cursor-pointer font-semibold text-slate-800 dark:text-slate-200 bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm border-2 border-slate-200 dark:border-navy-700 shadow-lg"
                 style={{ fontWeight: 600 }}
                 value={activeCategory}
                 onChange={(e) => handleCategoryChange(e.target.value as Category)}
@@ -184,17 +197,17 @@ export default function SamplesPage() {
                     key={category.key}
                     onClick={() => handleCategoryChange(category.key)}
                     className={`
-                      rounded-md flex items-center h-6 px-2 text-xs cursor-pointer 
-                      transition-all duration-200 ease-in-out uppercase font-semibold
+                      rounded-xl flex items-center h-8 px-4 text-xs cursor-pointer 
+                      transition-all duration-300 ease-in-out uppercase font-bold shadow-md
                       ${activeCategory === category.key
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                        ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-800 shadow-amber-500/30'
+                        : 'bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-700'
                       }
                     `}
                     aria-label={category.label}
                     aria-current={activeCategory === category.key ? 'page' : undefined}
                   >
-                    <span className="text-xs font-semibold text-center whitespace-nowrap">
+                    <span className="text-xs font-bold text-center whitespace-nowrap tracking-wide">
                       {category.label}
                     </span>
                   </button>
@@ -208,18 +221,21 @@ export default function SamplesPage() {
             {/* Loading State */}
             {isLoading && !currentSamples.length && (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-2 text-muted-foreground">Loading {activeCategory} samples...</span>
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5b7cfd]"></div>
+                  <div className="absolute inset-0 rounded-full bg-[#5b7cfd]/20 blur-xl animate-pulse"></div>
+                </div>
+                <span className="ml-4 text-slate-600 dark:text-slate-400 font-medium">Loading {activeCategory} samples...</span>
               </div>
             )}
 
             {/* Error State */}
             {error && (
-              <div className="text-center text-destructive py-8">
-                {error}
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
+                <div className="text-red-600 dark:text-red-400 font-medium">{error}</div>
                 <button 
                   onClick={() => loadSamplesForCategory(activeCategory)}
-                  className="ml-2 text-primary underline"
+                  className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
                 >
                   Try again
                 </button>
@@ -228,17 +244,57 @@ export default function SamplesPage() {
 
             {/* Samples Grid */}
             {!isLoading && currentSamples.length > 0 && (
-              <div className="flex w-full flex-row flex-wrap gap-4 md:gap-6">
-                {currentSamples.map((sample) => (
-                  <SampleCard key={sample.id} sample={sample} />
-                ))}
+              <div className="flex w-full flex-col gap-16">
+                {/* Resume Samples Section */}
+                {currentSamples.some(sample => sample.templateType === 'resume') && (
+                  <div className="pt-4">
+                    <div className="mb-8">
+                      <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                        <i className="fad fa-file-alt mr-3 text-blue-600" aria-hidden="true"></i>
+                        Resume Templates
+                      </h2>
+                      <div className="h-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full w-32"></div>
+                    </div>
+                    <div className="flex w-full flex-row flex-wrap gap-4 md:gap-6">
+                      {currentSamples
+                        .filter(sample => sample.templateType === 'resume')
+                        .map((sample) => (
+                          <SampleCard key={sample.id} sample={sample} />
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cover Letter Samples Section */}
+                {currentSamples.some(sample => sample.templateType === 'cover_letter') && (
+                  <div className="pt-8 pb-4">
+                    <div className="mb-8">
+                      <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                        <i className="fad fa-envelope mr-3 text-amber-600" aria-hidden="true"></i>
+                        Cover Letter Templates
+                      </h2>
+                      <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full w-32"></div>
+                    </div>
+                    <div className="flex w-full flex-row flex-wrap gap-4 md:gap-6">
+                      {currentSamples
+                        .filter(sample => sample.templateType === 'cover_letter')
+                        .map((sample) => (
+                          <SampleCard key={sample.id} sample={sample} />
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Empty State */}
             {!isLoading && !error && currentSamples.length === 0 && (
-              <div className="text-center text-muted-foreground py-12">
-                No samples found for {activeCategory} category.
+              <div className="bg-white/80 dark:bg-navy-800/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-navy-700 p-12 text-center shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50">
+                <i className="fad fa-search text-4xl text-slate-400 dark:text-slate-500 mb-4" aria-hidden="true"></i>
+                <h4 className="font-bold text-xl mb-2 text-slate-800 dark:text-slate-100">No samples found</h4>
+                <p className="text-slate-600 dark:text-slate-400">
+                  No samples found for the <span className="font-semibold text-amber-600 dark:text-amber-400">{activeCategory}</span> category.
+                </p>
               </div>
             )}
           </div>

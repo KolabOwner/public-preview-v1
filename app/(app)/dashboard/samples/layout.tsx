@@ -5,7 +5,7 @@ export const metadata: Metadata = {
     template: '%s Resume & Cover Letter Samples | Rezum AI',
     default: 'Resume & Cover Letter Samples - Professional Templates | Rezum AI'
   },
-  description: 'Browse professional resume and cover letter samples across all industries. Expert-crafted templates for business, technology, healthcare, finance, and more. ATS-optimized designs.',
+  description: 'Browse professional resume and cover letter samples across all industries. Expert-crafted templates for business, technology, medical, finance, and more. ATS-optimized designs.',
   keywords: [
     'resume samples',
     'cover letter samples',
@@ -110,7 +110,7 @@ export default function SamplesLayout({
                   '@type': 'ListItem',
                   position: 3,
                   name: 'Healthcare Resume & Cover Letter Samples',
-                  description: 'Professional templates for healthcare workers and medical professionals',
+                  description: 'Professional templates for medical workers and medical professionals',
                   url: 'https://rezum-app.vercel.app/dashboard/samples/healthcare'
                 },
                 {
