@@ -121,11 +121,11 @@ export default function AIKeywordTargetingPage() {
                   <h2 id="target-your-resume" className="text-3xl font-bold text-gray-900 mb-6">Target your resume</h2>
                   
                   <p>
-                    In today's job market, landing an interview demands more than a one-size-fits-all resume. Applicant Tracking Systems (ATS) scan resumes for specific keywords matching the job requirements. So, yes, customizing your resume for each role is crucial. No worries, though—we've got you covered.
+                    In today&apos;s job market, landing an interview demands more than a one-size-fits-all resume. Applicant Tracking Systems (ATS) scan resumes for specific keywords matching the job requirements. So, yes, customizing your resume for each role is crucial. No worries, though—we&apos;ve got you covered.
                   </p>
 
                   <p>
-                    Rezum's AI Keyword Targeting is designed to boost your ATS success (and <strong>Rezum Score</strong>). Our tool suggests relevant keywords to include in your resume, making it ATS-friendly and increasing your chances of getting noticed. Below, we explain everything you need to know to make targeting your resume a breeze.
+                    Rezum&apos;s AI Keyword Targeting is designed to boost your ATS success (and <strong>Rezum Score</strong>). Our tool suggests relevant keywords to include in your resume, making it ATS-friendly and increasing your chances of getting noticed. Below, we explain everything you need to know to make targeting your resume a breeze.
                   </p>
 
                   {/* CTA Block */}
@@ -150,14 +150,14 @@ export default function AIKeywordTargetingPage() {
                   </p>
 
                   <p>
-                    Our innovative tool then offers a list of suggested keywords to incorporate, boosting your chances of standing out and securing that dream job. With AI Keyword Targeting on your side, you're set to conquer the job market and make a lasting impression on potential employers.
+                    Our innovative tool then offers a list of suggested keywords to incorporate, boosting your chances of standing out and securing that dream job. With AI Keyword Targeting on your side, you&apos;re set to conquer the job market and make a lasting impression on potential employers.
                   </p>
 
                   <h2 id="2-ways-to-start-targeting" className="text-3xl font-bold text-gray-900 mb-6">2 Ways to start targeting</h2>
 
-                  <p>Ready to target your resume for that dream job? Let's get started in two simple ways: creating a new resume or finishing up an existing one.</p>
+                  <p>Ready to target your resume for that dream job? Let&apos;s get started in two simple ways: creating a new resume or finishing up an existing one.</p>
 
-                  <p>No matter which path you choose, you'll need three key details:</p>
+                  <p>No matter which path you choose, you&apos;ll need three key details:</p>
 
                   <ol className="list-decimal list-inside space-y-2 ml-4">
                     <li><strong>Job Title</strong></li>
@@ -165,7 +165,7 @@ export default function AIKeywordTargetingPage() {
                     <li><strong>Company Name</strong></li>
                   </ol>
 
-                  <p>Simply copy and paste this information from the job listing you're applying for. We'll take care of the rest.</p>
+                  <p>Simply copy and paste this information from the job listing you&apos;re applying for. We&apos;ll take care of the rest.</p>
 
                   <h3 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">1. Create a resume</h3>
 
@@ -174,11 +174,11 @@ export default function AIKeywordTargetingPage() {
                   <div className="bg-gray-50 border-l-4 border-amber-500 p-4 my-6">
                     <ol className="list-decimal list-inside space-y-1 text-sm">
                       <li>To create a resume, navigate to your Rezum dashboard.</li>
-                      <li>Click the "Create New Resume" button in the top left corner.</li>
+                      <li>Click the &quot;Create New Resume&quot; button in the top left corner.</li>
                       <li>Complete the form provided, filling out the Resume Name, Field or Domain, and Experience.</li>
-                      <li>Then toggle the "Target your resume" button to activate.</li>
+                      <li>Then toggle the &quot;Target your resume&quot; button to activate.</li>
                       <li>From there, fill out the Job Title, Company Name, and Job Description.</li>
-                      <li>Press the "Save" button to complete.</li>
+                      <li>Press the &quot;Save&quot; button to complete.</li>
                     </ol>
                   </div>
 
@@ -200,9 +200,9 @@ export default function AIKeywordTargetingPage() {
 
                   <div className="bg-gray-50 border-l-4 border-amber-500 p-4 my-6">
                     <ol className="list-decimal list-inside space-y-1 text-sm">
-                      <li>To access AI Keyword Targeting, navigate to the "Finish Up" tab.</li>
+                      <li>To access AI Keyword Targeting, navigate to the &quot;Finish Up&quot; tab.</li>
                       <li>On the right side of your screen, fill out the Job Title and Job Description.</li>
-                      <li>Click the "Save Job Description" button and discover optimized keywords.</li>
+                      <li>Click the &quot;Save Job Description&quot; button and discover optimized keywords.</li>
                     </ol>
                   </div>
 
@@ -221,7 +221,7 @@ export default function AIKeywordTargetingPage() {
                   <h2 id="how-to-add-optimized-keywords" className="text-3xl font-bold text-gray-900 mb-6">How to add optimized keywords</h2>
 
                   <p>
-                    You've successfully utilized AI Keyword Targeting and discovered some additional keyword suggestions. Now, you might wonder what to do next. While stuffing your resume with keywords may appease the ATS, it won't impress your future employer.
+                    You&apos;ve successfully utilized AI Keyword Targeting and discovered some additional keyword suggestions. Now, you might wonder what to do next. While stuffing your resume with keywords may appease the ATS, it won&apos;t impress your future employer.
                   </p>
 
                   <p>
@@ -231,7 +231,7 @@ export default function AIKeywordTargetingPage() {
                   <h3 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">Skills</h3>
 
                   <p>
-                    When you find yourself uncertain, don't forget that your skills section serves as the ideal place to incorporate those optimized keywords. It's a foolproof strategy, especially when the rest of your resume is mostly on point and you want to tailor it effortlessly for various job applications.
+                    When you find yourself uncertain, don&apos;t forget that your skills section serves as the ideal place to incorporate those optimized keywords. It&apos;s a foolproof strategy, especially when the rest of your resume is mostly on point and you want to tailor it effortlessly for various job applications.
                   </p>
 
                   <p>
@@ -241,7 +241,7 @@ export default function AIKeywordTargetingPage() {
                   <h3 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">Bullet points</h3>
 
                   <p>
-                    When tailoring your resume for different roles, it's essential to give your bullet points a refreshing twist with relevant keywords. Depending on the job, certain positions might emphasize specific software skills or workplace accomplishments.
+                    When tailoring your resume for different roles, it&apos;s essential to give your bullet points a refreshing twist with relevant keywords. Depending on the job, certain positions might emphasize specific software skills or workplace accomplishments.
                   </p>
 
                   <p>
