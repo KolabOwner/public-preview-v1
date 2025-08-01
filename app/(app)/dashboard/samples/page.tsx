@@ -31,7 +31,6 @@ const categoryToIndustryMap: Record<Category, Industry> = {
   education: 'education',
   legal: 'legal',
   other: 'other',
-  government: 'government',
 };
 
 const CATEGORIES = [
@@ -48,18 +47,14 @@ const CATEGORIES = [
   { key: 'other' as Category, label: 'Other' },
 ] as const;
 
-interface SamplesPageProps {
-  defaultCategory?: Category;
-}
-
-export default function SamplesPage({ defaultCategory }: SamplesPageProps) {
+export default function SamplesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Get category from URL, props, or default to 'business'
+  // Get category from URL or default to 'business'
   const categoryFromUrl = searchParams.get('category') as Category | null;
   const [activeCategory, setActiveCategory] = useState<Category>(
-    categoryFromUrl || defaultCategory || 'business'
+    categoryFromUrl || 'business'
   );
   
   // Cache for loaded samples by category
@@ -111,12 +106,6 @@ export default function SamplesPage({ defaultCategory }: SamplesPageProps) {
     }
   }, [samplesCache]);
 
-  // Set initial category from props if provided and no URL param
-  useEffect(() => {
-    if (defaultCategory && !categoryFromUrl && activeCategory !== defaultCategory) {
-      setActiveCategory(defaultCategory);
-    }
-  }, [defaultCategory, categoryFromUrl, activeCategory]);
 
   // Load samples when category changes
   useEffect(() => {
