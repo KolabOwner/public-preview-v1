@@ -25,6 +25,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, FileText, Check, Star, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/shared/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/card';
 import { Badge } from '@/components/shared/badge';
@@ -360,12 +361,12 @@ const ResumeTemplateShowcase = () => {
 
                 {/* Action Buttons */}
                 <div className="pt-4">
-                  <Button 
-                    className="w-full bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 font-bold shadow-xl hover:shadow-lg transition-all duration-250"
-                    size="lg"
+                  <Link 
+                    href="/sign-up"
+                    className="w-full inline-flex items-center justify-center bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 font-bold shadow-xl hover:shadow-lg transition-all duration-250 px-6 py-3 rounded-md"
                   >
                     Use This Template
-                  </Button>
+                  </Link>
                 </div>
               </motion.div>
             </div>

@@ -14,6 +14,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 
@@ -75,37 +76,33 @@ const featuredSample = {
 };
 
 const SampleCard = ({ sample }: { sample: ProfessionalSample }) => (
-  <motion.div
-    whileHover={{ y: -8 }}
-    className="group relative flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg border border-corporate-navy-100 hover:shadow-2xl transition-all duration-300"
-  >
-    <div className="aspect-[8.5/11] bg-corporate-navy-50 rounded-t-2xl overflow-hidden relative">
-      <Image 
-        src={sample.imageUrl} 
-        alt={sample.title} 
-        fill
-        className="object-cover"
-        sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 256px"
-        loading="lazy"
-        quality={75}
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-      />
-    </div>
-    <div className="p-4">
-      <h4 className="font-semibold text-corporate-navy-900 truncate group-hover:text-corporate-gold-600 transition-colors">{sample.title}</h4>
-      <div className="flex flex-wrap gap-1 mt-2">
-        {sample.tags.map(tag => (
-          <span key={tag} className="px-2 py-1 bg-corporate-navy-100 text-corporate-navy-600 text-xs rounded-md">
-            {tag}
-          </span>
-        ))}
+  <Link href="/sign-up" className="flex-shrink-0 w-64">
+    <div className="bg-white rounded-2xl shadow-lg border border-corporate-navy-100 cursor-pointer">
+      <div className="aspect-[8.5/11] bg-corporate-navy-50 rounded-t-2xl overflow-hidden relative">
+        <Image 
+          src={sample.imageUrl} 
+          alt={sample.title} 
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 256px"
+          loading="lazy"
+          quality={75}
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+        />
+      </div>
+      <div className="p-4">
+        <h4 className="font-semibold text-corporate-navy-900 truncate">{sample.title}</h4>
+        <div className="flex flex-wrap gap-1 mt-2">
+          {sample.tags.map(tag => (
+            <span key={tag} className="px-2 py-1 bg-corporate-navy-100 text-corporate-navy-600 text-xs rounded-md">
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
-    <div className="absolute inset-0 bg-gradient-to-br from-corporate-navy-900/90 to-corporate-charcoal-900/90 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center rounded-2xl">
-      <div className="text-center text-white font-semibold">View Sample</div>
-    </div>
-  </motion.div>
+  </Link>
 );
 
 const CategoryRow = ({ category }: { category: SampleCategory }) => (
@@ -177,10 +174,10 @@ const ProfessionalSamples = () => {
                   </li>
                 ))}
               </ul>
-              <button className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 rounded-xl font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105">
+              <Link href="/sign-up" className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 rounded-xl font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105">
                 Use This Template
                 <ArrowRight className="w-5 h-5" />
-              </button>
+              </Link>
             </div>
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-2xl opacity-20 animate-pulse"></div>

@@ -53,7 +53,7 @@ const MainNavbar = () => {
     <>
       <nav className="relative bg-white z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             
             {/* Logo Section */}
             <Link href="/" className="flex items-center group">
@@ -214,11 +214,6 @@ const MainNavbar = () => {
                             <div className="text-xs text-gray-600 mt-1">Learn keyword optimization</div>
                           </Link>
 
-                          <Link href="/resume-docs" className="inline-flex items-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors group">
-                            <BookOpen className="w-4 h-4" />
-                            <span>All Guides</span>
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </Link>
                         </div>
                       </div>
                     </div>
@@ -295,23 +290,6 @@ const MainNavbar = () => {
                         </div>
                       </div>
 
-                      <div className="bg-gray-50 p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="w-12 h-8 bg-gradient-to-br from-emerald-100 to-green-100 rounded-lg mr-3 flex items-center justify-center">
-                              <Star className="w-4 h-4 text-emerald-600" />
-                            </div>
-                            <div>
-                              <div className="font-bold text-gray-900 text-sm">Featured: Best Resume Format</div>
-                              <div className="text-xs text-gray-600">Learn the winning format</div>
-                            </div>
-                          </div>
-                          <Link href="/blog" className="text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors flex items-center gap-1">
-                            <span>Read Blog</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </Link>
-                        </div>
-                      </div>
                     </div>
                   )}
                 </div>

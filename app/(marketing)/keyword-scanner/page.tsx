@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CheckCircle, Target, AlertCircle, TrendingUp, PlayCircle, Star, Zap, Shield, Sparkles } from 'lucide-react';
+import { CheckCircle, Target, Star, Zap, Shield, Sparkles } from 'lucide-react';
 import MainNavbar from '@/components/features/dashboard/main-navbar';
 import Footer from '@/components/marketing/Footer';
 

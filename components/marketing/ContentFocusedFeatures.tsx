@@ -21,6 +21,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Target, Zap, BarChart3, CheckCircle2, ArrowRight } from 'lucide-react';
 
@@ -101,10 +102,10 @@ const FeatureRow = ({ feature, index }: { feature: typeof features[0], index: nu
             </li>
           ))}
         </ul>
-        <button className="mt-8 inline-flex items-center gap-2 text-corporate-gold-600 font-semibold hover:text-corporate-amber-600 transition-colors">
+        <Link href="/sign-up" className="mt-8 inline-flex items-center gap-2 text-corporate-gold-600 font-semibold hover:text-corporate-amber-600 transition-colors">
           Learn More
           <ArrowRight className="w-4 h-4" />
-        </button>
+        </Link>
       </motion.div>
     </div>
   );

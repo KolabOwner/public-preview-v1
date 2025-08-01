@@ -23,6 +23,7 @@
 'use client';
 
 import React, { useState, useEffect, memo, Suspense } from 'react';
+import Link from 'next/link';
 import {
   ArrowRight,
   Check,
@@ -139,15 +140,17 @@ const HeroContent = memo(() => {
             </a>
           </Button>
 
-          <Button
-            variant="outline"
-            size="lg"
-            className="bg-white border-2 border-corporate-navy-200 text-corporate-navy-700 hover:bg-corporate-navy-50 hover:border-corporate-navy-300 px-6 py-6 rounded-2xl text-lg font-semibold font-corporate-sans transition-colors duration-200"
-            aria-label="Import my resume"
-          >
-            <Eye className="w-5 h-5 mr-2" aria-hidden="true" />
-            Import My Resume
-          </Button>
+          <Link href="/sign-up">
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-white border-2 border-corporate-navy-200 text-corporate-navy-700 hover:bg-corporate-navy-50 hover:border-corporate-navy-300 px-6 py-6 rounded-2xl text-lg font-semibold font-corporate-sans transition-colors duration-200"
+              aria-label="Import my resume"
+            >
+              <Eye className="w-5 h-5 mr-2" aria-hidden="true" />
+              Import My Resume
+            </Button>
+          </Link>
         </div>
 
       </div>

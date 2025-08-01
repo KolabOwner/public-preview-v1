@@ -22,6 +22,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Star, Shield, Zap, Info, DollarSign, Users, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shared/card';
@@ -321,17 +322,35 @@ const PricingSection = () => {
 
                   {/* CTA Button */}
                   <div className="p-8 pt-0">
-                    <Button
-                      className={`w-full py-6 text-base font-bold rounded-2xl ${
-                        plan.popular
-                          ? 'bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 shadow-xl'
-                          : 'bg-corporate-navy-50 text-corporate-navy-900 border-2 border-corporate-navy-100'
-                      }`}
-                      size="lg"
-                      aria-label={`${plan.cta} for ${plan.name} plan`}
-                    >
-                      {plan.cta}
-                    </Button>
+                    {plan.id === 'teams' ? (
+                      <Link href="/contact">
+                        <Button
+                          className={`w-full py-6 text-base font-bold rounded-2xl ${
+                            plan.popular
+                              ? 'bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 shadow-xl'
+                              : 'bg-corporate-navy-50 text-corporate-navy-900 border-2 border-corporate-navy-100'
+                          }`}
+                          size="lg"
+                          aria-label={`${plan.cta} for ${plan.name} plan`}
+                        >
+                          {plan.cta}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link href="/sign-up">
+                        <Button
+                          className={`w-full py-6 text-base font-bold rounded-2xl ${
+                            plan.popular
+                              ? 'bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 shadow-xl'
+                              : 'bg-corporate-navy-50 text-corporate-navy-900 border-2 border-corporate-navy-100'
+                          }`}
+                          size="lg"
+                          aria-label={`${plan.cta} for ${plan.name} plan`}
+                        >
+                          {plan.cta}
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -348,13 +367,15 @@ const PricingSection = () => {
           >
             <p className="text-corporate-gold-200/80">
               Need a custom solution for your enterprise? {' '}
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-corporate-gold-400 font-semibold"
-                aria-label="Contact our sales team for custom enterprise solutions"
-              >
-                Contact our sales team →
-              </Button>
+              <Link href="/contact">
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto text-corporate-gold-400 font-semibold"
+                  aria-label="Contact our sales team for custom enterprise solutions"
+                >
+                  Contact our sales team →
+                </Button>
+              </Link>
             </p>
           </motion.div>
         </div>
