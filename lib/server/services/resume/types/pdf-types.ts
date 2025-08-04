@@ -3,6 +3,16 @@
  */
 
 /**
+ * Status of a file in the processing pipeline
+ */
+export enum FileStatus {
+  UPLOADED = 'uploaded',
+  PROCESSING = 'processing',
+  PROCESSED = 'processed',
+  ERROR = 'error'
+}
+
+/**
  * Font definition interface
  */
 export interface FontDefinition {

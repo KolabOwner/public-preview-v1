@@ -350,8 +350,12 @@ export default function ResumePreview({
 
 
 
+  // Debug logging
+  console.log('ResumePreview - resumeData:', resumeData);
+
   // Early return if no data
   if (!resumeData) {
+    console.log('ResumePreview - No resume data found');
     return (
       <div className={`w-full max-w-4xl xl:max-w-5xl mx-auto p-8 ${className}`}>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 flex items-start gap-3">
@@ -367,28 +371,104 @@ export default function ResumePreview({
     );
   }
 
-  // Extract data safely
-  const contact = resumeData.contact || resumeData.contactInfo || {};
-  const fullName = contact.fullName || `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'Your Name';
+  // Extract contact data from RMS format
+  const contact = {
+    fullName: resumeData.rms_contact_fullname || resumeData.rms_contact_fullName || 'Your Name',
+    email: resumeData.rms_contact_email || '',
+    phone: resumeData.rms_contact_phone || '',
+    linkedin: resumeData.rms_contact_linkedin || '',
+    city: resumeData.rms_contact_city || '',
+    state: resumeData.rms_contact_state || '',
+    country: resumeData.rms_contact_country || resumeData.rms_contact_countrycode || ''
+  };
+  
+  console.log('ResumePreview - extracted contact data:', contact);
+  const fullName = contact.fullName;
+  console.log('ResumePreview - fullName:', fullName);
 
   // Resume content component
   const ResumeContent = memo(() => {
+    // Extract experience data from RMS format
+    const experienceCount = resumeData.rms_experience_count || 0;
+    const experiences = [];
+    for (let i = 0; i < experienceCount; i++) {
+      experiences.push({
+        id: `exp_${i}`,
+        company: resumeData[`rms_experience_${i}_company`] || '',
+        title: resumeData[`rms_experience_${i}_role`] || '',
+        position: resumeData[`rms_experience_${i}_role`] || '',
+        location: resumeData[`rms_experience_${i}_location`] || '',
+        dateBegin: resumeData[`rms_experience_${i}_datebegin`] || '',
+        dateEnd: resumeData[`rms_experience_${i}_dateend`] || '',
+        startDate: resumeData[`rms_experience_${i}_datebegin`] || '',
+        endDate: resumeData[`rms_experience_${i}_dateend`] || '',
+        description: resumeData[`rms_experience_${i}_description`] || '',
+        bulletPoints: (resumeData[`rms_experience_${i}_description`] || '').split('\n').filter(p => p.trim()),
+        isCurrent: resumeData[`rms_experience_${i}_iscurrent`] || false
+      });
+    }
+
+    // Extract education data from RMS format
+    const educationCount = resumeData.rms_education_count || 0;
+    const education = [];
+    for (let i = 0; i < educationCount; i++) {
+      education.push({
+        id: `edu_${i}`,
+        institution: resumeData[`rms_education_${i}_institution`] || '',
+        school: resumeData[`rms_education_${i}_institution`] || '',
+        qualification: resumeData[`rms_education_${i}_qualification`] || '',
+        degree: resumeData[`rms_education_${i}_qualification`] || '',
+        location: resumeData[`rms_education_${i}_location`] || '',
+        date: resumeData[`rms_education_${i}_date`] || '',
+        gpa: resumeData[`rms_education_${i}_gpa`] || '',
+        isGraduate: resumeData[`rms_education_${i}_isgraduate`] || false
+      });
+    }
+
+    // Extract skills data from RMS format
+    const skillCount = resumeData.rms_skill_count || 0;
+    const skills = [];
+    for (let i = 0; i < skillCount; i++) {
+      skills.push({
+        id: `skill_${i}`,
+        category: resumeData[`rms_skill_${i}_category`] || '',
+        name: resumeData[`rms_skill_${i}_category`] || '',
+        keywords: resumeData[`rms_skill_${i}_keywords`] || '',
+        skills: resumeData[`rms_skill_${i}_keywords`] || ''
+      });
+    }
+
+    // Extract involvement data from RMS format
+    const involvementCount = resumeData.rms_involvement_count || 0;
+    const involvement = [];
+    for (let i = 0; i < involvementCount; i++) {
+      involvement.push({
+        id: `inv_${i}`,
+        organization: resumeData[`rms_involvement_${i}_organization`] || '',
+        role: resumeData[`rms_involvement_${i}_role`] || '',
+        location: resumeData[`rms_involvement_${i}_location`] || '',
+        dateBegin: resumeData[`rms_involvement_${i}_datebegin`] || '',
+        dateEnd: resumeData[`rms_involvement_${i}_dateend`] || '',
+        description: resumeData[`rms_involvement_${i}_description`] || ''
+      });
+    }
+
     // Safe array access helper
     const safeArray = (arr: any) => Array.isArray(arr) ? arr : [];
 
     // Section components map
     const sectionComponents: Record<string, React.ReactNode> = {
-      summary: resumeData.summary && (
+      summary: resumeData.rms_summary && (
         <ResumeSection key="summary" title={getSectionTitle('summary', currentTemplate)} styles={inlineStyles}>
           <p className="resume-summary" style={inlineStyles.bodyText}>
-            {resumeData.summary}
+            {resumeData.rms_summary}
           </p>
         </ResumeSection>
       ),
 
-      experience: safeArray(resumeData.experiences || resumeData.experience).length > 0 && (
+      experience: experiences.length > 0 && (
         <ResumeSection key="experience" title={getSectionTitle('experience', currentTemplate)} styles={inlineStyles}>
-          {safeArray(resumeData.experiences || resumeData.experience).map((exp: any, idx: number) => (
+          {experiences.map((exp: any, idx: number) => (
             <div key={exp.id || idx} className="resume-experience-block" style={{ marginBottom: currentTemplate === 'alternative' ? '2rem' : `${resumeStyles.spacing.blockGap}rem` }}>
               {currentTemplate === 'modern' ? (
                 <>
@@ -516,9 +596,9 @@ export default function ResumePreview({
         </ResumeSection>
       ),
 
-      education: safeArray(resumeData.education).length > 0 && (
+      education: education.length > 0 && (
         <ResumeSection key="education" title={getSectionTitle('education', currentTemplate)} styles={inlineStyles}>
-          {safeArray(resumeData.education).map((edu: any, idx: number) => {
+          {education.map((edu: any, idx: number) => {
             // Parse institution name to extract location if present
             let institutionName = edu.institution || edu.school || 'Institution';
             let location = edu.location;
@@ -652,9 +732,9 @@ export default function ResumePreview({
         </ResumeSection>
       ),
 
-      skills: safeArray(resumeData.skills).length > 0 && (
+      skills: skills.length > 0 && (
         <ResumeSection key="skills" title={getSectionTitle('skills', currentTemplate)} styles={inlineStyles}>
-          {safeArray(resumeData.skills).map((category: any, idx: number) => (
+          {skills.map((category: any, idx: number) => (
             <div key={category.id || idx} className="resume-skills-category" style={{ ...inlineStyles.bodyText, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
               <span className="resume-skills-title" style={{ fontWeight: 700 }}>
                 {category.category || category.name}:
@@ -780,9 +860,9 @@ export default function ResumePreview({
         </ResumeSection>
       ),
 
-      involvement: safeArray(resumeData.involvement).length > 0 && (
+      involvement: involvement.length > 0 && (
         <ResumeSection key="involvement" title={getSectionTitle('involvement', currentTemplate)} styles={inlineStyles}>
-          {safeArray(resumeData.involvement).map((inv: any, idx: number) => (
+          {involvement.map((inv: any, idx: number) => (
             <div key={inv.id || idx} className="resume-involvement-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
               {currentTemplate === 'alternative' ? (
                 <>
@@ -1269,6 +1349,13 @@ export default function ResumePreview({
   );
 
   // Main resume preview content
+  // Create processed data object for other components that might need it
+  const processedResumeData = {
+    ...resumeData,
+    contactInfo: contact,
+    summary: resumeData.rms_summary
+  };
+
   const resumePreviewContent = (
     <div className="w-full">
       <style>{resumeCSS}</style>

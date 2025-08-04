@@ -1,72 +1,24 @@
+// components/resume/forms/contact-form.tsx
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Save, Loader2, Mail, Phone, Globe, MapPin } from "lucide-react";
-import { Switch } from '@/components/shared/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shared/select';
 import { Button } from '@/components/shared/button';
-import { Input } from '@/components/shared/input';
-import { Label } from '@/components/shared/label';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
 import { COUNTRIES, getStateOptions, getStateLabel, isStateSelectionEnabled } from './utils/location-data';
+import { TextInputField, SelectField } from './components/form-fields';
+import { contactFormValidation } from './utils/validation-rules';
+import { formatPhone, formatLinkedIn, formatWebsite, cleanValue } from './utils/formatters';
+import { useAutoSave } from './hooks/use-auto-save';
+import type { ContactFormData } from '@/lib/client/stores/types';
 import '../styles/form-styles.css';
-
-export interface ContactFormData {
-  fullName: string;
-  email: string;
-  phone: string;
-  linkedin: string;
-  website: string;
-  country: string;
-  state: string;
-  city: string;
-  showEmail: boolean;
-  showPhone: boolean;
-  showLinkedin: boolean;
-  showWebsite: boolean;
-  showLocation: boolean;
-  showCountry: boolean;
-  showState: boolean;
-  showCity: boolean;
-}
 
 interface ContactFormProps {
   initialData: ContactFormData;
   onSave: (data: ContactFormData) => Promise<void>;
 }
-
-// Clean placeholder values and format fields
-const cleanValue = (value: string): string => {
-  if (!value) return '';
-  return value.replace(/^(Enter your |Your |Please enter )/i, '').trim();
-};
-
-const formatPhone = (value: string): string => {
-  const cleaned = value.replace(/\D/g, '');
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  }
-  return value;
-};
-
-const formatLinkedIn = (value: string): string => {
-  if (!value) return '';
-  const cleaned = cleanValue(value);
-  if (cleaned.includes('linkedin.com/in/')) {
-    return cleaned.split('linkedin.com/in/')[1] || '';
-  }
-  return cleaned;
-};
-
-const formatWebsite = (value: string): string => {
-  const cleaned = cleanValue(value);
-  if (!cleaned) return '';
-  if (!/^https?:\/\//.test(cleaned)) {
-    return `https://${cleaned}`;
-  }
-  return cleaned;
-};
 
 export default function ContactForm({ initialData, onSave }: ContactFormProps) {
   const { toast } = useToast();
@@ -84,36 +36,26 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
     mode: 'onChange'
   });
 
-  // Reset form when initialData changes (when switching resumes)
+  const formData = watch();
+
+  // Reset form when initialData changes
   useEffect(() => {
     reset(initialData);
   }, [initialData, reset]);
 
-  // Watch all form values for real-time updates
-  const watchedValues = watch();
+  // Auto-save functionality
+  useAutoSave({
+    data: formData,
+    isDirty,
+    onSave,
+    delay: 1000
+  });
 
-  // Auto-save when form data changes (debounced)
-  useEffect(() => {
-    if (!isDirty) return;
-
-    const timeoutId = setTimeout(async () => {
-      try {
-        await onSave(watchedValues);
-        console.log('Auto-saved contact form data:', watchedValues);
-      } catch (error) {
-        console.error('Auto-save failed:', error);
-      }
-    }, 1000); // 1 second debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [watchedValues, isDirty, onSave]);
-
-  // Manual save function using handleSubmit for proper validation
-  const handleManualSave = handleSubmit(async (formData) => {
+  // Form handlers
+  const handleManualSave = handleSubmit(async (data) => {
     try {
       setIsSaving(true);
-      console.log('Manual save triggered with data:', formData);
-      await onSave(formData);
+      await onSave(data);
       toast({
         title: "Success",
         description: "Contact information saved successfully",
@@ -130,36 +72,22 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
     }
   });
 
-  // Field handlers with proper form integration
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(cleanValue(e.target.value));
-    setValue('phone', formatted, { shouldDirty: true, shouldValidate: true });
-  };
+  const createFieldHandler = (field: keyof ContactFormData, formatter?: (value: string) => string) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = formatter ? formatter(e.target.value) : e.target.value;
+      setValue(field, value, { shouldDirty: true, shouldValidate: true });
+    };
 
-  const handleLinkedInChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatLinkedIn(e.target.value);
-    setValue('linkedin', formatted, { shouldDirty: true, shouldValidate: true });
-  };
+  const createSwitchHandler = (field: keyof ContactFormData) =>
+    (checked: boolean) => setValue(field, checked as any, { shouldDirty: true, shouldValidate: true });
 
-  const handleWebsiteBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatWebsite(e.target.value);
-    setValue('website', formatted, { shouldDirty: true, shouldValidate: true });
-  };
-
-  const handleCountryChange = (value: string) => {
-    setValue('country', value, { shouldDirty: true, shouldValidate: true });
-    if (!isStateSelectionEnabled(value)) {
-      setValue('state', '', { shouldDirty: true, shouldValidate: true });
-    }
-  };
-
-  const handleStateChange = (value: string) => {
-    setValue('state', value, { shouldDirty: true, shouldValidate: true });
-  };
-
-  const handleSwitchChange = (field: keyof ContactFormData, checked: boolean) => {
-    setValue(field, checked as any, { shouldDirty: true, shouldValidate: true });
-  };
+  const createSelectHandler = (field: keyof ContactFormData, resetField?: keyof ContactFormData) =>
+    (value: string) => {
+      setValue(field, value, { shouldDirty: true, shouldValidate: true });
+      if (resetField && field === 'country' && !isStateSelectionEnabled(value)) {
+        setValue(resetField, '', { shouldDirty: true, shouldValidate: true });
+      }
+    };
 
   return (
     <div className={`relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${
@@ -167,306 +95,142 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
         ? 'opacity-75 pointer-events-none border-corporate-amber-300 dark:border-corporate-amber-600' 
         : 'border-corporate-navy-200 dark:border-corporate-navy-700 hover:border-corporate-amber-300 dark:hover:border-corporate-amber-600/50'
     }`}>
-      {/* Background gradient effect */}
+      {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" aria-hidden="true" />
-
-      {/* Subtle pattern overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.02),transparent_50%)]" aria-hidden="true" />
 
       <div className="relative bg-white/80 dark:bg-corporate-navy-900/90 backdrop-blur-sm p-6 md:p-8">
         <form onSubmit={handleManualSave} className="space-y-6" aria-busy={isSaving}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Full Name */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-              Full name <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
-            </Label>
-            <div className={`
-              flex items-center rounded-lg border-2 transition-all duration-200
-              ${errors.fullName 
-                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <TextInputField
+              name="fullName"
+              label="Full name"
+              placeholder="Charles Bloomberg"
+              required
+              validation={contactFormValidation.fullName}
+              register={register}
+              error={errors.fullName?.message}
+              isSaving={isSaving}
+            />
+
+            <TextInputField
+              name="email"
+              label="Email address"
+              placeholder="charlesbloomberg@wisc.edu"
+              type="email"
+              required
+              icon={<Mail />}
+              validation={contactFormValidation.email}
+              register={register}
+              error={errors.email?.message}
+              isSaving={isSaving}
+            />
+
+            <TextInputField
+              name="phone"
+              label="Phone number"
+              placeholder="(621) 799-5548"
+              type="tel"
+              icon={<Phone />}
+              onChange={createFieldHandler('phone', (value) => formatPhone(cleanValue(value)))}
+              register={register}
+              error={errors.phone?.message}
+              isSaving={isSaving}
+            />
+
+            <TextInputField
+              name="linkedin"
+              label="LinkedIn URL"
+              placeholder="bloomberg"
+              prefix="https://linkedin.com/in/"
+              onChange={createFieldHandler('linkedin', formatLinkedIn)}
+              register={register}
+              error={errors.linkedin?.message}
+              isSaving={isSaving}
+            />
+
+            <TextInputField
+              name="website"
+              label="Personal website or relevant link"
+              placeholder="https://www.charlesbloomberg.com"
+              type="url"
+              icon={<Globe />}
+              onBlur={createFieldHandler('website', formatWebsite)}
+              register={register}
+              error={errors.website?.message}
+              isSaving={isSaving}
+            />
+
+            <SelectField
+              name="country"
+              label="Country"
+              placeholder="Select country"
+              value={formData.country}
+              onValueChange={createSelectHandler('country', 'state')}
+              options={COUNTRIES}
+              error={errors.country?.message}
+              isSaving={isSaving}
+              showSwitch
+              switchChecked={formData.showCountry}
+              onSwitchChange={createSwitchHandler('showCountry')}
+            />
+
+            <SelectField
+              name="state"
+              label={getStateLabel(formData.country)}
+              placeholder={
+                isStateSelectionEnabled(formData.country)
+                  ? `Select ${getStateLabel(formData.country).toLowerCase()}`
+                  : 'Select country first'
               }
-              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-            `}>
-              <Input
-                {...register('fullName', {
-                  required: 'Full name is required',
-                  minLength: { value: 2, message: 'Name must be at least 2 characters' }
-                })}
-                placeholder="Charles Bloomberg"
-                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
-                disabled={isSaving}
-              />
-            </div>
-            {errors.fullName && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
-                {errors.fullName.message}
-              </p>
-            )}
+              value={formData.state}
+              onValueChange={createSelectHandler('state')}
+              options={getStateOptions(formData.country)}
+              disabled={!isStateSelectionEnabled(formData.country)}
+              error={errors.state?.message}
+              isSaving={isSaving}
+              showSwitch
+              switchChecked={formData.showState}
+              onSwitchChange={createSwitchHandler('showState')}
+            />
+
+            <TextInputField
+              name="city"
+              label="City"
+              placeholder="New York City"
+              icon={<MapPin />}
+              validation={contactFormValidation.city(formData.showCity)}
+              register={register}
+              error={errors.city?.message}
+              isSaving={isSaving}
+              showSwitch
+              switchChecked={formData.showCity}
+              onSwitchChange={createSwitchHandler('showCity')}
+            />
+
           </div>
 
-          {/* Email */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-              Email address <span className="text-corporate-amber-500 ml-1" aria-label="required">*</span>
-            </Label>
-            <div className={`
-              flex items-center rounded-lg border-2 transition-all duration-200 group
-              ${errors.email 
-                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-              }
-              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-            `}>
-              <Mail className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
-              <Input
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
-                })}
-                type="email"
-                placeholder="charlesbloomberg@wisc.edu"
-                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
-                disabled={isSaving}
-              />
-            </div>
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
-                {errors.email.message}
-              </p>
-            )}
+          {/* Save Button */}
+          <div className="flex justify-end pt-2">
+            <Button
+              type="submit"
+              disabled={isSaving}
+              className="w-full md:w-auto bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white font-semibold px-6 py-2.5 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save basic info
+                </>
+              )}
+            </Button>
           </div>
-
-          {/* Phone */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-              Phone number
-            </Label>
-            <div className={`
-              flex items-center rounded-lg border-2 transition-all duration-200 group
-              ${errors.phone 
-                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-              }
-              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-            `}>
-              <Phone className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
-              <Input
-                {...register('phone')}
-                type="tel"
-                placeholder="(621) 799-5548"
-                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
-                onChange={handlePhoneChange}
-                disabled={isSaving}
-              />
-            </div>
-          </div>
-
-          {/* LinkedIn */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-              LinkedIn URL
-            </Label>
-            <div className={`
-              flex items-center rounded-lg border-2 transition-all duration-200 group
-              ${errors.linkedin 
-                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-              }
-              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-            `}>
-              <span className="py-2 text-base font-semibold text-corporate-navy-700 dark:text-gray-300 whitespace-nowrap pl-3 pr-0">
-                https://linkedin.com/in/
-              </span>
-              <Input
-                {...register('linkedin')}
-                placeholder="bloomberg"
-                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 pl-0 pr-3"
-                onChange={handleLinkedInChange}
-                disabled={isSaving}
-              />
-              <div className="h-5 w-5 text-corporate-navy-500 dark:text-corporate-amber-400/70 mr-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
-            </div>
-          </div>
-
-          {/* Website */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-              Personal website or relevant link
-            </Label>
-            <div className={`
-              flex items-center rounded-lg border-2 transition-all duration-200 group
-              ${errors.website 
-                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-              }
-              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-            `}>
-              <Globe className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
-              <Input
-                {...register('website')}
-                type="url"
-                placeholder="https://www.charlesbloomberg.com"
-                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
-                onBlur={handleWebsiteBlur}
-                disabled={isSaving}
-              />
-            </div>
-          </div>
-
-          {/* Country */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-                Country
-              </Label>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
-                <Switch
-                  checked={watch('showCountry')}
-                  onCheckedChange={(checked) => handleSwitchChange('showCountry', checked)}
-                  className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
-                />
-              </div>
-            </div>
-            <div className={`
-              rounded-lg border-2 transition-all duration-200 group
-              ${errors.country 
-                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-              }
-              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-            `}>
-              <Select value={watch('country')} onValueChange={handleCountryChange} disabled={isSaving}>
-                <SelectTrigger className="h-10 sm:h-12 border-0 bg-transparent focus:ring-0 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 hover:bg-transparent">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((country) => (
-                    <SelectItem key={country.value} value={country.value}>
-                      {country.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* State */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-                {getStateLabel(watch('country'))}
-              </Label>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
-                <Switch
-                  checked={watch('showState')}
-                  onCheckedChange={(checked) => handleSwitchChange('showState', checked)}
-                  className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
-                />
-              </div>
-            </div>
-            <div className={`
-              rounded-lg border-2 transition-all duration-200 group
-              ${errors.state 
-                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-              }
-              ${!isStateSelectionEnabled(watch('country')) ? 'opacity-50 cursor-not-allowed' : ''}
-              ${isSaving ? 'opacity-60' : ''}
-            `}>
-              <Select
-                value={watch('state')}
-                onValueChange={handleStateChange}
-                disabled={!isStateSelectionEnabled(watch('country')) || isSaving}
-              >
-                <SelectTrigger className="h-10 sm:h-12 border-0 bg-transparent focus:ring-0 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 hover:bg-transparent">
-                  <SelectValue placeholder={
-                    isStateSelectionEnabled(watch('country'))
-                      ? `Select ${getStateLabel(watch('country')).toLowerCase()}`
-                      : 'Select country first'
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  {getStateOptions(watch('country')).map((state) => (
-                    <SelectItem key={state.value} value={state.value}>
-                      {state.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* City */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="city" className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
-                City
-              </Label>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-corporate-navy-600 dark:text-gray-400">Show on resume</span>
-                <Switch
-                  checked={watch('showCity')}
-                  onCheckedChange={(checked) => handleSwitchChange('showCity', checked)}
-                  className="scale-75 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-corporate-gold-500 data-[state=checked]:to-corporate-amber-500"
-                />
-              </div>
-            </div>
-            <div className={`
-              flex items-center rounded-lg border-2 transition-all duration-200 group
-              ${errors.city 
-                ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-950/20' 
-                : 'border-corporate-navy-200 dark:border-gray-700 bg-white dark:bg-corporate-navy-900/50 hover:border-corporate-amber-400 dark:hover:border-corporate-amber-500 focus-within:border-corporate-amber-500 dark:focus-within:border-corporate-amber-400'
-              }
-              ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
-            `}>
-              <MapPin className="w-4 h-4 text-corporate-navy-500 dark:text-corporate-amber-400/70 ml-3 transition-colors group-hover:text-corporate-amber-500 dark:group-hover:text-corporate-amber-400" />
-              <Input
-                id="city"
-                {...register('city', {
-                  validate: (value) => {
-                    if (watch('showCity') && !value?.trim()) {
-                      return 'City is required when choosing to show city on resume';
-                    }
-                    return true;
-                  }
-                })}
-                placeholder="New York City"
-                className="border-0 bg-transparent focus:ring-0 focus:border-0 h-10 sm:h-12 text-base font-semibold text-corporate-navy-900 dark:text-gray-100 placeholder:text-corporate-navy-400 dark:placeholder:text-gray-500 px-3"
-                disabled={isSaving}
-              />
-            </div>
-            {errors.city && (
-              <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1 animate-fade-in">
-                {errors.city.message}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end pt-2">
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="w-full md:w-auto bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white font-semibold px-6 py-2.5 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save basic info
-              </>
-            )}
-          </Button>
-        </div>
         </form>
 
         {/* Auto-save indicator */}

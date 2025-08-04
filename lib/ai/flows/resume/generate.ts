@@ -24,7 +24,6 @@
 import { ai } from '@/lib/ai/genkit';
 import { z } from 'genkit';
 
-
 const ExtractResumeDataInputSchema = z.object({
   resumeDataUri: z
     .string()
@@ -33,12 +32,16 @@ const ExtractResumeDataInputSchema = z.object({
     ),
 });
 export type ExtractResumeDataInput = z.infer<typeof ExtractResumeDataInputSchema>;
+
 const ExtractResumeDataOutputSchema = z.object({
   contactInformation: z.object({
     name: z.string().optional().describe('The full name of the resume owner.'),
     email: z.string().optional().describe('The email address of the resume owner.'),
     phone: z.string().optional().describe('The phone number of the resume owner.'),
     linkedin: z.string().optional().describe('The LinkedIn profile URL of the resume owner.'),
+    city: z.string().optional().describe('The city where the resume owner is located.'),
+    state: z.string().optional().describe('The state or province where the resume owner is located.'),
+    country: z.string().optional().describe('The country where the resume owner is located.'),
   }).optional().describe('Contact information of the resume owner.'),
   experience: z.array(z.object({
     title: z.string().optional().describe('The job title.'),
@@ -59,10 +62,10 @@ const ExtractResumeDataOutputSchema = z.object({
     url: z.string().optional().describe('A URL for the project if available.'),
   })).optional().describe('Projects the resume owner has worked on.'),
   involvement: z.array(z.object({
-      organization: z.string().optional().describe('The name of the organization.'),
-      role: z.string().optional().describe('The role or position held.'),
-      dates: z.string().optional().describe('The start and end dates of involvement.'),
-      description: z.string().optional().describe('A description of the involvement or activities.'),
+    organization: z.string().optional().describe('The name of the organization.'),
+    role: z.string().optional().describe('The role or position held.'),
+    dates: z.string().optional().describe('The start and end dates of involvement.'),
+    description: z.string().optional().describe('A description of the involvement or activities.'),
   })).optional().describe('Extracurricular or community involvement.'),
   skills: z.array(z.string()).optional().describe('Skills of the resume owner.'),
   certifications: z.array(z.object({
@@ -72,23 +75,24 @@ const ExtractResumeDataOutputSchema = z.object({
   })).optional().describe('Certifications held by the resume owner.'),
 });
 export type ExtractResumeDataOutput = z.infer<typeof ExtractResumeDataOutputSchema>;
+
 export async function extractResumeData(input: ExtractResumeDataInput): Promise<ExtractResumeDataOutput> {
   console.log('🔍 Starting Gemini multimodal PDF extraction');
   // Validate input data URI format
   if (!input.resumeDataUri.startsWith('data:')) {
     throw new Error('Invalid data URI format. Expected data URI with MIME type and base64 encoding');
   }
+
   // Extract MIME type to ensure we're processing a PDF
   const mimeMatch = input.resumeDataUri.match(/^data:([^;]+);base64,/);
   if (!mimeMatch) {
     throw new Error('Invalid data URI format. Missing MIME type');
   }
+
   const mimeType = mimeMatch[1];
   if (mimeType !== 'application/pdf') {
     console.warn(`⚠️ Unexpected MIME type: ${mimeType}. Expected application/pdf`);
   }
-
-
 
   try {
     const result = await extractResumeDataFlow(input);
@@ -99,6 +103,7 @@ export async function extractResumeData(input: ExtractResumeDataInput): Promise<
     throw error;
   }
 }
+
 const extractResumeDataPrompt = ai.definePrompt({
   name: 'extractResumeDataPrompt',
   input: {schema: ExtractResumeDataInputSchema},
@@ -121,7 +126,10 @@ const extractResumeDataPrompt = ai.definePrompt({
 - Name: Extract the full name (usually at the top in larger font)
 - Email: Look for @ symbol
 - Phone: Extract digits only, format as (XXX) XXX-XXXX if possible
-- LinkedIn: Look for linkedin.com URLs
+- LinkedIn: Look for linkedin.com URLs or just the username
+- City: Extract the city name from address or location info
+- State: Extract the state/province from address or location info
+- Country: Extract the country from address or location info (default to "United States" if US address)
 - IMPORTANT: If phone appears with extra spaces/newlines, clean it to just the number
 **EXPERIENCE EXTRACTION:**
 Look for variations of experience sections:
@@ -149,6 +157,7 @@ Before returning results, verify:
 ✓ No truncated or missing sections
 Return complete extraction following the schema.`,
 });
+
 const extractResumeDataFlow = ai.defineFlow(
   {
     name: 'extractResumeDataFlow',
