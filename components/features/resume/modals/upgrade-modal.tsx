@@ -75,13 +75,6 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onUpgrade 
       price: 29.00,
       period: '/mo',
       savings: null
-    },
-    {
-      id: 'quarterly',
-      name: 'Quarterly',
-      price: 19.00,
-      period: '/mo',
-      savings: '34%'
     }
   ];
 

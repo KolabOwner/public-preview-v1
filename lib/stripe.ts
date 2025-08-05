@@ -22,7 +22,7 @@ export interface CheckoutSessionRequest {
   priceId: string;
   userId: string;
   email: string;
-  interval: 'monthly' | 'quarterly';
+  interval: 'monthly';
 }
 
 export async function createCheckoutSession(data: CheckoutSessionRequest) {

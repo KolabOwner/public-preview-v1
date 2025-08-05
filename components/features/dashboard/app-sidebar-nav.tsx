@@ -69,8 +69,8 @@ const AppSidebarNav = () => {
       return;
     }
     try {
-      // Get the correct price ID based on plan
-      const priceId = planId === 'monthly' ? STRIPE_PRICE_IDS.monthly : STRIPE_PRICE_IDS.quarterly;
+      // Use monthly price ID (only plan supported)
+      const priceId = STRIPE_PRICE_IDS.monthly;
       // Create checkout session
       const response = await fetch('/api/payments/sessions', {
         method: 'POST',

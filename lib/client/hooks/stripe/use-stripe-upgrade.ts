@@ -19,11 +19,9 @@ export function useStripeUpgrade(options?: UseStripeUpgradeOptions) {
     setIsProcessing(true);
 
     try {
-      // Map plan IDs to Stripe price IDs
+      // Map plan IDs to Stripe price IDs (only monthly supported)
       const priceIdMap: Record<string, string> = {
         monthly: STRIPE_PRICE_IDS.monthly,
-        quarterly: STRIPE_PRICE_IDS.quarterly,
-        lifetime: (STRIPE_PRICE_IDS as any).lifetime,
       };
 
       const priceId = priceIdMap[planId];
@@ -36,7 +34,7 @@ export function useStripeUpgrade(options?: UseStripeUpgradeOptions) {
         priceId,
         userId: user.uid,
         email: user.email!,
-        interval: planId as 'monthly' | 'quarterly',
+        interval: 'monthly',
       });
 
       // Redirect to Stripe checkout
