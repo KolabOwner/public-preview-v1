@@ -76,23 +76,23 @@ const featuredSample = {
 };
 
 const SampleCard = ({ sample }: { sample: ProfessionalSample }) => (
-  <Link href="/sign-up" className="flex-shrink-0 w-64">
-    <div className="bg-white rounded-2xl shadow-lg border border-corporate-navy-100 cursor-pointer">
+  <Link href="/sign-up" className="flex-shrink-0 w-full lg:w-64">
+    <div className="bg-white rounded-2xl shadow-lg border border-corporate-navy-100 cursor-pointer hover:shadow-xl hover:scale-105 transition-all duration-200">
       <div className="aspect-[8.5/11] bg-corporate-navy-50 rounded-t-2xl overflow-hidden relative">
         <Image 
           src={sample.imageUrl} 
           alt={sample.title} 
           fill
           className="object-cover"
-          sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 256px"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 256px"
           loading="lazy"
           quality={75}
           placeholder="blur"
           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
         />
       </div>
-      <div className="p-4">
-        <h4 className="font-semibold text-corporate-navy-900 truncate">{sample.title}</h4>
+      <div className="p-3 sm:p-4">
+        <h4 className="font-semibold text-corporate-navy-900 truncate text-sm sm:text-base">{sample.title}</h4>
         <div className="flex flex-wrap gap-1 mt-2">
           {sample.tags.map(tag => (
             <span key={tag} className="px-2 py-1 bg-corporate-navy-100 text-corporate-navy-600 text-xs rounded-md">
@@ -106,12 +106,21 @@ const SampleCard = ({ sample }: { sample: ProfessionalSample }) => (
 );
 
 const CategoryRow = ({ category }: { category: SampleCategory }) => (
-  <div className="space-y-6">
-    <div>
-      <h3 className="text-3xl font-bold text-corporate-navy-900">{category.category}</h3>
-      <p className="text-lg text-corporate-navy-600">{category.description}</p>
+  <div className="space-y-4 sm:space-y-6">
+    <div className="text-center sm:text-left">
+      <h3 className="text-2xl sm:text-3xl font-bold text-corporate-navy-900">{category.category}</h3>
+      <p className="text-base sm:text-lg text-corporate-navy-600">{category.description}</p>
     </div>
-    <div className="flex gap-6 pb-4 -mx-4 px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-corporate-gold-500 scrollbar-track-corporate-gold-100">
+    
+    {/* Mobile: Grid Layout */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
+      {category.samples.slice(0, 4).map(sample => (
+        <SampleCard key={sample.title} sample={sample} />
+      ))}
+    </div>
+    
+    {/* Desktop: Horizontal Scroll */}
+    <div className="hidden lg:flex gap-6 pb-4 -mx-4 px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-corporate-gold-500 scrollbar-track-corporate-gold-100">
       {category.samples.map(sample => (
         <SampleCard key={sample.title} sample={sample} />
       ))}
@@ -159,28 +168,28 @@ const ProfessionalSamples = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-24"
         >
-          <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-gradient-to-br from-corporate-navy-900 to-corporate-charcoal-900 rounded-3xl p-12 overflow-hidden border border-corporate-navy-800">
+          <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center bg-gradient-to-br from-corporate-navy-900 to-corporate-charcoal-900 rounded-3xl p-6 sm:p-8 lg:p-12 overflow-hidden border border-corporate-navy-800">
             {/* Modern background glow */}
             <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-[radial-gradient(ellipse_at_center,_rgba(217,119,6,0.15)_0%,_transparent_60%)]"></div>
 
-            <div>
-              <h3 className="text-4xl font-bold text-white mb-4">Featured: {featuredSample.title}</h3>
-              <p className="text-lg text-corporate-navy-300 mb-6 leading-relaxed">{featuredSample.description}</p>
-              <ul className="space-y-3 mb-8">
+            <div className="order-2 lg:order-1">
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">Featured: {featuredSample.title}</h3>
+              <p className="text-sm sm:text-base lg:text-lg text-corporate-navy-300 mb-4 sm:mb-6 leading-relaxed">{featuredSample.description}</p>
+              <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                 {featuredSample.highlights.map((highlight, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-6 h-6 text-corporate-gold-500" />
-                    <span className="text-corporate-navy-200">{highlight}</span>
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-corporate-gold-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm sm:text-base text-corporate-navy-200">{highlight}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/sign-up" className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 rounded-xl font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105">
+              <Link href="/sign-up" className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 rounded-xl font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 text-sm sm:text-base min-h-[44px]">
                 Use This Template
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </div>
-            <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-2xl opacity-20 animate-pulse"></div>
+            <div className="relative order-1 lg:order-2">
+              <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-2xl opacity-20 animate-pulse"></div>
               <div className="relative rounded-2xl shadow-2xl border-2 border-corporate-navy-700 overflow-hidden aspect-[8.5/11]">
                 <Image 
                   src={featuredSample.imageUrl} 

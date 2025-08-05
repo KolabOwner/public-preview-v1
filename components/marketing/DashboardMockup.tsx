@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 // Resume Card Component
 const ResumeCard = ({ title, isDarkMode }: { title: string; isDarkMode: boolean }) => (
-  <div className={`relative h-48 w-40 overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300`}>
+  <div className={`relative h-48 sm:h-52 lg:h-48 w-full overflow-hidden rounded-lg border ${isDarkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-900'} transition-colors duration-300 hover:shadow-lg hover:scale-105 transition-all duration-200`}>
     <div className={`absolute w-full p-2 font-[Merriweather] ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
       <div className="text-[5px] font-semibold text-center">Alex Chen</div>
       <div className="flex w-full justify-center pb-1 text-[3px]">New York, NY • alex.chen@email.com • (555) 123-4567</div>
@@ -88,11 +88,46 @@ const DashboardMockup = () => {
         <div className="absolute inset-0 bg-grid-white opacity-[0.02]"></div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative mb-0">
-        <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-lg shadow-xl max-w-5xl mx-auto flex overflow-hidden min-h-[400px] transition-colors duration-300 transform scale-90`}>
+      <div className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-8 relative mb-0">
+        <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-lg shadow-xl max-w-5xl mx-auto flex flex-col lg:flex-row overflow-hidden min-h-[400px] transition-colors duration-300 transform scale-90 sm:scale-95 lg:scale-90`}>
           
-          {/* Sidebar */}
-          <aside className={`w-[240px] min-h-full ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-r border-gray-700' : 'bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200'} flex flex-col transition-colors duration-300`}>
+          {/* Mobile Header */}
+          <div className={`lg:hidden flex items-center justify-between p-4 ${isDarkMode ? 'bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700' : 'bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200'} transition-colors duration-300`}>
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-xl blur-xl opacity-60"></div>
+                <div className="relative bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 p-2 rounded-xl shadow-xl shadow-corporate-gold-500/20">
+                  <div className="w-5 h-5 bg-white rounded-sm flex items-center justify-center">
+                    <span className="text-corporate-gold-600 font-bold text-xs">R</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-baseline">
+                <span className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-corporate-navy-900'} transition-colors duration-300 tracking-tight`}>Rezum</span>
+                <span className="text-xl font-bold bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-transparent bg-clip-text ml-0.5">AI</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-100 text-gray-600'} hover:opacity-80 transition-all duration-300`}
+              >
+                {isDarkMode ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-corporate-gold-600 font-semibold text-white text-xs">A</div>
+            </div>
+          </div>
+
+          {/* Sidebar - Desktop Only */}
+          <aside className={`hidden lg:flex w-[240px] min-h-full ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-r border-gray-700' : 'bg-gradient-to-br from-gray-50 to-gray-100 border-r border-gray-200'} flex-col transition-colors duration-300`}>
             {/* Logo Section */}
             <div className="p-6">
               <div className="flex items-center gap-3">
@@ -150,20 +185,32 @@ const DashboardMockup = () => {
           </aside>
 
           {/* Main Dashboard Content */}
-          <main className="flex-1 p-8">
-            <div className="flex justify-between">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            {/* Mobile Create Button */}
+            <div className="lg:hidden mb-6">
+              <button className="w-full bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white font-medium py-3 px-4 rounded-lg shadow-md shadow-corporate-gold-500/20 min-h-[44px]">
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-sm">Create New Resume</span>
+                </span>
+              </button>
+            </div>
+
+            <div className="flex flex-col lg:flex-row justify-between">
               {/* Tab Navigation */}
-              <div className="my-6 flex flex-row gap-x-2">
-                <div className="rounded-md flex items-center h-6 px-2 text-xs font-semibold leading-4 uppercase tracking-[.12px] bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white">
+              <div className="my-4 lg:my-6 flex flex-row gap-x-2">
+                <div className="rounded-md flex items-center h-8 lg:h-6 px-3 lg:px-2 text-xs font-semibold leading-4 uppercase tracking-[.12px] bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-white">
                   Resumes
                 </div>
-                <div className={`rounded-md flex items-center h-6 px-2 text-xs font-semibold leading-4 uppercase tracking-[.12px] transition-colors duration-300 ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                <div className={`rounded-md flex items-center h-8 lg:h-6 px-3 lg:px-2 text-xs font-semibold leading-4 uppercase tracking-[.12px] transition-colors duration-300 ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                   Cover Letters
                 </div>
               </div>
 
-              {/* Right Side Controls */}
-              <div className="my-5 flex flex-row items-center gap-4">
+              {/* Right Side Controls - Desktop Only */}
+              <div className="hidden lg:flex my-5 flex-row items-center gap-4">
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
                   className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-100 text-gray-600'} hover:opacity-80 transition-all duration-300`}
@@ -219,16 +266,10 @@ const DashboardMockup = () => {
                 </div>
               </div>
 
-              {/* Resume Cards Rows */}
-              <div className="flex flex-row gap-4">
-                {resumeTitles.slice(0, 3).map((title, index) => (
+              {/* Resume Cards Grid - Mobile Responsive */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                {resumeTitles.map((title, index) => (
                   <ResumeCard key={index} title={title} isDarkMode={isDarkMode} />
-                ))}
-              </div>
-
-              <div className="flex flex-row gap-4 mt-4">
-                {resumeTitles.slice(3, 5).map((title, index) => (
-                  <ResumeCard key={index + 3} title={title} isDarkMode={isDarkMode} />
                 ))}
               </div>
 

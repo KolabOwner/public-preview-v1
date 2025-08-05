@@ -111,8 +111,8 @@ const HeroContent = memo(() => {
           AI-Powered Resume Builder
         </Badge>
 
-        <h1 className="text-5xl md:text-7xl font-bold text-corporate-navy-900 leading-tight tracking-tight">
-          Build your dream career with the{' '}
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-corporate-navy-900 leading-tight tracking-tight">
+          <span className="block sm:inline">Build your dream career with the{' '}</span>
           <span className="relative inline-block">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-corporate-gold-600 via-corporate-amber-500 to-corporate-gold-600">
               world&apos;s smartest resume builder
@@ -121,7 +121,7 @@ const HeroContent = memo(() => {
           </span>
         </h1>
 
-        <p className="text-lg md:text-xl text-corporate-navy-600 leading-relaxed max-w-2xl font-corporate-sans">
+        <p className="text-base sm:text-lg md:text-xl text-corporate-navy-600 leading-relaxed max-w-2xl font-corporate-sans">
           Join over 1.3M job seekers using Rezum&apos;s AI-powered platform to create resumes that get noticed.
           Our technology automates everything: writing, editing, optimizing, and formatting.
         </p>
@@ -130,13 +130,14 @@ const HeroContent = memo(() => {
           <Button
             asChild
             size="lg"
-            className="group bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white px-8 py-6 rounded-2xl text-lg font-semibold font-corporate-sans shadow-xl hover:shadow-lg transition-all duration-250"
+            className="group bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white px-6 sm:px-8 py-4 sm:py-6 rounded-2xl text-base sm:text-lg font-semibold font-corporate-sans shadow-xl hover:shadow-lg transition-all duration-250 min-h-[44px]"
             aria-label="Create your resume for free"
           >
             <a href="/sign-up">
-              <Sparkles className="w-6 h-6 mr-2" aria-hidden="true" />
-              Create My Resume - Free
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2" aria-hidden="true" />
+              <span className="sm:hidden">Create Resume - Free</span>
+              <span className="hidden sm:inline">Create My Resume - Free</span>
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </a>
           </Button>
 
@@ -144,11 +145,12 @@ const HeroContent = memo(() => {
             <Button
               variant="outline"
               size="lg"
-              className="bg-white border-2 border-corporate-navy-200 text-corporate-navy-700 hover:bg-corporate-navy-50 hover:border-corporate-navy-300 px-6 py-6 rounded-2xl text-lg font-semibold font-corporate-sans transition-colors duration-200"
+              className="bg-white border-2 border-corporate-navy-200 text-corporate-navy-700 hover:bg-corporate-navy-50 hover:border-corporate-navy-300 px-4 sm:px-6 py-4 sm:py-6 rounded-2xl text-base sm:text-lg font-semibold font-corporate-sans transition-colors duration-200 min-h-[44px]"
               aria-label="Import my resume"
             >
-              <Eye className="w-5 h-5 mr-2" aria-hidden="true" />
-              Import My Resume
+              <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />
+              <span className="sm:hidden">Import Resume</span>
+              <span className="hidden sm:inline">Import My Resume</span>
             </Button>
           </Link>
         </div>
@@ -863,7 +865,7 @@ const resumeData: ResumeData = {
 
   return (
     <section
-      className={`relative bg-white overflow-hidden min-h-screen ${className}`}
+      className={`relative bg-white overflow-hidden lg:min-h-screen ${className}`}
       role="main"
       aria-labelledby="main-heading"
       {...props}
@@ -874,16 +876,16 @@ const resumeData: ResumeData = {
       <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-corporate-navy-500/3 rounded-full blur-2xl animate-bounce" aria-hidden="true"></div>
       <div className="absolute inset-0 bg-grid-black opacity-[0.01]" aria-hidden="true"></div>
 
-      <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pt-12 lg:pt-16 pb-0">
+      <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pt-8 sm:pt-12 lg:pt-16 pb-16 sm:pb-20 lg:pb-0">
         {/* Main Hero Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[500px] lg:min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-16 items-center lg:min-h-[600px]">
           {/* Left Side - Hero Content */}
-          <div className="order-2 lg:order-1">
+          <div className="order-1 lg:order-1">
             <HeroContent />
           </div>
 
-          {/* Right Side - 3D Resume Showcase */}
-          <div className="order-1 lg:order-2">
+          {/* Right Side - 3D Resume Showcase (Desktop Only) */}
+          <div className="order-2 lg:order-2 hidden lg:block">
             <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden shadow-2xl p-4 lg:p-6"
                  style={{ minHeight: '420px' }}
                  role="region"
@@ -894,38 +896,9 @@ const resumeData: ResumeData = {
               <div className="absolute bottom-1/3 right-1/3 w-32 h-32 lg:w-48 lg:h-48 bg-purple-500/12 rounded-full blur-3xl" aria-hidden="true"></div>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900/3 via-purple-900/3 to-indigo-900/3" aria-hidden="true"></div>
 
-              {/* 3D Content Grid */}
+              {/* Desktop 3D Content Grid */}
               <div className="relative z-10 flex items-center justify-center h-full w-full max-w-full">
-                {/* Mobile Layout */}
-                <div className="lg:hidden space-y-4">
-                  {/* Mobile Resume Preview */}
-                  <div className="flex justify-center">
-                    <div className="scale-50 sm:scale-60">
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <ResumePreview3D
-                          resumeData={resumeData}
-                          selectedColor={selectedColor}
-                          highlightKeywords={highlightKeywords}
-                        />
-                      </Suspense>
-                    </div>
-                  </div>
-
-                  {/* Mobile Side Panels */}
-                  <div className="flex justify-center">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-sm">
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <ATSScore3D atsScore={atsScore} isAnimating={isAnimating} />
-                      </Suspense>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <KeywordsPanel3D keywords={keywords} />
-                      </Suspense>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Desktop Layout */}
-                <div className="hidden lg:flex gap-3 xl:gap-4 items-start justify-center w-full">
+                <div className="flex gap-3 xl:gap-4 items-start justify-center w-full">
                   {/* Resume Preview - Center */}
                   <div className="flex-shrink-0 min-w-0 mx-auto">
                     <Suspense fallback={<LoadingSpinner />}>
@@ -950,6 +923,7 @@ const resumeData: ResumeData = {
               </div>
             </div>
           </div>
+
         </div>
       </div>
 

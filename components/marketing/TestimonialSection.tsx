@@ -76,22 +76,22 @@ StarRating.displayName = 'StarRating';
 
 const TestimonialCard = memo(({ testimonial }: { testimonial: Testimonial }) => {
   return (
-    <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200 h-full flex flex-col">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-gradient-to-br from-corporate-gold-100 to-corporate-amber-100 rounded-full flex items-center justify-center">
-          <span className="text-corporate-gold-700 font-semibold text-lg">
+    <div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 shadow-lg border border-gray-200 h-full flex flex-col">
+      <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-corporate-gold-100 to-corporate-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <span className="text-corporate-gold-700 font-semibold text-sm sm:text-lg">
             {testimonial.name.split(' ').map(n => n[0]).join('')}
           </span>
         </div>
-        <div>
-          <h3 className="font-semibold text-gray-900">{testimonial.name}</h3>
-          <p className="text-gray-600 text-sm">{testimonial.role} at {testimonial.company}</p>
+        <div className="min-w-0">
+          <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{testimonial.name}</h3>
+          <p className="text-gray-600 text-xs sm:text-sm truncate">{testimonial.role} at {testimonial.company}</p>
         </div>
       </div>
       
-      <blockquote className="flex-1 mb-6">
-        <Quote className="w-6 h-6 text-corporate-gold-300 mb-3" />
-        <p className="text-gray-700 leading-relaxed">{testimonial.quote}</p>
+      <blockquote className="flex-1 mb-4 sm:mb-6">
+        <Quote className="w-5 h-5 sm:w-6 sm:h-6 text-corporate-gold-300 mb-2 sm:mb-3" />
+        <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{testimonial.quote}</p>
       </blockquote>
       
       <StarRating rating={testimonial.rating} />
@@ -117,19 +117,19 @@ const TestimonialSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-3 bg-corporate-navy-50 border border-corporate-gold-500/20 rounded-full px-6 py-3 mb-8">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-3 bg-corporate-navy-50 border border-corporate-gold-500/20 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8">
             <div className="w-2 h-2 bg-corporate-gold-500 rounded-full animate-ping"></div>
-            <span className="text-corporate-navy-700 font-medium">Success Stories</span>
+            <span className="text-corporate-navy-700 font-medium text-sm sm:text-base">Success Stories</span>
           </div>
           
-          <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
             <span className="block">Career Success</span>
             <span className="block bg-gradient-to-r from-corporate-gold-600 to-corporate-amber-500 bg-clip-text text-transparent">
               Stories
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Real professionals. Real transformations. Real results that speak for themselves.
           </p>
         </div>
@@ -192,18 +192,18 @@ const TestimonialSection = () => {
             <div className="flex items-center justify-between mt-6">
               <button
                 onClick={prevTestimonial}
-                className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                className="p-3 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label="Previous testimonial"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 {testimonials.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-colors ${
+                    className={`w-3 h-3 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center ${
                       index === currentIndex ? 'bg-corporate-gold-500' : 'bg-gray-300'
                     }`}
                     aria-label={`Go to testimonial ${index + 1}`}
@@ -213,7 +213,7 @@ const TestimonialSection = () => {
               
               <button
                 onClick={nextTestimonial}
-                className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                className="p-3 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label="Next testimonial"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -238,59 +238,59 @@ const TestimonialSection = () => {
         </div>
 
         {/* Enhanced Impact Stats */}
-        <div className="mt-20 bg-gradient-to-r from-corporate-navy-50 via-white to-corporate-gold-50/30 rounded-2xl p-8 md:p-12">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-corporate-navy-900 mb-3">
+        <div className="mt-12 sm:mt-16 lg:mt-20 bg-gradient-to-r from-corporate-navy-50 via-white to-corporate-gold-50/30 rounded-2xl p-6 sm:p-8 lg:p-12">
+          <div className="text-center mb-6 sm:mb-8">
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-corporate-navy-900 mb-2 sm:mb-3">
               Built for Real Results
             </h3>
-            <p className="text-corporate-navy-600">
+            <p className="text-corporate-navy-600 text-sm sm:text-base">
               Powered by advanced AI and industry best practices
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             <div className="text-center group">
-              <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-corporate-navy-900 mb-2">8x</div>
-              <p className="text-corporate-navy-600 font-medium">Faster Creation</p>
-              <p className="text-sm text-corporate-navy-400 mt-1">vs. building from scratch</p>
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-corporate-navy-900 mb-1 sm:mb-2">8x</div>
+              <p className="text-corporate-navy-600 font-medium text-sm sm:text-base">Faster Creation</p>
+              <p className="text-xs sm:text-sm text-corporate-navy-400 mt-1">vs. building from scratch</p>
             </div>
             
             <div className="text-center group">
-              <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-corporate-navy-900 mb-2">10 min</div>
-              <p className="text-corporate-navy-600 font-medium">Average Build Time</p>
-              <p className="text-sm text-corporate-navy-400 mt-1">from start to finish</p>
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-corporate-navy-900 mb-1 sm:mb-2">10 min</div>
+              <p className="text-corporate-navy-600 font-medium text-sm sm:text-base">Average Build Time</p>
+              <p className="text-xs sm:text-sm text-corporate-navy-400 mt-1">from start to finish</p>
             </div>
             
             <div className="text-center group">
-              <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-corporate-navy-900 mb-2">98%</div>
-              <p className="text-corporate-navy-600 font-medium">ATS Compatible</p>
-              <p className="text-sm text-corporate-navy-400 mt-1">optimized for all systems</p>
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-corporate-navy-900 mb-1 sm:mb-2">98%</div>
+              <p className="text-corporate-navy-600 font-medium text-sm sm:text-base">ATS Compatible</p>
+              <p className="text-xs sm:text-sm text-corporate-navy-400 mt-1">optimized for all systems</p>
             </div>
             
             <div className="text-center group">
-              <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-corporate-navy-900 mb-2">1200+</div>
-              <p className="text-corporate-navy-600 font-medium">Professional Templates</p>
-              <p className="text-sm text-corporate-navy-400 mt-1">resumes + cover letters</p>
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-corporate-navy-900 mb-1 sm:mb-2">1200+</div>
+              <p className="text-corporate-navy-600 font-medium text-sm sm:text-base">Professional Templates</p>
+              <p className="text-xs sm:text-sm text-corporate-navy-400 mt-1">resumes + cover letters</p>
             </div>
           </div>
           

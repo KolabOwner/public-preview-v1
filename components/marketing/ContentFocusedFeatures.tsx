@@ -65,7 +65,7 @@ const FeatureRow = ({ feature, index }: { feature: typeof features[0], index: nu
   const isEven = index % 2 === 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
       <motion.div
         initial={{ opacity: 0, x: isEven ? -50 : 50 }}
         whileInView={{ opacity: 1, x: 0 }}
@@ -73,9 +73,9 @@ const FeatureRow = ({ feature, index }: { feature: typeof features[0], index: nu
         transition={{ duration: 0.8, delay: 0.2 }}
         className={`order-2 md:order-${isEven ? 1 : 2}`}
       >
-        <div className="relative">
-          <div className="absolute -inset-2 bg-gradient-to-br from-corporate-gold-100 to-corporate-amber-100 rounded-2xl blur-lg opacity-20"></div>
-          <img src={feature.image} alt={feature.title} className="relative rounded-2xl shadow-2xl border border-corporate-navy-100" />
+        <div className="relative w-48 sm:w-64 md:w-80 lg:w-96 mx-auto">
+          <div className="absolute -inset-1 sm:-inset-2 bg-gradient-to-br from-corporate-gold-100 to-corporate-amber-100 rounded-2xl blur-lg opacity-20"></div>
+          <img src={feature.image} alt={feature.title} className="relative rounded-2xl shadow-2xl border border-corporate-navy-100 w-full h-auto" />
         </div>
       </motion.div>
       <motion.div
@@ -85,24 +85,24 @@ const FeatureRow = ({ feature, index }: { feature: typeof features[0], index: nu
         transition={{ duration: 0.8 }}
         className={`order-1 md:order-${isEven ? 2 : 1}`}
       >
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 text-white rounded-2xl flex items-center justify-center">
-            {feature.icon}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 text-white rounded-2xl flex items-center justify-center flex-shrink-0">
+            {React.cloneElement(feature.icon, { className: "w-6 h-6 sm:w-8 sm:h-8" })}
           </div>
-          <h3 className="text-3xl font-bold text-corporate-navy-900">{feature.title}</h3>
+          <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-corporate-navy-900 leading-tight">{feature.title}</h3>
         </div>
-        <p className="text-lg text-corporate-navy-600 mb-6 leading-relaxed">
+        <p className="text-sm sm:text-base lg:text-lg text-corporate-navy-600 mb-4 sm:mb-6 leading-relaxed">
           {feature.description}
         </p>
-        <ul className="space-y-3">
+        <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
           {feature.highlights.map((highlight, i) => (
-            <li key={i} className="flex items-center gap-3">
-              <CheckCircle2 className="w-6 h-6 text-corporate-gold-600" />
-              <span className="text-corporate-navy-700 text-base">{highlight}</span>
+            <li key={i} className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-corporate-gold-600 flex-shrink-0 mt-0.5" />
+              <span className="text-corporate-navy-700 text-sm sm:text-base">{highlight}</span>
             </li>
           ))}
         </ul>
-        <Link href="/sign-up" className="mt-8 inline-flex items-center gap-2 text-corporate-gold-600 font-semibold hover:text-corporate-amber-600 transition-colors">
+        <Link href="/sign-up" className="inline-flex items-center gap-2 text-corporate-gold-600 font-semibold hover:text-corporate-amber-600 transition-colors text-sm sm:text-base min-h-[44px] py-2">
           Learn More
           <ArrowRight className="w-4 h-4" />
         </Link>
@@ -132,18 +132,18 @@ const ContentFocusedFeatures = () => {
             <div className="w-2 h-2 bg-corporate-gold-500 rounded-full animate-ping"></div>
             <span className="text-corporate-navy-700 font-medium">Content-Focused Features</span>
           </div>
-          <h2 id="features-heading" className="text-5xl md:text-7xl font-bold leading-tight mb-8">
+          <h2 id="features-heading" className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold leading-tight mb-6 sm:mb-8">
             <span className="block text-corporate-navy-900">AI-Powered Tools</span>
             <span className="block bg-gradient-to-r from-corporate-gold-600 via-corporate-amber-500 to-corporate-gold-600 bg-clip-text text-transparent">
               That Get You Hired
             </span>
           </h2>
-          <p className="text-xl text-corporate-navy-600 leading-relaxed max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-corporate-navy-600 leading-relaxed max-w-3xl mx-auto">
             Our intelligent features analyze, optimize, and score your resume to ensure maximum impact with recruiters and ATS systems.
           </p>
         </motion.div>
 
-        <div className="space-y-24">
+        <div className="space-y-12 sm:space-y-16 lg:space-y-24">
           {features.map((feature, index) => (
             <FeatureRow key={feature.title} feature={feature} index={index} />
           ))}

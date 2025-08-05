@@ -103,7 +103,7 @@ const NavigationButton = React.memo(({
     size="icon"
     onClick={onClick}
     disabled={disabled}
-    className="w-12 h-12 rounded-full bg-white/95 backdrop-blur-sm border-corporate-gold-300/50 shadow-xl hover:shadow-lg hover:border-corporate-gold-400 transition-all duration-250 disabled:opacity-50 hover:scale-102"
+    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/95 backdrop-blur-sm border-corporate-gold-300/50 shadow-xl hover:shadow-lg hover:border-corporate-gold-400 transition-all duration-250 disabled:opacity-50 hover:scale-102 min-h-[44px] min-w-[44px]"
     aria-label={`${direction === 'prev' ? 'Previous' : 'Next'} template`}
   >
     {direction === 'prev' ? (
@@ -265,21 +265,22 @@ const ResumeTemplateShowcase = () => {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center">
             {/* Template Preview */}
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-7 order-2 lg:order-1">
               <Card className="relative overflow-hidden border-0 shadow-2xl bg-white/95 backdrop-blur-sm border border-corporate-gold-300/20">
                 {currentTemplate.isPopular && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <Badge className="bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 shadow-xl">
-                      <Zap className="w-3 h-3 mr-1" />
-                      Most Popular
+                  <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
+                    <Badge className="bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-corporate-navy-900 shadow-xl text-xs">
+                      <Zap className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
+                      <span className="hidden sm:inline">Most Popular</span>
+                      <span className="sm:hidden">Popular</span>
                     </Badge>
                   </div>
                 )}
                 
                 <CardContent className="p-0">
-                  <div className="relative h-[600px] md:h-[700px] lg:h-[800px]">
+                  <div className="relative h-[400px] sm:h-[500px] md:h-[600px] lg:h-[800px]">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={currentTemplate.id}
@@ -302,19 +303,19 @@ const ResumeTemplateShowcase = () => {
             </div>
 
             {/* Template Information */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 order-1 lg:order-2">
               <motion.div
                 key={currentTemplate.id}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6"
               >
                 <div>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-corporate-navy-900 mb-3 leading-tight">
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-corporate-navy-900 mb-2 sm:mb-3 leading-tight">
                     {currentTemplate.name}
                   </h3>
-                  <p className="text-corporate-navy-600 text-base lg:text-lg leading-relaxed">
+                  <p className="text-corporate-navy-600 text-sm sm:text-base lg:text-lg leading-relaxed">
                     {currentTemplate.description}
                   </p>
                 </div>
@@ -360,10 +361,10 @@ const ResumeTemplateShowcase = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-4">
+                <div className="pt-2 sm:pt-4">
                   <Link 
                     href="/sign-up"
-                    className="w-full inline-flex items-center justify-center bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 font-bold shadow-xl hover:shadow-lg transition-all duration-250 px-6 py-3 rounded-md"
+                    className="w-full inline-flex items-center justify-center bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-corporate-navy-900 font-bold shadow-xl hover:shadow-lg transition-all duration-250 px-4 sm:px-6 py-3 sm:py-4 rounded-lg text-sm sm:text-base min-h-[44px]"
                   >
                     Use This Template
                   </Link>
@@ -373,7 +374,7 @@ const ResumeTemplateShowcase = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="flex md:hidden justify-center gap-4 mt-8">
+          <div className="flex md:hidden justify-center gap-4 mt-6 sm:mt-8">
             <NavigationButton direction="prev" onClick={prevSlide} />
             <NavigationButton direction="next" onClick={nextSlide} />
           </div>
