@@ -19,7 +19,7 @@ import KeywordTargetingPanel from "@/components/features/resume/panels/keyword-t
 
 
 interface ResumePreviewProps {
-  resumeData: any;
+  resumeData: Record<string, any>;
   resumeId: string;
   showJobPanels?: boolean;
   className?: string;
@@ -34,7 +34,7 @@ const ResumeSection = memo(({
 }: {
   title: string;
   children: React.ReactNode;
-  styles: any;
+  styles: Record<string, any>;
 }) => (
   <section>
     <h2 className="resume-section-header" style={styles.sectionHeader}>
@@ -51,7 +51,7 @@ const BulletList = memo(({
   styles
 }: {
   items: string[];
-  styles: any;
+  styles: Record<string, any>;
 }) => (
   <ul className="p-0 m-0 list-none" style={styles.bulletList}>
     {items.map((item, index) => {
@@ -122,7 +122,6 @@ export default function ResumePreview({
 
   // Check for dark mode
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const checkDarkMode = () => {
       const isDark = document.documentElement.classList.contains('dark');
       setIsDarkMode(isDark);
@@ -252,7 +251,7 @@ export default function ResumePreview({
       .filter((point: string) => point.length > 0)
       .map((point: string) => {
         // Clean up any leading markers
-        let cleaned = point.replace(/^[•·▪-]\s*/, '').trim();
+        const cleaned = point.replace(/^[•·▪-]\s*/, '').trim();
         // Don't auto-add periods as they may already be there
         return cleaned;
       })
