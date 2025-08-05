@@ -15,8 +15,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 export const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export const STRIPE_PRICE_IDS = {
-  monthly: 'price_1RhJUoCs6xC7uaBI39tmO7iO', // Monthly: $29/month
-  quarterly: 'price_1RhJZQCs6xC7uaBIkf4xtWcM', // Quarterly: $57 every 3 months
+  monthly: 'price_1Rsu0bCyz6Ax3no7LMpswuT6', // Production monthly price
 };
 
 export interface CheckoutSessionRequest {
@@ -27,7 +26,7 @@ export interface CheckoutSessionRequest {
 }
 
 export async function createCheckoutSession(data: CheckoutSessionRequest) {
-  const response = await fetch('/api/payments/create-checkout-session', {
+  const response = await fetch('/api/payments/sessions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -60,7 +59,7 @@ export async function redirectToCheckout(sessionId: string) {
 }
 
 export async function createCustomerPortalSession(customerId: string) {
-  const response = await fetch('/api/payments/customer-portal', {
+  const response = await fetch('/api/payments/portal', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

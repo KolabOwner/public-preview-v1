@@ -103,29 +103,54 @@ interface CoverLetterData {
 function prepareResumeForCoverLetter(resumeData: any): string {
   const sections: string[] = [];
 
-  // Add contact information - handle both nested and rmsRawData formats
-  if (resumeData.contact || resumeData.contactInfo || resumeData.rmsRawData) {
-    const contact = resumeData.contact || resumeData.contactInfo ||
-      (resumeData.rmsRawData ? {
-        fullName: resumeData.rmsRawData.rms_contact_fullname,
-        firstName: resumeData.rmsRawData.rms_contact_givennames,
-        lastName: resumeData.rmsRawData.rms_contact_lastname,
-        email: resumeData.rmsRawData.rms_contact_email,
-        phone: resumeData.rmsRawData.rms_contact_phone,
-        linkedin: resumeData.rmsRawData.rms_contact_linkedin,
-      } : {});
+  // Debug the resume data structure
+  console.log('prepareResumeForCoverLetter - resumeData keys:', Object.keys(resumeData || {}));
+  console.log('prepareResumeForCoverLetter - resumeData sample:', {
+    hasContact: !!resumeData?.contact,
+    hasContactInfo: !!resumeData?.contactInfo,
+    hasRmsRawData: !!resumeData?.rmsRawData,
+    hasExperience: !!resumeData?.experience,
+    hasEducation: !!resumeData?.education,
+    hasSkills: !!resumeData?.skills,
+    hasSummary: !!resumeData?.summary,
+    rmsExperienceCount: resumeData?.rms_experience_count,
+    rmsEducationCount: resumeData?.rms_education_count,
+    rmsSkillCount: resumeData?.rms_skill_count
+  });
 
-    const name = contact.fullName ||
-      `${contact.firstName || ''} ${contact.lastName || ''}`.trim();
-    if (name) sections.push(`Name: ${name}`);
-    if (contact.email) sections.push(`Email: ${contact.email}`);
-    if (contact.phone) sections.push(`Phone: ${contact.phone}`);
-    if (contact.linkedin) sections.push(`LinkedIn: ${contact.linkedin}`);
-  }
+  // Add contact information - handle direct RMS fields, nested objects, and rmsRawData formats
+  const contact = resumeData.contact || resumeData.contactInfo || 
+    (resumeData.rmsRawData ? {
+      fullName: resumeData.rmsRawData.rms_contact_fullname,
+      firstName: resumeData.rmsRawData.rms_contact_givennames,
+      lastName: resumeData.rmsRawData.rms_contact_lastname,
+      email: resumeData.rmsRawData.rms_contact_email,
+      phone: resumeData.rmsRawData.rms_contact_phone,
+      linkedin: resumeData.rmsRawData.rms_contact_linkedin,
+    } : {
+      // Handle direct RMS fields on resumeData
+      fullName: resumeData.rms_contact_fullname,
+      firstName: resumeData.rms_contact_givennames,
+      lastName: resumeData.rms_contact_lastname,
+      email: resumeData.rms_contact_email,
+      phone: resumeData.rms_contact_phone,
+      linkedin: resumeData.rms_contact_linkedin,
+    });
 
-  // Add summary
-  if (resumeData.summary || (resumeData.rmsRawData && resumeData.rmsRawData.rms_summary && resumeData.rmsRawData.rms_summary !== 'n/a')) {
-    sections.push(`\nPROFESSIONAL SUMMARY:\n${resumeData.summary || resumeData.rmsRawData.rms_summary}`);
+  const name = contact.fullName ||
+    `${contact.firstName || ''} ${contact.lastName || ''}`.trim();
+  if (name) sections.push(`Name: ${name}`);
+  if (contact.email) sections.push(`Email: ${contact.email}`);
+  if (contact.phone) sections.push(`Phone: ${contact.phone}`);
+  if (contact.linkedin) sections.push(`LinkedIn: ${contact.linkedin}`);
+
+  // Add summary - handle direct RMS fields, nested objects, and rmsRawData formats
+  const summary = resumeData.summary || 
+    (resumeData.rmsRawData && resumeData.rmsRawData.rms_summary !== 'n/a' ? resumeData.rmsRawData.rms_summary : null) ||
+    (resumeData.rms_summary && resumeData.rms_summary !== 'n/a' ? resumeData.rms_summary : null);
+  
+  if (summary) {
+    sections.push(`\nPROFESSIONAL SUMMARY:\n${summary}`);
   }
 
   // Add key experiences (limit to most recent 3)
@@ -151,6 +176,31 @@ function prepareResumeForCoverLetter(resumeData: any): string {
       const dateBegin = resumeData.rmsRawData[`rms_experience_${i}_datebegin`];
       const dateEnd = resumeData.rmsRawData[`rms_experience_${i}_dateend`];
       const description = resumeData.rmsRawData[`rms_experience_${i}_description`];
+
+      if (role && company) {
+        sections.push(`\n${role} at ${company}`);
+        if (dateBegin && dateEnd) {
+          sections.push(`${dateBegin} - ${dateEnd}`);
+        }
+        if (description) {
+          // Extract first 3 bullet points
+          const bullets = description.split('•').filter((b: string) => b.trim());
+          bullets.slice(0, 3).forEach((bullet: string) => {
+            sections.push(`• ${bullet.trim()}`);
+          });
+        }
+      }
+    }
+  } else if (resumeData.rms_experience_count) {
+    // Handle direct RMS fields on resumeData
+    sections.push('\nKEY EXPERIENCE:');
+    const expCount = Math.min(resumeData.rms_experience_count, 3);
+    for (let i = 0; i < expCount; i++) {
+      const role = resumeData[`rms_experience_${i}_role`];
+      const company = resumeData[`rms_experience_${i}_company`];
+      const dateBegin = resumeData[`rms_experience_${i}_datebegin`];
+      const dateEnd = resumeData[`rms_experience_${i}_dateend`];
+      const description = resumeData[`rms_experience_${i}_description`];
 
       if (role && company) {
         sections.push(`\n${role} at ${company}`);
@@ -195,6 +245,22 @@ function prepareResumeForCoverLetter(resumeData: any): string {
         sections.push(`${degree} - ${institution}`);
       }
     }
+  } else if (resumeData.rms_education_count) {
+    // Handle direct RMS fields on resumeData
+    sections.push('\nEDUCATION:');
+    const eduCount = resumeData.rms_education_count;
+    for (let i = 0; i < eduCount; i++) {
+      const qualification = resumeData[`rms_education_${i}_qualification`];
+      const institution = resumeData[`rms_education_${i}_institution`];
+      const minor = resumeData[`rms_education_${i}_minor`];
+
+      if (qualification && institution) {
+        const degree = minor && minor !== 'n/a' ?
+          `${qualification}, Minor in ${minor}` :
+          qualification;
+        sections.push(`${degree} - ${institution}`);
+      }
+    }
   }
 
   // Add top skills
@@ -211,6 +277,18 @@ function prepareResumeForCoverLetter(resumeData: any): string {
     for (let i = 0; i < skillCount; i++) {
       const category = resumeData.rmsRawData[`rms_skill_${i}_category`];
       const keywords = resumeData.rmsRawData[`rms_skill_${i}_keywords`];
+
+      if (category && keywords) {
+        sections.push(`${category}: ${keywords}`);
+      }
+    }
+  } else if (resumeData.rms_skill_count) {
+    // Handle direct RMS fields on resumeData
+    sections.push('\nTOP SKILLS:');
+    const skillCount = resumeData.rms_skill_count;
+    for (let i = 0; i < skillCount; i++) {
+      const category = resumeData[`rms_skill_${i}_category`];
+      const keywords = resumeData[`rms_skill_${i}_keywords`];
 
       if (category && keywords) {
         sections.push(`${category}: ${keywords}`);
@@ -505,6 +583,17 @@ function CoverLetterBuilderContent() {
       const resumeText = prepareResumeForCoverLetter(resumeData);
       const resumeSummary = resumeData.summary || '';
 
+      // Debug logging
+      console.log('Preparing cover letter generation:', {
+        hasResumeText: !!resumeText,
+        resumeTextLength: resumeText.length,
+        resumeTextPreview: resumeText.substring(0, 200),
+        jobTitle: params.positionTitle,
+        companyName: params.companyName,
+        hasJobDescription: !!params.jobDescription,
+        skillsHighlight: params.skillsHighlight
+      });
+
       // Call AI to generate cover letter
       const result = await generateCoverLetter({
         resumeText,
@@ -661,7 +750,7 @@ function CoverLetterBuilderContent() {
   // Handle upgrade
   const handleUpgrade = async (planId: string) => {
     try {
-      const response = await fetch('/api/create-checkout-session', {
+      const response = await fetch('/api/payments/sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
