@@ -61,8 +61,7 @@ export interface ResumeData {
   template?: string;
   fontSize?: 'small' | 'medium' | 'large';
   fontStyle?: 'elegant' | 'modern' | 'classic' | 'professional';
-  parsedData: any;
-  rmsRawData?: any;
+  parsedData: any; // RMS format - flattened key-value pairs
   sectionOrder?: string[];
   documentSettings?: {
     fontFamily?: string;

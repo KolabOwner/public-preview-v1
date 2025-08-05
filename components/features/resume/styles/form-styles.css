@@ -28,7 +28,7 @@
 
 /* Form header */
 .resume-form-header {
-  @apply px-6 py-4 bg-white/90 dark:bg-corporate-navy-800/90 backdrop-blur-sm;
+  @apply px-6 py-2 bg-white/90 dark:bg-corporate-navy-800/90 backdrop-blur-sm;
   @apply border-b-2 border-corporate-navy-100 dark:border-corporate-navy-700;
   @apply flex items-center justify-between;
 }
@@ -256,7 +256,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .resume-form-header {
-    @apply px-4 py-3;
+    @apply px-4 py-1;
   }
 
   .resume-form-content {
@@ -275,6 +275,15 @@
   .resume-button-secondary {
     @apply w-full;
   }
+}
+
+/* Date input field specific styling */
+.resume-date-input {
+  background-color: transparent;
+}
+
+.dark .resume-date-input {
+  background-color: hsl(var(--secondary));
 }
 
 /* Dark mode specific adjustments */

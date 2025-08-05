@@ -47,7 +47,9 @@ function ResumeSummaryContent({ resumeId, router, setError, error }: {
     resumeData,
     fetchResumeData,
     loading,
-    processedData
+    processedData,
+    updateResumeData,
+    saveResumeData
   } = useResumeData();
 
   // Fetch resume data when needed
@@ -107,7 +109,16 @@ function ResumeSummaryContent({ resumeId, router, setError, error }: {
   // Main content
   return (
     <div className="min-h-screen ">
-      <SummaryForm />
+      <SummaryForm 
+        initialData={resumeData || undefined}
+        onSave={async (data) => {
+          // Update the resume data with the new summary data
+          updateResumeData(data);
+          // Save to Firebase
+          await saveResumeData();
+          console.log('Summary data saved successfully');
+        }}
+      />
     </div>
   );
 }

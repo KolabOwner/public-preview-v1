@@ -10,9 +10,13 @@
  * - Validation: Real-time validation with helpful error messages
  * - Keyboard shortcuts: Save (Ctrl+S), Undo (Ctrl+Z), New (Ctrl+Shift+N), Navigate (Arrow keys)
  * - Smart location extraction from institution field
+ * - Firestore-compatible timestamp handling
  *
- * Uses React Hook Form's isDirty state for proper dirty tracking instead of
- * the store's broken implementation.
+ * The save button is always enabled when changes are made, allowing users to
+ * manually persist changes even after auto-save has updated the in-memory store.
+ *
+ * Note: We use React Hook Form's isDirty state instead of the store's dirty tracking
+ * because RHF properly tracks form modifications against initial values.
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -32,9 +36,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/shared/pop
 import { Calendar } from '@/components/shared/calendar';
 import { format } from 'date-fns';
 import { cn } from "@/components/shared";
-import { useResumeStore, type EducationEntry } from '@/lib/client/stores/resume-store';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/form-styles.css';
+import { useUnsavedChangesProtection } from '@/lib/client/hooks/resume/use-unsaved-changes-protection';
+import UnsavedChangesModal from '../modals/unsaved-changes-modal';
 
 // Schema definitions
 const educationEntrySchema = z.object({
@@ -60,9 +65,15 @@ const educationSchema = z.object({
 type EducationFormEntry = z.infer<typeof educationEntrySchema>;
 type EducationFormData = z.infer<typeof educationSchema>;
 
+// RMS Education data interface
+interface RMSEducationData {
+  [key: string]: any; // RMS format data with keys like rms_education_0_institution, etc.
+  rms_education_count?: number;
+}
+
 interface EducationFormProps {
-  initialData: EducationEntry[];
-  onSave?: (data: EducationEntry[]) => Promise<void>;
+  initialData: RMSEducationData;
+  onSave?: (data: RMSEducationData) => Promise<void>;
 }
 
 // Constants
@@ -76,14 +87,40 @@ const cleanValue = (value: any): string => {
   return PLACEHOLDER_VALUES.includes(trimmed) ? '' : trimmed;
 };
 
-const parseDate = (dateValue: any): Date | null => {
-  if (!dateValue) return null;
+const parseDate = (dateValue: any, yearValue?: any): Date | null => {
+  if (!dateValue && !yearValue) return null;
+
+  // If we have a year value, prefer that to avoid timezone issues with education dates
+  // Creates July 1st of the year to avoid timezone display problems
+  if (yearValue && typeof yearValue === 'number' && yearValue > 1900) {
+    return new Date(yearValue, 6, 1); // July 1st of the year (month is 0-indexed)
+  }
+
   if (dateValue instanceof Date) return dateValue;
-  if (typeof dateValue === 'number') return new Date(dateValue);
+
+  if (typeof dateValue === 'number') {
+    // If it's a 4-digit year, create a mid-year date
+    if (dateValue > 1900 && dateValue < 3000) {
+      return new Date(dateValue, 6, 1); // July 1st of the year
+    }
+
+    // Handle timestamps - add 12 hours to avoid timezone display issues
+    const timestamp = dateValue > 1e10 ? dateValue : dateValue * 1000;
+    const date = new Date(timestamp);
+    date.setUTCHours(12, 0, 0, 0); // Set to noon UTC to avoid timezone issues
+    return date;
+  }
+
   if (typeof dateValue === 'string') {
+    const parsed = parseInt(dateValue);
+    if (!isNaN(parsed) && parsed > 1900 && parsed < 3000) {
+      return new Date(parsed, 6, 1); // July 1st of the year
+    }
+
     const date = new Date(dateValue);
     if (!isNaN(date.getTime())) return date;
   }
+
   return null;
 };
 
@@ -99,47 +136,76 @@ const extractInstitutionAndLocation = (institutionRaw: string) => {
   };
 };
 
-// Convert store format to form format
-const convertToFormFormat = (entries: EducationEntry[]): EducationFormEntry[] => {
-  return entries.map(entry => {
-    const institutionRaw = cleanValue(entry.institution);
-    const { institution, location: extractedLocation } = extractInstitutionAndLocation(institutionRaw);
-    const existingLocation = cleanValue(entry.location);
+// Extract education entries from RMS data
+const extractEducationFromRMS = (rmsData: RMSEducationData): EducationFormEntry[] => {
+  const count = rmsData.rms_education_count || 0;
+  const entries: EducationFormEntry[] = [];
 
-    return {
-      ...entry,
-      id: entry.id || crypto.randomUUID(),
+  for (let i = 0; i < count; i++) {
+    const institutionRaw = cleanValue(rmsData[`rms_education_${i}_institution`]);
+    const { institution, location: extractedLocation } = extractInstitutionAndLocation(institutionRaw);
+    const existingLocation = cleanValue(rmsData[`rms_education_${i}_location`]);
+
+    const entry: EducationFormEntry = {
+      id: `education_${i}`,
       institution,
-      qualification: cleanValue(entry.qualification),
+      qualification: cleanValue(rmsData[`rms_education_${i}_qualification`]),
       location: existingLocation || extractedLocation,
-      date: parseDate(entry.date),
-      dateFormat: cleanValue(entry.dateFormat) || 'MMMM yyyy',
-      minor: cleanValue(entry.minor),
-      score: cleanValue(entry.score),
-      scoreType: cleanValue(entry.scoreType),
-      description: cleanValue(entry.description),
+      date: parseDate(
+        rmsData[`rms_education_${i}_datets`],
+        rmsData[`rms_education_${i}_date`]
+      ),
+      dateFormat: typeof rmsData[`rms_education_${i}_dateformat`] === 'string'
+        ? rmsData[`rms_education_${i}_dateformat`]
+        : 'MMMM yyyy',
+      minor: cleanValue(rmsData[`rms_education_${i}_minor`]),
+      score: cleanValue(rmsData[`rms_education_${i}_score`]),
+      scoreType: cleanValue(rmsData[`rms_education_${i}_scoretype`]),
+      description: cleanValue(rmsData[`rms_education_${i}_description`]),
     };
-  });
+    entries.push(entry);
+  }
+
+  return entries.length > 0 ? entries : [{
+    id: crypto.randomUUID(),
+    institution: '',
+    qualification: '',
+    location: '',
+    date: null,
+    dateFormat: 'MMMM yyyy',
+    minor: '',
+    score: '',
+    scoreType: '',
+    description: '',
+  }];
 };
 
-// Convert form format to store format
-const convertToStoreFormat = (formData: EducationFormData): EducationEntry[] => {
-  return formData.entries.map(entry => {
-    const { institution, location: extractedLocation } = extractInstitutionAndLocation(entry.institution || '');
+// Convert form data back to RMS format
+const convertToRMSFormat = (formData: EducationFormData): RMSEducationData => {
+  const rmsData: RMSEducationData = {
+    rms_education_count: formData.entries.length
+  };
 
-    return {
-      id: entry.id || crypto.randomUUID(),
-      institution: institution || '',
-      qualification: entry.qualification || '',
-      location: entry.location || extractedLocation || '',
-      date: entry.date || null,
-      dateFormat: entry.dateFormat || 'MMMM yyyy',
-      minor: entry.minor || '',
-      score: entry.score || '',
-      scoreType: entry.scoreType || '',
-      description: entry.description || '',
-    };
+  formData.entries.forEach((entry, i) => {
+    rmsData[`rms_education_${i}_institution`] = entry.institution || '';
+    rmsData[`rms_education_${i}_qualification`] = entry.qualification || '';
+    rmsData[`rms_education_${i}_location`] = entry.location || '';
+    rmsData[`rms_education_${i}_date`] = entry.date ? entry.date.getFullYear() : '';
+    // Store timestamp at noon UTC to avoid timezone issues on retrieval
+    rmsData[`rms_education_${i}_datets`] = entry.date ? Math.floor(entry.date.getTime() / 1000) : '';
+    rmsData[`rms_education_${i}_dateformat`] = entry.dateFormat || 'MMMM yyyy';
+    rmsData[`rms_education_${i}_minor`] = entry.minor || '';
+    rmsData[`rms_education_${i}_score`] = entry.score || '';
+    rmsData[`rms_education_${i}_scoretype`] = entry.scoreType || '';
+    rmsData[`rms_education_${i}_description`] = entry.description || '';
+    rmsData[`rms_education_${i}_isgraduate`] =
+      entry.qualification?.toLowerCase().includes('bachelor') ||
+      entry.qualification?.toLowerCase().includes('master') ||
+      entry.qualification?.toLowerCase().includes('phd') ||
+      false;
   });
+
+  return rmsData;
 };
 
 // Auto-save indicator component
@@ -218,35 +284,14 @@ const useKeyboardShortcuts = (callbacks: {
 
 export default function EducationForm({ initialData, onSave }: EducationFormProps) {
   const { toast } = useToast();
-  const {
-    updateSection,
-    saveSection,
-    saveStatus,
-    revertSection
-  } = useResumeStore();
-
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const isSaving = saveStatus.isSaving && saveStatus.pendingSections.includes('education');
-
-  // Initialize form
+  // Initialize form with RMS data
   const defaultFormValues = useMemo(() => ({
-    entries: initialData?.length > 0
-      ? convertToFormFormat(initialData)
-      : [{
-          id: crypto.randomUUID(),
-          institution: '',
-          qualification: '',
-          location: '',
-          date: null,
-          dateFormat: 'MMMM yyyy',
-          minor: '',
-          score: '',
-          scoreType: '',
-          description: '',
-        }]
+    entries: extractEducationFromRMS(initialData)
   }), [initialData]);
 
   const form = useForm<EducationFormData>({
@@ -275,9 +320,11 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
       setAutoSaveStatus('saving');
       try {
         const formData = getValues();
-        const storeData = convertToStoreFormat(formData);
-        // Only update the store, don't save to Firebase yet
-        updateSection('education', storeData);
+        const rmsData = convertToRMSFormat(formData);
+        // Auto-save via onSave callback if provided
+        if (onSave) {
+          await onSave(rmsData);
+        }
         setAutoSaveStatus('saved');
         setTimeout(() => setAutoSaveStatus(null), 3000);
       } catch (error) {
@@ -285,7 +332,7 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
         console.error('Auto-save failed:', error);
       }
     }, AUTO_SAVE_DELAY);
-  }, [getValues, updateSection]);
+  }, [getValues, onSave]);
 
   // Trigger auto-save on form changes (but not on mount)
   const isFirstRender = useRef(true);
@@ -318,6 +365,14 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
     isFirstRender.current = true;
   }, [initialData, reset, defaultFormValues]);
 
+  // Unsaved changes protection
+  const {
+    showModal,
+    handleSaveAndContinue,
+    handleDiscardAndContinue,
+    handleCancelNavigation
+  } = useUnsavedChangesProtection({ isDirty });
+
   // Handlers
   const handleManualSave = useCallback(async () => {
     const isValid = await trigger();
@@ -331,15 +386,13 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
     }
 
     try {
+      setIsSaving(true);
       const formData = getValues();
-      const storeData = convertToStoreFormat(formData);
+      const rmsData = convertToRMSFormat(formData);
 
       if (onSave) {
-        await onSave(storeData);
+        await onSave(rmsData);
       }
-
-      updateSection('education', storeData);
-      await saveSection('education');
 
       // Reset form state with current values to mark as clean
       reset({ entries: formData.entries });
@@ -355,17 +408,18 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
         description: "Failed to save education information",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
-  }, [trigger, getValues, onSave, updateSection, saveSection, reset, toast]);
+  }, [trigger, getValues, onSave, reset, toast]);
 
   const handleUndo = useCallback(() => {
-    revertSection('education');
     reset(defaultFormValues);
     toast({
       title: "Changes reverted",
-      description: "Education section restored to last saved state",
+      description: "Education section restored to initial state",
     });
-  }, [revertSection, reset, defaultFormValues, toast]);
+  }, [reset, defaultFormValues, toast]);
 
   const addNewEntry = useCallback(() => {
     const newEntry = {
@@ -373,7 +427,7 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
       institution: '',
       qualification: '',
       location: '',
-      date: undefined,
+      date: null,
       dateFormat: 'MMMM yyyy',
       minor: '',
       score: '',
@@ -499,236 +553,148 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
         </div>
 
         {/* Form Content */}
-        <div onKeyDown={(e) => {
-          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            handleManualSave();
-          }
-        }}>
-          <div className="space-y-6">
-            {/* Add key to force re-render when switching entries */}
-            <div key={`education-${activeIndex}`}>
-              {/* Institution & Qualification */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Institution <span className="resume-label-required">*</span>
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.institution`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className={`resume-input-container ${getFieldError('institution') ? 'resume-input-container--error' : ''}`}>
-                        <Input
-                          {...field}
-                          placeholder="e.g., University of Wisconsin-Madison"
-                          className="resume-input"
-                          onBlur={(e) => {
-                            field.onBlur();
-                            handleInstitutionBlur(e.target.value);
-                          }}
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                  {getFieldError('institution') && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="resume-error-message"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      {getFieldError('institution')?.message}
-                    </motion.p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Qualification <span className="resume-label-required">*</span>
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.qualification`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className={`resume-input-container ${getFieldError('qualification') ? 'resume-input-container--error' : ''}`}>
-                        <Input
-                          {...field}
-                          placeholder="e.g., Bachelor of Science in Computer Science"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                  {getFieldError('qualification') && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="resume-error-message"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      {getFieldError('qualification')?.message}
-                    </motion.p>
-                  )}
-                </div>
-              </div>
-
-              {/* Date & Location */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Graduation Date
-                  </Label>
-                  <div className={`resume-input-container ${getFieldError('date') ? 'resume-input-container--error' : ''}`}>
-                    <Controller
-                      name={`entries.${activeIndex}.date`}
-                      control={control}
-                      render={({ field }) => (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className={cn(
-                                "w-full justify-start text-left font-normal hover:bg-transparent border-0 bg-transparent focus:ring-0 h-auto py-2",
-                                !field.value && "text-gray-400"
-                              )}
-                              disabled={isSaving}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value || undefined}
-                              onSelect={field.onChange}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                    />
-                  </div>
-                  {getFieldError('date') && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="resume-error-message"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      {getFieldError('date')?.message}
-                    </motion.p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="resume-label">Location</Label>
-                  <Controller
-                    name={`entries.${activeIndex}.location`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className="resume-input-container">
-                        <Input
-                          {...field}
-                          placeholder="e.g., Madison, WI"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Minor Field */}
-              <div className="grid grid-cols-1 mb-6">
-                <div className="space-y-2">
-                  <Label className="resume-label">Minor / Concentration</Label>
-                  <Controller
-                    name={`entries.${activeIndex}.minor`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className="resume-input-container">
-                        <Input
-                          {...field}
-                          placeholder="e.g., Mathematics"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Score & Score Type */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-2">
-                  <Label className="resume-label">Score</Label>
-                  <Controller
-                    name={`entries.${activeIndex}.score`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className="resume-input-container">
-                        <Input
-                          {...field}
-                          placeholder="e.g., 3.8"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Score Type
-                    {currentEntry?.score && <span className="resume-label-required">*</span>}
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.scoreType`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className={`resume-input-container ${getFieldError('scoreType') ? 'resume-input-container--error' : ''}`}>
-                        <Input
-                          {...field}
-                          placeholder="e.g., GPA"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                  {getFieldError('scoreType') && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="resume-error-message"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      {getFieldError('scoreType')?.message}
-                    </motion.p>
-                  )}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label className="resume-label">Additional Details</Label>
+        <form onSubmit={handleSubmit(handleManualSave)} className="space-y-6 pt-6">
+          {/* Add key to force re-render when switching entries */}
+          <div key={`education-${activeIndex}`}>
+            {/* Institution & Qualification */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>INSTITUTION</strong> <span className="resume-label-required">*</span>
+                  </span>
+                </Label>
                 <Controller
-                  name={`entries.${activeIndex}.description`}
+                  name={`entries.${activeIndex}.institution`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldError('institution') ? 'resume-input-container--error' : ''}`}>
+                      <Input
+                        {...field}
+                        placeholder="e.g., University of Wisconsin-Madison"
+                        className="resume-input"
+                        onBlur={(e) => {
+                          field.onBlur();
+                          handleInstitutionBlur(e.target.value);
+                        }}
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+                {getFieldError('institution') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('institution')?.message}
+                  </motion.p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>QUALIFICATION</strong> <span className="resume-label-required">*</span>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.qualification`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldError('qualification') ? 'resume-input-container--error' : ''}`}>
+                      <Input
+                        {...field}
+                        placeholder="e.g., Bachelor of Science in Computer Science"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+                {getFieldError('qualification') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('qualification')?.message}
+                  </motion.p>
+                )}
+              </div>
+            </div>
+
+            {/* Date & Location */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>GRADUATION DATE</strong>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.date`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldError('date') ? 'resume-input-container--error' : ''}`}>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className={cn(
+                              "w-full justify-start text-left font-normal hover:bg-transparent border-0 focus:ring-0 h-10 sm:h-12 text-base font-semibold px-3",
+                              "text-corporate-navy-900 dark:text-gray-100",
+                              "resume-date-input",
+                              !field.value && "text-corporate-navy-400 dark:text-gray-500"
+                            )}
+                            disabled={isSaving}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4 text-corporate-navy-500 dark:text-corporate-amber-400/70" />
+                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value || undefined}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  )}
+                />
+                {getFieldError('date') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('date')?.message}
+                  </motion.p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>LOCATION</strong>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.location`}
                   control={control}
                   render={({ field }) => (
                     <div className="resume-input-container">
-                      <Textarea
+                      <Input
                         {...field}
-                        placeholder="e.g., Dean's List, Relevant coursework, Thesis title, Activities..."
-                        className="resume-textarea min-h-[100px]"
-                        rows={4}
+                        placeholder="e.g., Madison, WI"
+                        className="resume-input"
                         disabled={isSaving}
                       />
                     </div>
@@ -737,68 +703,184 @@ export default function EducationForm({ initialData, onSave }: EducationFormProp
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="resume-form-actions">
-              <div className="flex items-center gap-3">
-                {isDirty && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={handleUndo}
-                    disabled={isSaving}
-                    size="sm"
-                    title="Undo changes (Cmd/Ctrl+Z)"
-                  >
-                    <Undo2 className="h-4 w-4 mr-1" />
-                    Undo
-                  </Button>
-                )}
-
-                {isDirty && !autoSaveStatus && (
-                  <span className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-1">
-                    <div className="resume-section-dirty-dot" />
-                    Unsaved changes
+            {/* Minor Field */}
+            <div className="grid grid-cols-1 mb-6">
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>MINOR / CONCENTRATION</strong>
                   </span>
-                )}
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addNewEntry}
-                  disabled={isSaving}
-                  className="resume-button-secondary"
-                  title="Add new education (Cmd/Ctrl+Shift+N)"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Education
-                </Button>
-
-                <Button
-                  type="button"
-                  onClick={handleManualSave}
-                  disabled={isSaving || !isDirty}
-                  className="resume-button-primary"
-                  title="Save all changes permanently (Cmd/Ctrl+S)"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Changes
-                    </>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.minor`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className="resume-input-container">
+                      <Input
+                        {...field}
+                        placeholder="e.g., Mathematics"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
                   )}
-                </Button>
+                />
               </div>
             </div>
+
+            {/* Score & Score Type */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>SCORE</strong>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.score`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className="resume-input-container">
+                      <Input
+                        {...field}
+                        placeholder="e.g., 3.8"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>SCORE TYPE</strong>
+                    {currentEntry?.score && <span className="resume-label-required">*</span>}
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.scoreType`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldError('scoreType') ? 'resume-input-container--error' : ''}`}>
+                      <Input
+                        {...field}
+                        placeholder="e.g., GPA"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+                {getFieldError('scoreType') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('scoreType')?.message}
+                  </motion.p>
+                )}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1">
+              <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                <span className="cursor-default">
+                  <strong>ADDITIONAL DETAILS</strong>
+                </span>
+              </Label>
+              <Controller
+                name={`entries.${activeIndex}.description`}
+                control={control}
+                render={({ field }) => (
+                  <div className="resume-input-container">
+                    <Textarea
+                      {...field}
+                      placeholder="e.g., Dean's List, Relevant coursework, Thesis title, Activities..."
+                      className="resume-textarea min-h-[100px]"
+                      rows={4}
+                      disabled={isSaving}
+                    />
+                  </div>
+                )}
+              />
+            </div>
           </div>
-        </div>
+
+          {/* Action Buttons */}
+          <div className="resume-form-actions">
+            <div className="flex items-center gap-3">
+              {isDirty && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleUndo}
+                  disabled={isSaving}
+                  size="sm"
+                  title="Undo changes (Cmd/Ctrl+Z)"
+                >
+                  <Undo2 className="h-4 w-4 mr-1" />
+                  Undo
+                </Button>
+              )}
+
+              {isDirty && !autoSaveStatus && (
+                <span className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                  <div className="resume-section-dirty-dot" />
+                  Unsaved changes
+                </span>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addNewEntry}
+                disabled={isSaving}
+                className="resume-button-secondary"
+                title="Add new education (Cmd/Ctrl+Shift+N)"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Education
+              </Button>
+
+              <Button
+                type="submit"
+                disabled={isSaving || !isDirty}
+                className="resume-button-primary"
+                title="Save all changes permanently (Cmd/Ctrl+S)"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showModal}
+        onClose={handleCancelNavigation}
+        onSave={handleSaveAndContinue}
+        onDiscard={handleDiscardAndContinue}
+        onCancel={handleCancelNavigation}
+        title="Unsaved Education Changes"
+        description="You have unsaved changes to your education information. What would you like to do?"
+      />
     </div>
   );
 }

@@ -47,8 +47,8 @@ class JobQueue {
       let result;
       switch (job.type) {
         case 'pdf-parse':
-          const { parsePDFWithGenkit } = await import('@/lib/server/services/resume/pdf-generator');
-          result = await parsePDFWithGenkit(job.data.file, job.data.options);
+          const { PDFProcessor } = await import('@/lib/server/services/resume/pdf-generator');
+          result = await PDFProcessor.processPDF(job.data.file, job.data.resumeId, job.data.options);
           break;
       }
       

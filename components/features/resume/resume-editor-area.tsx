@@ -1,12 +1,11 @@
 // components/resume/resume-editor-area.tsx
+
 'use client';
 
 import React, { useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { useResumeStore } from '@/lib/client/stores/resume-store';
-import FormWrapper from './wrappers/form-wrapper';
 import { FormComponents } from './components/form-components';
-import { parseToUnifiedFormat } from './utils/data-parsers';
 import { stringToSummaryData, summaryDataToString } from './utils/summary-utils';
 import { preloadFormComponents } from './utils/component-loader';
 import type { UnifiedResumeData, SummaryData, ResumeDocument } from '@/lib/client/stores/types';
@@ -33,17 +32,17 @@ function ResumePreview(props: { resumeData: UnifiedResumeData, resumeId: string 
 
 export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }: ResumeEditorAreaProps) {
   const pathname = usePathname();
-  const { initializeResume, resumeData, saveStatus, resumeId } = useResumeStore();
+  const { initializeResume, resumeData, saveStatus, resumeId, updateField, saveChanges } = useResumeStore();
 
   // Initialize store with resume data
   useEffect(() => {
     if (resume?.id && resumeId !== resume.id) {
       console.log('ResumeEditorArea - initializing with resume:', resume);
 
-      const unifiedData = determineUnifiedData(resume);
-      console.log('ResumeEditorArea - unified data being passed to store:', unifiedData);
+      const rmsData = getRMSData(resume);
+      console.log('ResumeEditorArea - RMS data being passed to store:', rmsData);
 
-      initializeResume(resume.id, unifiedData);
+      initializeResume(resume.id, rmsData);
     }
   }, [resume?.id, resumeId, initializeResume, resume]);
 
@@ -54,19 +53,27 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
 
   const section = pathname.split('/').pop() || 'summary';
 
-  // Event handlers
+  // Event handlers for RMS data updates
   const createChangeHandler = useCallback((logMessage: string) =>
     async (data: any) => {
       if (process.env.NODE_ENV === 'development') {
         console.log(logMessage, data);
       }
-    }, []
+      // Update individual RMS fields in the store
+      Object.keys(data).forEach(fieldKey => {
+        if (data[fieldKey] !== undefined) {
+          updateField(fieldKey, data[fieldKey]);
+        }
+      });
+      // Save changes
+      await saveChanges();
+    }, [updateField, saveChanges]
   );
 
-  const handleSummaryChange = useCallback(async (summaryData: SummaryData) => {
-    const summaryString = summaryDataToString(summaryData);
+  const handleSummaryChange = useCallback(async (summaryData: Record<string, any>) => {
+    // summaryData is in RMS format from the form
     if (process.env.NODE_ENV === 'development') {
-      console.log('Summary changed:', summaryString);
+      console.log('Summary changed:', summaryData);
     }
   }, []);
 
@@ -98,7 +105,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
         return (
           <FormComponents.ContactForm
             key={key}
-            initialData={resumeData.contactInfo}
+            initialData={resumeData}
             onSave={handlers.contact}
           />
         );
@@ -107,7 +114,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
         return (
           <FormComponents.ExperienceForm
             key={key}
-            initialData={resumeData.experiences}
+            initialData={resumeData}
             onSave={handlers.experience}
           />
         );
@@ -116,7 +123,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
         return (
           <FormComponents.EducationForm
             key={key}
-            initialData={resumeData.education}
+            initialData={resumeData}
             onSave={handlers.education}
           />
         );
@@ -125,7 +132,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
         return (
           <FormComponents.SkillsForm
             key={key}
-            initialData={resumeData.skills}
+            initialData={resumeData}
             onSave={handlers.skills}
           />
         );
@@ -134,7 +141,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
         return (
           <FormComponents.ProjectsForm
             key={key}
-            initialData={resumeData.projects}
+            initialData={resumeData}
             onSave={handlers.projects}
           />
         );
@@ -143,7 +150,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
         return (
           <FormComponents.InvolvementForm
             key={key}
-            initialData={resumeData.involvements}
+            initialData={resumeData}
             onSave={handlers.involvement}
           />
         );
@@ -152,7 +159,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
         return (
           <FormComponents.CourseworkForm
             key={key}
-            initialData={resumeData.coursework}
+            initialData={resumeData}
             onSave={handlers.coursework}
           />
         );
@@ -161,7 +168,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
         return (
           <FormComponents.CertificationsForm
             key={key}
-            initialData={resumeData.certifications}
+            initialData={resumeData}
             onSave={handlers.certifications}
           />
         );
@@ -184,7 +191,7 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
   };
 
   return (
-    <FormWrapper className="w-full">
+    <div className="w-full">
       <div className="resume-editor-content">
         {renderSection()}
       </div>
@@ -201,28 +208,12 @@ export const ResumeEditorArea = React.memo(function ResumeEditorArea({ resume }:
           {saveStatus.error}
         </div>
       )}
-    </FormWrapper>
+    </div>
   );
 });
 
-// Helper function to determine unified data from resume
-function determineUnifiedData(resume: ResumeDocument): UnifiedResumeData {
-  const hasDataContent = resume?.data && Object.keys(resume.data).length > 0;
-  console.log('ResumeEditorArea - hasDataContent:', hasDataContent);
-
-  if (hasDataContent) {
-    const isUnifiedFormat = resume.data.contactInfo && typeof resume.data.contactInfo === 'object';
-    console.log('ResumeEditorArea - isUnifiedFormat:', isUnifiedFormat);
-
-    if (isUnifiedFormat) {
-      console.log('ResumeEditorArea - using resume.data as unified:', resume.data);
-      return resume.data;
-    } else {
-      console.log('ResumeEditorArea - parsing resume.data as RMS format:', resume.data);
-      return parseToUnifiedFormat(resume.data);
-    }
-  } else {
-    console.log('ResumeEditorArea - parsing rmsRawData:', resume?.rmsRawData);
-    return parseToUnifiedFormat(resume?.rmsRawData || resume);
-  }
+// Helper function to get RMS data from resume - single source of truth
+function getRMSData(resume: ResumeDocument): any {
+  console.log('ResumeEditorArea - using parsedData as single source of truth:', resume?.parsedData);
+  return resume?.parsedData || {};
 }

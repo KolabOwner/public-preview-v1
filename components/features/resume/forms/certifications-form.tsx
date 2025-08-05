@@ -9,7 +9,13 @@
  * - Navigation: Switch between multiple certification entries
  * - Validation: Real-time validation with helpful error messages
  * - Keyboard shortcuts: Save (Ctrl+S), Undo (Ctrl+Z), New (Ctrl+Shift+N), Navigate (Arrow keys)
- * - Enhanced with better UX patterns from experience/involvement forms
+ * - Enhanced styling and layout consistent with experience form
+ *
+ * The save button is always enabled when changes are made, allowing users to
+ * manually persist changes even after auto-save has updated the in-memory store.
+ *
+ * Note: We use React Hook Form's isDirty state instead of the store's dirty tracking
+ * because RHF properly tracks form modifications against initial values.
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -18,22 +24,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
   Award, Save, Loader2, Plus, ChevronLeft, ChevronRight, AlertCircle,
-  Calendar, Trash2, Building2, Undo2, Check, Clock, Link
+  Calendar, Trash2, Building2, Undo2, Check, Clock, ExternalLink
 } from "lucide-react";
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
-import { useResumeStore, type CertificationEntry } from '@/lib/client/stores/resume-store';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/form-styles.css';
+import { useUnsavedChangesProtection } from '@/lib/client/hooks/resume/use-unsaved-changes-protection';
+import UnsavedChangesModal from '../modals/unsaved-changes-modal';
 
 // Schema for a single certification entry
 const certificationEntrySchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, "Certificate name is required."),
-  issuer: z.string().min(1, "Issuing organization is required."),
-  date: z.string().min(1, "Issue date is required."),
+  name: z.string().min(1, "Certificate name is required"),
+  issuer: z.string().min(1, "Issuing organization is required"),
+  date: z.string().min(1, "Issue date is required"),
   expiryDate: z.string().optional(),
   credentialId: z.string().optional(),
   url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
@@ -48,9 +55,15 @@ const certificationsSchema = z.object({
 type CertificationFormEntry = z.infer<typeof certificationEntrySchema>;
 type CertificationsFormData = z.infer<typeof certificationsSchema>;
 
+// RMS Certification data interface
+interface RMSCertificationData {
+  [key: string]: any; // RMS format data with keys like rms_certification_0_name, etc.
+  rms_certification_count?: number;
+}
+
 interface CertificationsFormProps {
-  initialData: CertificationEntry[];
-  onSave?: (data: CertificationEntry[]) => Promise<void>;
+  initialData: RMSCertificationData;
+  onSave?: (data: RMSCertificationData) => Promise<void>;
 }
 
 // Constants
@@ -64,29 +77,51 @@ const cleanValue = (value: string | undefined | null): string => {
   return PLACEHOLDER_VALUES.includes(trimmed) ? '' : trimmed;
 };
 
-const convertToFormFormat = (entries: CertificationEntry[]): CertificationFormEntry[] => {
-  return entries.map(entry => ({
-    ...entry,
-    id: entry.id || crypto.randomUUID(),
-    name: cleanValue(entry.name),
-    issuer: cleanValue(entry.issuer),
-    date: cleanValue(entry.date),
-    expiryDate: cleanValue(entry.expiryDate),
-    credentialId: cleanValue(entry.credentialId),
-    url: cleanValue(entry.url),
-  }));
+// Extract certification entries from RMS data
+const extractCertificationsFromRMS = (rmsData: RMSCertificationData): CertificationFormEntry[] => {
+  const count = rmsData.rms_certification_count || 0;
+  const entries: CertificationFormEntry[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const entry: CertificationFormEntry = {
+      id: `certification_${i}`,
+      name: cleanValue(rmsData[`rms_certification_${i}_name`]),
+      issuer: cleanValue(rmsData[`rms_certification_${i}_issuer`]),
+      date: cleanValue(rmsData[`rms_certification_${i}_date`]),
+      expiryDate: cleanValue(rmsData[`rms_certification_${i}_expirydate`]),
+      credentialId: cleanValue(rmsData[`rms_certification_${i}_credentialid`]),
+      url: cleanValue(rmsData[`rms_certification_${i}_url`]),
+    };
+    entries.push(entry);
+  }
+
+  return entries.length > 0 ? entries : [{
+    id: crypto.randomUUID(),
+    name: '',
+    issuer: '',
+    date: '',
+    expiryDate: '',
+    credentialId: '',
+    url: '',
+  }];
 };
 
-const convertToStoreFormat = (formData: CertificationsFormData): CertificationEntry[] => {
-  return formData.entries.map(entry => ({
-    id: entry.id || crypto.randomUUID(),
-    name: entry.name || '',
-    issuer: entry.issuer || '',
-    date: entry.date || '',
-    expiryDate: entry.expiryDate || '',
-    credentialId: entry.credentialId || '',
-    url: entry.url || '',
-  }));
+// Convert form data back to RMS format
+const convertToRMSFormat = (formData: CertificationsFormData): RMSCertificationData => {
+  const rmsData: RMSCertificationData = {
+    rms_certification_count: formData.entries.length
+  };
+
+  formData.entries.forEach((entry, i) => {
+    rmsData[`rms_certification_${i}_name`] = entry.name || '';
+    rmsData[`rms_certification_${i}_issuer`] = entry.issuer || '';
+    rmsData[`rms_certification_${i}_date`] = entry.date || '';
+    rmsData[`rms_certification_${i}_expirydate`] = entry.expiryDate || '';
+    rmsData[`rms_certification_${i}_credentialid`] = entry.credentialId || '';
+    rmsData[`rms_certification_${i}_url`] = entry.url || '';
+  });
+
+  return rmsData;
 };
 
 // Auto-save indicator component
@@ -165,32 +200,14 @@ const useKeyboardShortcuts = (callbacks: {
 
 export default function CertificationsForm({ initialData, onSave }: CertificationsFormProps) {
   const { toast } = useToast();
-  const {
-    updateSection,
-    saveSection,
-    saveStatus,
-    revertSection
-  } = useResumeStore();
-
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const isSaving = saveStatus.isSaving && saveStatus.pendingSections.includes('certifications');
-
-  // Initialize form
+  // Initialize form with RMS data
   const defaultFormValues = useMemo(() => ({
-    entries: initialData?.length > 0
-      ? convertToFormFormat(initialData)
-      : [{
-          id: crypto.randomUUID(),
-          name: '',
-          issuer: '',
-          date: '',
-          expiryDate: '',
-          credentialId: '',
-          url: ''
-        }]
+    entries: extractCertificationsFromRMS(initialData)
   }), [initialData]);
 
   const form = useForm<CertificationsFormData>({
@@ -199,7 +216,7 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
     mode: 'onBlur',
   });
 
-  const { control, formState: { errors, isDirty }, watch, setValue, reset, getValues, trigger } = form;
+  const { control, handleSubmit, formState: { errors, isDirty }, watch, setValue, reset, getValues, trigger } = form;
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -219,9 +236,11 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
       setAutoSaveStatus('saving');
       try {
         const formData = getValues();
-        const storeData = convertToStoreFormat(formData);
-        // Only update the store, don't save to Firebase yet
-        updateSection('certifications', storeData);
+        const rmsData = convertToRMSFormat(formData);
+        // Auto-save via onSave callback if provided
+        if (onSave) {
+          await onSave(rmsData);
+        }
         setAutoSaveStatus('saved');
         setTimeout(() => setAutoSaveStatus(null), 3000);
       } catch (error) {
@@ -229,7 +248,7 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
         console.error('Auto-save failed:', error);
       }
     }, AUTO_SAVE_DELAY);
-  }, [getValues, updateSection]);
+  }, [getValues, onSave]);
 
   // Trigger auto-save on form changes (but not on mount)
   const isFirstRender = useRef(true);
@@ -262,6 +281,14 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
     isFirstRender.current = true;
   }, [initialData, reset, defaultFormValues]);
 
+  // Unsaved changes protection
+  const {
+    showModal,
+    handleSaveAndContinue,
+    handleDiscardAndContinue,
+    handleCancelNavigation
+  } = useUnsavedChangesProtection({ isDirty });
+
   // Handlers
   const handleManualSave = useCallback(async () => {
     const isValid = await trigger();
@@ -275,15 +302,13 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
     }
 
     try {
+      setIsSaving(true);
       const formData = getValues();
-      const storeData = convertToStoreFormat(formData);
+      const rmsData = convertToRMSFormat(formData);
 
       if (onSave) {
-        await onSave(storeData);
+        await onSave(rmsData);
       }
-
-      updateSection('certifications', storeData);
-      await saveSection('certifications');
 
       // Reset form state with current values to mark as clean
       reset({ entries: formData.entries });
@@ -299,17 +324,18 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
         description: "Failed to save certifications",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
-  }, [trigger, getValues, onSave, updateSection, saveSection, reset, toast]);
+  }, [trigger, getValues, onSave, reset, toast]);
 
   const handleUndo = useCallback(() => {
-    revertSection('certifications');
     reset(defaultFormValues);
     toast({
       title: "Changes reverted",
-      description: "Certifications section restored to last saved state",
+      description: "Certifications section restored to initial state",
     });
-  }, [revertSection, reset, defaultFormValues, toast]);
+  }, [reset, defaultFormValues, toast]);
 
   const addNewCertification = useCallback(() => {
     const newEntry = {
@@ -340,6 +366,14 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
     setActiveIndex(prev => Math.min(fields.length - 1, prev + 1));
   }, [fields.length]);
 
+  const handleUrlBlur = useCallback((value: string) => {
+    const trimmedValue = value.trim();
+    if (trimmedValue && !trimmedValue.startsWith('http://') && !trimmedValue.startsWith('https://')) {
+      return `https://${trimmedValue}`;
+    }
+    return trimmedValue;
+  }, []);
+
   // Keyboard shortcuts
   useKeyboardShortcuts({
     save: handleManualSave,
@@ -350,17 +384,13 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
   });
 
   // Header title
-  const headerTitle = currentEntry?.name
-    ? `${currentEntry.name}`
-    : "New Certification Entry";
+  const headerTitle = currentEntry?.name && currentEntry?.issuer
+    ? `${currentEntry.name} - ${currentEntry.issuer}`
+    : currentEntry?.name || "New Certification Entry";
 
   // Field error helpers
-  const getFieldErrorMessage = (field: keyof CertificationFormEntry): string | undefined => {
-    const error = errors.entries?.[activeIndex]?.[field];
-    if (error && typeof error === 'object' && 'message' in error) {
-      return error.message as string;
-    }
-    return undefined;
+  const getFieldError = (field: keyof CertificationFormEntry) => {
+    return errors.entries?.[activeIndex]?.[field];
   };
 
   return (
@@ -430,187 +460,203 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
         </div>
 
         {/* Form Content */}
-        <div onKeyDown={(e) => {
-          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            handleManualSave();
-          }
-        }}>
-          <div className="space-y-6">
-            {/* Add key to force re-render when switching entries */}
-            <div key={`certification-${activeIndex}`}>
-              {/* Certificate Name & Issuer */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Certificate Name <span className="resume-label-required">*</span>
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.name`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className={`resume-input-container ${getFieldErrorMessage('name') ? 'resume-input-container--error' : ''}`}>
-                        <Input
-                          {...field}
-                          placeholder="Project Management Professional (PMP)"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                  {getFieldErrorMessage('name') && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="resume-error-message"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      <span>{getFieldErrorMessage('name')}</span>
-                    </motion.p>
+        <form onSubmit={handleSubmit(handleManualSave)} className="space-y-6 pt-6">
+          {/* Add key to force re-render when switching entries */}
+          <div key={`entry-${activeIndex}`}>
+            {/* Certificate Name & Issuer */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>CERTIFICATE NAME</strong> <span className="resume-label-required">*</span>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.name`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldError('name') ? 'resume-input-container--error' : ''}`}>
+                      <Input
+                        {...field}
+                        placeholder="e.g., Project Management Professional (PMP)"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
                   )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Issuing Organization <span className="resume-label-required">*</span>
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.issuer`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className={`resume-input-container ${getFieldErrorMessage('issuer') ? 'resume-input-container--error' : ''}`}>
-                        <Building2 className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
-                        <Input
-                          {...field}
-                          placeholder="Project Management Institute"
-                          className="resume-input px-0 pr-3"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                  {getFieldErrorMessage('issuer') && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="resume-error-message"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      <span>{getFieldErrorMessage('issuer')}</span>
-                    </motion.p>
-                  )}
-                </div>
+                />
+                {getFieldError('name') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('name')?.message}
+                  </motion.p>
+                )}
               </div>
 
-              {/* Issue Date & Expiry Date */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Issue Date <span className="resume-label-required">*</span>
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.date`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className={`resume-input-container ${getFieldErrorMessage('date') ? 'resume-input-container--error' : ''}`}>
-                        <Calendar className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
-                        <Input
-                          {...field}
-                          placeholder="January 2025"
-                          className="resume-input px-0 pr-3"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                  {getFieldErrorMessage('date') && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="resume-error-message"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      <span>{getFieldErrorMessage('date')}</span>
-                    </motion.p>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>ISSUING ORGANIZATION</strong> <span className="resume-label-required">*</span>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.issuer`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldError('issuer') ? 'resume-input-container--error' : ''}`}>
+                      <Input
+                        {...field}
+                        placeholder="e.g., Project Management Institute"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
                   )}
-                </div>
+                />
+                {getFieldError('issuer') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('issuer')?.message}
+                  </motion.p>
+                )}
+              </div>
+            </div>
 
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Expiry Date
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.expiryDate`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className="resume-input-container">
-                        <Calendar className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
-                        <Input
-                          {...field}
-                          placeholder="December 2027"
-                          className="resume-input px-0 pr-3"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                </div>
+            {/* Issue Date & Expiry Date */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>ISSUE DATE</strong> <span className="resume-label-required">*</span>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.date`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldError('date') ? 'resume-input-container--error' : ''}`}>
+                      <Input
+                        {...field}
+                        placeholder="e.g., January 2025"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+                {getFieldError('date') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('date')?.message}
+                  </motion.p>
+                )}
               </div>
 
-              {/* Credential ID & URL */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Credential ID
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.credentialId`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className="resume-input-container">
-                        <Input
-                          {...field}
-                          placeholder="ABC123XYZ"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="resume-label">
-                    Credential URL
-                  </Label>
-                  <Controller
-                    name={`entries.${activeIndex}.url`}
-                    control={control}
-                    render={({ field }) => (
-                      <div className={`resume-input-container ${getFieldErrorMessage('url') ? 'resume-input-container--error' : ''}`}>
-                        <Link className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
-                        <Input
-                          {...field}
-                          placeholder="https://www.credential-provider.com/verify/ABC123XYZ"
-                          className="resume-input px-0 pr-3"
-                          type="url"
-                          disabled={isSaving}
-                        />
-                      </div>
-                    )}
-                  />
-                  {getFieldErrorMessage('url') && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="resume-error-message"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      <span>{getFieldErrorMessage('url')}</span>
-                    </motion.p>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>EXPIRY DATE</strong>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.expiryDate`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className="resume-input-container">
+                      <Input
+                        {...field}
+                        placeholder="e.g., December 2027"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
                   )}
-                </div>
+                />
+              </div>
+            </div>
+
+            {/* Credential ID & URL */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>CREDENTIAL ID</strong>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.credentialId`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className="resume-input-container">
+                      <Input
+                        {...field}
+                        placeholder="e.g., ABC123XYZ"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>CREDENTIAL URL</strong>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.url`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container relative ${getFieldError('url') ? 'resume-input-container--error' : ''}`}>
+                      <Input
+                        {...field}
+                        placeholder="e.g., https://www.credential-provider.com/verify/ABC123XYZ"
+                        className="resume-input pr-10"
+                        type="url"
+                        onBlur={(e) => {
+                          const processedUrl = handleUrlBlur(e.target.value);
+                          field.onChange(processedUrl);
+                        }}
+                        disabled={isSaving}
+                      />
+                      {field.value && (
+                        <a
+                          href={field.value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+                          title="Open credential in new tab"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                />
+                {getFieldError('url') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('url')?.message}
+                  </motion.p>
+                )}
               </div>
             </div>
           </div>
@@ -654,7 +700,7 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
               </Button>
 
               <Button
-                onClick={handleManualSave}
+                type="submit"
                 disabled={isSaving || !isDirty}
                 className="resume-button-primary"
                 title="Save all changes permanently (Cmd/Ctrl+S)"
@@ -673,8 +719,18 @@ export default function CertificationsForm({ initialData, onSave }: Certificatio
               </Button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showModal}
+        onClose={handleCancelNavigation}
+        onSave={handleSaveAndContinue}
+        onDiscard={handleDiscardAndContinue}
+        onCancel={handleCancelNavigation}
+        title="Unsaved Certification Changes"
+        description="You have unsaved changes to your certifications. What would you like to do?"
+      />
     </div>
   );
 }

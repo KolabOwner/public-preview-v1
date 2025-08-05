@@ -138,8 +138,82 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
           // Handle multiple data structure possibilities
           let transformedData: ResumeData;
 
-          // Check if we have contactInfo directly (new format)
-          if (data.contactInfo) {
+          // Use parsedData as the primary source (your new structure)
+          if (data.parsedData) {
+            const parsedData = data.parsedData;
+
+            transformedData = {
+              contactInfo: {
+                fullName: parsedData.rms_contact_fullname || '',
+                email: parsedData.rms_contact_email || '',
+                phone: parsedData.rms_contact_phone || '',
+                city: parsedData.rms_contact_city || '',
+                state: parsedData.rms_contact_state || '',
+                country: parsedData.rms_contact_country || '',
+                linkedin: parsedData.rms_contact_linkedin || '',
+                website: parsedData.rms_contact_website || '',
+                github: parsedData.rms_contact_github || ''
+              },
+              summary: parsedData.rms_summary || '',
+              experiences: [],
+              education: [],
+              skillCategories: []
+            };
+
+            // Extract experience from parsedData format
+            const expCount = parseInt(parsedData.rms_experience_count || '0');
+            for (let i = 0; i < expCount && i < 3; i++) {
+              const exp: Experience = {
+                title: parsedData[`rms_experience_${i}_role`] || '',
+                company: parsedData[`rms_experience_${i}_company`] || '',
+                location: parsedData[`rms_experience_${i}_location`] || '',
+                startDate: parsedData[`rms_experience_${i}_datebegin`] || '',
+                endDate: parsedData[`rms_experience_${i}_dateend`] || '',
+                current: parsedData[`rms_experience_${i}_iscurrent`] === true || parsedData[`rms_experience_${i}_iscurrent`] === 'true',
+                description: parsedData[`rms_experience_${i}_description`] || ''
+              };
+              if (exp.title || exp.company) {
+                transformedData.experiences?.push(exp);
+              }
+            }
+
+            // Extract education from parsedData format
+            const eduCount = parseInt(parsedData.rms_education_count || '0');
+            for (let i = 0; i < eduCount && i < 2; i++) {
+              const edu: Education = {
+                degree: parsedData[`rms_education_${i}_qualification`] || '',
+                school: parsedData[`rms_education_${i}_institution`] || '',
+                startDate: parsedData[`rms_education_${i}_date`]?.toString() || '',
+                location: parsedData[`rms_education_${i}_location`] || ''
+              };
+              if (edu.degree || edu.school) {
+                transformedData.education?.push(edu);
+              }
+            }
+
+            // Extract skills from parsedData format
+            const skillCount = parseInt(parsedData.rms_skill_count || '0');
+            for (let i = 0; i < skillCount && i < 5; i++) {
+              const category = parsedData[`rms_skill_${i}_category`] || '';
+              const keywords = parsedData[`rms_skill_${i}_keywords`] || '';
+
+              if (keywords) {
+                const skills = keywords.split(',').map((name: string, index: number) => ({
+                  id: `skill_${i}_${index}`,
+                  name: name.trim(),
+                  level: ''
+                }));
+
+                transformedData.skillCategories?.push({
+                  id: `category_${i}`,
+                  name: category,
+                  skills: skills
+                });
+              }
+            }
+          }
+          // Check if we have contactInfo directly (legacy format)
+          else if (data.contactInfo) {
             transformedData = {
               contactInfo: data.contactInfo,
               experiences: (data.experiences || []).slice(0, 3),
@@ -148,18 +222,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
               summary: data.summary || ''
             };
           }
-          // Try parsed data structure
-          else if (data.parsedData) {
-            const parsedData = data.parsedData;
-            transformedData = {
-              contactInfo: parsedData.contactInfo || {},
-              experiences: (parsedData.experiences || []).slice(0, 3),
-              education: (parsedData.education || []).slice(0, 2),
-              skillCategories: parsedData.skillCategories || [],
-              summary: parsedData.summary || ''
-            };
-          }
-          // Fall back to extracting from raw RMS data
+          // Fall back to extracting from raw RMS data (legacy)
           else {
             const rmsData = data.rmsRawData || data;
 

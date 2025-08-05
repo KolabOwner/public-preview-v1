@@ -18,7 +18,7 @@ export abstract class BaseSectionRenderer {
     doc: jsPDF,
     config: PDFConfiguration,
     yPosition: number,
-    customFontsLoaded: boolean = false
+    customFontsLoaded = false
   ) {
     this.doc = doc;
     this.config = config;
@@ -40,12 +40,16 @@ export abstract class BaseSectionRenderer {
    * Set font based on font definition
    */
   protected setFont(fontDef: FontDefinition): void {
+    // Handle bold style by converting it to weight + normal style
+    const adjustedWeight = fontDef.style === 'bold' ? 700 : fontDef.weight;
+    const adjustedStyle = fontDef.style === 'bold' ? 'normal' : (fontDef.style || 'normal');
+    
     const fontName = this.customFontsLoaded
-      ? FontManager.getFontName(fontDef.family, fontDef.weight, fontDef.style)
+      ? FontManager.getFontName(fontDef.family, adjustedWeight, adjustedStyle as 'normal' | 'italic')
       : FontManager.getStandardFontVariant(
           FontManager.getStandardFontFallback(fontDef.family),
-          fontDef.weight,
-          fontDef.style
+          adjustedWeight,
+          adjustedStyle as 'normal' | 'italic'
         );
     
     try {

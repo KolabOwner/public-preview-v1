@@ -9,7 +9,7 @@
  * - Navigation: Switch between multiple involvement entries
  * - Validation: Real-time validation with helpful error messages
  * - Keyboard shortcuts: Save (Ctrl+S), Undo (Ctrl+Z), New (Ctrl+Shift+N), Navigate (Arrow keys)
- * - Enhanced with bullet points for key responsibilities (original didn't have this)
+ * - Enhanced Lexical editor for descriptions with AI bullet generation
  *
  * Uses React Hook Form's isDirty state for proper dirty tracking instead of
  * the store's broken implementation.
@@ -21,22 +21,24 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
   Users, Save, Loader2, Trash2, ChevronLeft, ChevronRight,
-  AlertCircle, MapPin, Building2, Plus, X, GripVertical, Undo2, Check, Clock
+  AlertCircle, Plus, Undo2, Check, Clock
 } from "lucide-react";
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { $getRoot, EditorState, $createParagraphNode, $createTextNode } from 'lexical';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
 import { Switch } from '@/components/shared/switch';
-import { Textarea } from '@/components/shared/textarea';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
-import { useResumeStore, type InvolvementEntry } from '@/lib/client/stores/resume-store';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/form-styles.css';
-
-// Schema for a single bullet point object
-const bulletPointSchema = z.object({
-  value: z.string(),
-});
+import { useUnsavedChangesProtection } from '@/lib/client/hooks/resume/use-unsaved-changes-protection';
+import UnsavedChangesModal from '../modals/unsaved-changes-modal';
 
 // Schema for a single involvement entry
 const involvementEntrySchema = z.object({
@@ -48,7 +50,6 @@ const involvementEntrySchema = z.object({
   endDate: z.string().optional(),
   current: z.boolean(),
   description: z.string().optional(),
-  bulletPoints: z.array(bulletPointSchema).optional(),
 }).refine(data => data.current || !!data.endDate?.trim(), {
   message: "End date is required unless it's a current involvement",
   path: ["endDate"],
@@ -60,15 +61,18 @@ const involvementSchema = z.object({
 });
 
 // TypeScript types inferred from schemas
-type BulletPoint = z.infer<typeof bulletPointSchema>;
-type InvolvementFormEntry = Omit<z.infer<typeof involvementEntrySchema>, 'bulletPoints'> & {
-  bulletPoints: BulletPoint[];
-};
+type InvolvementFormEntry = z.infer<typeof involvementEntrySchema>;
 type InvolvementFormData = z.infer<typeof involvementSchema>;
 
+// RMS Involvement data interface
+interface RMSInvolvementData {
+  [key: string]: any; // RMS format data with keys like rms_involvement_0_organization, etc.
+  rms_involvement_count?: number;
+}
+
 interface InvolvementFormProps {
-  initialData: InvolvementEntry[];
-  onSave?: (data: InvolvementEntry[]) => Promise<void>;
+  initialData: RMSInvolvementData;
+  onSave?: (data: RMSInvolvementData) => Promise<void>;
 }
 
 // Constants
@@ -82,64 +86,70 @@ const cleanValue = (value: string | undefined | null): string => {
   return PLACEHOLDER_VALUES.includes(trimmed) ? '' : trimmed;
 };
 
-// Convert store format to form format
-const convertToFormFormat = (entries: InvolvementEntry[]): InvolvementFormEntry[] => {
-  return entries.map(entry => {
-    // Parse bullet points from description if bulletPoints array is empty
-    let bulletPoints = entry.bulletPoints?.filter(Boolean) || [];
+// Extract involvement entries from RMS data
+const extractInvolvementFromRMS = (rmsData: RMSInvolvementData): InvolvementFormEntry[] => {
+  const count = rmsData.rms_involvement_count || 0;
+  const entries: InvolvementFormEntry[] = [];
 
-    if (bulletPoints.length === 0 && entry.description) {
-      // Split by various bullet point formats: •, -, *, or newline followed by these
-      const points = entry.description
-        .split(/(?:^|\n)\s*[•\-\*]\s*|(?<=[.!?])\s*•\s*/)
-        .map((point: string) => point.trim())
-        .filter((point: string) => point.length > 0);
+  for (let i = 0; i < count; i++) {
+    const entry: InvolvementFormEntry = {
+      id: `involvement_${i}`,
+      organization: cleanValue(rmsData[`rms_involvement_${i}_organization`]),
+      role: cleanValue(rmsData[`rms_involvement_${i}_role`]),
+      location: cleanValue(rmsData[`rms_involvement_${i}_location`]),
+      startDate: cleanValue(rmsData[`rms_involvement_${i}_datebegin`]),
+      endDate: cleanValue(rmsData[`rms_involvement_${i}_dateend`]),
+      current: rmsData[`rms_involvement_${i}_iscurrent`] || false,
+      description: (() => {
+        const desc = cleanValue(rmsData[`rms_involvement_${i}_description`]);
+        if (!desc) return '';
 
-      // If the split didn't work well, try a simpler approach
-      if (points.length <= 1 && entry.description.includes('•')) {
-        const simplePoints = entry.description
-          .split('•')
-          .map((point: string) => point.trim())
-          .filter((point: string) => point.length > 0);
-        bulletPoints = simplePoints;
-      } else {
-        bulletPoints = points;
-      }
-    }
+        const lines = desc.split('\n').filter(line => line.trim() !== '');
+        const hasExistingBullets = lines.some(line =>
+          line.trim().startsWith('•') ||
+          line.trim().startsWith('-') ||
+          line.trim().startsWith('*')
+        );
 
-    return {
-      ...entry,
-      id: entry.id || crypto.randomUUID(),
-      organization: cleanValue(entry.organization),
-      role: cleanValue(entry.role),
-      location: cleanValue(entry.location),
-      startDate: cleanValue(entry.startDate),
-      endDate: cleanValue(entry.endDate),
-      description: bulletPoints.length > 0 ? '' : cleanValue(entry.description),
-      bulletPoints: bulletPoints.length > 0 ? bulletPoints.map((bp: any) => ({ value: bp })) : [{ value: '' }],
+        if (!hasExistingBullets) {
+          return lines.map(line => `• ${line.trim()}`).join('\n');
+        }
+
+        return desc;
+      })(),
     };
-  });
+    entries.push(entry);
+  }
+
+  return entries.length > 0 ? entries : [{
+    id: crypto.randomUUID(),
+    organization: '',
+    role: '',
+    location: '',
+    startDate: '',
+    endDate: '',
+    current: false,
+    description: ''
+  }];
 };
 
-// Convert form format to store format
-const convertToStoreFormat = (formData: InvolvementFormData): InvolvementEntry[] => {
-  return formData.entries.map(entry => {
-    const bulletPoints = entry.bulletPoints
-      ? entry.bulletPoints.map(bp => bp.value).filter(v => v && v.trim())
-      : [];
+// Convert form data back to RMS format
+const convertToRMSFormat = (formData: InvolvementFormData): RMSInvolvementData => {
+  const rmsData: RMSInvolvementData = {
+    rms_involvement_count: formData.entries.length
+  };
 
-    return {
-      id: entry.id || crypto.randomUUID(),
-      organization: entry.organization || '',
-      role: entry.role || '',
-      location: entry.location || '',
-      startDate: entry.startDate || '',
-      endDate: entry.endDate || '',
-      current: entry.current || false,
-      description: bulletPoints.length > 0 ? bulletPoints.join('\n• ') : (entry.description || ''),
-      bulletPoints: bulletPoints,
-    };
+  formData.entries.forEach((entry, i) => {
+    rmsData[`rms_involvement_${i}_organization`] = entry.organization || '';
+    rmsData[`rms_involvement_${i}_role`] = entry.role || '';
+    rmsData[`rms_involvement_${i}_location`] = entry.location || '';
+    rmsData[`rms_involvement_${i}_datebegin`] = entry.startDate || '';
+    rmsData[`rms_involvement_${i}_dateend`] = entry.endDate || '';
+    rmsData[`rms_involvement_${i}_iscurrent`] = entry.current || false;
+    rmsData[`rms_involvement_${i}_description`] = entry.description || '';
   });
+
+  return rmsData;
 };
 
 // Auto-save indicator component
@@ -218,34 +228,14 @@ const useKeyboardShortcuts = (callbacks: {
 
 export default function InvolvementForm({ initialData, onSave }: InvolvementFormProps) {
   const { toast } = useToast();
-  const {
-    updateSection,
-    saveSection,
-    saveStatus,
-    revertSection
-  } = useResumeStore();
-
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const isSaving = saveStatus.isSaving && saveStatus.pendingSections.includes('involvements');
-
-  // Initialize form
+  // Initialize form with RMS data
   const defaultFormValues = useMemo(() => ({
-    entries: initialData?.length > 0
-      ? convertToFormFormat(initialData)
-      : [{
-          id: crypto.randomUUID(),
-          organization: '',
-          role: '',
-          location: '',
-          startDate: '',
-          endDate: '',
-          current: false,
-          description: '',
-          bulletPoints: [{ value: '' }]
-        }]
+    entries: extractInvolvementFromRMS(initialData)
   }), [initialData]);
 
   const form = useForm<InvolvementFormData>({
@@ -254,7 +244,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
     mode: 'onBlur',
   });
 
-  const { control, formState: { errors, isDirty }, watch, setValue, reset, getValues, trigger } = form;
+  const { control, handleSubmit, formState: { errors, isDirty }, watch, setValue, reset, getValues, trigger } = form;
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -274,9 +264,11 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
       setAutoSaveStatus('saving');
       try {
         const formData = getValues();
-        const storeData = convertToStoreFormat(formData);
-        // Only update the store, don't save to Firebase yet
-        updateSection('involvements', storeData);
+        const rmsData = convertToRMSFormat(formData);
+        // Auto-save via onSave callback if provided
+        if (onSave) {
+          await onSave(rmsData);
+        }
         setAutoSaveStatus('saved');
         setTimeout(() => setAutoSaveStatus(null), 3000);
       } catch (error) {
@@ -284,7 +276,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
         console.error('Auto-save failed:', error);
       }
     }, AUTO_SAVE_DELAY);
-  }, [getValues, updateSection]);
+  }, [getValues, onSave]);
 
   // Trigger auto-save on form changes (but not on mount)
   const isFirstRender = useRef(true);
@@ -317,6 +309,14 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
     isFirstRender.current = true;
   }, [initialData, reset, defaultFormValues]);
 
+  // Unsaved changes protection
+  const {
+    showModal,
+    handleSaveAndContinue,
+    handleDiscardAndContinue,
+    handleCancelNavigation
+  } = useUnsavedChangesProtection({ isDirty });
+
   // Handlers
   const handleManualSave = useCallback(async () => {
     const isValid = await trigger();
@@ -330,15 +330,13 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
     }
 
     try {
+      setIsSaving(true);
       const formData = getValues();
-      const storeData = convertToStoreFormat(formData);
+      const rmsData = convertToRMSFormat(formData);
 
       if (onSave) {
-        await onSave(storeData);
+        await onSave(rmsData);
       }
-
-      updateSection('involvements', storeData);
-      await saveSection('involvements');
 
       // Reset form state with current values to mark as clean
       reset({ entries: formData.entries });
@@ -354,17 +352,18 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
         description: "Failed to save involvement information",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
-  }, [trigger, getValues, onSave, updateSection, saveSection, reset, toast]);
+  }, [trigger, getValues, onSave, reset, toast]);
 
   const handleUndo = useCallback(() => {
-    revertSection('involvements');
     reset(defaultFormValues);
     toast({
       title: "Changes reverted",
-      description: "Involvements section restored to last saved state",
+      description: "Involvements section restored to initial state",
     });
-  }, [revertSection, reset, defaultFormValues, toast]);
+  }, [reset, defaultFormValues, toast]);
 
   const addNewInvolvement = useCallback(() => {
     const newEntry = {
@@ -375,8 +374,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
       startDate: '',
       endDate: '',
       current: false,
-      description: '',
-      bulletPoints: [{ value: '' }]
+      description: ''
     };
     append(newEntry);
     setActiveIndex(fields.length);
@@ -493,51 +491,16 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
         </div>
 
         {/* Form Content */}
-        <div onKeyDown={(e) => {
-          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            handleManualSave();
-          }
-        }}>
-          <div className="space-y-6">
-            {/* Add key to force re-render when switching entries */}
-            <div key={`involvement-${activeIndex}`}>
-            {/* Organization & Role */}
+        <form onSubmit={handleSubmit(handleManualSave)} className="space-y-6 pt-6">
+          {/* Add key to force re-render when switching entries */}
+          <div key={`entry-${activeIndex}`}>
+            {/* Role & Organization */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Organization <span className="resume-label-required">*</span>
-                </Label>
-                <Controller
-                  name={`entries.${activeIndex}.organization`}
-                  control={control}
-                  render={({ field }) => (
-                    <div className={`resume-input-container ${getFieldError('organization') ? 'resume-input-container--error' : ''}`}>
-                      <Building2 className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
-                      <Input
-                        {...field}
-                        placeholder="e.g., Student Government Association"
-                        className="resume-input px-0 pr-3"
-                        disabled={isSaving}
-                      />
-                    </div>
-                  )}
-                />
-                {getFieldError('organization') && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="resume-error-message"
-                  >
-                    <AlertCircle className="h-4 w-4" />
-                    {getFieldError('organization')?.message}
-                  </motion.p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Role / Position <span className="resume-label-required">*</span>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>ROLE / POSITION</strong> <span className="resume-label-required">*</span>
+                  </span>
                 </Label>
                 <Controller
                   name={`entries.${activeIndex}.role`}
@@ -564,22 +527,57 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
                   </motion.p>
                 )}
               </div>
+
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>ORGANIZATION</strong> <span className="resume-label-required">*</span>
+                  </span>
+                </Label>
+                <Controller
+                  name={`entries.${activeIndex}.organization`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className={`resume-input-container ${getFieldError('organization') ? 'resume-input-container--error' : ''}`}>
+                      <Input
+                        {...field}
+                        placeholder="e.g., Student Government Association"
+                        className="resume-input"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  )}
+                />
+                {getFieldError('organization') && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="resume-error-message"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {getFieldError('organization')?.message}
+                  </motion.p>
+                )}
+              </div>
             </div>
 
             {/* Location & Time Period */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-2">
-                <Label className="resume-label">Location</Label>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>LOCATION</strong>
+                  </span>
+                </Label>
                 <Controller
                   name={`entries.${activeIndex}.location`}
                   control={control}
                   render={({ field }) => (
                     <div className="resume-input-container">
-                      <MapPin className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
                       <Input
                         {...field}
                         placeholder="e.g., Boston, MA"
-                        className="resume-input px-0 pr-3"
+                        className="resume-input"
                         disabled={isSaving}
                       />
                     </div>
@@ -587,24 +585,30 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Time Period <span className="resume-label-required">*</span>
+              {/* Time Period Container - Consistent with experience form */}
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>TIME PERIOD</strong> <span className="resume-label-required">*</span>
+                  </span>
                 </Label>
                 <div className="flex items-start gap-2">
+                  {/* Start Date Container */}
                   <div className="flex-grow">
-                    <Controller
-                      name={`entries.${activeIndex}.startDate`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="Jan 2023"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      )}
-                    />
+                    <div className={`resume-input-container ${getFieldError('startDate') ? 'resume-input-container--error' : ''}`}>
+                      <Controller
+                        name={`entries.${activeIndex}.startDate`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="Jan 2023"
+                            className="resume-input"
+                            disabled={isSaving}
+                          />
+                        )}
+                      />
+                    </div>
                     {getFieldError('startDate') && (
                       <motion.p
                         initial={{ opacity: 0 }}
@@ -617,19 +621,22 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
                     )}
                   </div>
 
+                  {/* End Date Container */}
                   <div className="flex-grow">
-                    <Controller
-                      name={`entries.${activeIndex}.endDate`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder={currentEntry?.current ? "Present" : "May 2024"}
-                          disabled={currentEntry?.current || isSaving}
-                          className={`resume-input ${currentEntry?.current ? 'opacity-50' : ''}`}
-                        />
-                      )}
-                    />
+                    <div className={`resume-input-container ${getFieldError('endDate') && !currentEntry?.current ? 'resume-input-container--error' : ''}`}>
+                      <Controller
+                        name={`entries.${activeIndex}.endDate`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder={currentEntry?.current ? "Present" : "May 2024"}
+                            disabled={currentEntry?.current || isSaving}
+                            className={`resume-input ${currentEntry?.current ? 'opacity-50' : ''}`}
+                          />
+                        )}
+                      />
+                    </div>
                     {getFieldError('endDate') && !currentEntry?.current && (
                       <motion.p
                         initial={{ opacity: 0 }}
@@ -642,6 +649,7 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
                     )}
                   </div>
 
+                  {/* Current Position Toggle */}
                   <div className="flex flex-col items-center pt-2 gap-1">
                     <Controller
                       name={`entries.${activeIndex}.current`}
@@ -664,76 +672,123 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
               </div>
             </div>
 
-            {/* Bullet Points */}
-            <div className="space-y-2 mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="resume-label">Key Responsibilities & Achievements</Label>
-                <span className="text-xs text-gray-500">
-                  Tip: Press Enter to add a new point
-                </span>
+            {/* Description Field with AI Header - Similar to Experience Form */}
+            <div className="grid gap-y-1">
+              <div className="inline-block w-full">
+                <div className="flex items-end justify-between">
+                  <label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal">
+                    <span className="cursor-default text-sm leading-5">
+                      <strong>What did you do</strong> with {currentEntry?.organization || 'this organization'}?
+                    </span>
+                  </label>
+                  <div className="flex-shrink-0">
+                    <div className="flex flex-col lg:flex-row justify-between pl-4 px-1.5 py-1.5 gap-x-4 gap-y-2">
+                      <div className="flex flex-row items-center flex-1">
+                        <div>
+                          <div className="w-4 h-4 text-corporate-amber-500">💡</div>
+                        </div>
+                        <div className="text-sm leading-5 text-gray-500 font-normal ml-1">
+                          Focus on leadership achievements and meaningful impact.
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end items-center">
+                        <div className="transition-opacity duration-200 opacity-100">
+                          <Button
+                            type="button"
+                            className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed border-0 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white px-3 py-1 rounded-full text-xs"
+                            disabled={isSaving}
+                            size="sm"
+                          >
+                            <div className="mr-1 w-3 h-3">
+                              <div className="opacity-100">✨</div>
+                            </div>
+                            <span>Generate Bullet</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                {currentEntry?.bulletPoints?.map((_, bulletIndex) => (
-                  <div
-                    key={`bullet-${bulletIndex}`}
-                    className="resume-bullet-item group"
-                  >
-                    <GripVertical className="resume-bullet-grip" />
-                    <div className="resume-bullet-input flex-grow">
-                      <Controller
-                        name={`entries.${activeIndex}.bulletPoints.${bulletIndex}.value`}
-                        control={control}
-                        render={({ field }) => (
-                          <Textarea
-                            {...field}
-                            placeholder="• Managed budget of $10,000 for student activities and events"
-                            className="resume-textarea min-h-[60px]"
-                            rows={2}
-                            disabled={isSaving}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                const newBulletPoints = [...(currentEntry?.bulletPoints || []), { value: '' }];
-                                setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const newBulletPoints = currentEntry?.bulletPoints?.filter((_, i) => i !== bulletIndex) || [];
-                        if (newBulletPoints.length === 0) {
-                          newBulletPoints.push({ value: '' });
-                        }
-                        setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                      }}
-                      disabled={isSaving || currentEntry?.bulletPoints?.length === 1}
-                      className="resume-bullet-remove opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+              <div className="relative">
+                <div className="resume-input-container resume-date-input !min-h-64 md:!min-h-44">
+                  <Controller
+                    name={`entries.${activeIndex}.description`}
+                    control={control}
+                    render={({ field }) => {
+                      const bulletPoints = field.value ? field.value.split('•').filter(p => p.trim()) : [''];
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const newBulletPoints = [...(currentEntry?.bulletPoints || []), { value: '' }];
-                    setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                  }}
-                  disabled={isSaving}
-                  className="resume-button-secondary w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Achievement
-                </Button>
+                      const handleBulletChange = (index: number, newContent: string) => {
+                        const updatedPoints = [...bulletPoints];
+                        updatedPoints[index] = newContent;
+                        const newValue = updatedPoints.filter(p => p.trim()).map(p => `• ${p.trim()}`).join('\n');
+                        field.onChange(newValue);
+                      };
+
+                      return (
+                        <div className="w-full p-3">
+                          {bulletPoints.map((point, index) => {
+                            const initialConfig = {
+                              namespace: `InvolvementEditor-${index}`,
+                              nodes: [],
+                              onError: (error: Error) => {
+                                console.error('Lexical error:', error);
+                              },
+                              editorState: () => {
+                                const root = $getRoot();
+                                if (point.trim()) {
+                                  const paragraph = $createParagraphNode();
+                                  const textNode = $createTextNode(point.trim());
+                                  paragraph.append(textNode);
+                                  root.append(paragraph);
+                                }
+                              },
+                            };
+
+                            return (
+                              <div key={index} className="flex items-start leading-[1.5] mb-1">
+                                <span className="flex-shrink-0 pr-1 w-3 text-gray-600 dark:text-gray-400">•</span>
+                                <div className="flex-1">
+                                  <LexicalComposer initialConfig={initialConfig}>
+                                    <PlainTextPlugin
+                                      contentEditable={
+                                        <ContentEditable
+                                          className="outline-none bg-transparent min-h-[1.5em] p-0"
+                                          style={{
+                                            fontSize: '16px',
+                                            lineHeight: '1.5'
+                                          }}
+                                        />
+                                      }
+                                      placeholder={index === 0 ? <div className="text-gray-400 dark:text-gray-500">Describe your leadership achievements and impact...</div> : null}
+                                      ErrorBoundary={LexicalErrorBoundary}
+                                    />
+                                    <OnChangePlugin
+                                      onChange={(editorState: EditorState, editor) => {
+                                        editorState.read(() => {
+                                          const root = $getRoot();
+                                          const textContent = root.getTextContent();
+
+                                          // Only trigger change if content actually changed, not just selection
+                                          const currentContent = point.trim();
+                                          if (textContent !== currentContent) {
+                                            handleBulletChange(index, textContent);
+                                          }
+                                        });
+                                      }}
+                                    />
+                                    <HistoryPlugin />
+                                  </LexicalComposer>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -796,9 +851,18 @@ export default function InvolvementForm({ initialData, onSave }: InvolvementForm
               </Button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
-    </div>
+
+      <UnsavedChangesModal
+        isOpen={showModal}
+        onClose={handleCancelNavigation}
+        onSave={handleSaveAndContinue}
+        onDiscard={handleDiscardAndContinue}
+        onCancel={handleCancelNavigation}
+        title="Unsaved Involvement Changes"
+        description="You have unsaved changes to your involvement activities. What would you like to do?"
+      />
     </div>
   );
 }

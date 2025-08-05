@@ -107,96 +107,84 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
         status: 'created_from_template'
       };
 
-      // Convert template content to RMS format
+      // Convert template content to parsedData format for resume templates
       if (isResumeTemplate) {
         const resumeTemplate = template as ResumeTemplate;
         const content = resumeTemplate.content;
         
-        // Convert template content to RMS raw data format
+        // Convert template content to your parsedData structure format
         const rmsRawData: Record<string, any> = {
-          // Contact info
-          Rms_contact_fullName: content.name || '',
-          rms_contact_fullname: content.name || '',
-          Rms_contact_email: content.email || '',
-          rms_contact_email: content.email || '',
-          Rms_contact_phone: content.phone || '',
-          rms_contact_phone: content.phone || '',
-          Rms_contact_linkedin: content.linkedin || '',
-          rms_contact_linkedin: content.linkedin || '',
-          Rms_contact_website: content.website || '',
-          rms_contact_website: content.website || '',
-          Rms_contact_city: content.location?.split(',')[0]?.trim() || '',
-          rms_contact_city: content.location?.split(',')[0]?.trim() || '',
-          Rms_contact_state: content.location?.split(',')[1]?.trim() || '',
-          rms_contact_state: content.location?.split(',')[1]?.trim() || '',
-          Rms_contact_country: '',
-          rms_contact_country: '',
+          // Metadata
+          creator: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+          producer: "Skia/PDF m138",
+          rms_schema_details: "https://github.com/rezi-io/resume-standard",
           
-          // Summary
-          Rms_summary: content.summary || '',
-          rms_summary: content.summary || '',
+          // Contact info
+          rms_contact_fullname: content.name || '',
+          rms_contact_givennames: content.name?.split(' ')[0] || '',
+          rms_contact_lastname: content.name?.split(' ').slice(1).join(' ') || '',
+          rms_contact_email: content.email || '',
+          rms_contact_phone: content.phone || '',
+          rms_contact_linkedin: content.linkedin || '',
+          rms_contact_state: content.location?.split(',')[1]?.trim() || '',
+          rms_contact_country: 'United States',
+          rms_contact_countrycode: 'United States',
           
           // Experience
-          Rms_experience_count: content.experience?.length || 0,
           rms_experience_count: content.experience?.length || 0,
           
           // Education
-          Rms_education_count: content.education?.length || 0,
           rms_education_count: content.education?.length || 0,
           
-          // Skills - count skill categories (technical, soft, languages)
-          Rms_skill_count: ((content.skills?.technical?.length ?? 0) > 0 ? 1 : 0) + 
-                           ((content.skills?.soft?.length ?? 0) > 0 ? 1 : 0) + 
-                           ((content.skills?.languages?.length ?? 0) > 0 ? 1 : 0),
+          // Skills
           rms_skill_count: ((content.skills?.technical?.length ?? 0) > 0 ? 1 : 0) + 
                           ((content.skills?.soft?.length ?? 0) > 0 ? 1 : 0) + 
                           ((content.skills?.languages?.length ?? 0) > 0 ? 1 : 0),
           
           // Projects
-          Rms_project_count: content.projects?.length || 0,
           rms_project_count: content.projects?.length || 0,
           
           // Certifications
-          Rms_certification_count: content.skills?.certifications?.length || 0,
           rms_certification_count: content.skills?.certifications?.length || 0,
           
           // Involvement/Volunteer
-          Rms_involvement_count: content.volunteer?.length || 0,
           rms_involvement_count: content.volunteer?.length || 0,
+          
+          // Awards
+          rms_award_count: content.awards?.length || 0,
+          
+          // Publications
+          rms_publication_count: content.publications?.length || 0,
+          
+          // References and Coursework (default to 0)
+          rms_reference_count: 0,
+          rms_coursework_count: 0,
         };
 
         // Add experience entries
         content.experience?.forEach((exp, index) => {
-          rmsRawData[`Rms_experience_${index}_role`] = exp.jobTitle || '';
           rmsRawData[`rms_experience_${index}_role`] = exp.jobTitle || '';
-          rmsRawData[`Rms_experience_${index}_company`] = exp.companyName || '';
           rmsRawData[`rms_experience_${index}_company`] = exp.companyName || '';
-          rmsRawData[`Rms_experience_${index}_location`] = exp.location || '';
           rmsRawData[`rms_experience_${index}_location`] = exp.location || '';
-          rmsRawData[`Rms_experience_${index}_dateBegin`] = exp.startDate || '';
-          rmsRawData[`rms_experience_${index}_dateBegin`] = exp.startDate || '';
-          rmsRawData[`Rms_experience_${index}_dateEnd`] = exp.endDate || '';
-          rmsRawData[`rms_experience_${index}_dateEnd`] = exp.endDate || '';
-          rmsRawData[`Rms_experience_${index}_isCurrent`] = exp.isCurrent || false;
-          rmsRawData[`rms_experience_${index}_isCurrent`] = exp.isCurrent || false;
-          rmsRawData[`Rms_experience_${index}_description`] = exp.responsibilities?.join('\n') || '';
-          rmsRawData[`rms_experience_${index}_description`] = exp.responsibilities?.join('\n') || '';
+          rmsRawData[`rms_experience_${index}_datebegin`] = exp.startDate || '';
+          rmsRawData[`rms_experience_${index}_datebeginformat`] = "January 2006";
+          rmsRawData[`rms_experience_${index}_datebegints`] = Date.parse(exp.startDate) / 1000 || 0;
+          rmsRawData[`rms_experience_${index}_dateend`] = exp.endDate || '';
+          rmsRawData[`rms_experience_${index}_dateendformat`] = "January 2006";
+          rmsRawData[`rms_experience_${index}_dateendts`] = Date.parse(exp.endDate) / 1000 || 0;
+          rmsRawData[`rms_experience_${index}_iscurrent`] = exp.isCurrent || false;
+          rmsRawData[`rms_experience_${index}_description`] = exp.responsibilities?.join(' ') || '';
         });
 
         // Add education entries
         content.education?.forEach((edu, index) => {
-          rmsRawData[`Rms_education_${index}_institution`] = edu.school || '';
           rmsRawData[`rms_education_${index}_institution`] = edu.school || '';
-          rmsRawData[`Rms_education_${index}_qualification`] = edu.degree || '';
           rmsRawData[`rms_education_${index}_qualification`] = edu.degree || '';
-          rmsRawData[`Rms_education_${index}_location`] = edu.location || '';
           rmsRawData[`rms_education_${index}_location`] = edu.location || '';
-          rmsRawData[`Rms_education_${index}_date`] = edu.endDate || '';
-          rmsRawData[`rms_education_${index}_date`] = edu.endDate || '';
-          rmsRawData[`Rms_education_${index}_score`] = edu.gpa || '';
-          rmsRawData[`rms_education_${index}_score`] = edu.gpa || '';
-          rmsRawData[`Rms_education_${index}_scoreType`] = edu.gpa ? 'GPA' : '';
-          rmsRawData[`rms_education_${index}_scoreType`] = edu.gpa ? 'GPA' : '';
+          rmsRawData[`rms_education_${index}_date`] = new Date(edu.endDate).getFullYear() || new Date().getFullYear();
+          rmsRawData[`rms_education_${index}_dateformat`] = 2006;
+          rmsRawData[`rms_education_${index}_datets`] = Date.parse(edu.endDate) / 1000 || 0;
+          rmsRawData[`rms_education_${index}_isgraduate`] = false;
         });
 
         // Add skills grouped by category
@@ -204,74 +192,58 @@ export default function TemplateApplyModal({ isOpen, onOpenChange, template }: T
         
         // Technical skills as one entry
         if (content.skills?.technical && content.skills.technical.length > 0) {
-          rmsRawData[`Rms_skill_${skillIndex}_category`] = 'Technical Skills';
           rmsRawData[`rms_skill_${skillIndex}_category`] = 'Technical Skills';
-          rmsRawData[`Rms_skill_${skillIndex}_keywords`] = content.skills.technical.join(', ');
           rmsRawData[`rms_skill_${skillIndex}_keywords`] = content.skills.technical.join(', ');
           skillIndex++;
         }
 
         // Soft skills as one entry
         if (content.skills?.soft && content.skills.soft.length > 0) {
-          rmsRawData[`Rms_skill_${skillIndex}_category`] = 'Soft Skills';
           rmsRawData[`rms_skill_${skillIndex}_category`] = 'Soft Skills';
-          rmsRawData[`Rms_skill_${skillIndex}_keywords`] = content.skills.soft.join(', ');
           rmsRawData[`rms_skill_${skillIndex}_keywords`] = content.skills.soft.join(', ');
           skillIndex++;
         }
 
-        // Languages as one entry (if they exist)
+        // Languages as one entry
         if (content.skills?.languages && content.skills.languages.length > 0) {
-          rmsRawData[`Rms_skill_${skillIndex}_category`] = 'Languages';
           rmsRawData[`rms_skill_${skillIndex}_category`] = 'Languages';
-          rmsRawData[`Rms_skill_${skillIndex}_keywords`] = content.skills.languages.map(lang => `${lang.language} (${lang.proficiency})`).join(', ');
           rmsRawData[`rms_skill_${skillIndex}_keywords`] = content.skills.languages.map(lang => `${lang.language} (${lang.proficiency})`).join(', ');
           skillIndex++;
         }
 
         // Add projects
         content.projects?.forEach((project, index) => {
-          rmsRawData[`Rms_project_${index}_name`] = project.name || '';
           rmsRawData[`rms_project_${index}_name`] = project.name || '';
-          rmsRawData[`Rms_project_${index}_title`] = project.name || '';
           rmsRawData[`rms_project_${index}_title`] = project.name || '';
-          rmsRawData[`Rms_project_${index}_description`] = project.description || '';
           rmsRawData[`rms_project_${index}_description`] = project.description || '';
-          rmsRawData[`Rms_project_${index}_url`] = project.link || '';
           rmsRawData[`rms_project_${index}_url`] = project.link || '';
-          rmsRawData[`Rms_project_${index}_organization`] = '';
           rmsRawData[`rms_project_${index}_organization`] = '';
+        });
+
+        // Add involvement/volunteer
+        content.volunteer?.forEach((vol, index) => {
+          rmsRawData[`rms_involvement_${index}_organization`] = vol.organization || '';
+          rmsRawData[`rms_involvement_${index}_role`] = vol.role || '';
+          rmsRawData[`rms_involvement_${index}_location`] = '';
+          rmsRawData[`rms_involvement_${index}_datebegin`] = vol.startDate || '';
+          rmsRawData[`rms_involvement_${index}_datebeginformat`] = "January 2006";
+          rmsRawData[`rms_involvement_${index}_datebegints`] = Date.parse(vol.startDate) / 1000 || 0;
+          rmsRawData[`rms_involvement_${index}_dateend`] = vol.endDate || '';
+          rmsRawData[`rms_involvement_${index}_description`] = vol.description || '';
         });
 
         // Add certifications
         content.skills?.certifications?.forEach((cert, index) => {
-          rmsRawData[`Rms_certification_${index}_name`] = cert.name || '';
           rmsRawData[`rms_certification_${index}_name`] = cert.name || '';
-          rmsRawData[`Rms_certification_${index}_issuer`] = cert.issuer || '';
           rmsRawData[`rms_certification_${index}_issuer`] = cert.issuer || '';
-          rmsRawData[`Rms_certification_${index}_department`] = cert.issuer || '';
           rmsRawData[`rms_certification_${index}_department`] = cert.issuer || '';
-          rmsRawData[`Rms_certification_${index}_date`] = cert.date || '';
           rmsRawData[`rms_certification_${index}_date`] = cert.date || '';
         });
 
-        // Add volunteer/involvement
-        content.volunteer?.forEach((vol, index) => {
-          rmsRawData[`Rms_involvement_${index}_organization`] = vol.organization || '';
-          rmsRawData[`rms_involvement_${index}_organization`] = vol.organization || '';
-          rmsRawData[`Rms_involvement_${index}_role`] = vol.role || '';
-          rmsRawData[`rms_involvement_${index}_role`] = vol.role || '';
-          rmsRawData[`Rms_involvement_${index}_location`] = '';
-          rmsRawData[`rms_involvement_${index}_location`] = '';
-          rmsRawData[`Rms_involvement_${index}_dateBegin`] = vol.startDate || '';
-          rmsRawData[`rms_involvement_${index}_dateBegin`] = vol.startDate || '';
-          rmsRawData[`Rms_involvement_${index}_dateEnd`] = vol.endDate || '';
-          rmsRawData[`rms_involvement_${index}_dateEnd`] = vol.endDate || '';
-          rmsRawData[`Rms_involvement_${index}_description`] = vol.description || '';
-          rmsRawData[`rms_involvement_${index}_description`] = vol.description || '';
-        });
+        // Coursework - set to 0 since templates don't have a separate coursework section
+        // (relevantCourses are part of education entries in the template structure)
 
-        resumeData.rmsRawData = rmsRawData;
+        resumeData.parsedData = rmsRawData;
       }
 
       // Create resume document

@@ -141,11 +141,9 @@ export interface ResumeDocument {
   id: string;
   title: string;
   userId: string;
-  data: UnifiedResumeData;
+  parsedData: any; // RMS format - flattened key-value pairs
   createdAt: string;
   updatedAt: string;
-  rmsRawData?: any;
-  parsedData?: any;
 }
 
 // Dirty tracking types

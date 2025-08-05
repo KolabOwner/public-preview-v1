@@ -1,14 +1,14 @@
 'use client';
 
 /**
- * SummaryForm Component
+ * SummaryForm Component - Natural, Clean Design
  *
  * Features:
- * - Auto-save: Updates store in memory every 2 seconds (doesn't persist to database)
- * - Manual save: Persists to database via Save button or Ctrl+S
- * - Validation: Real-time validation with helpful error messages
- * - Keyboard shortcuts: Save (Ctrl+S), Undo (Ctrl+Z)
- * - Enhanced with better UX patterns from experience/involvement forms
+ * - Clean, intuitive interface
+ * - Lexical editor for better text editing
+ * - AI Summary Writer integration
+ * - Auto-save functionality
+ * - Natural, modern styling
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -16,80 +16,89 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
-  Sparkles, Save, Loader2, FileText, AlertCircle, Target,
-  Cpu, BookOpen, Undo2, Check, Clock, ChevronLeft, ChevronRight
+  Sparkles, Save, Loader2, AlertCircle, Check, Clock, Undo2, FileText
 } from "lucide-react";
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { $getRoot, EditorState, $createParagraphNode, $createTextNode } from 'lexical';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { useResumeData } from "@/contexts/resume-data-context";
 import { generateSummaryAPI } from '@/lib/client/api/summary';
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
-import { Textarea } from '@/components/shared/textarea';
 import { Switch } from '@/components/shared/switch';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
 import { useResumeStore } from '@/lib/client/stores/resume-store';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/form-styles.css';
+import { useUnsavedChangesProtection } from '@/lib/client/hooks/resume/use-unsaved-changes-protection';
+import UnsavedChangesModal from '../modals/unsaved-changes-modal';
 
-// Schema for summary form
+// Schema definition
 const summarySchema = z.object({
-  summary: z.string().max(1000, "Summary should not exceed 1000 characters"),
-  positionHighlight: z.boolean(),
-  position: z.string(),
-  skillsHighlight: z.string(),
+  rms_summary: z.string().max(1000, "Summary should not exceed 1000 characters"),
+  rms_summary_position_highlight: z.boolean(),
+  rms_summary_target_position: z.string().optional(),
+  rms_summary_skills_highlight: z.string().optional(),
 });
 
-// TypeScript types inferred from schema
 type SummaryFormData = z.infer<typeof summarySchema>;
 
-export interface SummaryData {
-  summary: string;
-  positionHighlight: boolean;
-  position: string;
-  skillsHighlight: string;
+// RMS Summary data interface
+interface RMSSummaryData {
+  [key: string]: any;
+  rms_summary?: string;
+  rms_summary_position_highlight?: boolean;
+  rms_summary_target_position?: string;
+  rms_summary_skills_highlight?: string;
 }
 
 interface SummaryFormProps {
-  initialData?: SummaryData;
-  onSave?: (data: SummaryData) => Promise<void>;
-  onSaveSuccess?: () => void;
+  initialData?: RMSSummaryData;
+  onSave?: (data: RMSSummaryData) => Promise<void>;
 }
 
-const PLACEHOLDER_VALUES = ['n/a', 'N/A', 'none', 'None', 'NONE', 'null', 'NULL', '-', '--', 'NA', 'na', 'undefined'];
+// Constants
+const PLACEHOLDER_VALUES = ['n/a', 'N/A', 'none', 'null', '-', 'NA'];
 const AUTO_SAVE_DELAY = 2000;
 
-const cleanValue = (value: string | undefined | null): string => {
-  if (!value) return '';
+// Helper functions
+const cleanRMSValue = (value: any): string => {
+  if (typeof value !== 'string') return '';
   const trimmed = value.trim();
   return PLACEHOLDER_VALUES.includes(trimmed) ? '' : trimmed;
 };
 
-// Convert store format to form format
-const convertToFormFormat = (data: SummaryData | undefined): SummaryFormData => {
-  if (!data) {
+// Extract summary data from RMS format
+const extractSummaryFromRMS = (rmsData: RMSSummaryData | undefined): SummaryFormData => {
+  if (!rmsData) {
     return {
-      summary: '',
-      positionHighlight: true,
-      position: '',
-      skillsHighlight: ''
+      rms_summary: '',
+      rms_summary_position_highlight: true,
+      rms_summary_target_position: '',
+      rms_summary_skills_highlight: '',
     };
   }
 
   return {
-    summary: cleanValue(data.summary),
-    positionHighlight: data.positionHighlight ?? true,
-    position: cleanValue(data.position),
-    skillsHighlight: cleanValue(data.skillsHighlight)
+    rms_summary: cleanRMSValue(rmsData.rms_summary),
+    rms_summary_position_highlight: rmsData.rms_summary_position_highlight ?? true,
+    rms_summary_target_position: cleanRMSValue(rmsData.rms_summary_target_position),
+    rms_summary_skills_highlight: cleanRMSValue(rmsData.rms_summary_skills_highlight),
   };
 };
 
-// Convert form format to store format
-const convertToStoreFormat = (data: SummaryFormData): SummaryData => {
+// Convert form data back to RMS format
+const convertToRMSFormat = (formData: SummaryFormData): RMSSummaryData => {
   return {
-    summary: data.summary || '',
-    positionHighlight: data.positionHighlight || false,
-    position: data.position || '',
-    skillsHighlight: data.skillsHighlight || '',
+    rms_summary: formData.rms_summary || '',
+    rms_summary_position_highlight: formData.rms_summary_position_highlight ?? true,
+    rms_summary_target_position: formData.rms_summary_target_position || '',
+    rms_summary_skills_highlight: formData.rms_summary_skills_highlight || '',
   };
 };
 
@@ -144,34 +153,16 @@ const useKeyboardShortcuts = (callbacks: {
   }, [callbacks]);
 };
 
-export default function SummaryForm({ initialData, onSave, onSaveSuccess }: SummaryFormProps) {
-  const {
-    resumeData,
-    processedData,
-    updateResumeData,
-    saveResumeData,
-    loading: contextLoading
-  } = useResumeData();
+export default function SummaryForm({ initialData, onSave }: SummaryFormProps) {
   const { toast } = useToast();
-  const {
-    updateSection,
-    saveSection,
-    saveStatus,
-    revertSection
-  } = useResumeStore();
-
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiAlternatives, setAiAlternatives] = useState<string[]>([]);
-  const [currentAlternativeIndex, setCurrentAlternativeIndex] = useState(0);
-  const [showAlternatives, setShowAlternatives] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const isSaving = saveStatus.isSaving && saveStatus.pendingSections.includes('summary');
-
-  // Initialize form
+  // Initialize form with RMS data
   const defaultFormValues = useMemo(() =>
-    convertToFormFormat(initialData),
+    extractSummaryFromRMS(initialData),
     [initialData]
   );
 
@@ -181,10 +172,10 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
     mode: 'onBlur',
   });
 
-  const { control, formState: { errors, isDirty }, watch, setValue, reset, getValues, trigger } = form;
+  const { control, handleSubmit, formState: { errors, isDirty }, watch, setValue, reset, getValues, trigger } = form;
 
-  // Watch current entry
-  const currentEntry = watch();
+  // Watch form data
+  const formData = watch();
 
   // Set up auto-save with debouncing
   const debouncedAutoSave = useCallback(() => {
@@ -195,10 +186,11 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
     autoSaveTimerRef.current = setTimeout(async () => {
       setAutoSaveStatus('saving');
       try {
-        const formData = getValues();
-        const storeData = convertToStoreFormat(formData);
-        // Only update the store, don't save to Firebase yet
-        updateSection('summary', storeData.summary);
+        const currentData = getValues();
+        const rmsData = convertToRMSFormat(currentData);
+        if (onSave) {
+          await onSave(rmsData);
+        }
         setAutoSaveStatus('saved');
         setTimeout(() => setAutoSaveStatus(null), 3000);
       } catch (error) {
@@ -206,7 +198,7 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
         console.error('Auto-save failed:', error);
       }
     }, AUTO_SAVE_DELAY);
-  }, [getValues, updateSection]);
+  }, [getValues, onSave]);
 
   // Trigger auto-save on form changes (but not on mount)
   const isFirstRender = useRef(true);
@@ -232,66 +224,64 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
     };
   }, []);
 
-  // Reset form when switching resumes
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Reset form when initialData changes
   useEffect(() => {
     reset(defaultFormValues);
     isFirstRender.current = true;
   }, [initialData, reset, defaultFormValues]);
 
-  // Extract positions from resume data
+  // Unsaved changes protection
+  const {
+    showModal,
+    handleSaveAndContinue,
+    handleDiscardAndContinue,
+    handleCancelNavigation
+  } = useUnsavedChangesProtection({ isDirty });
+
+  // Extract positions from initial data
   const positions = useMemo(() => {
-    if (processedData?.experience?.length > 0) {
-      return processedData.experience
-        .map(exp => exp.position)
-        .filter(pos => pos && pos.trim())
-        .filter((pos, index, self) => self.indexOf(pos) === index)
-        .slice(0, 10);
-    }
+    if (!initialData) return [];
+    
+    const extractedPositions: string[] = [];
+    const experienceCount = parseInt(initialData['rms_experience_count'] || '0');
 
-    if (resumeData) {
-      const extractedPositions: string[] = [];
-      const experienceCount = parseInt(resumeData['Rms_experience_count'] || '0');
-
-      for (let i = 0; i < experienceCount; i++) {
-        const position = resumeData[`Rms_experience_${i}_role`];
-        if (position && position !== 'n/a') {
-          extractedPositions.push(position);
-        }
+    for (let i = 0; i < experienceCount; i++) {
+      const position = cleanRMSValue(initialData[`rms_experience_${i}_role`]);
+      if (position) {
+        extractedPositions.push(position);
       }
-
-      return extractedPositions
-        .filter((pos, index, self) => self.indexOf(pos) === index)
-        .slice(0, 10);
     }
 
-    return [];
-  }, [processedData, resumeData]);
+    return extractedPositions
+      .filter((pos, index, self) => self.indexOf(pos) === index)
+      .slice(0, 10);
+  }, [initialData]);
 
-  // Extract skills from resume data
+  // Extract skills from initial data
   const extractedSkills = useMemo(() => {
-    if (processedData?.skills?.length > 0) {
-      return processedData.skills
-        .map(skill => skill.keywords)
-        .filter(Boolean)
-        .join(', ');
-    }
+    if (!initialData) return '';
+    
+    const skills: string[] = [];
+    const skillCount = parseInt(initialData['rms_skill_count'] || '0');
 
-    if (resumeData) {
-      const skills: string[] = [];
-      const skillCount = parseInt(resumeData['Rms_skill_count'] || '0');
-
-      for (let i = 0; i < skillCount; i++) {
-        const keywords = resumeData[`Rms_skill_${i}_keywords`];
-        if (keywords && keywords !== 'n/a') {
-          skills.push(keywords);
-        }
+    for (let i = 0; i < skillCount; i++) {
+      const keywords = cleanRMSValue(initialData[`rms_skill_${i}_keywords`]);
+      if (keywords) {
+        skills.push(keywords);
       }
-
-      return skills.join(', ');
     }
 
-    return '';
-  }, [processedData, resumeData]);
+    return skills.join(', ');
+  }, [initialData]);
 
   // Handlers
   const handleManualSave = useCallback(async () => {
@@ -306,64 +296,42 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
     }
 
     try {
-      const formData = getValues();
-      const storeData = convertToStoreFormat(formData);
+      setIsSaving(true);
+      const currentData = getValues();
+      const rmsData = convertToRMSFormat(currentData);
 
       if (onSave) {
-        await onSave(storeData);
-      } else {
-        // Internal save logic for backward compatibility
-        const useCapital = resumeData && Object.keys(resumeData).some(key => key.startsWith('Rms_'));
-        const updates: Record<string, string | boolean> = {};
-        updates[useCapital ? 'Rms_summary' : 'rms_summary'] = storeData.summary;
-        updates['summary_position_highlight'] = storeData.positionHighlight;
-        updates['summary_target_position'] = storeData.positionHighlight ? storeData.position : '';
-        updates['summary_skills_highlight'] = storeData.skillsHighlight;
-
-        updateResumeData(updates);
-        await saveResumeData();
+        await onSave(rmsData);
       }
 
-      updateSection('summary', storeData.summary);
-      await saveSection('summary');
-
       // Reset form state with current values to mark as clean
-      reset(formData);
+      reset(currentData);
 
       toast({
         title: "Success",
         description: "Summary saved successfully",
       });
-
-      if (onSaveSuccess) {
-        onSaveSuccess();
-      }
     } catch (error) {
       console.error('Save error:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save summary",
+        description: "Failed to save summary",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
-  }, [trigger, getValues, onSave, onSaveSuccess, resumeData, updateResumeData, saveResumeData, updateSection, saveSection, reset, toast]);
+  }, [trigger, getValues, onSave, reset, toast]);
 
   const handleUndo = useCallback(() => {
-    revertSection('summary');
     reset(defaultFormValues);
     toast({
       title: "Changes reverted",
-      description: "Summary section restored to last saved state",
+      description: "Summary section restored to initial state",
     });
-  }, [revertSection, reset, defaultFormValues, toast]);
+  }, [reset, defaultFormValues, toast]);
 
-  // Keyboard shortcuts
-  useKeyboardShortcuts({
-    save: handleManualSave,
-    undo: handleUndo,
-  });
-
-  // Enhanced AI generation with better error handling and data preparation
+  // Enhanced AI generation
   const handleAIWrite = async () => {
     const hasExperience = positions.length > 0;
     const hasSkills = extractedSkills.length > 0;
@@ -378,24 +346,22 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
     }
 
     setAiLoading(true);
-    setShowAlternatives(false);
-    setAiAlternatives([]);
-    setCurrentAlternativeIndex(0);
 
     try {
-      // Prepare experience data
+      // Prepare experience data from initial data
       const experienceData = [];
-      if (resumeData) {
-        const experienceCount = parseInt(resumeData['Rms_experience_count'] || '0');
+      if (initialData) {
+        const experienceCount = parseInt(initialData['rms_experience_count'] || '0');
+        
         for (let i = 0; i < experienceCount; i++) {
-          const company = resumeData[`Rms_experience_${i}_company`];
-          const position = resumeData[`Rms_experience_${i}_role`];
-          const dateBegin = resumeData[`Rms_experience_${i}_dateBegin`];
-          const dateEnd = resumeData[`Rms_experience_${i}_dateEnd`];
-          const description = resumeData[`Rms_experience_${i}_description`];
-          const location = resumeData[`Rms_experience_${i}_location`];
+          const company = cleanRMSValue(initialData[`rms_experience_${i}_company`]);
+          const position = cleanRMSValue(initialData[`rms_experience_${i}_role`]);
+          const dateBegin = cleanRMSValue(initialData[`rms_experience_${i}_datebegin`]);
+          const dateEnd = cleanRMSValue(initialData[`rms_experience_${i}_dateend`]);
+          const description = cleanRMSValue(initialData[`rms_experience_${i}_description`]);
+          const location = cleanRMSValue(initialData[`rms_experience_${i}_location`]);
 
-          if (company && company !== 'n/a') {
+          if (company) {
             experienceData.push({
               company,
               position: position || '',
@@ -407,70 +373,26 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
         }
       }
 
-      // Prepare education data
-      const educationData = [];
-      if (resumeData) {
-        const educationCount = parseInt(resumeData['Rms_education_count'] || '0');
-        for (let i = 0; i < educationCount; i++) {
-          const institution = resumeData[`Rms_education_${i}_institution`];
-          const qualification = resumeData[`Rms_education_${i}_qualification`];
-          const fieldOfStudy = resumeData[`Rms_education_${i}_fieldOfStudy`];
-          const date = resumeData[`Rms_education_${i}_date`];
-          const minor = resumeData[`Rms_education_${i}_minor`];
-
-          if (institution && institution !== 'n/a') {
-            educationData.push({
-              institution,
-              degree: qualification || '',
-              field: fieldOfStudy || (minor && minor !== 'n/a' ? minor : ''),
-              graduationDate: date || ''
-            });
-          }
-        }
-      }
-
       // Prepare comprehensive resume data for AI
       const resumeDataForAI = {
-        contact: processedData?.contact || {
-          fullName: resumeData?.['Rms_contact_fullName'] || '',
-          email: resumeData?.['Rms_contact_email'] || ''
+        contact: {
+          fullName: initialData ? cleanRMSValue(initialData['rms_contact_fullname']) || '' : '',
+          email: initialData ? cleanRMSValue(initialData['rms_contact_email']) || '' : ''
         },
-        workExperience: experienceData.length > 0 ? experienceData :
-          (processedData?.experience?.map(exp => ({
-            company: exp.company,
-            position: exp.position,
-            duration: `${exp.dateBegin} - ${exp.dateEnd || 'Present'}`,
-            description: exp.description,
-            location: exp.location
-          })) || []),
-        education: educationData.length > 0 ? educationData :
-          (processedData?.education?.map(edu => ({
-            institution: edu.institution,
-            degree: edu.qualification,
-            field: edu.fieldOfStudy,
-            graduationDate: edu.date
-          })) || []),
+        workExperience: experienceData,
         skills: extractedSkills ? extractedSkills.split(',').map(s => s.trim()) : [],
-        projects: processedData?.projects || [],
-        certifications: processedData?.certifications || []
       };
 
-      const formData = getValues();
+      const currentFormData = getValues();
       const response = await generateSummaryAPI({
         resumeData: resumeDataForAI,
-        targetPosition: formData.positionHighlight ? formData.position : undefined,
-        skillsHighlight: formData.skillsHighlight || extractedSkills,
-        existingSummary: formData.summary,
+        targetPosition: currentFormData.rms_summary_position_highlight ? currentFormData.rms_summary_target_position : undefined,
+        skillsHighlight: currentFormData.rms_summary_skills_highlight || extractedSkills,
+        existingSummary: currentFormData.rms_summary,
       });
 
       if (response.summary) {
-        setValue('summary', response.summary, { shouldDirty: true });
-
-        if (response.alternatives && response.alternatives.length > 0) {
-          setAiAlternatives([response.summary, ...response.alternatives]);
-          setShowAlternatives(true);
-          setCurrentAlternativeIndex(0);
-        }
+        setValue('rms_summary', response.summary, { shouldDirty: true });
 
         toast({
           title: "Success",
@@ -491,42 +413,20 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
     }
   };
 
-  // Handle alternative selection
-  const handleAlternativeSelect = useCallback((index: number) => {
-    if (aiAlternatives[index]) {
-      setValue('summary', aiAlternatives[index], { shouldDirty: true });
-      setCurrentAlternativeIndex(index);
-    }
-  }, [aiAlternatives, setValue]);
-
-  // Navigate through alternatives
-  const navigateAlternative = useCallback((direction: 'prev' | 'next') => {
-    const newIndex = direction === 'next'
-      ? Math.min(currentAlternativeIndex + 1, aiAlternatives.length - 1)
-      : Math.max(currentAlternativeIndex - 1, 0);
-    handleAlternativeSelect(newIndex);
-  }, [currentAlternativeIndex, aiAlternatives.length, handleAlternativeSelect]);
-
   // Check if there's enough content for AI generation
   const hasEnoughContent = positions.length > 0 || extractedSkills.length > 0;
 
   // Calculate word count
   const wordCount = useMemo(() => {
-    const words = currentEntry.summary.trim().split(/\s+/).filter(word => word.length > 0);
+    const words = formData.rms_summary.trim().split(/\s+/).filter(word => word.length > 0);
     return words.length;
-  }, [currentEntry.summary]);
+  }, [formData.rms_summary]);
 
-  // Show loading state
-  if (contextLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="animate-spin h-8 w-8 text-corporate-amber-500 mx-auto mb-3" />
-          <p className="text-corporate-navy-600 dark:text-gray-400 text-sm">Loading resume data...</p>
-        </div>
-      </div>
-    );
-  }
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    save: handleManualSave,
+    undo: handleUndo,
+  });
 
   return (
     <div className={`resume-form-container ${isSaving ? 'resume-form-container--saving' : ''} ${isDirty ? 'resume-form-container--dirty' : ''}`}>
@@ -540,7 +440,7 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
             <div className="resume-form-icon">
               <FileText className="h-4 w-4 text-white" />
             </div>
-            <span>Professional Summary</span>
+            <span className="truncate pr-4">Professional Summary</span>
           </h2>
 
           <div className="flex items-center gap-4">
@@ -550,7 +450,6 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
 
             {/* Word count indicator */}
             <div className="flex items-center gap-2 text-sm text-corporate-navy-600 dark:text-gray-400">
-              <BookOpen className="h-4 w-4" />
               <span className={wordCount > 100 ? 'text-corporate-amber-600 dark:text-corporate-amber-400 font-medium' : ''}>
                 {wordCount} words
               </span>
@@ -559,101 +458,128 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
         </div>
 
         {/* Form Content */}
-        <div onKeyDown={(e) => {
-          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            handleManualSave();
-          }
-        }}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-8">
+        <form onSubmit={handleSubmit(handleManualSave)} className="space-y-6 pt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Summary Form */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Summary Textarea */}
-              <div className="space-y-2">
-                <Label className="resume-label flex items-center justify-between">
-                  <span>
-                    Professional Summary
-                  </span>
-                  <span className="text-xs text-corporate-navy-500 dark:text-gray-400">
-                    {currentEntry.summary.length}/1000 characters
-                  </span>
-                </Label>
-                <Controller
-                  name="summary"
-                  control={control}
-                  render={({ field }) => (
-                    <div className={`resume-input-container ${errors.summary ? 'resume-input-container--error' : ''}`}>
-                      <Textarea
-                        {...field}
-                        placeholder="Write a compelling professional summary that highlights your key achievements, skills, and career objectives. Example: Experienced software engineer with 5+ years developing scalable web applications. Proven track record of leading cross-functional teams and delivering high-quality solutions that drive business growth."
-                        className="resume-textarea p-4 resize-none min-h-[180px]"
-                        rows={8}
-                        disabled={isSaving}
-                        maxLength={1000}
-                      />
+              {/* Summary Description Field with AI Header */}
+              <div className="grid gap-y-1">
+                <div className="inline-block w-full">
+                  <div className="flex items-end justify-between">
+                    <label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal">
+                      <span className="cursor-default text-sm leading-5">
+                        <strong>Professional Summary</strong>
+                      </span>
+                    </label>
+                    <div className="flex-shrink-0">
+                      <div className="flex flex-col lg:flex-row justify-between pl-4 px-1.5 py-1.5 gap-x-4 gap-y-2">
+                        <div className="flex flex-row items-center flex-1">
+                          <div>
+                            <div className="w-4 h-4 text-corporate-amber-500">💡</div>
+                          </div>
+                          <div className="text-sm leading-5 text-gray-500 font-normal ml-1">
+                            Write a compelling summary highlighting your key achievements and skills.
+                          </div>
+                        </div>
+                        <div className="flex gap-2 justify-end items-center">
+                          <div className="transition-opacity duration-200 opacity-100">
+                            <Button
+                              type="button"
+                              onClick={handleAIWrite}
+                              disabled={aiLoading || !hasEnoughContent || isSaving}
+                              className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed border-0 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white px-3 py-1 rounded-full text-xs"
+                              size="sm"
+                            >
+                              <div className="mr-1 w-3 h-3">
+                                <div className="opacity-100">✨</div>
+                              </div>
+                              <span>{aiLoading ? 'Generating...' : 'Generate Summary'}</span>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                />
-                {errors.summary && (
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="resume-input-container resume-date-input !min-h-64 md:!min-h-44">
+                    <Controller
+                      name="rms_summary"
+                      control={control}
+                      render={({ field }) => {
+                        const initialConfig = {
+                          namespace: 'SummaryEditor',
+                          nodes: [],
+                          onError: (error: Error) => {
+                            console.error('Lexical error:', error);
+                          },
+                          editorState: () => {
+                            const root = $getRoot();
+                            if (field.value) {
+                              const paragraph = $createParagraphNode();
+                              const textNode = $createTextNode(field.value);
+                              paragraph.append(textNode);
+                              root.append(paragraph);
+                            }
+                          },
+                        };
+
+                        return (
+                          <div className="w-full p-3">
+                            <LexicalComposer initialConfig={initialConfig}>
+                              <PlainTextPlugin
+                                contentEditable={
+                                  <ContentEditable
+                                    className="outline-none bg-transparent min-h-[180px] p-0"
+                                    style={{
+                                      fontSize: '16px',
+                                      lineHeight: '1.5'
+                                    }}
+                                  />
+                                }
+                                placeholder={<div className="text-gray-400 dark:text-gray-500">Write a compelling professional summary that highlights your key achievements, skills, and career objectives. Example: Experienced software engineer with 5+ years developing scalable web applications...</div>}
+                                ErrorBoundary={LexicalErrorBoundary}
+                              />
+                              <OnChangePlugin
+                                onChange={(editorState: EditorState) => {
+                                  editorState.read(() => {
+                                    const root = $getRoot();
+                                    const textContent = root.getTextContent();
+                                    if (textContent !== field.value) {
+                                      field.onChange(textContent);
+                                    }
+                                  });
+                                }}
+                              />
+                              <HistoryPlugin />
+                            </LexicalComposer>
+                          </div>
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {errors.rms_summary && (
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="resume-error-message"
                   >
                     <AlertCircle className="h-4 w-4" />
-                    <span>{errors.summary.message}</span>
+                    <span>{errors.rms_summary.message}</span>
                   </motion.p>
                 )}
-              </div>
 
-              {/* AI Alternatives Navigation */}
-              {showAlternatives && aiAlternatives.length > 1 && (
-                <div className="bg-corporate-amber-50/50 dark:bg-corporate-amber-900/20 rounded-xl p-4 border-2 border-corporate-amber-200 dark:border-corporate-amber-800">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-corporate-amber-800 dark:text-corporate-amber-300">
-                      AI Alternative {currentAlternativeIndex + 1} of {aiAlternatives.length}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigateAlternative('prev')}
-                        disabled={currentAlternativeIndex === 0}
-                        className="hover:bg-corporate-amber-100 dark:hover:bg-corporate-amber-900/30 disabled:opacity-40"
-                      >
-                        <ChevronLeft className="h-4 w-4 text-corporate-amber-700 dark:text-corporate-amber-400" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigateAlternative('next')}
-                        disabled={currentAlternativeIndex === aiAlternatives.length - 1}
-                        className="hover:bg-corporate-amber-100 dark:hover:bg-corporate-amber-900/30 disabled:opacity-40"
-                      >
-                        <ChevronRight className="h-4 w-4 text-corporate-amber-700 dark:text-corporate-amber-400" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {aiAlternatives.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleAlternativeSelect(index)}
-                        className={`px-3 py-1 text-xs rounded-full transition-all ${
-                          index === currentAlternativeIndex
-                            ? 'bg-corporate-amber-200 dark:bg-corporate-amber-800 text-corporate-amber-900 dark:text-corporate-amber-100'
-                            : 'bg-corporate-amber-100 dark:bg-corporate-amber-900/40 text-corporate-amber-700 dark:text-corporate-amber-300 hover:bg-corporate-amber-150 dark:hover:bg-corporate-amber-900/60'
-                        }`}
-                      >
-                        Option {index + 1}
-                      </button>
-                    ))}
-                  </div>
+                {/* Character count */}
+                <div className="text-xs text-gray-500 mt-2">
+                  {formData.rms_summary.length}/1000 characters
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* AI Summary Writer */}
+            {/* AI Summary Writer Sidebar */}
             <div className="lg:col-span-1">
               <div className="bg-white/90 dark:bg-corporate-navy-800/90 rounded-xl p-6 border-2 border-corporate-navy-100 dark:border-corporate-navy-700 space-y-6 sticky top-6">
                 <div>
@@ -662,9 +588,7 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
                     AI Summary Writer
                   </h3>
                   <p className="text-sm text-corporate-navy-600 dark:text-gray-400">
-                    Generate a professional summary tailored to your{' '}
-                    <span className="text-corporate-amber-600 dark:text-corporate-amber-400 font-medium">target position</span>{' '}
-                    and highlighting your key skills.
+                    Generate a professional summary tailored to your target position and highlighting your key skills.
                   </p>
                 </div>
 
@@ -680,7 +604,7 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
                           {positions.length > 0 ? 'from resume' : 'none found'}
                         </span>
                         <Controller
-                          name="positionHighlight"
+                          name="rms_summary_position_highlight"
                           control={control}
                           render={({ field }) => (
                             <Switch
@@ -695,15 +619,14 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
                     </div>
 
                     <Controller
-                      name="position"
+                      name="rms_summary_target_position"
                       control={control}
                       render={({ field }) => (
-                        <div className={`resume-input-container ${!currentEntry.positionHighlight || positions.length === 0 ? 'opacity-50' : ''} ${errors.position ? 'resume-input-container--error' : ''}`}>
-                          <Target className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
+                        <div className={`resume-input-container ${!formData.rms_summary_position_highlight || positions.length === 0 ? 'opacity-50' : ''}`}>
                           <select
                             {...field}
-                            disabled={!currentEntry.positionHighlight || positions.length === 0 || isSaving}
-                            className="resume-input px-0 pr-3 w-full"
+                            disabled={!formData.rms_summary_position_highlight || positions.length === 0 || isSaving}
+                            className="resume-input w-full"
                           >
                             {positions.length === 0 ? (
                               <option value="">No positions found</option>
@@ -719,56 +642,28 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
                         </div>
                       )}
                     />
-                    {errors.position && (
-                      <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="resume-error-message"
-                      >
-                        <AlertCircle className="h-4 w-4" />
-                        <span>{errors.position.message}</span>
-                      </motion.p>
-                    )}
                   </div>
 
                   {/* Skills Highlight */}
                   <div className="space-y-2">
-                    <Label className="resume-label">
+                    <Label className="text-sm font-medium text-corporate-navy-900 dark:text-gray-100">
                       Skills Highlight
                     </Label>
                     <Controller
-                      name="skillsHighlight"
+                      name="rms_summary_skills_highlight"
                       control={control}
                       render={({ field }) => (
-                        <div className={`resume-input-container`}>
-                          <Cpu className="resume-input-icon ml-3 mr-2 flex-shrink-0" />
+                        <div className="resume-input-container">
                           <Input
                             {...field}
                             placeholder="Enter key skills"
-                            className="resume-input px-0 pr-3"
+                            className="resume-input"
                             disabled={isSaving}
                           />
                         </div>
                       )}
                     />
                   </div>
-
-                  {/* AI Writer Button */}
-                  <Button
-                    onClick={handleAIWrite}
-                    disabled={aiLoading || !hasEnoughContent || isSaving}
-                    className={`
-                      w-full flex items-center justify-center gap-2 h-12
-                      ${hasEnoughContent 
-                        ? 'bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white' 
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'}
-                      font-medium text-sm uppercase tracking-wide
-                      transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:shadow-md
-                    `}
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    {aiLoading ? 'GENERATING...' : 'AI WRITER READY'}
-                  </Button>
                 </div>
               </div>
             </div>
@@ -801,7 +696,7 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
 
             <div className="flex gap-3">
               <Button
-                onClick={handleManualSave}
+                type="submit"
                 disabled={isSaving || !isDirty}
                 className="resume-button-primary"
                 title="Save all changes permanently (Cmd/Ctrl+S)"
@@ -820,8 +715,18 @@ export default function SummaryForm({ initialData, onSave, onSaveSuccess }: Summ
               </Button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showModal}
+        onClose={handleCancelNavigation}
+        onSave={handleSaveAndContinue}
+        onDiscard={handleDiscardAndContinue}
+        onCancel={handleCancelNavigation}
+        title="Unsaved Summary Changes"
+        description="You have unsaved changes to your professional summary. What would you like to do?"
+      />
     </div>
   );
 }

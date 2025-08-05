@@ -179,6 +179,7 @@ export interface ResumeData {
   document_id?: string;
   user_id?: string;
   extracted_text?: string;
+  parsedData: any; // RMS format - flattened key-value pairs (required for compatibility with ResumeDocument)
 
   // Section completion tracking
   sections?: Record<FormSection, SectionStatus>;
@@ -521,8 +522,8 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
       if (resumeSnap.exists()) {
         const firestoreData = resumeSnap.data();
 
-        // Extract RMS data (the new primary format)
-        const rmsData = firestoreData.rmsRawData || {};
+        // Extract RMS data (try different possible field names)
+        const rmsData = firestoreData.rmsRawData || firestoreData.parsedData || firestoreData.rmsData || {};
 
         // Process RMS data to get structured format
         const processed = processRmsData(rmsData);
@@ -537,6 +538,7 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
           document_id: id,
           user_id: userId,
           extracted_text: extractedText,
+          parsedData: rmsData || {},
           sections: createDefaultSections(rmsData)
         };
 
@@ -573,6 +575,7 @@ export const ResumeDataProvider: React.FC<ResumeDataProviderProps> = ({ children
   const createEmptyResume = (id: string): ResumeData => ({
     id,
     title: "New Resume",
+    parsedData: {},
     sections: {
       contact: { isComplete: false },
       experience: { isComplete: false },

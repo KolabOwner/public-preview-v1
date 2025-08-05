@@ -22,24 +22,27 @@ import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
-  Plus, X, ChevronLeft, ChevronRight, Save, Loader2, Trash2,
-  GripVertical, Briefcase, AlertCircle, Undo2, Check, Clock
+  Plus, ChevronLeft, ChevronRight, Save, Loader2, Trash2,
+  Briefcase, AlertCircle, Undo2, Check, Clock
 } from "lucide-react";
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { $getRoot, EditorState, $createParagraphNode, $createTextNode } from 'lexical';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
 import { Switch } from '@/components/shared/switch';
-import { Textarea } from '@/components/shared/textarea';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
-import { useResumeStore, type ExperienceEntry } from '@/lib/client/stores/resume-store';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/form-styles.css';
+import { useUnsavedChangesProtection } from '@/lib/client/hooks/resume/use-unsaved-changes-protection';
+import UnsavedChangesModal from '../modals/unsaved-changes-modal';
 
 // Schema definitions
-const bulletPointSchema = z.object({
-  value: z.string(),
-});
-
 const experienceEntrySchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, "Job title is required"),
@@ -48,7 +51,7 @@ const experienceEntrySchema = z.object({
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().optional(),
   current: z.boolean(),
-  bulletPoints: z.array(bulletPointSchema).optional(),
+  description: z.string().optional(),
 }).refine(data => data.current || !!data.endDate?.trim(), {
   message: "End date is required unless it's a current position",
   path: ["endDate"],
@@ -58,15 +61,18 @@ const experienceSchema = z.object({
   entries: z.array(experienceEntrySchema),
 });
 
-type BulletPoint = z.infer<typeof bulletPointSchema>;
-type ExperienceFormEntry = Omit<z.infer<typeof experienceEntrySchema>, 'bulletPoints'> & {
-  bulletPoints: BulletPoint[];
-};
+type ExperienceFormEntry = z.infer<typeof experienceEntrySchema>;
 type ExperienceFormData = z.infer<typeof experienceSchema>;
 
+// RMS Experience data interface
+interface RMSExperienceData {
+  [key: string]: any; // RMS format data with keys like rms_experience_0_company, etc.
+  rms_experience_count?: number;
+}
+
 interface ExperienceFormProps {
-  initialData: ExperienceEntry[];
-  onSave?: (data: ExperienceEntry[]) => Promise<void>;
+  initialData: RMSExperienceData;
+  onSave?: (data: RMSExperienceData) => Promise<void>;
 }
 
 // Constants
@@ -80,34 +86,70 @@ const cleanValue = (value: string | undefined | null): string => {
   return PLACEHOLDER_VALUES.includes(trimmed) ? '' : trimmed;
 };
 
-const convertToFormFormat = (entries: ExperienceEntry[]): ExperienceFormEntry[] => {
-  return entries.map(entry => ({
-    ...entry,
-    id: entry.id || crypto.randomUUID(),
-    title: cleanValue(entry.title),
-    company: cleanValue(entry.company),
-    location: cleanValue(entry.location),
-    startDate: cleanValue(entry.startDate),
-    endDate: cleanValue(entry.endDate),
-    bulletPoints: entry.bulletPoints?.length
-      ? entry.bulletPoints.map(bp => ({ value: bp }))
-      : [{ value: '' }],
-  }));
+// Extract experience entries from RMS data
+const extractExperiencesFromRMS = (rmsData: RMSExperienceData): ExperienceFormEntry[] => {
+  const count = rmsData.rms_experience_count || 0;
+  const entries: ExperienceFormEntry[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const entry: ExperienceFormEntry = {
+      id: `experience_${i}`,
+      title: cleanValue(rmsData[`rms_experience_${i}_role`]),
+      company: cleanValue(rmsData[`rms_experience_${i}_company`]),
+      location: cleanValue(rmsData[`rms_experience_${i}_location`]),
+      startDate: cleanValue(rmsData[`rms_experience_${i}_datebegin`]),
+      endDate: cleanValue(rmsData[`rms_experience_${i}_dateend`]),
+      current: rmsData[`rms_experience_${i}_iscurrent`] || false,
+      description: (() => {
+        const desc = cleanValue(rmsData[`rms_experience_${i}_description`]);
+        if (!desc) return '';
+        
+        const lines = desc.split('\n').filter(line => line.trim() !== '');
+        const hasExistingBullets = lines.some(line => 
+          line.trim().startsWith('•') || 
+          line.trim().startsWith('-') || 
+          line.trim().startsWith('*')
+        );
+        
+        if (!hasExistingBullets) {
+          return lines.map(line => `• ${line.trim()}`).join('\n');
+        }
+        
+        return desc;
+      })(),
+    };
+    entries.push(entry);
+  }
+
+  return entries.length > 0 ? entries : [{
+    id: crypto.randomUUID(),
+    title: '',
+    company: '',
+    location: '',
+    startDate: '',
+    endDate: '',
+    current: false,
+    description: ''
+  }];
 };
 
-const convertToStoreFormat = (formData: ExperienceFormData): ExperienceEntry[] => {
-  return formData.entries.map(entry => ({
-    id: entry.id || crypto.randomUUID(),
-    title: entry.title || '',
-    company: entry.company || '',
-    location: entry.location || '',
-    startDate: entry.startDate || '',
-    endDate: entry.endDate || '',
-    current: entry.current || false,
-    bulletPoints: entry.bulletPoints
-      ? entry.bulletPoints.map(bp => bp.value).filter(v => v?.trim())
-      : [],
-  }));
+// Convert form data back to RMS format
+const convertToRMSFormat = (formData: ExperienceFormData): RMSExperienceData => {
+  const rmsData: RMSExperienceData = {
+    rms_experience_count: formData.entries.length
+  };
+
+  formData.entries.forEach((entry, i) => {
+    rmsData[`rms_experience_${i}_role`] = entry.title || '';
+    rmsData[`rms_experience_${i}_company`] = entry.company || '';
+    rmsData[`rms_experience_${i}_location`] = entry.location || '';
+    rmsData[`rms_experience_${i}_datebegin`] = entry.startDate || '';
+    rmsData[`rms_experience_${i}_dateend`] = entry.endDate || '';
+    rmsData[`rms_experience_${i}_iscurrent`] = entry.current || false;
+    rmsData[`rms_experience_${i}_description`] = entry.description || '';
+  });
+
+  return rmsData;
 };
 
 // Auto-save indicator component
@@ -186,33 +228,14 @@ const useKeyboardShortcuts = (callbacks: {
 
 export default function ExperienceForm({ initialData, onSave }: ExperienceFormProps) {
   const { toast } = useToast();
-  const {
-    updateSection,
-    saveSection,
-    saveStatus,
-    revertSection
-  } = useResumeStore();
-
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const isSaving = saveStatus.isSaving && saveStatus.pendingSections.includes('experiences');
-
-  // Initialize form
+  // Initialize form with RMS data
   const defaultFormValues = useMemo(() => ({
-    entries: initialData?.length > 0
-      ? convertToFormFormat(initialData)
-      : [{
-          id: crypto.randomUUID(),
-          title: '',
-          company: '',
-          location: '',
-          startDate: '',
-          endDate: '',
-          current: false,
-          bulletPoints: [{ value: '' }]
-        }]
+    entries: extractExperiencesFromRMS(initialData)
   }), [initialData]);
 
   const form = useForm<ExperienceFormData>({
@@ -232,7 +255,6 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
   const currentEntry = watch(`entries.${activeIndex}`);
 
   // Set up auto-save with debouncing
-  // Auto-save only updates the store in memory, doesn't persist to database
   const debouncedAutoSave = useCallback(() => {
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
@@ -242,9 +264,11 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
       setAutoSaveStatus('saving');
       try {
         const formData = getValues();
-        const storeData = convertToStoreFormat(formData);
-        // Only update the store, don't save to Firebase yet
-        updateSection('experiences', storeData);
+        const rmsData = convertToRMSFormat(formData);
+        // Auto-save via onSave callback if provided
+        if (onSave) {
+          await onSave(rmsData);
+        }
         setAutoSaveStatus('saved');
         setTimeout(() => setAutoSaveStatus(null), 3000);
       } catch (error) {
@@ -252,7 +276,7 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
         console.error('Auto-save failed:', error);
       }
     }, AUTO_SAVE_DELAY);
-  }, [getValues, updateSection]);
+  }, [getValues, onSave]);
 
   // Trigger auto-save on form changes (but not on mount)
   const isFirstRender = useRef(true);
@@ -285,6 +309,14 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
     isFirstRender.current = true;
   }, [initialData, reset, defaultFormValues]);
 
+  // Unsaved changes protection
+  const {
+    showModal,
+    handleSaveAndContinue,
+    handleDiscardAndContinue,
+    handleCancelNavigation
+  } = useUnsavedChangesProtection({ isDirty });
+
   // Handlers
   const handleManualSave = useCallback(async () => {
     const isValid = await trigger();
@@ -298,15 +330,13 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
     }
 
     try {
+      setIsSaving(true);
       const formData = getValues();
-      const storeData = convertToStoreFormat(formData);
+      const rmsData = convertToRMSFormat(formData);
 
       if (onSave) {
-        await onSave(storeData);
+        await onSave(rmsData);
       }
-
-      updateSection('experiences', storeData);
-      await saveSection('experiences');
 
       // Reset form state with current values to mark as clean
       reset({ entries: formData.entries });
@@ -322,17 +352,18 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
         description: "Failed to save experience information",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
-  }, [trigger, getValues, onSave, updateSection, saveSection, toast]);
+  }, [trigger, getValues, onSave, reset, toast]);
 
   const handleUndo = useCallback(() => {
-    revertSection('experiences');
     reset(defaultFormValues);
     toast({
       title: "Changes reverted",
-      description: "Experience section restored to last saved state",
+      description: "Experience section restored to initial state",
     });
-  }, [revertSection, reset, defaultFormValues, toast]);
+  }, [reset, defaultFormValues, toast]);
 
   const addNewExperience = useCallback(() => {
     const newEntry = {
@@ -343,7 +374,7 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
       startDate: '',
       endDate: '',
       current: false,
-      bulletPoints: [{ value: '' }]
+      description: ''
     };
     append(newEntry);
     setActiveIndex(fields.length);
@@ -460,14 +491,16 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSubmit(handleManualSave)} className="space-y-6">
+        <form onSubmit={handleSubmit(handleManualSave)} className="space-y-6 pt-6">
           {/* Add key to force re-render when switching entries */}
           <div key={`entry-${activeIndex}`}>
             {/* Job Title & Company */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Job Title <span className="resume-label-required">*</span>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>JOB TITLE</strong> <span className="resume-label-required">*</span>
+                  </span>
                 </Label>
                 <Controller
                   name={`entries.${activeIndex}.title`}
@@ -495,9 +528,11 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Company <span className="resume-label-required">*</span>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>COMPANY</strong> <span className="resume-label-required">*</span>
+                  </span>
                 </Label>
                 <Controller
                   name={`entries.${activeIndex}.company`}
@@ -528,8 +563,12 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
 
             {/* Location & Time Period */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-2">
-                <Label className="resume-label">Location</Label>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>LOCATION</strong>
+                  </span>
+                </Label>
                 <Controller
                   name={`entries.${activeIndex}.location`}
                   control={control}
@@ -547,9 +586,11 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
               </div>
 
               {/* Time Period Container - Consistent with other form containers */}
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Time Period <span className="resume-label-required">*</span>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>TIME PERIOD</strong> <span className="resume-label-required">*</span>
+                  </span>
                 </Label>
                 <div className="flex items-start gap-2">
                   {/* Start Date Container */}
@@ -631,76 +672,128 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
               </div>
             </div>
 
-            {/* Bullet Points */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="resume-label">Key Achievements & Responsibilities</Label>
-                <span className="text-xs text-gray-500">
-                  Tip: Press Enter to add a new point
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                {currentEntry?.bulletPoints?.map((_, bulletIndex) => (
-                  <div
-                    key={`bullet-${bulletIndex}`}
-                    className="resume-bullet-item group"
-                  >
-                    <GripVertical className="resume-bullet-grip" />
-                    <div className="resume-bullet-input flex-grow">
-                      <Controller
-                        name={`entries.${activeIndex}.bulletPoints.${bulletIndex}.value`}
-                        control={control}
-                        render={({ field }) => (
-                          <Textarea
-                            {...field}
-                            placeholder="• Describe your achievement or responsibility..."
-                            className="resume-textarea min-h-[60px]"
-                            rows={2}
+            {/* Description Field with AI Header */}
+            <div className="grid gap-y-1">
+              <div className="inline-block w-full">
+                <div className="flex items-end justify-between">
+                  <label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal">
+                    <span className="cursor-default text-sm leading-5">
+                      <strong>What did you do</strong> at {currentEntry?.company || 'this company'}?
+                    </span>
+                  </label>
+                  <div className="flex-shrink-0">
+                    <div className="flex flex-col lg:flex-row justify-between pl-4 px-1.5 py-1.5 gap-x-4 gap-y-2">
+                      <div className="flex flex-row items-center flex-1">
+                        <div>
+                          <div className="w-4 h-4 text-corporate-amber-500">💡</div>
+                        </div>
+                        <div className="text-sm leading-5 text-gray-500 font-normal ml-1">
+                          Aim for a balanced mix of descriptive and key number bullet points.
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end items-center">
+                        <div className="transition-opacity duration-200 opacity-100">
+                          <Button
+                            type="button"
+                            className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed border-0 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white px-3 py-1 rounded-full text-xs"
                             disabled={isSaving}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                const newBulletPoints = [...(currentEntry?.bulletPoints || []), { value: '' }];
-                                setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                              }
-                            }}
-                          />
-                        )}
-                      />
+                            size="sm"
+                          >
+                            <div className="mr-1 w-3 h-3">
+                              <div className="opacity-100">✨</div>
+                            </div>
+                            <span>Generate Bullet</span>
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const newBulletPoints = currentEntry?.bulletPoints?.filter((_, i) => i !== bulletIndex) || [];
-                        if (newBulletPoints.length === 0) {
-                          newBulletPoints.push({ value: '' });
-                        }
-                        setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                      }}
-                      disabled={isSaving || currentEntry?.bulletPoints?.length === 1}
-                      className="resume-bullet-remove opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
-                ))}
+                </div>
+              </div>
+              
+              <div className="relative">
+                <div className="resume-input-container resume-date-input !min-h-64 md:!min-h-44">
+                  <Controller
+                    name={`entries.${activeIndex}.description`}
+                    control={control}
+                    render={({ field }) => {
+                      const bulletPoints = field.value ? field.value.split('•').filter(p => p.trim()) : [''];
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const newBulletPoints = [...(currentEntry?.bulletPoints || []), { value: '' }];
-                    setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                  }}
-                  disabled={isSaving}
-                  className="resume-button-secondary w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Achievement
-                </Button>
+                      const handleBulletChange = (index: number, newContent: string) => {
+                        const updatedPoints = [...bulletPoints];
+                        updatedPoints[index] = newContent;
+                        const newValue = updatedPoints.filter(p => p.trim()).map(p => `• ${p.trim()}`).join('\n');
+                        field.onChange(newValue);
+                      };
+
+                      const addNewBullet = () => {
+                        const newValue = field.value ? `${field.value}\n• ` : '• ';
+                        field.onChange(newValue);
+                      };
+
+                      return (
+                        <div className="w-full p-3">
+                          {bulletPoints.map((point, index) => {
+                            const initialConfig = {
+                              namespace: `ExperienceEditor-${index}`,
+                              nodes: [],
+                              onError: (error: Error) => {
+                                console.error('Lexical error:', error);
+                              },
+                              editorState: () => {
+                                const root = $getRoot();
+                                if (point.trim()) {
+                                  const paragraph = $createParagraphNode();
+                                  const textNode = $createTextNode(point.trim());
+                                  paragraph.append(textNode);
+                                  root.append(paragraph);
+                                }
+                              },
+                            };
+
+                            return (
+                              <div key={index} className="flex items-start leading-[1.5] mb-1">
+                                <span className="flex-shrink-0 pr-1 w-3 text-gray-600 dark:text-gray-400">•</span>
+                                <div className="flex-1">
+                                  <LexicalComposer initialConfig={initialConfig}>
+                                    <PlainTextPlugin
+                                      contentEditable={
+                                        <ContentEditable
+                                          className="outline-none bg-transparent min-h-[1.5em] p-0"
+                                          style={{
+                                            fontSize: '16px',
+                                            lineHeight: '1.5'
+                                          }}
+                                        />
+                                      }
+                                      placeholder={index === 0 ? <div className="text-gray-400 dark:text-gray-500">Describe your achievements and responsibilities...</div> : null}
+                                      ErrorBoundary={LexicalErrorBoundary}
+                                    />
+                                    <OnChangePlugin
+                                      onChange={(editorState: EditorState, editor) => {
+                                        editorState.read(() => {
+                                          const root = $getRoot();
+                                          const textContent = root.getTextContent();
+                                          
+                                          // Only trigger change if content actually changed, not just selection
+                                          const currentContent = point.trim();
+                                          if (textContent !== currentContent) {
+                                            handleBulletChange(index, textContent);
+                                          }
+                                        });
+                                      }}
+                                    />
+                                    <HistoryPlugin />
+                                  </LexicalComposer>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -765,6 +858,16 @@ export default function ExperienceForm({ initialData, onSave }: ExperienceFormPr
           </div>
         </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showModal}
+        onClose={handleCancelNavigation}
+        onSave={handleSaveAndContinue}
+        onDiscard={handleDiscardAndContinue}
+        onCancel={handleCancelNavigation}
+        title="Unsaved Experience Changes"
+        description="You have unsaved changes to your work experience. What would you like to do?"
+      />
     </div>
   );
 }

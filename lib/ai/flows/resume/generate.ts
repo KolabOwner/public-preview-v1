@@ -43,6 +43,7 @@ const ExtractResumeDataOutputSchema = z.object({
     state: z.string().optional().describe('The state or province where the resume owner is located.'),
     country: z.string().optional().describe('The country where the resume owner is located.'),
   }).optional().describe('Contact information of the resume owner.'),
+  summary: z.string().optional().describe('Professional summary or objective statement from the resume.'),
   experience: z.array(z.object({
     title: z.string().optional().describe('The job title.'),
     company: z.string().optional().describe('The company name.'),

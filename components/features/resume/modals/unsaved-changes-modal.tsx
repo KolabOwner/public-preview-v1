@@ -4,7 +4,8 @@ import React from 'react';
 import { AlertTriangle, Save, X, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/shared/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/shared/dialog';
-import { useResumeStore, type SectionKey } from '@/lib/client/stores/resume-store';
+import { useResumeStore } from '@/lib/client/stores/resume-store';
+import { type SectionKey } from '@/lib/client/stores/types';
 
 interface UnsavedChangesModalProps {
   isOpen: boolean;

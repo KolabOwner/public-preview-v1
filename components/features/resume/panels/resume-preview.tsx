@@ -53,10 +53,25 @@ const BulletList = memo(({
   items: string[];
   styles: any;
 }) => (
-  <ul className="resume-bullet-list" style={styles.bulletList}>
-    {items.map((item, index) => (
-      <li key={index} style={styles.bulletItem}>{item}</li>
-    ))}
+  <ul className="p-0 m-0 list-none" style={styles.bulletList}>
+    {items.map((item, index) => {
+      // Split the item to separate the bullet from the text
+      const cleanText = item.replace(/^[•·▪-]\s*/, '');
+      
+      return (
+        <li 
+          key={index} 
+          className="flex leading-[1.35em]"
+          style={{
+            ...styles.bulletItem, 
+            marginBottom: '0.2em'
+          }}
+        >
+          <span className="flex-shrink-0 pr-1 w-3">•</span>
+          <span className="flex-1">{cleanText}</span>
+        </li>
+      );
+    })}
   </ul>
 ));
 
@@ -171,7 +186,6 @@ export default function ResumePreview({
             : 'modern',
         fontSize: getFontSize(documentSettings.fontSize), // strictly typed!
         parsedData: resumeData,
-        rmsRawData: resumeData?.rmsRawData,
         // Add document settings for PDF generation (only supported properties)
         documentSettings: {
           fontFamily: documentSettings.fontFamily,
@@ -225,32 +239,28 @@ export default function ResumePreview({
     if (!text) return [];
     const decodedText = decodeHTMLEntities(text);
 
-    // First try splitting by line breaks or bullet markers
-    let splitPoints = decodedText.split(/[\n•·▪]/g);
+    // First try splitting by line breaks to preserve original formatting
+    let splitPoints = decodedText.split(/\n/g);
     
-    // If no line breaks/bullets found, try splitting by sentences that end with periods followed by capital letters
+    // If no line breaks found, try splitting by bullet markers with spaces around them
     if (splitPoints.length === 1) {
-      // Split on periods followed by capital letters (sentence boundaries)
-      splitPoints = decodedText.split(/\.(?=[A-Z])/g);
+      splitPoints = decodedText.split(/\s+•\s+/g);
     }
     
     const bulletPoints = splitPoints
       .map((point: string) => point.trim())
       .filter((point: string) => point.length > 0)
       .map((point: string) => {
-        // Remove leading markers and ensure proper punctuation
-        let cleaned = point.replace(/^[•·▪?-]\s*/, '');
-        // Add period if it doesn't end with punctuation
-        if (cleaned && !/[.!?]$/.test(cleaned)) {
-          cleaned += '.';
-        }
+        // Clean up any leading markers
+        let cleaned = point.replace(/^[•·▪-]\s*/, '').trim();
+        // Don't auto-add periods as they may already be there
         return cleaned;
       })
       .filter((point: string) => point.length > 1); // Filter out single characters
     
     // Ensure at least one bullet point if text exists
     if (bulletPoints.length === 0 && decodedText) {
-      return [decodedText];
+      return [decodedText.replace(/^[•·▪-]\s*/, '').trim()];
     }
     
     return bulletPoints;
@@ -403,7 +413,7 @@ export default function ResumePreview({
         startDate: resumeData[`rms_experience_${i}_datebegin`] || '',
         endDate: resumeData[`rms_experience_${i}_dateend`] || '',
         description: resumeData[`rms_experience_${i}_description`] || '',
-        bulletPoints: (resumeData[`rms_experience_${i}_description`] || '').split('\n').filter(p => p.trim()),
+        bulletPoints: (resumeData[`rms_experience_${i}_description`] || '').split('\n').filter((p: string) => p.trim()),
         isCurrent: resumeData[`rms_experience_${i}_iscurrent`] || false
       });
     }
@@ -1349,13 +1359,6 @@ export default function ResumePreview({
   );
 
   // Main resume preview content
-  // Create processed data object for other components that might need it
-  const processedResumeData = {
-    ...resumeData,
-    contactInfo: contact,
-    summary: resumeData.rms_summary
-  };
-
   const resumePreviewContent = (
     <div className="w-full">
       <style>{resumeCSS}</style>

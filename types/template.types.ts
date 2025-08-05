@@ -179,6 +179,7 @@ export interface ResumeTemplate {
   metadata: TemplateMetadata;
   stylePreset?: string; // References existing style templates
   keywords: string[]; // For search functionality
+  parsedData?: Record<string, any>; // RMS parsed data structure
 }
 
 export interface CoverLetterTemplate {

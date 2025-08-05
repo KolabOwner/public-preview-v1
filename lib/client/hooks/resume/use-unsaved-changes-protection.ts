@@ -6,6 +6,7 @@ import { useResumeStore } from '@/lib/client/stores/resume-store';
 
 interface UseUnsavedChangesProtectionOptions {
   enabled?: boolean;
+  isDirty?: boolean;
   onUnsavedChanges?: () => void;
   customMessage?: string;
 }
@@ -20,11 +21,12 @@ interface UnsavedChangesProtection {
 
 export function useUnsavedChangesProtection({
   enabled = true,
+  isDirty = false,
   onUnsavedChanges,
   customMessage = 'You have unsaved changes. Are you sure you want to leave?'
 }: UseUnsavedChangesProtectionOptions = {}): UnsavedChangesProtection {
   const router = useRouter();
-  const { hasUnsavedChanges, saveAllDirty, revertAll, getDirtySections } = useResumeStore();
+  const { saveChanges, revertAll } = useResumeStore();
   
   const [showModal, setShowModal] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
@@ -34,7 +36,7 @@ export function useUnsavedChangesProtection({
     if (!enabled) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges()) {
+      if (isDirty) {
         e.preventDefault();
         e.returnValue = customMessage;
         return customMessage;
@@ -43,7 +45,7 @@ export function useUnsavedChangesProtection({
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [enabled, hasUnsavedChanges, customMessage]);
+  }, [enabled, isDirty, customMessage]);
 
   // Router navigation protection
   useEffect(() => {
@@ -64,7 +66,7 @@ export function useUnsavedChangesProtection({
 
     const createProtectedNavigation = (originalMethod: any, ...args: any[]) => {
       return () => {
-        if (hasUnsavedChanges()) {
+        if (isDirty) {
           setShowModal(true);
           setPendingNavigation(() => () => originalMethod(...args));
           onUnsavedChanges?.();
@@ -113,12 +115,12 @@ export function useUnsavedChangesProtection({
       router.back = originalMethods.back;
       router.forward = originalMethods.forward;
     };
-  }, [enabled, hasUnsavedChanges, router, onUnsavedChanges]);
+  }, [enabled, isDirty, router, onUnsavedChanges]);
 
   // Handle saving changes and continuing with navigation
   const handleSaveAndContinue = useCallback(async () => {
     try {
-      await saveAllDirty();
+      await saveChanges();
       setShowModal(false);
       if (pendingNavigation) {
         pendingNavigation();
@@ -129,7 +131,7 @@ export function useUnsavedChangesProtection({
       // Don't close modal or proceed with navigation if save fails
       throw error;
     }
-  }, [saveAllDirty, pendingNavigation]);
+  }, [saveChanges, pendingNavigation]);
 
   // Handle discarding changes and continuing with navigation
   const handleDiscardAndContinue = useCallback(() => {
@@ -153,62 +155,5 @@ export function useUnsavedChangesProtection({
     handleSaveAndContinue,
     handleDiscardAndContinue,
     handleCancelNavigation
-  };
-}
-
-// Hook for tab switching protection within the resume editor
-export function useTabSwitchProtection() {
-  const { hasUnsavedChanges, getDirtySections } = useResumeStore();
-  const [showModal, setShowModal] = useState(false);
-  const [pendingTabSwitch, setPendingTabSwitch] = useState<(() => void) | null>(null);
-
-  const protectTabSwitch = useCallback((switchFunction: () => void) => {
-    if (hasUnsavedChanges()) {
-      setShowModal(true);
-      setPendingTabSwitch(() => switchFunction);
-      return false; // Prevent immediate switch
-    } else {
-      switchFunction();
-      return true; // Allow immediate switch
-    }
-  }, [hasUnsavedChanges]);
-
-  const handleSaveAndSwitch = useCallback(async () => {
-    const { saveAllDirty } = useResumeStore.getState();
-    try {
-      await saveAllDirty();
-      setShowModal(false);
-      if (pendingTabSwitch) {
-        pendingTabSwitch();
-        setPendingTabSwitch(null);
-      }
-    } catch (error) {
-      console.error('Failed to save changes:', error);
-      throw error;
-    }
-  }, [pendingTabSwitch]);
-
-  const handleDiscardAndSwitch = useCallback(() => {
-    const { revertAll } = useResumeStore.getState();
-    revertAll();
-    setShowModal(false);
-    if (pendingTabSwitch) {
-      pendingTabSwitch();
-      setPendingTabSwitch(null);
-    }
-  }, [pendingTabSwitch]);
-
-  const handleCancelSwitch = useCallback(() => {
-    setShowModal(false);
-    setPendingTabSwitch(null);
-  }, []);
-
-  return {
-    protectTabSwitch,
-    showModal,
-    dirtySections: getDirtySections(),
-    handleSaveAndSwitch,
-    handleDiscardAndSwitch,
-    handleCancelSwitch
   };
 }

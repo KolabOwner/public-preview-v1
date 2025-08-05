@@ -9,6 +9,7 @@
  * - Navigation: Switch between multiple project entries
  * - Validation: Real-time validation with helpful error messages
  * - Keyboard shortcuts: Save (Ctrl+S), Undo (Ctrl+Z), New (Ctrl+Shift+N), Navigate (Arrow keys)
+ * - Enhanced Lexical editor for descriptions with AI bullet generation
  *
  * Uses React Hook Form's isDirty state for proper dirty tracking instead of
  * the store's broken implementation.
@@ -19,23 +20,25 @@ import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
-  Code2, Plus, X, ChevronLeft, ChevronRight, Save, Loader2,
-  AlertCircle, ExternalLink, GripVertical, Trash2, Undo2, Check, Clock
+  Code2, Plus, ChevronLeft, ChevronRight, Save, Loader2,
+  AlertCircle, ExternalLink, Trash2, Undo2, Check, Clock
 } from "lucide-react";
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { $getRoot, EditorState, $createParagraphNode, $createTextNode } from 'lexical';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
 import { Label } from '@/components/shared/label';
 import { Switch } from '@/components/shared/switch';
-import { Textarea } from '@/components/shared/textarea';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
-import { useResumeStore, type ProjectEntry } from '@/lib/client/stores/resume-store';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/form-styles.css';
-
-// Schema for a single bullet point object
-const bulletPointSchema = z.object({
-  value: z.string(),
-});
+import { useUnsavedChangesProtection } from '@/lib/client/hooks/resume/use-unsaved-changes-protection';
+import UnsavedChangesModal from '../modals/unsaved-changes-modal';
 
 // Schema for a single project entry
 const projectEntrySchema = z.object({
@@ -47,7 +50,6 @@ const projectEntrySchema = z.object({
   current: z.boolean(),
   url: z.string().optional(),
   description: z.string().optional(),
-  bulletPoints: z.array(bulletPointSchema).optional(),
 }).refine(data => data.current || !data.startDate || !!data.endDate?.trim(), {
   message: "End date is required unless it's an ongoing project",
   path: ["endDate"],
@@ -59,15 +61,18 @@ const projectSchema = z.object({
 });
 
 // TypeScript types inferred from schemas
-type BulletPoint = z.infer<typeof bulletPointSchema>;
-type ProjectFormEntry = Omit<z.infer<typeof projectEntrySchema>, 'bulletPoints'> & {
-  bulletPoints: BulletPoint[];
-};
+type ProjectFormEntry = z.infer<typeof projectEntrySchema>;
 type ProjectFormData = z.infer<typeof projectSchema>;
 
+// RMS Projects data interface
+interface RMSProjectsData {
+  [key: string]: any; // RMS format data with keys like rms_project_0_title, etc.
+  rms_project_count?: number;
+}
+
 interface ProjectsFormProps {
-  initialData: ProjectEntry[];
-  onSave?: (data: ProjectEntry[]) => Promise<void>;
+  initialData: RMSProjectsData;
+  onSave?: (data: RMSProjectsData) => Promise<void>;
 }
 
 // Constants
@@ -81,55 +86,70 @@ const cleanValue = (value: string | undefined | null): string => {
   return PLACEHOLDER_VALUES.includes(trimmed) ? '' : trimmed;
 };
 
-// Convert store format to form format
-const convertToFormFormat = (entries: ProjectEntry[]): ProjectFormEntry[] => {
-  return entries.map(entry => {
-    // Parse bullet points from description if bulletPoints array is empty
-    let bulletPoints = entry.bulletPoints?.filter(Boolean) || [];
+// Extract projects entries from RMS data
+const extractProjectsFromRMS = (rmsData: RMSProjectsData): ProjectFormEntry[] => {
+  const count = rmsData.rms_project_count || 0;
+  const entries: ProjectFormEntry[] = [];
 
-    if (bulletPoints.length === 0 && entry.description) {
-      // Split by various bullet point formats: •, -, *, or newline followed by these
-      const points = entry.description
-        .split(/(?:^|\n)\s*[•\-\*]\s*|(?<=[.!?])\s*•\s*/)
-        .map((point: string) => point.trim())
-        .filter((point: string) => point.length > 0);
+  for (let i = 0; i < count; i++) {
+    const entry: ProjectFormEntry = {
+      id: `project_${i}`,
+      title: cleanValue(rmsData[`rms_project_${i}_title`]),
+      organization: cleanValue(rmsData[`rms_project_${i}_organization`]),
+      startDate: cleanValue(rmsData[`rms_project_${i}_datebegin`]),
+      endDate: cleanValue(rmsData[`rms_project_${i}_dateend`]),
+      current: rmsData[`rms_project_${i}_iscurrent`] || false,
+      url: cleanValue(rmsData[`rms_project_${i}_url`]),
+      description: (() => {
+        const desc = cleanValue(rmsData[`rms_project_${i}_description`]);
+        if (!desc) return '';
 
-      bulletPoints = points;
-    }
+        const lines = desc.split('\n').filter(line => line.trim() !== '');
+        const hasExistingBullets = lines.some(line =>
+          line.trim().startsWith('•') ||
+          line.trim().startsWith('-') ||
+          line.trim().startsWith('*')
+        );
 
-    return {
-      ...entry,
-      id: entry.id || crypto.randomUUID(),
-      title: cleanValue(entry.title),
-      organization: cleanValue(entry.organization),
-      startDate: cleanValue(entry.startDate),
-      endDate: cleanValue(entry.endDate),
-      url: cleanValue(entry.url),
-      description: cleanValue(entry.description),
-      bulletPoints: bulletPoints.length > 0 ? bulletPoints.map((bp: any) => ({ value: bp })) : [{ value: '' }],
+        if (!hasExistingBullets) {
+          return lines.map(line => `• ${line.trim()}`).join('\n');
+        }
+
+        return desc;
+      })(),
     };
-  });
+    entries.push(entry);
+  }
+
+  return entries.length > 0 ? entries : [{
+    id: crypto.randomUUID(),
+    title: '',
+    organization: '',
+    startDate: '',
+    endDate: '',
+    current: false,
+    url: '',
+    description: ''
+  }];
 };
 
-// Convert form format to store format
-const convertToStoreFormat = (formData: ProjectFormData): ProjectEntry[] => {
-  return formData.entries.map(entry => {
-    const bulletPoints = entry.bulletPoints
-      ? entry.bulletPoints.map(bp => bp.value).filter(v => v && v.trim())
-      : [];
+// Convert form data back to RMS format
+const convertToRMSFormat = (formData: ProjectFormData): RMSProjectsData => {
+  const rmsData: RMSProjectsData = {
+    rms_project_count: formData.entries.length
+  };
 
-    return {
-      id: entry.id || crypto.randomUUID(),
-      title: entry.title || '',
-      organization: entry.organization || '',
-      startDate: entry.startDate || '',
-      endDate: entry.endDate || '',
-      current: entry.current || false,
-      url: entry.url || '',
-      description: bulletPoints.length > 0 ? bulletPoints.join('\n• ') : (entry.description || ''),
-      bulletPoints: bulletPoints,
-    };
+  formData.entries.forEach((entry, i) => {
+    rmsData[`rms_project_${i}_title`] = entry.title || '';
+    rmsData[`rms_project_${i}_organization`] = entry.organization || '';
+    rmsData[`rms_project_${i}_datebegin`] = entry.startDate || '';
+    rmsData[`rms_project_${i}_dateend`] = entry.endDate || '';
+    rmsData[`rms_project_${i}_iscurrent`] = entry.current || false;
+    rmsData[`rms_project_${i}_url`] = entry.url || '';
+    rmsData[`rms_project_${i}_description`] = entry.description || '';
   });
+
+  return rmsData;
 };
 
 // Auto-save indicator component
@@ -208,34 +228,14 @@ const useKeyboardShortcuts = (callbacks: {
 
 export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps) {
   const { toast } = useToast();
-  const {
-    updateSection,
-    saveSection,
-    saveStatus,
-    revertSection
-  } = useResumeStore();
-
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const isSaving = saveStatus.isSaving && saveStatus.pendingSections.includes('projects');
-
-  // Initialize form
+  // Initialize form with RMS data
   const defaultFormValues = useMemo(() => ({
-    entries: initialData?.length > 0
-      ? convertToFormFormat(initialData)
-      : [{
-          id: crypto.randomUUID(),
-          title: '',
-          organization: '',
-          startDate: '',
-          endDate: '',
-          current: false,
-          url: '',
-          description: '',
-          bulletPoints: [{ value: '' }]
-        }]
+    entries: extractProjectsFromRMS(initialData)
   }), [initialData]);
 
   const form = useForm<ProjectFormData>({
@@ -264,9 +264,11 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
       setAutoSaveStatus('saving');
       try {
         const formData = getValues();
-        const storeData = convertToStoreFormat(formData);
-        // Only update the store, don't save to Firebase yet
-        updateSection('projects', storeData);
+        const rmsData = convertToRMSFormat(formData);
+        // Auto-save via onSave callback if provided
+        if (onSave) {
+          await onSave(rmsData);
+        }
         setAutoSaveStatus('saved');
         setTimeout(() => setAutoSaveStatus(null), 3000);
       } catch (error) {
@@ -274,7 +276,7 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
         console.error('Auto-save failed:', error);
       }
     }, AUTO_SAVE_DELAY);
-  }, [getValues, updateSection]);
+  }, [getValues, onSave]);
 
   // Trigger auto-save on form changes (but not on mount)
   const isFirstRender = useRef(true);
@@ -307,6 +309,14 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
     isFirstRender.current = true;
   }, [initialData, reset, defaultFormValues]);
 
+  // Unsaved changes protection
+  const {
+    showModal,
+    handleSaveAndContinue,
+    handleDiscardAndContinue,
+    handleCancelNavigation
+  } = useUnsavedChangesProtection({ isDirty });
+
   // Handlers
   const handleManualSave = useCallback(async () => {
     const isValid = await trigger();
@@ -320,15 +330,13 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
     }
 
     try {
+      setIsSaving(true);
       const formData = getValues();
-      const storeData = convertToStoreFormat(formData);
+      const rmsData = convertToRMSFormat(formData);
 
       if (onSave) {
-        await onSave(storeData);
+        await onSave(rmsData);
       }
-
-      updateSection('projects', storeData);
-      await saveSection('projects');
 
       // Reset form state with current values to mark as clean
       reset({ entries: formData.entries });
@@ -344,17 +352,18 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
         description: "Failed to save projects information",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
-  }, [trigger, getValues, onSave, updateSection, saveSection, reset, toast]);
+  }, [trigger, getValues, onSave, reset, toast]);
 
   const handleUndo = useCallback(() => {
-    revertSection('projects');
     reset(defaultFormValues);
     toast({
       title: "Changes reverted",
-      description: "Projects section restored to last saved state",
+      description: "Projects section restored to initial state",
     });
-  }, [revertSection, reset, defaultFormValues, toast]);
+  }, [reset, defaultFormValues, toast]);
 
   const addNewProject = useCallback(() => {
     const newEntry = {
@@ -365,8 +374,7 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
       endDate: '',
       current: false,
       url: '',
-      description: '',
-      bulletPoints: [{ value: '' }]
+      description: ''
     };
     append(newEntry);
     setActiveIndex(fields.length);
@@ -417,7 +425,7 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
   // Header title
   const headerTitle = currentEntry?.title && currentEntry?.organization
     ? `${currentEntry.title} - ${currentEntry.organization}`
-    : "New Project Entry";
+    : currentEntry?.title || "New Project Entry";
 
   // Field error helpers
   const getFieldError = (field: keyof ProjectFormEntry) => {
@@ -491,14 +499,16 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSubmit(handleManualSave)} className="space-y-6">
+        <form onSubmit={handleSubmit(handleManualSave)} className="space-y-6 pt-6">
           {/* Add key to force re-render when switching entries */}
-          <div key={`project-${activeIndex}`}>
+          <div key={`entry-${activeIndex}`}>
             {/* Project Title & Organization */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Project Title <span className="resume-label-required">*</span>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>PROJECT TITLE</strong> <span className="resume-label-required">*</span>
+                  </span>
                 </Label>
                 <Controller
                   name={`entries.${activeIndex}.title`}
@@ -526,15 +536,17 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Organization
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>ORGANIZATION</strong>
+                  </span>
                 </Label>
                 <Controller
                   name={`entries.${activeIndex}.organization`}
                   control={control}
                   render={({ field }) => (
-                    <div className={`resume-input-container ${getFieldError('organization') ? 'resume-input-container--error' : ''}`}>
+                    <div className="resume-input-container">
                       <Input
                         {...field}
                         placeholder="e.g., Microsoft Corporation"
@@ -544,39 +556,35 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
                     </div>
                   )}
                 />
-                {getFieldError('organization') && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="resume-error-message"
-                  >
-                    <AlertCircle className="h-4 w-4" />
-                    {getFieldError('organization')?.message}
-                  </motion.p>
-                )}
               </div>
             </div>
 
             {/* Time Period & URL */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-2">
-                <Label className="resume-label">
-                  Time Period
+              {/* Time Period Container - Consistent with experience form */}
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>TIME PERIOD</strong>
+                  </span>
                 </Label>
                 <div className="flex items-start gap-2">
+                  {/* Start Date Container */}
                   <div className="flex-grow">
-                    <Controller
-                      name={`entries.${activeIndex}.startDate`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="Jan 2023"
-                          className="resume-input"
-                          disabled={isSaving}
-                        />
-                      )}
-                    />
+                    <div className={`resume-input-container ${getFieldError('startDate') ? 'resume-input-container--error' : ''}`}>
+                      <Controller
+                        name={`entries.${activeIndex}.startDate`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="Jan 2023"
+                            className="resume-input"
+                            disabled={isSaving}
+                          />
+                        )}
+                      />
+                    </div>
                     {getFieldError('startDate') && (
                       <motion.p
                         initial={{ opacity: 0 }}
@@ -589,19 +597,22 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
                     )}
                   </div>
 
+                  {/* End Date Container */}
                   <div className="flex-grow">
-                    <Controller
-                      name={`entries.${activeIndex}.endDate`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder={currentEntry?.current ? "Present" : "Dec 2023"}
-                          disabled={currentEntry?.current || isSaving}
-                          className={`resume-input ${currentEntry?.current ? 'opacity-50' : ''}`}
-                        />
-                      )}
-                    />
+                    <div className={`resume-input-container ${getFieldError('endDate') && !currentEntry?.current ? 'resume-input-container--error' : ''}`}>
+                      <Controller
+                        name={`entries.${activeIndex}.endDate`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder={currentEntry?.current ? "Present" : "Dec 2023"}
+                            disabled={currentEntry?.current || isSaving}
+                            className={`resume-input ${currentEntry?.current ? 'opacity-50' : ''}`}
+                          />
+                        )}
+                      />
+                    </div>
                     {getFieldError('endDate') && !currentEntry?.current && (
                       <motion.p
                         initial={{ opacity: 0 }}
@@ -614,6 +625,7 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
                     )}
                   </div>
 
+                  {/* Current Position Toggle */}
                   <div className="flex flex-col items-center pt-2 gap-1">
                     <Controller
                       name={`entries.${activeIndex}.current`}
@@ -635,8 +647,12 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="resume-label">Project URL</Label>
+              <div className="space-y-1">
+                <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
+                  <span className="cursor-default">
+                    <strong>PROJECT URL</strong>
+                  </span>
+                </Label>
                 <Controller
                   name={`entries.${activeIndex}.url`}
                   control={control}
@@ -669,76 +685,123 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
               </div>
             </div>
 
-            {/* Key Features & Achievements */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="resume-label">Key Features & Achievements</Label>
-                <span className="text-xs text-gray-500">
-                  Tip: Press Enter to add a new point
-                </span>
+            {/* Description Field with AI Header - Similar to Experience Form */}
+            <div className="grid gap-y-1">
+              <div className="inline-block w-full">
+                <div className="flex items-end justify-between">
+                  <label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal">
+                    <span className="cursor-default text-sm leading-5">
+                      <strong>What did you build</strong> in this project?
+                    </span>
+                  </label>
+                  <div className="flex-shrink-0">
+                    <div className="flex flex-col lg:flex-row justify-between pl-4 px-1.5 py-1.5 gap-x-4 gap-y-2">
+                      <div className="flex flex-row items-center flex-1">
+                        <div>
+                          <div className="w-4 h-4 text-corporate-amber-500">💡</div>
+                        </div>
+                        <div className="text-sm leading-5 text-gray-500 font-normal ml-1">
+                          Highlight technologies used, features built, and impact achieved.
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end items-center">
+                        <div className="transition-opacity duration-200 opacity-100">
+                          <Button
+                            type="button"
+                            className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed border-0 bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white px-3 py-1 rounded-full text-xs"
+                            disabled={isSaving}
+                            size="sm"
+                          >
+                            <div className="mr-1 w-3 h-3">
+                              <div className="opacity-100">✨</div>
+                            </div>
+                            <span>Generate Bullet</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                {currentEntry?.bulletPoints?.map((_, bulletIndex) => (
-                  <div
-                    key={`bullet-${bulletIndex}`}
-                    className="resume-bullet-item group"
-                  >
-                    <GripVertical className="resume-bullet-grip" />
-                    <div className="resume-bullet-input flex-grow">
-                      <Controller
-                        name={`entries.${activeIndex}.bulletPoints.${bulletIndex}.value`}
-                        control={control}
-                        render={({ field }) => (
-                          <Textarea
-                            {...field}
-                            placeholder="• Built responsive web application with React and TypeScript serving 10,000+ users"
-                            className="resume-textarea min-h-[60px]"
-                            rows={2}
-                            disabled={isSaving}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                const newBulletPoints = [...(currentEntry?.bulletPoints || []), { value: '' }];
-                                setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const newBulletPoints = currentEntry?.bulletPoints?.filter((_, i) => i !== bulletIndex) || [];
-                        if (newBulletPoints.length === 0) {
-                          newBulletPoints.push({ value: '' });
-                        }
-                        setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                      }}
-                      disabled={isSaving || currentEntry?.bulletPoints?.length === 1}
-                      className="resume-bullet-remove opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+              <div className="relative">
+                <div className="resume-input-container resume-date-input !min-h-64 md:!min-h-44">
+                  <Controller
+                    name={`entries.${activeIndex}.description`}
+                    control={control}
+                    render={({ field }) => {
+                      const bulletPoints = field.value ? field.value.split('•').filter(p => p.trim()) : [''];
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const newBulletPoints = [...(currentEntry?.bulletPoints || []), { value: '' }];
-                    setValue(`entries.${activeIndex}.bulletPoints`, newBulletPoints);
-                  }}
-                  disabled={isSaving}
-                  className="resume-button-secondary w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Achievement
-                </Button>
+                      const handleBulletChange = (index: number, newContent: string) => {
+                        const updatedPoints = [...bulletPoints];
+                        updatedPoints[index] = newContent;
+                        const newValue = updatedPoints.filter(p => p.trim()).map(p => `• ${p.trim()}`).join('\n');
+                        field.onChange(newValue);
+                      };
+
+                      return (
+                        <div className="w-full p-3">
+                          {bulletPoints.map((point, index) => {
+                            const initialConfig = {
+                              namespace: `ProjectEditor-${index}`,
+                              nodes: [],
+                              onError: (error: Error) => {
+                                console.error('Lexical error:', error);
+                              },
+                              editorState: () => {
+                                const root = $getRoot();
+                                if (point.trim()) {
+                                  const paragraph = $createParagraphNode();
+                                  const textNode = $createTextNode(point.trim());
+                                  paragraph.append(textNode);
+                                  root.append(paragraph);
+                                }
+                              },
+                            };
+
+                            return (
+                              <div key={index} className="flex items-start leading-[1.5] mb-1">
+                                <span className="flex-shrink-0 pr-1 w-3 text-gray-600 dark:text-gray-400">•</span>
+                                <div className="flex-1">
+                                  <LexicalComposer initialConfig={initialConfig}>
+                                    <PlainTextPlugin
+                                      contentEditable={
+                                        <ContentEditable
+                                          className="outline-none bg-transparent min-h-[1.5em] p-0"
+                                          style={{
+                                            fontSize: '16px',
+                                            lineHeight: '1.5'
+                                          }}
+                                        />
+                                      }
+                                      placeholder={index === 0 ? <div className="text-gray-400 dark:text-gray-500">Describe the technologies, features, and impact...</div> : null}
+                                      ErrorBoundary={LexicalErrorBoundary}
+                                    />
+                                    <OnChangePlugin
+                                      onChange={(editorState: EditorState, editor) => {
+                                        editorState.read(() => {
+                                          const root = $getRoot();
+                                          const textContent = root.getTextContent();
+
+                                          // Only trigger change if content actually changed, not just selection
+                                          const currentContent = point.trim();
+                                          if (textContent !== currentContent) {
+                                            handleBulletChange(index, textContent);
+                                          }
+                                        });
+                                      }}
+                                    />
+                                    <HistoryPlugin />
+                                  </LexicalComposer>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -803,6 +866,16 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
           </div>
         </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showModal}
+        onClose={handleCancelNavigation}
+        onSave={handleSaveAndContinue}
+        onDiscard={handleDiscardAndContinue}
+        onCancel={handleCancelNavigation}
+        title="Unsaved Project Changes"
+        description="You have unsaved changes to your projects. What would you like to do?"
+      />
     </div>
   );
 }

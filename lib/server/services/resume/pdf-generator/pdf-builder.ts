@@ -118,80 +118,50 @@ export class PDFBuilder {
   }
 
   /**
-   * Normalize resume data to ensure consistent structure
+   * Convert RMS data to structured format for rendering
    */
-  private normalizeResumeData(resumeData: ResumeData): any {
-    // If parsedData is already structured, use it
-    if (resumeData.parsedData && typeof resumeData.parsedData === 'object') {
-      return resumeData.parsedData;
-    }
-    
-    // If we have rmsRawData, try to convert it
-    if (resumeData.rmsRawData) {
-      return this.convertRMSToStructuredData(resumeData.rmsRawData);
-    }
-    
-    // Return empty structure
-    return {
-      contactInfo: {},
-      summary: '',
-      experiences: [],
-      education: [],
-      skillCategories: [],
-      projects: [],
-      certifications: [],
-      involvements: [],
-      awards: [],
-      volunteer: [],
-      languages: []
-    };
-  }
-
-  /**
-   * Convert RMS data to structured format
-   */
-  private convertRMSToStructuredData(rmsData: any): any {
+  private convertRMSToStructured(rmsData: any): any {
     const structured: any = {
       contactInfo: {},
       summary: '',
       experiences: [],
       education: [],
-      skillCategories: [],
+      skills: [],
       projects: [],
       certifications: [],
       involvements: [],
       awards: [],
-      volunteer: [],
-      languages: []
+      languages: [],
+      coursework: [],
+      publications: []
     };
     
     // Extract contact info
     structured.contactInfo = {
-      fullName: rmsData.rms_contact_fullName || rmsData.Rms_contact_fullName,
-      email: rmsData.rms_contact_email || rmsData.Rms_contact_email,
-      phone: rmsData.rms_contact_phone || rmsData.Rms_contact_phone,
-      linkedin: rmsData.rms_contact_linkedin || rmsData.Rms_contact_linkedin,
-      website: rmsData.rms_contact_website || rmsData.Rms_contact_website,
-      location: rmsData.rms_contact_address || rmsData.Rms_contact_address,
-      city: rmsData.rms_contact_city || rmsData.Rms_contact_city,
-      state: rmsData.rms_contact_state || rmsData.Rms_contact_state,
-      country: rmsData.rms_contact_country || rmsData.Rms_contact_country
+      fullName: rmsData.rms_contact_fullname || rmsData.rms_contact_fullName,
+      email: rmsData.rms_contact_email,
+      phone: rmsData.rms_contact_phone,
+      linkedin: rmsData.rms_contact_linkedin,
+      website: rmsData.rms_contact_website,
+      city: rmsData.rms_contact_city,
+      state: rmsData.rms_contact_state,
+      country: rmsData.rms_contact_country
     };
     
     // Extract summary
-    structured.summary = rmsData.rms_summary || rmsData.Rms_summary || '';
+    structured.summary = rmsData.rms_summary || '';
     
     // Extract experiences
-    const expCount = parseInt(rmsData.rms_experience_count || rmsData.Rms_experience_count || '0');
+    const expCount = parseInt(rmsData.rms_experience_count || '0');
     for (let i = 0; i < expCount; i++) {
       const exp = {
-        company: rmsData[`rms_experience_${i}_company`] || rmsData[`Rms_experience_${i}_company`],
-        title: rmsData[`rms_experience_${i}_role`] || rmsData[`Rms_experience_${i}_role`],
-        startDate: rmsData[`rms_experience_${i}_dateBegin`] || rmsData[`Rms_experience_${i}_dateBegin`],
-        endDate: rmsData[`rms_experience_${i}_dateEnd`] || rmsData[`Rms_experience_${i}_dateEnd`],
-        current: rmsData[`rms_experience_${i}_current`] || rmsData[`Rms_experience_${i}_current`],
-        description: rmsData[`rms_experience_${i}_description`] || rmsData[`Rms_experience_${i}_description`],
-        location: rmsData[`rms_experience_${i}_location`] || rmsData[`Rms_experience_${i}_location`]
+        company: rmsData[`rms_experience_${i}_company`],
+        title: rmsData[`rms_experience_${i}_role`],
+        startDate: rmsData[`rms_experience_${i}_datebegin`] || rmsData[`rms_experience_${i}_dateBegin`],
+        endDate: rmsData[`rms_experience_${i}_dateend`] || rmsData[`rms_experience_${i}_dateEnd`],
+        current: rmsData[`rms_experience_${i}_iscurrent`] || rmsData[`rms_experience_${i}_isCurrent`],
+        description: rmsData[`rms_experience_${i}_description`],
+        location: rmsData[`rms_experience_${i}_location`]
       };
       if (exp.company || exp.title) {
         structured.experiences.push(exp);
@@ -199,57 +169,36 @@ export class PDFBuilder {
     }
     
     // Extract education
-    const eduCount = parseInt(rmsData.Rms_education_count || rmsData.rms_education_count || '0');
+    const eduCount = parseInt(rmsData.rms_education_count || '0');
     for (let i = 0; i < eduCount; i++) {
       const edu = {
-        school: rmsData[`Rms_education_${i}_institution`] || rmsData[`rms_education_${i}_institution`],
-        degree: rmsData[`Rms_education_${i}_qualification`] || rmsData[`rms_education_${i}_qualification`],
-        fieldOfStudy: rmsData[`Rms_education_${i}_field`] || rmsData[`rms_education_${i}_field`],
-        startDate: rmsData[`Rms_education_${i}_dateBegin`] || rmsData[`rms_education_${i}_dateBegin`],
-        endDate: rmsData[`Rms_education_${i}_dateEnd`] || rmsData[`rms_education_${i}_dateEnd`],
-        gpa: rmsData[`Rms_education_${i}_gpa`] || rmsData[`rms_education_${i}_gpa`],
-        location: rmsData[`Rms_education_${i}_location`] || rmsData[`rms_education_${i}_location`]
+        institution: rmsData[`rms_education_${i}_institution`],
+        qualification: rmsData[`rms_education_${i}_qualification`],
+        location: rmsData[`rms_education_${i}_location`],
+        date: rmsData[`rms_education_${i}_date`],
+        score: rmsData[`rms_education_${i}_score`],
+        scoreType: rmsData[`rms_education_${i}_scoreType`]
       };
-      if (edu.school || edu.degree) {
+      if (edu.institution || edu.qualification) {
         structured.education.push(edu);
       }
     }
     
     // Extract skills
-    const skillCount = parseInt(rmsData.Rms_skill_count || rmsData.rms_skill_count || '0');
+    const skillCount = parseInt(rmsData.rms_skill_count || '0');
     for (let i = 0; i < skillCount; i++) {
-      const category = rmsData[`Rms_skill_${i}_category`] || rmsData[`rms_skill_${i}_category`] || 'Skills';
-      const keywords = rmsData[`Rms_skill_${i}_keywords`] || rmsData[`rms_skill_${i}_keywords`];
-      
-      if (keywords) {
-        const skills = keywords.split(',').map((s: string) => s.trim()).filter(Boolean);
-        if (skills.length > 0) {
-          structured.skillCategories.push({
-            name: category,
-            skills: skills
-          });
-        }
-      }
-    }
-    
-    // Extract projects
-    const projectCount = parseInt(rmsData.Rms_project_count || rmsData.rms_project_count || '0');
-    for (let i = 0; i < projectCount; i++) {
-      const project = {
-        title: rmsData[`Rms_project_${i}_title`] || rmsData[`rms_project_${i}_title`],
-        organization: rmsData[`Rms_project_${i}_organization`] || rmsData[`rms_project_${i}_organization`],
-        description: rmsData[`Rms_project_${i}_description`] || rmsData[`rms_project_${i}_description`],
-        startDate: rmsData[`Rms_project_${i}_dateBegin`] || rmsData[`rms_project_${i}_dateBegin`],
-        endDate: rmsData[`Rms_project_${i}_dateEnd`] || rmsData[`rms_project_${i}_dateEnd`],
-        technologies: rmsData[`Rms_project_${i}_technologies`] || rmsData[`rms_project_${i}_technologies`]
+      const skill = {
+        category: rmsData[`rms_skill_${i}_category`] || 'Skills',
+        keywords: rmsData[`rms_skill_${i}_keywords`] || ''
       };
-      if (project.title) {
-        structured.projects.push(project);
+      if (skill.keywords) {
+        structured.skills.push(skill);
       }
     }
     
     return structured;
   }
+
 
   /**
    * Get section order based on resume data or use default
@@ -307,9 +256,9 @@ export class PDFBuilder {
         break;
         
       case 'skills':
-        if (data.skillCategories && data.skillCategories.length > 0) {
+        if (data.skills && data.skills.length > 0) {
           const skillsRenderer = new SkillsRenderer(this.doc, this.config, this.yPosition, this.customFontsLoaded);
-          this.yPosition = skillsRenderer.render(data.skillCategories);
+          this.yPosition = skillsRenderer.render(data.skills);
         }
         break;
         
@@ -375,15 +324,15 @@ export class PDFBuilder {
    * Render the complete document
    */
   private renderDocument(resumeData: ResumeData): Blob {
-    // Normalize the resume data
-    const normalizedData = this.normalizeResumeData(resumeData);
+    // Convert RMS data to structured format for rendering
+    const structuredData = this.convertRMSToStructured(resumeData.parsedData);
     
     // Get section order
     const sectionOrder = this.getSectionOrder(resumeData);
     
     // Render each section in order
     sectionOrder.forEach(sectionType => {
-      this.renderSection(sectionType, normalizedData);
+      this.renderSection(sectionType, structuredData);
     });
     
     // Generate the PDF blob
