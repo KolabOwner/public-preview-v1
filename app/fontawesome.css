@@ -38,6 +38,12 @@
 .fad.fa-moon-stars::before { content: "\f755"; }
 .fad.fa-sun::before { content: "\f185"; }
 .fad.fa-moon-over-sun::before { content: "\f74a"; }
+.fad.fa-sparkles::before { content: "\f890"; }
+.fas.fa-sparkles::before { 
+  font-family: "Font Awesome 6 Free", serif;
+  font-weight: 900;
+  content: "\f005"; /* fallback to star icon if sparkles not available */
+}
 
 /* Additional icon mappings for toolbar - ensure regular (far) icons work */
 .far.fa-minus::before {

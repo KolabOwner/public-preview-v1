@@ -77,7 +77,7 @@ export default function AIResumeSummaryGeneratorPage() {
                     src="/images/ai-resume-summary-generator/skills-section.png"
                     alt="Skills Section"
                     width={180}
-                    height={100}
+                    height={90}
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -98,7 +98,7 @@ export default function AIResumeSummaryGeneratorPage() {
                   <Image
                     src="/images/ai-resume-summary-generator/complete-ai-writer-interface.png"
                     alt="Complete AI Writer Interface"
-                    width={220}
+                    width={200}
                     height={140}
                     className="w-full h-full object-contain"
                   />
@@ -264,7 +264,7 @@ export default function AIResumeSummaryGeneratorPage() {
                 <span className="text-amber-500 font-semibold text-sm uppercase tracking-wide">How it works</span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Here&apos;s how Rezi AI <br />Summary Generator works
+                Here&apos;s how Rezum AI <br />Summary Generator works
               </h2>
               <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
                 Including a resume summary allows you to showcase your strongest assets right away. 
@@ -494,7 +494,7 @@ export default function AIResumeSummaryGeneratorPage() {
                 </div>
               </div>
               <Link href="/sign-up" className="w-full bg-gray-100 text-gray-900 py-3 px-6 rounded-lg font-semibold text-center block hover:bg-gray-200 transition-colors">
-                Create your Rezi account
+                Create your Rezum account
               </Link>
             </div>
 
@@ -510,7 +510,7 @@ export default function AIResumeSummaryGeneratorPage() {
                 </div>
               </div>
               <div className="mb-6">
-                <p className="text-sm font-semibold text-gray-900 mb-3">You also get access to all Rezi Pro features:</p>
+                <p className="text-sm font-semibold text-gray-900 mb-3">You also get access to all Rezum Pro features:</p>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
@@ -531,7 +531,7 @@ export default function AIResumeSummaryGeneratorPage() {
                 </ul>
               </div>
               <Link href="/sign-up" className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg font-semibold text-center block hover:bg-amber-600 transition-colors">
-                Create your Rezi account
+                Create your Rezum account
               </Link>
             </div>
           </div>

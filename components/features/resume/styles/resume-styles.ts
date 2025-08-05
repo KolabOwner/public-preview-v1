@@ -504,12 +504,12 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
     name: {
       fontSize: `${styles.fontSizes.name}pt`,
       lineHeight: styles.lineHeights.name,
-      fontWeight: styles.typography.fontWeights.name,
+      fontWeight: 700, // font-bold
       textTransform: styles.typography.textTransform.name as any,
       textAlign: styles.layout.textAlign.name as any,
       letterSpacing: styles.typography.letterSpacing.name,
       marginBottom: templateId === 'modern' ? '0.4rem' : templateId === 'minimal' ? '0rem' : templateId === 'bold' ? '0.2rem' : `${styles.spacing.headerMarginBottom}rem`,
-      color: templateId === 'bold' ? styles.colors.text : templateId === 'modern' ? '#2563eb' : styles.colors.primary,
+      color: 'rgb(46, 61, 80)', // Exact color from HTML
       ...(templateId === 'bold' && {
         borderBottom: '1px solid #9ca3af',
         paddingBottom: '0.75rem',
@@ -519,20 +519,21 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
     contact: {
       fontSize: `${styles.fontSizes.contact}pt`,
       lineHeight: styles.lineHeights.contact,
+      fontWeight: 300, // font-weight: 300
       textAlign: styles.layout.textAlign.contact as any,
       marginBottom: `${styles.spacing.sectionGap}rem`,
-      color: templateId === 'bold' || templateId === 'minimal' ? styles.colors.text : styles.colors.muted,
+      color: 'rgb(46, 61, 80)', // Exact color from HTML
     },
     sectionHeader: {
       fontSize: `${styles.fontSizes.sectionHeader}pt`,
       lineHeight: styles.lineHeights.sectionHeader,
-      fontWeight: styles.typography.fontWeights.section,
+      fontWeight: 600, // font-weight: 600
       textTransform: styles.typography.textTransform.section as any,
       letterSpacing: styles.typography.letterSpacing.section,
       marginTop: `${styles.spacing.headerMarginTop}rem`,
       marginBottom: templateId === 'bold' ? '0.2rem' : `${styles.spacing.headerMarginBottom}rem`,
       paddingBottom: '2px',
-      color: styles.colors.primary,
+      color: 'rgb(46, 61, 80)', // Exact color from HTML
       ...(styles.layout.showDividers && {
         borderBottom: styles.layout.dividerStyle === 'dotted'
           ? `${templateId === 'minimal' ? '2px' : '1px'} dotted ${styles.colors.divider}`
@@ -546,39 +547,39 @@ export function generateInlineStyles(styles: ResumeStyleConfig, templateId = 'pr
     jobTitle: {
       fontSize: `${styles.fontSizes.jobTitle}pt`,
       lineHeight: styles.lineHeights.jobTitle,
-      fontWeight: styles.typography.fontWeights.title,
-      color: styles.colors.secondary,
+      fontWeight: 600, // font-semibold
+      color: 'rgb(46, 61, 80)', // Exact color from HTML
     },
     company: {
       fontSize: `${styles.fontSizes.body}pt`,
       lineHeight: styles.lineHeights.body,
-      fontWeight: templateId === 'modern' ? 600 : templateId === 'minimal' ? 600 : templateId === 'bold' ? 600 : 400,
-      color: styles.colors.text,
+      fontWeight: 600, // font-semibold
+      color: 'rgb(46, 61, 80)', // Exact color from HTML
       fontStyle: 'normal' as const,
     },
     bodyText: {
       fontSize: `${styles.fontSizes.body}pt`,
       lineHeight: styles.lineHeights.body,
-      fontWeight: styles.typography.fontWeights.body,
+      fontWeight: 100, // font-weight: 100 (very light for descriptions)
       letterSpacing: styles.typography.letterSpacing.body,
       textAlign: styles.layout.textAlign.body as any,
-      color: styles.colors.text,
+      color: 'rgb(46, 61, 80)', // Exact color from HTML
       fontStyle: 'normal' as const, // Ensure no italic styling
     },
     detailText: {
       fontSize: `${styles.fontSizes.body}pt`,
       lineHeight: styles.lineHeights.body,
-      fontWeight: 400,
-      color: styles.colors.muted,
+      fontWeight: 400, // font-weight: 400 for skills text
+      color: 'rgb(46, 61, 80)', // Exact color from HTML
       fontStyle: 'normal' as const, // Ensure no italic styling
     },
     date: {
       fontSize: `${styles.fontSizes.detail}pt`,
       lineHeight: styles.lineHeights.body,
-      fontWeight: 600, // Make dates bolder
+      fontWeight: 400, // Normal weight for dates/locations
       fontStyle: 'normal' as const,
       ...(templateId === 'modern' ? {} : { float: 'right' as const }),
-      color: styles.colors.text, // Use normal text color instead of muted
+      color: 'rgb(46, 61, 80)', // Exact color from HTML
     },
     bulletList: {
       marginLeft: '0.75rem',

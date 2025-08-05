@@ -47,24 +47,14 @@ export default function KeywordScannerPage() {
               </div>
 
               {/* Upload Area */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                      <Image
-                        src="/images/keyword-scanner/gauge.svg"
-                        alt="Scanner Icon"
-                        width={24}
-                        height={24}
-                        className="w-6 h-6"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-700">
-                      <strong>Click</strong> or <strong>drop</strong> your PDF or DOC file here to instantly score your resume.
-                    </p>
-                  </div>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-gray-300 transition-colors cursor-pointer">
+                <div className="flex items-center space-x-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <p className="text-sm text-gray-600">
+                    Drop resume here or <span className="text-amber-600 font-medium">browse</span>
+                  </p>
                 </div>
               </div>
             </div>
@@ -132,7 +122,7 @@ export default function KeywordScannerPage() {
 
               <div className="grid md:grid-cols-3 gap-8">
                 {/* Card 1 */}
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-visible hover:shadow-lg transition-shadow">
                   <div className="p-8">
                     <div className="relative mb-6 h-96">
                       <div className="relative h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
@@ -146,16 +136,16 @@ export default function KeywordScannerPage() {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        {/* Target Job Posting Overlay */}
-                        <div className="absolute top-8 -left-4 w-48 h-24 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-10">
-                          <Image
-                            src="/images/keyword-scanner/target-job-posting.svg"
-                            alt="Target Job Posting"
-                            width={180}
-                            height={100}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
+                      </div>
+                      {/* Target Job Posting Overlay - Outside the background container */}
+                      <div className="absolute top-24 -left-4 w-56 h-36 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-20">
+                        <Image
+                          src="/images/keyword-scanner/target-job-posting-interface.png"
+                          alt="Target Job Posting"
+                          width={700}
+                          height={428}
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     </div>
                   </div>
@@ -172,7 +162,7 @@ export default function KeywordScannerPage() {
                 </div>
 
                 {/* Card 2 */}
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-visible hover:shadow-lg transition-shadow">
                   <div className="p-8">
                     <div className="relative mb-6 h-96">
                       <div className="relative h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
@@ -186,26 +176,26 @@ export default function KeywordScannerPage() {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        {/* Untailored Overlay - Top */}
-                        <div className="absolute top-8 -left-4 w-32 h-20 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-10">
-                          <Image
-                            src="/images/keyword-scanner/untailored.svg"
-                            alt="Untailored Resume"
-                            width={120}
-                            height={80}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                        {/* Tailored Overlay - Bottom Right */}
-                        <div className="absolute bottom-4 -right-4 w-32 h-20 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-10">
-                          <Image
-                            src="/images/keyword-scanner/tailored.svg"
-                            alt="Tailored Resume"
-                            width={120}
-                            height={80}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
+                      </div>
+                      {/* Keywords Interface Two Overlay - Top Left - Outside the background container */}
+                      <div className="absolute top-16 -left-4 w-40 h-28 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-20">
+                        <Image
+                          src="/images/keyword-scanner/keywords-interface-two.png"
+                          alt="Keywords Interface"
+                          width={480}
+                          height={346}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      {/* Keywords Interface Overlay - Bottom Right - Outside the background container */}
+                      <div className="absolute bottom-4 -right-4 w-40 h-40 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-20">
+                        <Image
+                          src="/images/keyword-scanner/keywords-interface.png"
+                          alt="Keywords Interface"
+                          width={480}
+                          height={474}
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     </div>
                   </div>
@@ -222,7 +212,7 @@ export default function KeywordScannerPage() {
                 </div>
 
                 {/* Card 3 */}
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-visible hover:shadow-lg transition-shadow">
                   <div className="p-8">
                     <div className="relative mb-6 h-96">
                       <div className="relative h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
@@ -236,26 +226,26 @@ export default function KeywordScannerPage() {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        {/* AI Keyword Tailoring Overlay - Top */}
-                        <div className="absolute top-8 -left-4 w-40 h-24 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-10">
-                          <Image
-                            src="/images/keyword-scanner/ai-keyword-tailoring.svg"
-                            alt="AI Keyword Tailoring"
-                            width={160}
-                            height={96}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                        {/* Score Overlay - Bottom Right */}
-                        <div className="absolute bottom-4 -right-4 w-16 h-16 bg-white rounded-full shadow-xl border border-gray-200 p-2 z-10">
-                          <Image
-                            src="/images/keyword-scanner/score.svg"
-                            alt="Score"
-                            width={60}
-                            height={60}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
+                      </div>
+                      {/* Keyword Tailoring Interface Overlay - Bottom Left - Outside the background container */}
+                      <div className="absolute bottom-12 -left-4 w-40 h-40 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-20">
+                        <Image
+                          src="/images/keyword-scanner/keyword-tailoring-interface.png"
+                          alt="Keyword Tailoring Interface"
+                          width={560}
+                          height={566}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      {/* Circular Gauge Overlay - Top Right - Outside the background container */}
+                      <div className="absolute top-8 -right-4 w-20 h-20 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-20">
+                        <Image
+                          src="/images/keyword-scanner/circular-gauge-interface.png"
+                          alt="Circular Gauge Interface"
+                          width={320}
+                          height={320}
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     </div>
                   </div>
@@ -266,7 +256,7 @@ export default function KeywordScannerPage() {
                       </h3>
                     </div>
                     <p className="text-gray-600 leading-relaxed">
-                      The smart Rezi AI make sure your resume reads naturally. This isn&apos;t keyword stuffing, it&apos;s professional rephrasing.
+                      The smart Rezum AI make sure your resume reads naturally. This isn&apos;t keyword stuffing, it&apos;s professional rephrasing.
                     </p>
                   </div>
                 </div>
@@ -352,10 +342,10 @@ export default function KeywordScannerPage() {
                     {/* Upload Interface Overlay */}
                     <div className="absolute top-0 left-0 -ml-8 -mt-8 w-3/4 h-3/4 z-20">
                       <Image
-                        src="/images/keyword-scanner/upload-interface.svg"
+                        src="/images/resume-checker/upload-interface.png"
                         alt="Upload Interface"
-                        width={300}
-                        height={200}
+                        width={1200}
+                        height={512}
                         className="w-full h-full object-contain drop-shadow-lg"
                         priority
                       />
@@ -381,7 +371,7 @@ export default function KeywordScannerPage() {
                   </h3>
                 </div>
                 <p className="text-base lg:text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
-                  You can either choose a job from the Rezi AI Job Search database or just paste the job ad from wherever you found it.
+                  You can either choose a job from the Rezum AI Job Search database or just paste the job ad from wherever you found it.
                   <br /><br />
                   The Keyword Scanner will analyze how well your resume matches the requirements of this particular job.
                 </p>
@@ -414,10 +404,10 @@ export default function KeywordScannerPage() {
                     {/* Target Job Posting Overlay */}
                     <div className="absolute top-1/2 left-0 -translate-y-1/2 -ml-8 w-1/2 h-1/3 z-20">
                       <Image
-                        src="/images/keyword-scanner/target-job-posting.svg"
+                        src="/images/keyword-scanner/target-job-posting-interface.png"
                         alt="Target Job Posting"
-                        width={200}
-                        height={120}
+                        width={700}
+                        height={428}
                         className="w-full h-full object-contain drop-shadow-lg"
                         priority
                       />
@@ -443,7 +433,7 @@ export default function KeywordScannerPage() {
                   </h3>
                 </div>
                 <p className="text-base lg:text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
-                  We&apos;ll highlight the most impactful terms from the job description. Rezi uses this data to suggest missing keywords and can even generate new bullet points using AI.
+                  We&apos;ll highlight the most impactful terms from the job description. Rezum uses this data to suggest missing keywords and can even generate new bullet points using AI.
                   <br /><br />
                   This helps you naturally incorporate those terms into your resume—ensuring a stronger match with the role you&apos;re targeting.
                 </p>
@@ -474,12 +464,12 @@ export default function KeywordScannerPage() {
                       />
                     </div>
                     {/* Keyword Selection Overlay */}
-                    <div className="absolute top-0 left-0 -mt-32 -ml-16 w-[110%] h-[110%] z-20">
+                    <div className="absolute top-4 -right-8 w-2/3 h-2/3 z-20">
                       <Image
-                        src="/images/keyword-scanner/untailored.svg"
+                        src="/images/keyword-scanner/keywords-interface.png"
                         alt="Keyword Selection Interface"
-                        width={400}
-                        height={300}
+                        width={480}
+                        height={474}
                         className="w-full h-full object-contain drop-shadow-lg"
                         priority
                       />

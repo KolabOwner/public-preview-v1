@@ -1,123 +1,128 @@
-// Simplified Summary Page
+// Summary Page - Direct Firebase Access
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from "@/config/firebase-config";
+import { useAuth } from '@/contexts/firebase-auth-context';
 import { AlertCircle } from 'lucide-react';
-import { useResumeData } from "@/contexts/resume-data-context";
 import SummaryForm from "@/components/features/resume/forms/summary-form";
 
-
-export default function ResumeSummaryPage() {
-  const params = useParams();
-  const router = useRouter();
-  const resumeId = params.resumeId as string;
-  const [error, setError] = useState<string>('');
-
-  // Use error boundary to handle context not available
-  try {
-    return <ResumeSummaryContent resumeId={resumeId} router={router} setError={setError} error={error} />;
-  } catch (e) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2 flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Context Not Available
-            </h3>
-            <p className="text-red-700 dark:text-red-300 mb-4">
-              The ResumeDataContext is not provided. Make sure your app layout wraps pages with ResumeDataProvider.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+interface ResumeData {
+  id: string;
+  title: string;
+  userId: string;
+  parsedData?: any;
+  rmsRawData?: any;
+  createdAt: string;
+  updatedAt: string;
 }
 
-function ResumeSummaryContent({ resumeId, router, setError, error }: { 
-  resumeId: string; 
-  router: any; 
-  setError: (error: string) => void;
-  error: string;
-}) {
-  // Always call hooks unconditionally
-  const {
-    resumeData,
-    fetchResumeData,
-    loading,
-    processedData,
-    updateResumeData,
-    saveResumeData
-  } = useResumeData();
+export default function ResumeSummaryPage() {
+  const [resume, setResume] = useState<ResumeData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  const params = useParams();
+  const resumeId = params.resumeId as string;
+  const { user } = useAuth();
+  const router = useRouter();
 
-  // Fetch resume data when needed
   useEffect(() => {
-    if (resumeId && (!resumeData || resumeData.id !== resumeId)) {
-      fetchResumeData(resumeId).catch(err => {
-        console.error('Failed to fetch resume:', err);
-        setError('Failed to load resume data');
-      });
-    }
-  }, [resumeId, resumeData, fetchResumeData]);
+    const fetchResume = async () => {
+      if (!resumeId || !user) {
+        setIsLoading(false);
+        return;
+      }
 
-  const handleBackToEditor = () => {
-    router.push(`/dashboard/resumes/${resumeId}/edit`);
+      if (!db) {
+        console.error('Firestore database is not initialized');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const resumeRef = doc(db, 'resumes', resumeId);
+        const resumeSnap = await getDoc(resumeRef);
+        
+        if (!resumeSnap.exists()) {
+          setError('Resume not found');
+          return;
+        }
+        
+        const resumeData = resumeSnap.data() as ResumeData;
+        
+        // Ensure user owns this resume
+        if (resumeData.userId !== user.uid) {
+          setError('You do not have permission to view this resume');
+          return;
+        }
+        
+        setResume({
+          ...resumeData,
+          id: resumeSnap.id,
+          // Merge parsedData fields directly to top level like experience page does
+          ...resumeData.parsedData
+        });
+      } catch (err) {
+        console.error('Error fetching resume:', err);
+        setError('Failed to load resume');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchResume();
+  }, [resumeId, user]);
+
+  const handleSave = async (data: any) => {
+    if (!resumeId) return;
+    
+    try {
+      const resumeRef = doc(db, 'resumes', resumeId);
+      await updateDoc(resumeRef, {
+        ...data,
+        updatedAt: new Date().toISOString()
+      });
+      console.log('Summary data saved successfully');
+    } catch (error) {
+      console.error('Error saving summary:', error);
+      throw error;
+    }
   };
 
-  // Show loading state
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[600px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading resume data...</p>
-            </div>
-          </div>
-        </div>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
-  // Show error state
-  if (error || (!loading && !resumeData)) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-              Unable to Load Resume
-            </h3>
-            <p className="text-red-700 dark:text-red-300 mb-4">
-              {error || 'The resume could not be loaded. Please check the URL and try again.'}
-            </p>
-            <button
-              onClick={() => router.push('/dashboard/resumes')}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
-            >
-              Back to Resumes
-            </button>
-          </div>
-        </div>
+      <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-lg">
+        <h3 className="text-lg font-medium text-red-800 dark:text-red-200 mb-2">Error</h3>
+        <p className="text-red-700 dark:text-red-300">{error}</p>
       </div>
     );
   }
 
-  // Main content
+  if (!resume) {
+    return (
+      <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="text-lg font-medium mb-2">Resume Not Found</h3>
+        <p>The resume you&apos;re looking for could not be found.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <SummaryForm 
-        initialData={resumeData || undefined}
-        onSave={async (data) => {
-          // Update the resume data with the new summary data
-          updateResumeData(data);
-          // Save to Firebase
-          await saveResumeData();
-          console.log('Summary data saved successfully');
-        }}
+        initialData={resume}
+        onSave={handleSave}
       />
     </div>
   );

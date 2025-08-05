@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       status: FileStatus.UPLOADED,
       // Initialize with professional template by default
       documentSettings: {
-        zoom: 115,
+        zoom: 120,
         fontFamily: 'Merriweather',
         primaryColor: '#000000',
         textColor: '#000000',

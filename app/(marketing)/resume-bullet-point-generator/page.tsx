@@ -77,63 +77,15 @@ export default function ResumeBulletPointGenerator() {
               </div>
 
               {/* Upload Area */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-                <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Job Title
-                      </label>
-                      <input
-                        type="text"
-                        value={jobTitle}
-                        onChange={(e) => setJobTitle(e.target.value)}
-                        placeholder="e.g., Marketing Manager"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Company (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={company}
-                        onChange={(e) => setCompany(e.target.value)}
-                        placeholder="e.g., Tech Corp"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Describe what you did
-                    </label>
-                    <textarea
-                      value={responsibility}
-                      onChange={(e) => setResponsibility(e.target.value)}
-                      placeholder="e.g., I managed social media accounts and created content that increased engagement"
-                      rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    />
-                  </div>
-                  <button
-                    onClick={handleGenerate}
-                    disabled={!jobTitle || !responsibility || isGenerating}
-                    className="w-full bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-5 h-5" />
-                        Generate Bullet Points
-                      </>
-                    )}
-                  </button>
+              <div className="flex items-center space-x-3 bg-white rounded-lg px-5 py-3.5 border-2 border-dashed border-gray-300 hover:border-amber-400 transition-colors cursor-pointer">
+                <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Upload your work experience</p>
+                  <p className="text-xs text-gray-500">PDF, DOC or paste text</p>
                 </div>
               </div>
             </div>
@@ -141,16 +93,15 @@ export default function ResumeBulletPointGenerator() {
             {/* Right Images */}
             <div className="relative">
               <div className="relative max-w-lg mx-auto">
-                {/* AI Writer Interface - Top Left */}
-                <div className="absolute -top-4 -left-8 w-48 h-32 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-20">
-                  <div className="w-full h-full bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-8 h-8 bg-amber-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="text-xs font-medium text-amber-700">AI Writer</div>
-                    </div>
-                  </div>
+                {/* Results Dialog Interface - Top Left */}
+                <div className="absolute top-24 -left-8 w-80 h-32 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-20">
+                  <Image
+                    src="/images/resume-bullet-point-generator/results-dialog-interface.png"
+                    alt="Results Dialog Interface"
+                    width={1000}
+                    height={384}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
 
                 {/* Main Resume Document - Center */}
@@ -164,16 +115,15 @@ export default function ResumeBulletPointGenerator() {
                   />
                 </div>
 
-                {/* Bullet Points Interface - Bottom Right */}
-                <div className="absolute -bottom-4 -right-8 w-56 h-40 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-20">
-                  <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-8 h-8 bg-green-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="text-xs font-medium text-green-700">Generated Bullets</div>
-                    </div>
-                  </div>
+                {/* Compact Bullet Interface - Bottom Right */}
+                <div className="absolute -bottom-4 -right-8 w-48 h-20 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-20">
+                  <Image
+                    src="/images/resume-bullet-point-generator/compact-bullet-interface.png"
+                    alt="Compact Bullet Interface"
+                    width={532}
+                    height={194}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
             </div>
@@ -251,14 +201,15 @@ export default function ResumeBulletPointGenerator() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {/* Results Overlay */}
-                  <div className="absolute top-8 -left-4 w-48 h-32 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-10">
-                    <div className="text-center">
-                      <div className="text-sm font-semibold text-gray-900 mb-2">Results Focus</div>
-                      <div className="text-xs text-gray-600">• Increased sales by 35%</div>
-                      <div className="text-xs text-gray-600">• Managed team of 12</div>
-                      <div className="text-xs text-gray-600">• Saved $50K annually</div>
-                    </div>
+                  {/* Generate Bullet Interface Overlay */}
+                  <div className="absolute top-8 -left-4 w-56 h-28 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-10">
+                    <Image
+                      src="/images/resume-bullet-point-generator/generate-bullet-interface.png"
+                      alt="Generate Bullet Interface"
+                      width={640}
+                      height={308}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 </div>
               </div>
@@ -286,14 +237,15 @@ export default function ResumeBulletPointGenerator() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {/* Role Specific Overlay */}
-                  <div className="absolute top-8 -left-4 w-56 h-28 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-10">
-                    <div className="text-center">
-                      <div className="text-sm font-semibold text-gray-900 mb-2">Role-Specific</div>
-                      <div className="text-xs text-gray-600">Marketing Manager</div>
-                      <div className="text-xs text-gray-600">@ Tech Corp</div>
-                      <div className="w-8 h-1 bg-amber-500 rounded mx-auto mt-2"></div>
-                    </div>
+                  {/* Keyword Tailoring Interface Generating Overlay */}
+                  <div className="absolute top-24 -left-4 w-64 h-30 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-10">
+                    <Image
+                      src="/images/resume-bullet-point-generator/keyword-tailoring-interface-generating.png"
+                      alt="Keyword Tailoring Interface Generating"
+                      width={800}
+                      height={370}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 </div>
               </div>
@@ -321,21 +273,15 @@ export default function ResumeBulletPointGenerator() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {/* Edit Options Overlay */}
-                  <div className="absolute top-8 -right-4 w-40 h-48 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-10">
-                    <div className="text-center">
-                      <div className="text-sm font-semibold text-gray-900 mb-2">Quick Edits</div>
-                      <div className="space-y-2">
-                        <div className="w-full h-6 bg-gray-100 rounded flex items-center px-2">
-                          <RotateCcw className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs text-gray-600 ml-1">Regenerate</span>
-                        </div>
-                        <div className="w-full h-6 bg-gray-100 rounded flex items-center px-2">
-                          <Copy className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs text-gray-600 ml-1">Copy</span>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Miniature Resume Overlay */}
+                  <div className="absolute top-8 -right-4 w-32 h-40 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-10">
+                    <Image
+                      src="/images/keyword-scanner/techvision-resume-stacked.png"
+                      alt="Miniature Resume"
+                      width={400}
+                      height={500}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
               </div>
@@ -426,21 +372,16 @@ export default function ResumeBulletPointGenerator() {
                         className="w-full object-cover"
                       />
                     </div>
-                    {/* Role Input Overlay */}
+                    {/* Upload Interface Overlay */}
                     <div className="absolute top-0 left-0 -ml-8 -mt-8 w-3/4 h-3/4 z-20">
-                      <div className="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 p-4 flex items-center justify-center">
-                        <div className="text-center w-full">
-                          <div className="text-sm font-medium text-gray-900 mb-3">Enter Your Details</div>
-                          <div className="space-y-2">
-                            <div className="w-full h-8 bg-gray-100 rounded flex items-center px-3 text-xs text-gray-600">
-                              Marketing Manager
-                            </div>
-                            <div className="w-full h-8 bg-gray-100 rounded flex items-center px-3 text-xs text-gray-600">
-                              Google Inc.
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <Image
+                        src="/images/resume-bullet-point-generator/upload-interface.png"
+                        alt="Upload Interface"
+                        width={1200}
+                        height={512}
+                        className="w-full h-full object-contain drop-shadow-lg"
+                        priority
+                      />
                     </div>
                   </div>
                 </div>
@@ -493,17 +434,16 @@ export default function ResumeBulletPointGenerator() {
                         className="w-full object-cover"
                       />
                     </div>
-                    {/* AI Generation Overlay */}
-                    <div className="absolute top-1/2 left-0 -translate-y-1/2 -ml-8 w-1/2 h-1/2 z-20">
-                      <div className="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 p-4 flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-blue-100 rounded-full mx-auto mb-3 flex items-center justify-center">
-                            <Sparkles className="w-6 h-6 text-blue-600" />
-                          </div>
-                          <div className="text-sm font-medium text-gray-900">AI Generated</div>
-                          <div className="text-xs text-gray-500 mt-1">Bullet Point Ready</div>
-                        </div>
-                      </div>
+                    {/* Generate Bullet Interface Overlay */}
+                    <div className="absolute top-1/2 left-0 -translate-y-1/2 -ml-8 w-1/2 h-1/3 z-20">
+                      <Image
+                        src="/images/resume-bullet-point-generator/generate-bullet-interface.png"
+                        alt="Generate Bullet Interface"
+                        width={640}
+                        height={308}
+                        className="w-full h-full object-contain drop-shadow-lg"
+                        priority
+                      />
                     </div>
                   </div>
                 </div>
@@ -556,23 +496,16 @@ export default function ResumeBulletPointGenerator() {
                         className="w-full object-cover"
                       />
                     </div>
-                    {/* Action Options Overlay */}
-                    <div className="absolute top-0 left-0 -mt-32 -ml-16 w-[110%] h-[110%] z-20">
-                      <div className="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 p-6 flex items-center justify-center">
-                        <div className="text-center w-full">
-                          <div className="text-sm font-medium text-gray-900 mb-4">Action Options</div>
-                          <div className="space-y-3">
-                            <button className="w-full bg-green-500 text-white py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2">
-                              <CheckCircle className="w-4 h-4" />
-                              Apply to Resume
-                            </button>
-                            <button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2">
-                              <RotateCcw className="w-4 h-4" />
-                              Regenerate
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                    {/* Bullet Points Interface Overlay */}
+                    <div className="absolute top-4 -right-8 w-4/5 h-2/3 z-20">
+                      <Image
+                        src="/images/resume-bullet-point-generator/bullet-points-interface.png"
+                        alt="Bullet Points Interface"
+                        width={1200}
+                        height={432}
+                        className="w-full h-full object-contain drop-shadow-lg"
+                        priority
+                      />
                     </div>
                   </div>
                 </div>

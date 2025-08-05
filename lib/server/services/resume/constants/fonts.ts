@@ -61,12 +61,12 @@ export const FONT_FAMILIES = {
 export const FONT_CONFIGURATIONS: Record<string, any> = {
   professional: {
     fonts: {
-      name: { family: 'merriweather', size: 12.825, weight: 700 },
-      heading: { family: 'merriweather', size: 8.9395, weight: 700 },
-      subheading: { family: 'merriweather', size: 7.771, weight: 700 },
-      body: { family: 'merriweather', size: 6.6025, weight: 400 },
-      accent: { family: 'merriweather', size: 6.6025, weight: 400 },
-      small: { family: 'merriweather', size: 5.7855, weight: 400 }
+      name: { family: 'merriweather', size: 12.825, weight: 700 }, // Bold for resume name
+      heading: { family: 'merriweather', size: 8.9395, weight: 700 }, // Bold for section headers (closest to 600)
+      subheading: { family: 'merriweather', size: 7.771, weight: 700 }, // Bold for job titles (closest to 600)
+      body: { family: 'merriweather', size: 6.6025, weight: 300 }, // Light for descriptions (closest to 100)
+      accent: { family: 'merriweather', size: 6.6025, weight: 700 }, // Bold for company names (closest to 600)
+      small: { family: 'merriweather', size: 5.7855, weight: 300 } // Light for contact info
     }
   },
   elegant: {
@@ -106,10 +106,10 @@ export const FONT_CONFIGURATIONS: Record<string, any> = {
  */
 export const DEFAULT_CONFIG: any = {
   colors: {
-    text: { r: 51, g: 51, b: 51 },
-    black: { r: 0, g: 0, b: 0 },
-    gray: { r: 102, g: 102, b: 102 },
-    accent: { r: 51, g: 51, b: 51 }
+    text: { r: 46, g: 61, b: 80 }, // Exact RGB values from HTML
+    black: { r: 46, g: 61, b: 80 }, // Exact RGB values from HTML
+    gray: { r: 46, g: 61, b: 80 }, // Exact RGB values from HTML
+    accent: { r: 46, g: 61, b: 80 } // Exact RGB values from HTML
   },
   margins: {
     top: 54,
@@ -118,12 +118,12 @@ export const DEFAULT_CONFIG: any = {
     left: 54
   },
   fonts: {
-    name: { family: 'merriweather', size: 12.825, weight: 700 },
-    heading: { family: 'merriweather', size: 8.9395, weight: 700 },
-    subheading: { family: 'merriweather', size: 7.771, weight: 700 },
-    body: { family: 'merriweather', size: 6.6025, weight: 400 },
-    accent: { family: 'merriweather', size: 6.6025, weight: 400 },
-    small: { family: 'merriweather', size: 5.7855, weight: 400 }
+    name: { family: 'merriweather', size: 12.825, weight: 700 }, // Bold for resume name
+    heading: { family: 'merriweather', size: 8.9395, weight: 700 }, // Bold for section headers (closest to 600)
+    subheading: { family: 'merriweather', size: 7.771, weight: 700 }, // Bold for job titles (closest to 600)
+    body: { family: 'merriweather', size: 6.6025, weight: 300 }, // Light for descriptions (closest to 100)
+    accent: { family: 'merriweather', size: 6.6025, weight: 700 }, // Bold for company names (closest to 600)
+    small: { family: 'merriweather', size: 5.7855, weight: 300 } // Light for contact info
   },
   spacing: {
     sectionGap: 17,

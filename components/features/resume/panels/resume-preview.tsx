@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, MapPin, Mail, Phone, Linkedin } from "lucide-react";
 import { useToast } from "@/lib/client/hooks/ui/use-toast";
 import { useAuth } from '@/contexts/firebase-auth-context';
 import { useJobInfo } from '@/contexts/job-info-context';
@@ -53,7 +53,7 @@ const BulletList = memo(({
   items: string[];
   styles: Record<string, any>;
 }) => (
-  <ul className="p-0 m-0 list-none" style={styles.bulletList}>
+  <ul className="p-0 m-0 ml-0 pl-0 list-none" style={{...styles.bulletList, paddingLeft: 0, marginLeft: 0}}>
     {items.map((item, index) => {
       // Split the item to separate the bullet from the text
       const cleanText = item.replace(/^[•·▪-]\s*/, '');
@@ -67,7 +67,7 @@ const BulletList = memo(({
             marginBottom: '0.2em'
           }}
         >
-          <span className="flex-shrink-0 pr-1 w-3">•</span>
+          <span className="flex-shrink-0 pr-0.5 w-1.5">•</span>
           <span className="flex-1">{cleanText}</span>
         </li>
       );
@@ -76,6 +76,34 @@ const BulletList = memo(({
 ));
 
 BulletList.displayName = 'BulletList';
+
+// Contact icon component
+const ContactIcon = memo(({ type, size = "0.9em", color }: { type: 'location' | 'email' | 'phone' | 'linkedin'; size?: string; color?: string }) => {
+  const iconStyle = {
+    width: size,
+    height: size,
+    fill: color || 'currentColor',
+    stroke: 'white',
+    strokeWidth: '0.5px',
+    marginTop: '-2px',
+    flexShrink: 0
+  };
+
+  switch (type) {
+    case 'location':
+      return <MapPin style={iconStyle} />;
+    case 'email':
+      return <Mail style={iconStyle} />;
+    case 'phone':
+      return <Phone style={iconStyle} />;
+    case 'linkedin':
+      return <Linkedin style={iconStyle} />;
+    default:
+      return null;
+  }
+});
+
+ContactIcon.displayName = 'ContactIcon';
 
 export default function ResumePreview({
   resumeData,
@@ -366,7 +394,7 @@ export default function ResumePreview({
   if (!resumeData) {
     console.log('ResumePreview - No resume data found');
     return (
-      <div className={`w-full max-w-4xl xl:max-w-5xl mx-auto p-8 ${className}`}>
+      <div className={`w-full max-w-7xl mx-auto p-8 ${className}`}>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div>
@@ -1180,31 +1208,40 @@ export default function ResumePreview({
                 );
               })()}
               
-              <div className="resume-contact" style={{
+              <div className={`resume-contact ${documentSettings.showIcons ? 'flex flex-row items-center gap-1 flex-wrap' : ''}`} style={{
                 ...inlineStyles.contact,
-                paddingBottom: '1rem'
+                paddingBottom: '1rem',
+                ...(documentSettings.showIcons && {
+                  justifyContent: 'center'
+                })
               }}>
                 {contact.city && contact.state && (
-                  <>
+                  <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                    {documentSettings.showIcons && <ContactIcon type="location" color={inlineStyles.contact.color} />}
                     <span>{contact.city}, {contact.state}</span>
                     {contact.country && contact.country !== 'United States' && <span>, {contact.country}</span>}
-                    {(contact.email || contact.phone || contact.linkedin) && <span> • </span>}
-                  </>
+                    {!documentSettings.showIcons && (contact.email || contact.phone || contact.linkedin) && <span> • </span>}
+                  </span>
                 )}
                 {contact.email && (
-                  <>
+                  <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                    {documentSettings.showIcons && <ContactIcon type="email" color={inlineStyles.contact.color} />}
                     <span>{contact.email}</span>
-                    {(contact.phone || contact.linkedin) && <span> • </span>}
-                  </>
+                    {!documentSettings.showIcons && (contact.phone || contact.linkedin) && <span> • </span>}
+                  </span>
                 )}
                 {contact.phone && (
-                  <>
+                  <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                    {documentSettings.showIcons && <ContactIcon type="phone" color={inlineStyles.contact.color} />}
                     <span>{contact.phone}</span>
-                    {contact.linkedin && <span> • </span>}
-                  </>
+                    {!documentSettings.showIcons && contact.linkedin && <span> • </span>}
+                  </span>
                 )}
                 {contact.linkedin && (
-                  <span>in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                  <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                    {documentSettings.showIcons && <ContactIcon type="linkedin" color={inlineStyles.contact.color} />}
+                    <span>in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                  </span>
                 )}
               </div>
             </header>
@@ -1245,28 +1282,39 @@ export default function ResumePreview({
             <h1 className="resume-name" style={inlineStyles.name}>
               {fullName}
             </h1>
-            <div className="resume-contact" style={inlineStyles.contact}>
+            <div className={`resume-contact ${documentSettings.showIcons ? 'flex flex-row items-center gap-1 flex-wrap' : ''}`} style={{
+              ...inlineStyles.contact,
+              ...(documentSettings.showIcons && {
+                justifyContent: 'center'
+              })
+            }}>
               {contact.city && contact.state && (
-                <>
+                <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                  {documentSettings.showIcons && <ContactIcon type="location" color={inlineStyles.contact.color} />}
                   <span>{contact.city}, {contact.state}</span>
                   {contact.country && contact.country !== 'United States' && <span>, {contact.country}</span>}
-                  {(contact.email || contact.phone || contact.linkedin) && <span> • </span>}
-                </>
+                  {!documentSettings.showIcons && (contact.email || contact.phone || contact.linkedin) && <span> • </span>}
+                </span>
               )}
               {contact.email && (
-                <>
+                <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                  {documentSettings.showIcons && <ContactIcon type="email" color={inlineStyles.contact.color} />}
                   <span>{contact.email}</span>
-                  {(contact.phone || contact.linkedin) && <span> • </span>}
-                </>
+                  {!documentSettings.showIcons && (contact.phone || contact.linkedin) && <span> • </span>}
+                </span>
               )}
               {contact.phone && (
-                <>
+                <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                  {documentSettings.showIcons && <ContactIcon type="phone" color={inlineStyles.contact.color} />}
                   <span>{contact.phone}</span>
-                  {contact.linkedin && <span> • </span>}
-                </>
+                  {!documentSettings.showIcons && contact.linkedin && <span> • </span>}
+                </span>
               )}
               {contact.linkedin && (
-                <span>in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                  {documentSettings.showIcons && <ContactIcon type="linkedin" color={inlineStyles.contact.color} />}
+                  <span>in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                </span>
               )}
             </div>
           </header>
@@ -1458,7 +1506,7 @@ export default function ResumePreview({
           <div className="flex-1 min-w-0">
             {resumePreviewContent}
           </div>
-          <div className="w-full lg:w-64 lg:flex-shrink-0">
+          <div className="w-full lg:w-80 lg:flex-shrink-0">
             <div className="space-y-6">
               <ATSScorePanel
                 resumeData={resumeData}
@@ -1477,5 +1525,5 @@ export default function ResumePreview({
     );
   }
 
-  return <div className={`w-full max-w-4xl xl:max-w-5xl mx-auto ${className}`}>{resumePreviewContent}</div>;
+  return <div className={`w-full max-w-6xl xl:max-w-7xl mx-auto ${className}`}>{resumePreviewContent}</div>;
 }

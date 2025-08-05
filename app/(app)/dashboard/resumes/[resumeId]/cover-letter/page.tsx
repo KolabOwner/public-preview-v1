@@ -100,7 +100,6 @@ interface CoverLetterData {
   };
 }
 
-
 function prepareResumeForCoverLetter(resumeData: any): string {
   const sections: string[] = [];
 
@@ -241,6 +240,7 @@ function prepareResumeForCoverLetter(resumeData: any): string {
   return sections.join('\n');
 }
 
+// Inner component that has access to JobInfoProvider
 function CoverLetterBuilderContent() {
   const params = useParams();
   const router = useRouter();
@@ -270,7 +270,7 @@ function CoverLetterBuilderContent() {
     lineHeight: 1.5,
     textColor: '#000000',
     template: 'Professional',
-    zoom: 1.17
+    zoom: 1.20
   });
 
   // Load resume data
@@ -315,38 +315,38 @@ function CoverLetterBuilderContent() {
 
       try {
         const data = resumeData.coverLetter;
-        
+
         // Parse the content back into cover letter structure
         const lines = data.content.split('\n');
         const salutationIndex = lines.findIndex((line: string) => line.trim() !== '');
         const salutation = lines[salutationIndex] || '';
-        
+
         // Find opening (first non-empty line after salutation)
         let openingIndex = salutationIndex + 1;
         while (openingIndex < lines.length && lines[openingIndex].trim() === '') {
           openingIndex++;
         }
         const opening = lines[openingIndex] || '';
-        
+
         // Find closing and signature (work backwards)
         let signatureIndex = lines.length - 1;
         while (signatureIndex > 0 && lines[signatureIndex].trim() === '') {
           signatureIndex--;
         }
         const signature = lines[signatureIndex] || '';
-        
+
         let closingIndex = signatureIndex - 1;
         while (closingIndex > 0 && lines[closingIndex].trim() === '') {
           closingIndex--;
         }
         const closing = lines[closingIndex] || '';
-        
+
         // Extract body paragraphs (everything between opening and closing)
         const bodyStartIndex = openingIndex + 1;
         const bodyEndIndex = closingIndex;
         const bodyParagraphs = [];
         let currentParagraph = '';
-        
+
         for (let i = bodyStartIndex; i < bodyEndIndex; i++) {
           if (lines[i].trim() === '') {
             if (currentParagraph.trim() !== '') {
@@ -379,7 +379,7 @@ function CoverLetterBuilderContent() {
 
         // Load settings if available
         if (data.settings) {
-          setSettings(data.settings);
+          setSettings(prev => ({ ...prev, ...data.settings }));
         }
 
         toast({
@@ -394,25 +394,25 @@ function CoverLetterBuilderContent() {
 
     // Load cover letter when resume data is available
     loadCoverLetter();
-  }, [resumeData]);
+  }, [resumeData, toast]);
 
   // Check user subscription
   useEffect(() => {
     const checkUserSubscription = async () => {
       if (!user?.uid) return;
-      
+
       try {
         const { doc, getDoc } = await import('firebase/firestore');
         const { db } = await import('@/config/firebase-config');
-        
+
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
-        
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
           const plan = userData.subscription?.plan || 'free';
           setUserPlan(plan);
-          
+
           // Show upgrade modal for free users
           if (plan === 'free') {
             setShowUpgradeModal(true);
@@ -530,7 +530,7 @@ function CoverLetterBuilderContent() {
         signature: result.sections.signature,
         metadata: result.metadata
       };
-      
+
       setCoverLetter(generatedCoverLetter);
 
       // Save the cover letter to Firestore
@@ -598,7 +598,7 @@ function CoverLetterBuilderContent() {
       // Create a temporary document for PDF generation
       const fontStyle: 'professional' | 'elegant' = settings.fontFamily === 'Times New Roman' ? 'professional' : 'elegant';
       const fontSize: 'small' | 'medium' | 'large' = settings.fontSize < 11 ? 'small' : settings.fontSize > 13 ? 'large' : 'medium';
-      
+
       const coverLetterDoc = {
         title: `Cover Letter - ${recipientInfo?.positionTitle || 'Position'} at ${recipientInfo?.companyName || 'Company'}`,
         template: settings.template.toLowerCase(),
@@ -617,7 +617,7 @@ function CoverLetterBuilderContent() {
           showDividers: false,
           useIndent: false,
           viewAsPages: false,
-          zoom: 100
+          zoom: Math.round((settings.zoom || 1) * 100)
         },
         parsedData: {
           contact: resumeData?.contact || resumeData?.contactInfo,
@@ -672,9 +672,9 @@ function CoverLetterBuilderContent() {
           cancelUrl: `${window.location.origin}/dashboard/resumes/${resumeId}/cover-letter`,
         }),
       });
-      
+
       const { sessionUrl } = await response.json();
-      
+
       if (sessionUrl) {
         window.location.href = sessionUrl;
       }
@@ -691,19 +691,22 @@ function CoverLetterBuilderContent() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-xl animate-pulse"></div>
+        </div>
       </div>
     );
   }
 
   if (!resumeData) {
     return (
-      <div className="max-w-4xl mx-auto p-8">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+      <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-yellow-800">No Resume Data</h3>
-            <p className="text-yellow-700 mt-1">
+            <h3 className="font-semibold text-red-800 dark:text-red-200">No Resume Data</h3>
+            <p className="text-red-700 dark:text-red-300 mt-1">
               Unable to load resume data. Please go back and try again.
             </p>
           </div>
@@ -712,19 +715,18 @@ function CoverLetterBuilderContent() {
     );
   }
 
-  // Extract contact info from resume data - check rmsRawData first
-  const contactInfo = resumeData.contact || resumeData.contactInfo || 
-    (resumeData.rmsRawData ? {
-      fullName: resumeData.rmsRawData.rms_contact_fullname,
-      firstName: resumeData.rmsRawData.rms_contact_givennames,
-      lastName: resumeData.rmsRawData.rms_contact_lastname,
-      email: resumeData.rmsRawData.rms_contact_email,
-      phone: resumeData.rmsRawData.rms_contact_phone,
-      city: resumeData.rmsRawData.rms_contact_city,
-      state: resumeData.rmsRawData.rms_contact_state,
-      country: resumeData.rmsRawData.rms_contact_country,
-      linkedin: resumeData.rmsRawData.rms_contact_linkedin,
-    } : {});
+  // Extract contact info from resume data - check direct fields first, then parsedData, then rmsRawData
+  const contactInfo = resumeData.contact || resumeData.contactInfo || {
+    fullName: resumeData.rms_contact_fullname,
+    firstName: resumeData.rms_contact_givennames,
+    lastName: resumeData.rms_contact_lastname,
+    email: resumeData.rms_contact_email,
+    phone: resumeData.rms_contact_phone,
+    city: resumeData.rms_contact_city,
+    state: resumeData.rms_contact_state,
+    country: resumeData.rms_contact_countrycode || resumeData.rms_contact_country,
+    linkedin: resumeData.rms_contact_linkedin,
+  };
 
   // Show upgrade modal for free users
   if (userPlan === 'free' && showUpgradeModal) {
@@ -738,25 +740,27 @@ function CoverLetterBuilderContent() {
           }}
           onUpgrade={handleUpgrade}
         />
-        
+
         {/* Background blur content */}
         <div className="filter blur-sm pointer-events-none">
-          <div className="flex gap-6 p-6 max-w-[1800px] mx-auto">
+          <div className="flex gap-6 max-w-[1800px] mx-auto">
             <div className="flex-1 flex flex-col">
               <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4" />
               <div className="h-[800px] bg-white dark:bg-gray-800 rounded-lg shadow-xl" />
             </div>
-            <div className="w-80 h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg" />
+            <div className="w-96 h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg" />
           </div>
         </div>
       </div>
     );
   }
 
+  const zoomScale = settings.zoom || 1;
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="flex gap-6 p-6 max-w-[1800px] mx-auto">
-        {/* Left Side - Cover Letter Preview with Header */}
+    <div className="w-full">
+      <div className="flex flex-col xl:flex-row gap-6">
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
           <CoverLetterHeaderBar
             ref={headerBarRef}
@@ -764,20 +768,41 @@ function CoverLetterBuilderContent() {
             onSettingChange={handleSettingChange}
             onDownloadPDF={handleDownloadPDF}
             onDownloadDOCX={handleDownloadDOCX}
-            onTemplateChange={handleTemplateChange}
           />
-          <div className="flex justify-center overflow-auto mt-4">
-            <CoverLetterPreview
-              coverLetter={coverLetter || undefined}
-              contactInfo={contactInfo}
-              recipientInfo={recipientInfo || undefined}
-              settings={settings}
-            />
+
+          {/* Preview Container - matching resume preview design */}
+          <div
+            className="rounded-xl transition-all duration-300 flex justify-center"
+            style={{
+              backgroundColor: 'rgb(31, 41, 55)', // Consistent dark background
+              minHeight: `calc(29.7cm * ${zoomScale} + 2rem)`,
+              padding: '2rem',
+            }}
+          >
+            <div
+              style={{
+                transform: `scale(${zoomScale})`,
+                transformOrigin: 'top center',
+                width: '21cm',
+                minHeight: '29.7cm',
+                backgroundColor: 'white',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                borderRadius: '0.5rem',
+                overflow: 'hidden'
+              }}
+            >
+              <CoverLetterPreview
+                coverLetter={coverLetter || undefined}
+                contactInfo={contactInfo}
+                recipientInfo={recipientInfo || undefined}
+                settings={settings}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Right Side - Input Panel */}
-        <div className="w-80 flex-shrink-0">
+        {/* Right Side Panel - Input Panel */}
+        <div className="w-full xl:w-80 xl:flex-shrink-0">
           <CoverLetterInputPanel
             resumeData={resumeData}
             onGenerate={handleGenerateCoverLetter}
@@ -789,6 +814,7 @@ function CoverLetterBuilderContent() {
   );
 }
 
+// Main component with JobInfoProvider wrapper
 export default function CoverLetterBuilderPage() {
   const params = useParams();
   const { user } = useAuth();

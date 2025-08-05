@@ -51,7 +51,18 @@ export default function CoverLetterInputPanel({
         }
       });
     } 
-    // Handle RMS format with indexed fields in rmsRawData
+    // Handle RMS format with indexed fields directly on resumeData
+    else if (resumeData?.rms_experience_count) {
+      const expCount = resumeData.rms_experience_count;
+      for (let i = 0; i < Math.min(expCount, 3); i++) {
+        const role = resumeData[`rms_experience_${i}_role`];
+        const company = resumeData[`rms_experience_${i}_company`];
+        if (role && company) {
+          options.push(`${role} at ${company}`);
+        }
+      }
+    }
+    // Fallback to rmsRawData
     else if (resumeData?.rmsRawData?.rms_experience_count) {
       const expCount = resumeData.rmsRawData.rms_experience_count;
       for (let i = 0; i < Math.min(expCount, 3); i++) {
@@ -82,7 +93,23 @@ export default function CoverLetterInputPanel({
         }
       });
     }
-    // Handle RMS format with indexed fields in rmsRawData
+    // Handle RMS format with indexed fields directly on resumeData
+    else if (resumeData?.rms_education_count) {
+      const eduCount = resumeData.rms_education_count;
+      for (let i = 0; i < eduCount; i++) {
+        const qualification = resumeData[`rms_education_${i}_qualification`];
+        const institution = resumeData[`rms_education_${i}_institution`];
+        const minor = resumeData[`rms_education_${i}_minor`];
+        
+        if (qualification && institution) {
+          const degree = minor && minor !== 'n/a' && minor !== 'Computer Science' ? 
+            `${qualification}, Minor in ${minor}` : 
+            qualification;
+          options.push(`${degree} at ${institution}`);
+        }
+      }
+    }
+    // Fallback to rmsRawData
     else if (resumeData?.rmsRawData?.rms_education_count) {
       const eduCount = resumeData.rmsRawData.rms_education_count;
       for (let i = 0; i < eduCount; i++) {
@@ -178,8 +205,8 @@ export default function CoverLetterInputPanel({
           <div className="inline-block">
             <div className="flex items-end justify-between">
               <label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal">
-                <span className="cursor-default text-sm leading-5">Company Name</span>
-                <span className="cursor-default text-sm leading-5 ml-1 text-red-500">*</span>
+                <span className="cursor-default text-xs leading-4">Company Name</span>
+                <span className="cursor-default text-xs leading-4 ml-1 text-red-500">*</span>
               </label>
             </div>
           </div>
@@ -206,8 +233,8 @@ export default function CoverLetterInputPanel({
           <div className="inline-block">
             <div className="flex items-end justify-between">
               <label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal">
-                <span className="cursor-default text-sm leading-5">Position/Title</span>
-                <span className="cursor-default text-sm leading-5 ml-1 text-red-500">*</span>
+                <span className="cursor-default text-xs leading-4">Position/Title</span>
+                <span className="cursor-default text-xs leading-4 ml-1 text-red-500">*</span>
               </label>
             </div>
           </div>
@@ -232,11 +259,11 @@ export default function CoverLetterInputPanel({
         {/* Position Highlight */}
         <div className="relative w-full">
           <div className="flex flex-row items-center justify-between gap-1 mb-1">
-            <div className="cursor-pointer text-ellipsis whitespace-nowrap text-sm uppercase leading-5 text-gray-900 dark:text-gray-100">
+            <div className="cursor-pointer text-ellipsis whitespace-nowrap text-xs uppercase leading-4 text-gray-900 dark:text-gray-100">
               Position Highlight <span className="text-red-500">*</span>
             </div>
             <div className="flex flex-col items-center sm:flex-row">
-              <span className="text-ellipsis whitespace-nowrap pr-1 text-sm leading-5 text-gray-600 dark:text-gray-400">from resume</span>
+              <span className="text-ellipsis whitespace-nowrap pr-1 text-xs leading-4 text-gray-600 dark:text-gray-400">from resume</span>
               <div className={`w-7 h-3.5 ${useResumePosition ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'} flex relative rounded-full items-center p-[0.19rem] cursor-pointer transition-all ease-in-out duration-200`}>
                 <div className={`w-2 h-2 bg-white dark:bg-gray-200 flex absolute justify-center items-center rounded-full transition-all ease-in-out duration-200 ${useResumePosition ? 'translate-x-3.5' : ''}`}></div>
                 <input
@@ -267,11 +294,11 @@ export default function CoverLetterInputPanel({
         {/* Education Highlight */}
         <div className="relative w-full">
           <div className="flex flex-row items-center justify-between gap-1 mb-1">
-            <div className="cursor-pointer text-ellipsis whitespace-nowrap text-sm uppercase leading-5 text-gray-900 dark:text-gray-100">
+            <div className="cursor-pointer text-ellipsis whitespace-nowrap text-xs uppercase leading-4 text-gray-900 dark:text-gray-100">
               Education Highlight <span className="text-red-500">*</span>
             </div>
             <div className="flex flex-col items-center justify-end sm:flex-row">
-              <span className="text-ellipsis whitespace-nowrap pr-1 text-sm leading-5 text-gray-600 dark:text-gray-400">from resume</span>
+              <span className="text-ellipsis whitespace-nowrap pr-1 text-xs leading-4 text-gray-600 dark:text-gray-400">from resume</span>
               <div className={`w-7 h-3.5 ${useResumeEducation ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'} flex relative rounded-full items-center p-[0.19rem] cursor-pointer transition-all ease-in-out duration-200`}>
                 <div className={`w-2 h-2 bg-white dark:bg-gray-200 flex absolute justify-center items-center rounded-full transition-all ease-in-out duration-200 ${useResumeEducation ? 'translate-x-3.5' : ''}`}></div>
                 <input
@@ -301,7 +328,7 @@ export default function CoverLetterInputPanel({
 
         {/* Skills Highlight */}
         <div>
-          <span className="text-sm uppercase leading-5 text-gray-900 dark:text-gray-100">Skills Highlight <span className="text-red-500">*</span></span>
+          <span className="text-xs uppercase leading-4 text-gray-900 dark:text-gray-100">Skills Highlight <span className="text-red-500">*</span></span>
           <div>
             <div className="my-0.5"></div>
             <div className="flex w-full flex-col gap-1">

@@ -67,8 +67,8 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
       fontSize: 11,
       lineHeight: 1.2,
       sectionSpacing: 0.75,
-      primaryColor: '#000000',
-      textColor: '#000000',
+      primaryColor: 'rgb(46, 61, 80)', // Exact color from HTML
+      textColor: 'rgb(46, 61, 80)', // Exact color from HTML
       showDividers: true,
       useIndent: false,
     },
@@ -108,11 +108,11 @@ export const RESUME_TEMPLATES: Record<string, ResumeTemplate> = {
         },
       },
       colors: {
-        primary: '#000000',
-        secondary: '#000000', // Make secondary text black instead of gray
-        text: '#000000',
-        muted: '#444444', // Professional dark charcoal for bullet points
-        accent: '#0066cc',
+        primary: 'rgb(46, 61, 80)', // Exact color from HTML
+        secondary: 'rgb(46, 61, 80)', // Exact color from HTML  
+        text: 'rgb(46, 61, 80)', // Exact color from HTML
+        muted: 'rgb(46, 61, 80)', // Exact color from HTML
+        accent: 'rgb(46, 61, 80)', // Exact color from HTML
       },
       decorations: {
         useShadows: false,

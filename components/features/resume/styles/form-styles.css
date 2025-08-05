@@ -105,6 +105,42 @@
   @apply px-3;
 }
 
+/* Select dropdown specific styling */
+.resume-input select,
+select.resume-input {
+  @apply border-0 bg-transparent focus:ring-0 focus:border-0;
+  @apply h-10 sm:h-12 text-base font-semibold;
+  @apply text-corporate-navy-900 dark:text-gray-100;
+  @apply px-3 pr-8;
+  @apply cursor-pointer;
+  @apply appearance-none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+}
+
+/* Dark mode dropdown arrow */
+@media (prefers-color-scheme: dark) {
+  .resume-input select,
+  select.resume-input {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%9ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  }
+}
+
+/* Class-based dark mode dropdown arrow */
+.dark .resume-input select,
+.dark select.resume-input {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%9ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* Option styling for dropdowns */
+.resume-input option {
+  @apply bg-white dark:bg-corporate-navy-800;
+  @apply text-corporate-navy-900 dark:text-gray-100;
+  @apply py-2;
+}
+
 .resume-textarea {
   @apply border-0 bg-transparent focus:ring-0 focus:border-0;
   @apply text-base font-semibold;

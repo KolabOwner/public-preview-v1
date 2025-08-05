@@ -38,25 +38,14 @@ export default function ResumeCheckerPage() {
               </div>
 
               {/* Upload Area */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                      <Image
-                        src="/images/keyword-scanner/gauge.svg"
-                        alt="Gauge Icon"
-                        width={24}
-                        height={24}
-                        className="w-6 h-6"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-700">
-                      <strong>Click</strong> or <strong>drop</strong> your PDF or DOC file here to instantly score your resume.
-                    </p>
-                  </div>
-                </div>
+              <div className="inline-flex items-center space-x-2 bg-white rounded-full px-6 py-3 border border-gray-200 hover:border-amber-400 transition-colors cursor-pointer">
+                <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="text-sm font-medium text-gray-700">Upload resume</span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </div>
 
