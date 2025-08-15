@@ -442,7 +442,7 @@ function ResumesPageContent() {
                         const folderResumes = resumes.filter(r => r.folderId === folder.id);
                         
                         return (
-                          <div key={folder.id} className="mb-8">
+                          <div key={folder.id} className="mb-4">
                             <div className="relative">
                               <div className="relative flex h-8 flex-row items-center gap-4 py-4 mb-4">
                                 <div className="group flex max-w-[calc(100%_-_50px)] flex-row items-center gap-1">
@@ -553,7 +553,7 @@ function ResumesPageContent() {
                       })}
                       
                       {/* Add Section Button for Grid View */}
-                      <div className="flex flex-row items-center justify-start py-4">
+                      <div className="flex flex-row items-center justify-start pt-2 pb-4">
                         <button 
                           onClick={() => setShowAddSectionModal(true)}
                           className="group relative flex items-center justify-center font-bold uppercase text-xs leading-4 text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white bg-transparent hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 px-3 py-2 rounded-md transition-all duration-200 border-none focus:outline-none focus:ring-2 focus:ring-corporate-amber-500/20"

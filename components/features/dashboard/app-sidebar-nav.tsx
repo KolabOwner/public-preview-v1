@@ -116,62 +116,64 @@ const AppSidebarNav = () => {
   return (
     <>
       <aside
-        className={`app-sidebar ${shouldCollapseSidebar ? 'w-[72px]' : 'w-[280px]'} h-screen min-h-screen bg-white/80 dark:bg-navy-900/95 backdrop-blur-sm relative overflow-hidden flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200 dark:border-navy-700`}
+        className={`app-sidebar ${shouldCollapseSidebar ? 'w-[72px]' : 'w-[280px]'} h-screen min-h-screen bg-gradient-to-br from-amber-50/90 via-white to-amber-50/50 dark:bg-navy-900/95 backdrop-blur-sm relative overflow-hidden flex flex-col transition-all duration-300 ease-in-out border-r border-amber-200/50 dark:border-navy-700`}
         data-route={pathname}
       >
         {/* Enhanced gradient background with corporate theme */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-50/30 via-white to-corporate-amber-50/20 dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-100/40 via-amber-50/20 to-white dark:from-corporate-navy-900 dark:via-corporate-navy-800 dark:to-corporate-navy-900" />
           {/* Corporate animated gradients */}
           <div className="absolute inset-0" style={{ '--size': '400px' } as React.CSSProperties}>
             {/* Gold gradient */}
             <div
               style={{
                 animationDuration: '40s',
-                background: 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0px, rgba(251, 191, 36, 0) 50%) no-repeat',
+                background: 'radial-gradient(circle, rgba(251, 191, 36, 0.15) 0px, rgba(251, 191, 36, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
-              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-first opacity-100 mix-blend-normal !blur-3xl origin-[center_center]"
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-first opacity-70 mix-blend-normal !blur-3xl origin-[center_center]"
             />
             {/* Amber gradient */}
             <div
               style={{
                 animationDuration: '30s',
-                background: 'radial-gradient(circle, rgba(245, 158, 11, 0.3) 0px, rgba(245, 158, 11, 0) 50%) no-repeat',
+                background: 'radial-gradient(circle, rgba(245, 158, 11, 0.1) 0px, rgba(245, 158, 11, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
-              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-second opacity-100 mix-blend-normal !blur-3xl origin-[calc(26%)]"
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-second opacity-60 mix-blend-normal !blur-3xl origin-[calc(26%)]"
             />
-            {/* Navy gradient */}
+            {/* Navy gradient - hidden in light mode */}
             <div
               style={{
                 animationDuration: '60s',
                 background: 'radial-gradient(circle, rgba(30, 58, 138, 0.2) 0px, rgba(30, 58, 138, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
-              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-third opacity-100 mix-blend-normal !blur-3xl origin-[calc(100%)]"
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-third opacity-0 dark:opacity-100 mix-blend-normal !blur-3xl origin-[calc(100%)]"
             />
             {/* Warm gold accent */}
             <div
               style={{
                 animationDuration: '60s',
-                background: 'radial-gradient(circle, rgba(217, 119, 6, 0.25) 0px, rgba(217, 119, 6, 0) 50%) no-repeat',
+                background: 'radial-gradient(circle, rgba(217, 119, 6, 0.08) 0px, rgba(217, 119, 6, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
-              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fourth opacity-70 mix-blend-normal !blur-3xl origin-[calc(10%-200px)]"
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fourth opacity-50 mix-blend-normal !blur-3xl origin-[calc(10%-200px)]"
             />
-            {/* Deep corporate navy */}
+            {/* Deep corporate navy - hidden in light mode */}
             <div
               style={{
                 animationDuration: '30s',
                 background: 'radial-gradient(circle, rgba(15, 23, 42, 0.15) 0px, rgba(15, 23, 42, 0) 50%) no-repeat',
                 filter: 'blur(64px)'
               }}
-              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fifth opacity-100 mix-blend-normal !blur-3xl origin-[calc(30%)_calc(30%)]"
+              className="absolute left-[calc(50%-var(--size)/2)] top-[calc(50%-var(--size)/2)] h-[var(--size)] w-full animate-fifth opacity-0 dark:opacity-100 mix-blend-normal !blur-3xl origin-[calc(30%)_calc(30%)]"
             />
           </div>
-          {/* Subtle radial pattern overlay */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.02),transparent_50%)]" />
+          {/* Subtle radial pattern overlay with amber accent */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(245,158,11,0.08),transparent_40%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.02),transparent_50%)]" />
+          {/* Additional subtle pattern for depth */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(251,191,36,0.04),transparent_50%)] dark:hidden" />
         </div>
         {/* Content */}
         <div className={`relative z-10 sidebar-content flex flex-col h-full min-h-full ${shouldCollapseSidebar ? 'p-2' : 'p-6'} overflow-y-auto`}>
@@ -222,19 +224,19 @@ const AppSidebarNav = () => {
                     href={item.href}
                     className={`group flex items-center gap-3 ${shouldCollapseSidebar ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden transition-all duration-200 ${
                       isActive
-                        ? 'bg-corporate-amber-50/50 dark:bg-corporate-navy-800/50 text-corporate-navy-900 dark:text-white backdrop-blur-sm border border-corporate-amber-200/30 dark:border-corporate-amber-600/30'
-                        : 'text-corporate-navy-600 dark:text-slate-400 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/30 dark:hover:bg-corporate-navy-800/30'
+                        ? 'bg-gradient-to-r from-amber-100/70 to-amber-50/50 dark:bg-corporate-navy-800/50 text-amber-900 dark:text-white backdrop-blur-sm border border-amber-300/40 dark:border-corporate-amber-600/30 shadow-sm shadow-amber-200/30'
+                        : 'text-amber-700 dark:text-slate-400 hover:text-amber-900 dark:hover:text-white hover:bg-amber-50/50 dark:hover:bg-corporate-navy-800/30'
                     }`}
                     onMouseEnter={() => setHoveredItem(item.href)}
                     onMouseLeave={() => setHoveredItem(null)}
                   >
                     {/* Active indicator */}
                     {isActive && !shouldCollapseSidebar && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-corporate-gold-500 to-corporate-amber-500 rounded-r-full" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-amber-500 to-amber-600 rounded-r-full shadow-md shadow-amber-400/40" />
                     )}
                     {/* Icon */}
                     <span className={`sidebar-icon relative ${
-                      isActive ? 'text-corporate-amber-600 dark:text-corporate-amber-400' : ''
+                      isActive ? 'text-amber-600 dark:text-corporate-amber-400' : ''
                     } ${shouldCollapseSidebar ? 'text-lg' : ''}`}>
                       {item.icon}
                     </span>

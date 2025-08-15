@@ -1,4 +1,5 @@
 // Progressive Job Loading Hook with Server-Sent Events
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Job } from '@/types/job-board.types';
 

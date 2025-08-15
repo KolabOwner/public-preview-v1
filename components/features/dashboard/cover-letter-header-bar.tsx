@@ -13,12 +13,9 @@ import {
   Minus,
   Plus,
   Type,
-  Palette,
   AlignLeft,
   FileDown,
-  Share2,
   Settings,
-  Zap,
 } from "lucide-react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuPortal, Separator } from "@radix-ui/react-dropdown-menu";
