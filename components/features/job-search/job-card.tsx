@@ -100,7 +100,7 @@ export const JobCard: React.FC<JobCardProps> = ({
             {/* Target Resume Button */}
             <button 
               onClick={() => {
-                console.log('🎯 Target Resume button clicked for job:', job.title, 'onTargetResume exists:', !!onTargetResume);
+                console.log('🎯 Target Resume button clicked for job:', job.title);
                 setShowTargetModal(true);
               }}
               className="

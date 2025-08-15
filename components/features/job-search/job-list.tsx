@@ -58,7 +58,7 @@ export const JobList: React.FC<JobListProps> = ({
           ?.map((saved) => (
             <JobCard
               key={saved.id}
-              job={saved.job}
+              job={saved.job!}
               isFromSaved={true}
               onSaveJob={handleSaveJob}
               onUnsaveJob={handleUnsaveJob}
@@ -76,7 +76,7 @@ export const JobList: React.FC<JobListProps> = ({
           ?.map((app) => (
             <JobCard
               key={app.id}
-              job={app.job}
+              job={app.job!}
               application={app}
               onSaveJob={handleSaveJob}
               onUnsaveJob={handleUnsaveJob}

@@ -100,7 +100,7 @@ export const ApplicationConfirmationModal: React.FC<ApplicationConfirmationModal
 
           {/* Helper text */}
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center mt-4">
-            Don't worry if you didn't apply yet - you can always update your status later from the job card menu.
+            Don&apos;t worry if you didn&apos;t apply yet - you can always update your status later from the job card menu.
           </p>
         </div>
       </div>
