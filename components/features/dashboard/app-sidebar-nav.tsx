@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -7,11 +8,13 @@ import { useUserUsage } from '@/lib/client/hooks/auth/use-user-usage';
 import { useAuth } from '@/contexts/firebase-auth-context';
 import { STRIPE_PRICE_IDS } from '@/lib/stripe';
 import dynamic from 'next/dynamic';
+
 // Dynamic import with no SSR to fix serialization error
 const CreateResumeModal = dynamic(
   () => import('../resume/modals/create-resume-modal'),
   { ssr: false }
 );
+
 const AppSidebarNav = () => {
   const pathname = usePathname();
   const router = useRouter();

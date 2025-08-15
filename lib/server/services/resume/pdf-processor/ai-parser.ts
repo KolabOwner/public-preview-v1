@@ -26,7 +26,7 @@ export class AIParser {
       const resumeDataUri = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
       
       // Use Gemini's multimodal PDF extraction
-      const extractionResult = await extractResumeData({ resumeDataUri });
+      const extractionResult = await extractResumeData({ resumeDataUri, fastMode: true });
       
       if (!extractionResult || Object.keys(extractionResult).length === 0) {
         throw new Error('Failed to extract resume data using Gemini multimodal PDF parsing');
@@ -106,27 +106,27 @@ export class AIParser {
     
     // Contact information
     if (extractionResult.contactInformation) {
-      const contact = extractionResult.contactInformation;
-      if (contact.name) rmsData.rms_contact_fullname = contact.name;
-      if (contact.email) rmsData.rms_contact_email = contact.email;
-      if (contact.phone) rmsData.rms_contact_phone = contact.phone;
-      if (contact.linkedin) rmsData.rms_contact_linkedin = contact.linkedin;
-      if (contact.city) rmsData.rms_contact_city = contact.city;
-      if (contact.state) rmsData.rms_contact_state = contact.state;
-      if (contact.country) rmsData.rms_contact_country = contact.country;
+      const contact = extractionResult.contactInformation as any;
+      if (contact?.name) rmsData.rms_contact_fullname = contact.name;
+      if (contact?.email) rmsData.rms_contact_email = contact.email;
+      if (contact?.phone) rmsData.rms_contact_phone = contact.phone;
+      if (contact?.linkedin) rmsData.rms_contact_linkedin = contact.linkedin;
+      if (contact?.city) rmsData.rms_contact_city = contact.city;
+      if (contact?.state) rmsData.rms_contact_state = contact.state;
+      if (contact?.country) rmsData.rms_contact_country = contact.country;
     }
     
     // Summary
-    if (extractionResult.summary) {
-      rmsData.rms_summary = extractionResult.summary;
+    if ((extractionResult as any).summary) {
+      rmsData.rms_summary = (extractionResult as any).summary;
     }
     
     // Count-based sections
-    if (extractionResult.experience) {
+    if (extractionResult.experience && Array.isArray(extractionResult.experience)) {
       rmsData.rms_experience_count = extractionResult.experience.length;
     }
     
-    if (extractionResult.education) {
+    if (extractionResult.education && Array.isArray(extractionResult.education)) {
       rmsData.rms_education_count = extractionResult.education.length;
     }
     
@@ -134,15 +134,15 @@ export class AIParser {
       rmsData.rms_skill_count = 1; // Single skills array becomes one category
     }
     
-    if (extractionResult.projects) {
+    if (extractionResult.projects && Array.isArray(extractionResult.projects)) {
       rmsData.rms_project_count = extractionResult.projects.length;
     }
     
-    if (extractionResult.certifications) {
+    if (extractionResult.certifications && Array.isArray(extractionResult.certifications)) {
       rmsData.rms_certification_count = extractionResult.certifications.length;
     }
     
-    if (extractionResult.involvement) {
+    if (extractionResult.involvement && Array.isArray(extractionResult.involvement)) {
       rmsData.rms_involvement_count = extractionResult.involvement.length;
     }
     
