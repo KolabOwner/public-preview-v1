@@ -33,8 +33,8 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
         {/* Job Title Search */}
         <div className="flex-1">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Briefcase className="h-5 w-5 text-slate-400" />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+              <Briefcase className="h-5 w-5 text-slate-500 dark:text-slate-400" />
             </div>
             <input
               type="text"
@@ -56,8 +56,8 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
         {/* Location Search */}
         <div className="flex-1">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPin className="h-5 w-5 text-slate-400" />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+              <MapPin className="h-5 w-5 text-slate-500 dark:text-slate-400" />
             </div>
             <input
               type="text"

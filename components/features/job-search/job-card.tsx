@@ -71,7 +71,7 @@ export const JobCard: React.FC<JobCardProps> = ({
         {/* Job Information */}
         <div className="flex-1 space-y-3">
           <div>
-            <h3 className="text-lg font-semibold text-corporate-navy-900 dark:text-gray-100 mb-1 group-hover:text-corporate-amber-700 dark:group-hover:text-corporate-amber-400 transition-colors">
+            <h3 className="text-lg font-bold text-corporate-amber-700 dark:text-corporate-amber-400 mb-1 group-hover:text-corporate-amber-600 dark:group-hover:text-corporate-amber-300 transition-colors">
               {job.title}
             </h3>
             <div className="flex items-center gap-4 text-corporate-navy-600 dark:text-gray-400">

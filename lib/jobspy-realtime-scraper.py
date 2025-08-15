@@ -244,7 +244,7 @@ class RealTimeJobSpyScraper:
                 'company': {
                     'id': company_id,
                     'name': company_name,
-                    'logoUrl': job.get('company_logo'),
+                    'logoUrl': job.get('company_logo') or job.get('logo_photo_url') or job.get('company_logo_url'),
                     'website': job.get('company_url'),
                     'industry': job.get('company_industry'),
                     'createdAt': datetime.now(timezone.utc).isoformat(),

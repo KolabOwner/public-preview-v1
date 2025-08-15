@@ -198,7 +198,7 @@ function JobCard({ job, onViewJob, onRefreshData }: {
       {/* Job Info */}
       <div className="flex w-full flex-col gap-x-4 gap-y-4 lg:flex-row">
         <div className="flex-1">
-          <div className="text-base font-semibold leading-6 text-primary hover:text-primary/80 transition-colors">
+          <div className="text-base font-bold leading-6 text-corporate-amber-700 dark:text-corporate-amber-300 hover:text-corporate-amber-600 dark:hover:text-corporate-amber-200 transition-colors">
             {job.title}
           </div>
           <div className="flex flex-row gap-x-2 mt-1">
@@ -257,7 +257,7 @@ function JobCard({ job, onViewJob, onRefreshData }: {
                     window.open(job.externalUrl, '_blank', 'noopener,noreferrer');
                   }
                 }}
-                className="btn-primary btn-sm relative flex items-center justify-center font-semibold uppercase tracking-wide focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all duration-200 bg-primary text-primary-foreground hover:bg-primary/90 px-2 py-1 min-h-8 leading-4 rounded-md text-xs"
+                className="btn-primary btn-sm relative flex items-center justify-center font-semibold uppercase tracking-wide focus:ring-2 focus:ring-amber-400/20 focus:outline-none transition-all duration-200 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 shadow-sm hover:from-amber-500 hover:to-amber-600 px-2 py-1 min-h-8 leading-4 rounded-md text-xs"
               >
                 <span className="px-1">VIEW JOB</span>
               </button>
