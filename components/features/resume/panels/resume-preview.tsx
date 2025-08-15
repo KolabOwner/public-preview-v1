@@ -17,7 +17,7 @@ import { ContactInfo } from "@/contexts/resume-data-context";
 import ResumeHeaderBar, {ResumeHeaderBarRef} from "@/components/features/dashboard/resume-header-bar";
 import KeywordTargetingPanel from "@/components/features/resume/panels/keyword-targeting-panel";
 import ResumeEditorPanel from "@/components/features/resume/panels/resume-editor-panel";
-import EditableBulletList from "@/components/features/resume/panels/editable-bullet-list";
+import BulletList from "@/components/features/resume/panels/editable-bullet-list";
 
 
 interface ResumePreviewProps {
@@ -169,10 +169,6 @@ export default function ResumePreview({
     setBulletUpdateTrigger(prev => prev + 1);
   }, [onBulletAdded]);
 
-  const handleBulletUpdate = useCallback((newBullets: string[]) => {
-    // Handle bullet updates from editable list
-    setBulletUpdateTrigger(prev => prev + 1);
-  }, []);
 
   // Helper: Sanitize filename
   function sanitizeFilename(name: string): string {
@@ -632,14 +628,9 @@ export default function ResumePreview({
                 </>
               )}
               {exp.description && currentTemplate !== 'alternative' && (
-                <EditableBulletList
+                <BulletList
                   items={parseBulletPoints(exp.description || '')}
                   styles={inlineStyles}
-                  resumeId={resumeId}
-                  sectionType="experience"
-                  itemIndex={idx}
-                  onUpdate={handleBulletUpdate}
-                  isEditing={showJobPanels}
                   key={`${exp.id}-${bulletUpdateTrigger}`}
                   typewriterText={typewriterBullet?.experienceIndex === idx ? typewriterBullet.bullet : undefined}
                   isTypewriting={typewriterBullet?.experienceIndex === idx}
@@ -862,14 +853,9 @@ export default function ResumePreview({
                     </div>
                   )}
                   {project.description && (
-                    <EditableBulletList
+                    <BulletList
                       items={parseBulletPoints(project.description)}
                       styles={inlineStyles}
-                      resumeId={resumeId}
-                      sectionType="project"
-                      itemIndex={idx}
-                      onUpdate={handleBulletUpdate}
-                      isEditing={showJobPanels}
                       key={`project-${project.id || idx}-${bulletUpdateTrigger}`}
                     />
                   )}
@@ -983,14 +969,9 @@ export default function ResumePreview({
                   </div>
                   
                   {inv.description && (
-                    <EditableBulletList
+                    <BulletList
                       items={parseBulletPoints(inv.description)}
                       styles={inlineStyles}
-                      resumeId={resumeId}
-                      sectionType="involvement"
-                      itemIndex={idx}
-                      onUpdate={handleBulletUpdate}
-                      isEditing={showJobPanels}
                       key={`involvement-${inv.id || idx}-${bulletUpdateTrigger}`}
                     />
                   )}
@@ -1106,14 +1087,9 @@ export default function ResumePreview({
                 </span>
               </div>
               {vol.description && (
-                <EditableBulletList
+                <BulletList
                   items={parseBulletPoints(vol.description)}
                   styles={inlineStyles}
-                  resumeId={resumeId}
-                  sectionType="volunteer"
-                  itemIndex={idx}
-                  onUpdate={handleBulletUpdate}
-                  isEditing={showJobPanels}
                   key={`volunteer-${vol.id || idx}-${bulletUpdateTrigger}`}
                 />
               )}

@@ -1,18 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, memo } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/config/firebase-config';
 
-interface EditableBulletListProps {
+interface BulletListProps {
   items: string[];
   styles: Record<string, any>;
-  resumeId: string;
-  sectionType: 'experience' | 'project' | 'involvement' | 'volunteer';
-  itemIndex: number;
-  onUpdate?: (newBullets: string[]) => void;
   className?: string;
-  isEditing?: boolean;
   typewriterText?: string;
   isTypewriting?: boolean;
   onTypewriterComplete?: () => void;
@@ -64,72 +57,17 @@ const TypewriterEffect = memo<TypewriterEffectProps>(({
 
 TypewriterEffect.displayName = 'TypewriterEffect';
 
-const EditableBulletList = memo<EditableBulletListProps>(({
+const BulletList = memo<BulletListProps>(({ 
   items,
   styles,
-  resumeId,
-  sectionType,
-  itemIndex,
-  onUpdate,
   className = '',
-  isEditing = false,
   typewriterText,
   isTypewriting = false,
   onTypewriterComplete
 }) => {
   const [typewriterComplete, setTypewriterComplete] = useState(false);
-  const [editableItems, setEditableItems] = useState(items);
 
-  useEffect(() => {
-    setEditableItems(items);
-  }, [items]);
-
-  const saveToFirestore = async (newItems: string[]) => {
-    if (!resumeId) return;
-
-    const fieldMapping = {
-      experience: `rms_experience_${itemIndex}_description`,
-      project: `rms_project_${itemIndex}_description`,
-      involvement: `rms_involvement_${itemIndex}_description`,
-      volunteer: `rms_volunteer_${itemIndex}_description`
-    };
-
-    try {
-      const resumeRef = doc(db, 'resumes', resumeId);
-      await updateDoc(resumeRef, {
-        [fieldMapping[sectionType]]: newItems.join('\n'),
-        updatedAt: new Date().toISOString()
-      });
-      onUpdate?.(newItems);
-    } catch (error) {
-      console.error('Error updating Firestore:', error);
-    }
-  };
-
-  const handleBulletEdit = (index: number, newText: string) => {
-    const newItems = [...editableItems];
-    newItems[index] = newText;
-    setEditableItems(newItems);
-    saveToFirestore(newItems);
-  };
-
-  if (!isEditing && !isTypewriting) {
-    return (
-      <ul className={`p-0 m-0 ml-0 pl-0 list-none ${className}`} style={{...styles.bulletList, paddingLeft: 0, marginLeft: 0}}>
-        {items.map((item, index) => {
-          const cleanText = item.replace(/^[•·▪-]\s*/, '');
-          return (
-            <li key={index} className="flex leading-[1.35em]" style={{...styles.bulletItem, marginBottom: '0.2em'}}>
-              <span className="flex-shrink-0 pr-0.5 w-1.5">•</span>
-              <span className="flex-1" style={styles.bodyText}>{cleanText}</span>
-            </li>
-          );
-        })}
-      </ul>
-    );
-  }
-
-  const displayItems = [...editableItems];
+  const displayItems = [...items];
   if (isTypewriting && typewriterText && !typewriterComplete) {
     displayItems.push('');
   }
@@ -162,32 +100,7 @@ const EditableBulletList = memo<EditableBulletListProps>(({
         return (
           <li key={index} className="flex leading-[1.35em]" style={{...styles.bulletItem, marginBottom: '0.2em'}}>
             <span className="flex-shrink-0 pr-0.5 w-1.5">•</span>
-            <div className="flex-1">
-              <div
-                contentEditable={isEditing}
-                suppressContentEditableWarning
-                style={{
-                  ...styles.bodyText,
-                  outline: 'none',
-                  minHeight: '1.35em',
-                  lineHeight: '1.35em'
-                }}
-                onBlur={(e) => {
-                  const newText = e.target.textContent || '';
-                  if (newText !== cleanText) {
-                    handleBulletEdit(index, newText);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    (e.target as HTMLDivElement).blur();
-                  }
-                }}
-              >
-                {cleanText}
-              </div>
-            </div>
+            <span className="flex-1" style={styles.bodyText}>{cleanText}</span>
           </li>
         );
       })}
@@ -195,6 +108,6 @@ const EditableBulletList = memo<EditableBulletListProps>(({
   );
 });
 
-EditableBulletList.displayName = 'EditableBulletList';
+BulletList.displayName = 'BulletList';
 
-export default EditableBulletList;
+export default BulletList;

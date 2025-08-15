@@ -152,8 +152,12 @@ export default function ATSScorePanel({ className = '', resumeData }: ATSScorePa
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 px-3 py-2.5 h-10 leading-5 rounded-md text-sm w-full"
+          onClick={() => {
+            console.log('ATS Score button clicked!');
+            setIsModalOpen(true);
+          }}
+          className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 px-3 py-2.5 h-10 leading-5 rounded-md text-sm w-full cursor-pointer z-50"
+          style={{ pointerEvents: 'auto' }}
         >
           <Sparkles className="w-5 h-5 mr-2 text-corporate-amber-600 dark:text-corporate-amber-400" />
           <span className="px-1">Explore My ATS Score</span>
