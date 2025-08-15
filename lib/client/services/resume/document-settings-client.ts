@@ -194,6 +194,35 @@ export class DocumentSettingsClient {
   }
 
   /**
+   * Get optimized settings for targeted resumes
+   */
+  static getTargetedResumeSettings(): ResumeDocumentSettings {
+    return {
+      zoom: 120,
+      fontFamily: 'Merriweather',
+      primaryColor: '#000000',
+      textColor: '#000000',
+      fontSize: 11,
+      lineHeight: 1.5,  // Optimized for readability
+      sectionSpacing: 1,  // Better section separation
+      paperSize: 'Letter',
+      margins: {
+        top: 0.5,    // Narrow margins for more content space
+        right: 0.5,
+        bottom: 0.5,
+        left: 0.5,
+      },
+      showIcons: false,
+      showDividers: true,
+      useIndent: false,
+      viewAsPages: true,
+      template: 'professional',
+      lastUpdated: new Date().toISOString(),
+      version: this.CURRENT_VERSION,
+    };
+  }
+
+  /**
    * Validate and migrate settings from older versions
    */
   private static validateAndMigrate(settings: any): ResumeDocumentSettings {

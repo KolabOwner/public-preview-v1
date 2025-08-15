@@ -1,4 +1,4 @@
-// types/template.types.ts
+// types/template.resume-store.types.ts
 
 export type Industry = 
   | 'business'

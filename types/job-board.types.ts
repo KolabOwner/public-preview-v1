@@ -300,7 +300,7 @@ export interface APIError {
   code?: number;
 }
 
-// types/tab.types.ts (or add to your existing types file)
+// types/tab.resume-store.types.ts (or add to your existing types file)
 export type JobTabId = 'ALL_JOBS' | 'SAVED' | 'APPLIED' | 'INTERVIEWING' | 'REJECTED';
 
 export interface JobTab {

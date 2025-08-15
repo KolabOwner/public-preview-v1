@@ -220,11 +220,6 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
         const firestoreSettings = await DocumentSettingsClient.loadSettings(resumeId);
         
         if (firestoreSettings) {
-          console.log(`Loading settings from Firestore for resume ${resumeId}`, {
-            template: firestoreSettings.template,
-            fontSize: firestoreSettings.fontSize,
-            fontFamily: firestoreSettings.fontFamily,
-          });
           
           // Extract template and settings separately
           const { template, lastUpdated, version, ...settings } = firestoreSettings;
@@ -234,7 +229,6 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
                                 template !== currentTemplate;
           
           if (settingsChanged) {
-            console.log('Firestore data differs from cache, updating UI');
             setDocumentSettings(settings);
             setCurrentTemplate(template);
             
@@ -255,7 +249,6 @@ export function useResumeStyles(options: UseResumeStylesOptions = {}): UseResume
               }
             }
           } else {
-            console.log('Firestore data matches cache, no UI update needed');
           }
         } else {
           console.log(`No Firestore settings found for resume ${resumeId}, initializing with defaults`);

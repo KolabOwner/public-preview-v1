@@ -65,6 +65,7 @@ const WEAK_VERBS = [
 ];
 
 
+
 // ============================================================================
 // SCHEMAS
 // ============================================================================
@@ -190,86 +191,123 @@ Extract at least 30 keywords. Be comprehensive - missing keywords means missing 
 // SECTION ENHANCEMENT PROMPTS
 // ============================================================================
 
-const enhanceExperienceSection = ai.definePrompt({
-  name: 'enhanceExperienceSection',
+const enhanceSingleExperience = ai.definePrompt({
+  name: 'enhanceSingleExperience',
   input: {
     schema: z.object({
-      experiences: z.array(z.any()),
-      keywords: z.array(KeywordSchema),
+      company: z.string(),
+      role: z.string(),
+      location: z.string().optional(),
+      dateBegin: z.string(),
+      dateEnd: z.string(),
+      originalDescription: z.string(),
+      keywords: z.string(),
       jobTitle: z.string(),
       jobDescription: z.string(),
-      actionVerbs: z.array(z.string())
+      availableActionVerbs: z.string(),
+      usedActionVerbs: z.string()
     })
   },
   output: {
     schema: z.object({
-      enhanced: z.array(z.object({
+      enhanced: z.object({
         company: z.string(),
         role: z.string(),
         location: z.string().optional(),
         description: z.string(),
         datebegin: z.string(),
-        dateend: z.string(),
-        index: z.number()
-      })),
+        dateend: z.string()
+      }),
       verbsUsed: z.array(z.string()),
       keywordsIntegrated: z.array(z.string())
     })
   },
-  prompt: `You are a seasoned hiring manager optimizing experience descriptions for ATS and human review.
+  prompt: `You are a seasoned hiring manager optimizing a SINGLE work experience for maximum relevance to the target role.
 
 TARGET JOB: {{jobTitle}}
+JOB DESCRIPTION: {{jobDescription}}
 CRITICAL KEYWORDS TO INTEGRATE: {{keywords}}
-STRONG ACTION VERBS TO USE: {{actionVerbs}}
 
-CURRENT EXPERIENCES:
-{{experiences}}
+EXPERIENCE TO ENHANCE:
+Company: {{company}}
+Role: {{role}}
+Location: {{location}}
+Dates: {{dateBegin}} - {{dateEnd}}
+Current Description: {{originalDescription}}
 
-TRANSFORMATION RULES:
-1. Start EVERY bullet with a strong action verb from the provided list
-2. Integrate keywords naturally - no stuffing
-3. Add specific metrics and quantifiable results where credible
-4. Show technical depth relevant to the target role
-5. Connect each experience to job requirements
-6. Replace weak phrases like "responsible for" with impact statements
-7. Maintain truthfulness - enhance and align, don't fabricate
-8. Use varied action verbs - maximum 2 uses of the same verb
+AVAILABLE ACTION VERBS: {{availableActionVerbs}}
+ALREADY USED VERBS (DO NOT REUSE): {{usedActionVerbs}}
 
-For each experience, enhance the description bullets to powerfully demonstrate relevance to the target position.`
+CRITICAL RULES:
+1. ONLY enhance THIS specific experience - do NOT borrow achievements from other roles
+2. Base enhancements ONLY on the provided original description for THIS role
+3. Start EVERY bullet with a UNIQUE action verb from available verbs (not used verbs)
+4. Integrate keywords that are genuinely relevant to THIS specific role
+5. Add credible metrics and quantifiable results that fit THIS company/role context
+6. Show technical depth relevant to BOTH the original role AND target job
+7. Maintain complete authenticity - enhance what exists, don't fabricate
+8. NO DUPLICATING achievements from other experiences
+
+FORMATTING REQUIREMENTS:
+- Create exactly 3-4 bullet points maximum
+- Each bullet: "•Action verb + achievement + quantified impact"
+- Keep bullets concise (aim for 1-2 lines when formatted on resume)
+- Avoid excessive technical detail lists - focus on impact over process
+- Use specific metrics and results
+
+Focus exclusively on this one experience. Create compelling, authentic bullets that showcase how THIS specific role prepares the candidate for the target position.`
 });
 
-const enhanceSkillsSection = ai.definePrompt({
-  name: 'enhanceSkillsSection',
+const enhanceSingleSkillCategory = ai.definePrompt({
+  name: 'enhanceSingleSkillCategory',
   input: {
     schema: z.object({
-      skills: z.array(z.any()),
-      keywords: z.array(KeywordSchema),
-      jobTitle: z.string()
+      category: z.string(),
+      currentKeywords: z.string(),
+      targetKeywords: z.string(),
+      jobTitle: z.string(),
+      allExistingCategories: z.string(),
+      usedSkills: z.string()
     })
   },
   output: {
     schema: z.object({
-      enhanced: z.array(z.object({
+      enhanced: z.object({
         category: z.string(),
-        keywords: z.string(),
-        index: z.number()
-      })),
+        keywords: z.string()
+      }),
       keywordsIntegrated: z.array(z.string())
     })
   },
-  prompt: `Optimize the skills section for maximum ATS impact.
+  prompt: `You are optimizing a SINGLE skill category for maximum relevance to the target job.
 
 TARGET JOB: {{jobTitle}}
-CRITICAL KEYWORDS: {{keywords}}
-CURRENT SKILLS: {{skills}}
+TARGET KEYWORDS TO INTEGRATE: {{targetKeywords}}
 
-Reorganize and enhance:
-1. Lead with most relevant skills for this role
-2. Integrate missing critical keywords naturally
-3. Group related skills logically
-4. Maximum 8 items per category
-5. Use industry-standard terminology
-6. Prioritize by job relevance`
+SKILL CATEGORY TO ENHANCE:
+Category Name: {{category}}
+Current Keywords: {{currentKeywords}}
+
+EXISTING CATEGORIES (do not duplicate): {{allExistingCategories}}
+ALREADY USED SKILLS (do NOT include): {{usedSkills}}
+
+CRITICAL RULES:
+1. ONLY enhance THIS specific category - do not merge with or duplicate other categories
+2. Keep the category focused and coherent (e.g., don't mix programming languages with soft skills)
+3. Integrate target keywords that genuinely fit this category type
+4. Use industry-standard terminology
+5. Prioritize keywords most relevant to the target job
+6. Maximum 8 keywords per category
+7. Maintain logical grouping within the category
+8. ABSOLUTELY NO DUPLICATE SKILLS - do not include any skill that appears in "ALREADY USED SKILLS"
+9. Avoid similar variations (e.g., if "NodeJS" is used, don't include "Node.js")
+
+OUTPUT:
+- Enhanced category name (can refine for clarity)
+- Comma-separated list of keywords, prioritized by relevance
+- Focus on quality over quantity
+
+Ensure this category remains distinct and doesn't overlap with existing categories.`
 });
 
 const enhanceSummary = ai.definePrompt({
@@ -277,7 +315,7 @@ const enhanceSummary = ai.definePrompt({
   input: {
     schema: z.object({
       summary: z.string(),
-      keywords: z.array(KeywordSchema),
+      keywords: z.string(),
       jobTitle: z.string(),
       companyName: z.string().optional()
     })
@@ -301,6 +339,158 @@ Create a compelling 2-3 sentence summary that:
 3. Integrates 2-3 critical keywords naturally
 4. Ends with specific value proposition
 5. Maintains authenticity while aligning to role`
+});
+
+const enhanceSingleProject = ai.definePrompt({
+  name: 'enhanceSingleProject',
+  input: {
+    schema: z.object({
+      title: z.string(),
+      originalDescription: z.string(),
+      url: z.string().optional(),
+      dateBegin: z.string().optional(),
+      dateEnd: z.string().optional(),
+      keywords: z.string(),
+      jobTitle: z.string(),
+      availableActionVerbs: z.string(),
+      usedActionVerbs: z.string()
+    })
+  },
+  output: {
+    schema: z.object({
+      enhanced: z.object({
+        description: z.string()
+      }),
+      verbsUsed: z.array(z.string()),
+      keywordsIntegrated: z.array(z.string())
+    })
+  },
+  prompt: `Enhance this SINGLE project description to showcase relevance to the target role.
+
+TARGET JOB: {{jobTitle}}
+CRITICAL KEYWORDS: {{keywords}}
+
+PROJECT TO ENHANCE:
+Title: {{title}}
+{{#url}}URL: {{url}}{{/url}}
+{{#dateBegin}}Timeline: {{dateBegin}}{{#dateEnd}} - {{dateEnd}}{{/dateEnd}}{{/dateBegin}}
+Current Description: {{originalDescription}}
+
+AVAILABLE ACTION VERBS: {{availableActionVerbs}}
+ALREADY USED VERBS (DO NOT REUSE): {{usedActionVerbs}}
+
+CRITICAL RULES:
+1. ONLY enhance THIS specific project - do not borrow from other projects
+2. Base enhancements ONLY on the provided original description
+3. Start EVERY bullet with a UNIQUE action verb from available verbs
+4. Integrate keywords that genuinely relate to this project's scope
+5. Add credible metrics and technical details relevant to the project
+6. Show how this project demonstrates skills for the target role
+7. Maintain complete authenticity - enhance what exists, don't fabricate
+
+FORMATTING:
+- Create exactly 3-4 bullet points maximum
+- Each bullet: "•Action verb + technical achievement + measurable impact"
+- Keep bullets concise (aim for 1-2 lines when formatted on resume)
+- Focus on key technologies and measurable outcomes, avoid lengthy tech stacks`
+});
+
+const enhanceSingleInvolvement = ai.definePrompt({
+  name: 'enhanceSingleInvolvement',
+  input: {
+    schema: z.object({
+      organization: z.string(),
+      role: z.string(),
+      originalDescription: z.string(),
+      dateBegin: z.string().optional(),
+      dateEnd: z.string().optional(),
+      keywords: z.string(),
+      jobTitle: z.string(),
+      availableActionVerbs: z.string(),
+      usedActionVerbs: z.string()
+    })
+  },
+  output: {
+    schema: z.object({
+      enhanced: z.object({
+        description: z.string()
+      }),
+      verbsUsed: z.array(z.string()),
+      keywordsIntegrated: z.array(z.string())
+    })
+  },
+  prompt: `Enhance this SINGLE involvement/volunteer experience to highlight transferable skills for the target role.
+
+TARGET JOB: {{jobTitle}}
+CRITICAL KEYWORDS: {{keywords}}
+
+INVOLVEMENT TO ENHANCE:
+Organization: {{organization}}
+Role: {{role}}
+{{#dateBegin}}Timeline: {{dateBegin}}{{#dateEnd}} - {{dateEnd}}{{/dateEnd}}{{/dateBegin}}
+Current Description: {{originalDescription}}
+
+AVAILABLE ACTION VERBS: {{availableActionVerbs}}
+ALREADY USED VERBS (DO NOT REUSE): {{usedActionVerbs}}
+
+CRITICAL RULES:
+1. ONLY enhance THIS specific involvement - do not copy from other experiences
+2. Base enhancements ONLY on the provided original description
+3. Start EVERY bullet with a UNIQUE action verb from available verbs
+4. Highlight transferable skills relevant to the target job
+5. Add credible metrics about impact, scale, or results
+6. Show leadership, collaboration, and technical skills gained
+7. Connect volunteer work to professional competencies
+
+FORMATTING:
+- Create exactly 2-3 bullet points maximum
+- Each bullet: "•Action verb + contribution + measurable impact"
+- Keep bullets concise (aim for 1-2 lines when formatted on resume)
+- Focus on transferable professional skills and quantifiable results`
+});
+
+const enhanceSingleCertification = ai.definePrompt({
+  name: 'enhanceSingleCertification',
+  input: {
+    schema: z.object({
+      name: z.string(),
+      issuer: z.string(),
+      originalDescription: z.string(),
+      dateIssued: z.string().optional(),
+      dateExpires: z.string().optional(),
+      keywords: z.string(),
+      jobTitle: z.string()
+    })
+  },
+  output: {
+    schema: z.object({
+      enhanced: z.object({
+        description: z.string()
+      }),
+      keywordsIntegrated: z.array(z.string())
+    })
+  },
+  prompt: `Enhance this SINGLE certification description to emphasize its relevance to the target role.
+
+TARGET JOB: {{jobTitle}}
+CRITICAL KEYWORDS: {{keywords}}
+
+CERTIFICATION TO ENHANCE:
+Name: {{name}}
+Issuer: {{issuer}}
+{{#dateIssued}}Issued: {{dateIssued}}{{/dateIssued}}
+{{#dateExpires}}Expires: {{dateExpires}}{{/dateExpires}}
+Current Description: {{originalDescription}}
+
+ENHANCEMENT RULES:
+1. Focus on skills and competencies gained from this certification
+2. Connect certification content to target job requirements
+3. Integrate relevant keywords naturally
+4. Highlight practical applications and technical depth
+5. Keep descriptions concise but impactful (1-2 sentences)
+6. Emphasize current relevance and ongoing validity
+
+Create a compelling description that shows how this certification directly supports qualification for the target role.`
 });
 
 // ============================================================================
@@ -333,8 +523,8 @@ function validateActionVerbs(text: string): {
     }
   });
 
-  // Count duplicates (more than 2 uses)
-  const duplicates = Object.values(verbCounts).filter(count => count > 2).length;
+  // Count duplicates (more than 1 use - zero duplicates allowed)
+  const duplicates = Object.values(verbCounts).filter(count => count > 1).length;
 
   return { verbsUsed, duplicates, weakVerbsFound };
 }
@@ -373,12 +563,94 @@ function extractRMSSkills(resume: any): any[] {
   return skills;
 }
 
+function extractRMSProjects(resume: any): any[] {
+  const projects = [];
+  const count = resume.rms_project_count || 0;
+  
+  for (let i = 0; i < count; i++) {
+    projects.push({
+      title: resume[`rms_project_${i}_title`],
+      description: resume[`rms_project_${i}_description`],
+      url: resume[`rms_project_${i}_url`],
+      dateBegin: resume[`rms_project_${i}_datebegin`],
+      dateEnd: resume[`rms_project_${i}_dateend`],
+      index: i
+    });
+  }
+  
+  return projects;
+}
+
+function extractRMSInvolvement(resume: any): any[] {
+  const involvement = [];
+  const count = resume.rms_involvement_count || 0;
+  
+  for (let i = 0; i < count; i++) {
+    involvement.push({
+      organization: resume[`rms_involvement_${i}_organization`],
+      role: resume[`rms_involvement_${i}_role`],
+      description: resume[`rms_involvement_${i}_description`],
+      dateBegin: resume[`rms_involvement_${i}_datebegin`],
+      dateEnd: resume[`rms_involvement_${i}_dateend`],
+      index: i
+    });
+  }
+  
+  return involvement;
+}
+
+function extractRMSCertifications(resume: any): any[] {
+  const certifications = [];
+  const count = resume.rms_certification_count || 0;
+  
+  for (let i = 0; i < count; i++) {
+    certifications.push({
+      name: resume[`rms_certification_${i}_name`],
+      issuer: resume[`rms_certification_${i}_issuer`],
+      description: resume[`rms_certification_${i}_description`],
+      dateIssued: resume[`rms_certification_${i}_dateissued`],
+      dateExpires: resume[`rms_certification_${i}_dateexpires`],
+      index: i
+    });
+  }
+  
+  return certifications;
+}
+
 function applyEnhancedExperiences(resume: any, enhanced: any[]): any {
   const updated = { ...resume };
   
   enhanced.forEach((exp: any) => {
     const i = exp.index;
-    updated[`rms_experience_${i}_description`] = exp.description;
+    // Ensure proper bullet formatting
+    let description = exp.description;
+    
+    // If the description is one long text block, try to split into bullets
+    if (!description.includes('•') && description.length > 200) {
+      // Split on periods followed by capital letters or common sentence starters
+      const sentences = description.split(/(?<=\.)\s*(?=[A-Z]|Developed|Implemented|Created|Built|Designed|Led|Managed)/)
+        .filter((s: string) => s.trim().length > 20); // Only keep substantial sentences
+      
+      if (sentences.length > 1) {
+        description = sentences.map((sentence: string) => 
+          sentence.trim().startsWith('•') ? sentence.trim() : `•${sentence.trim()}`
+        ).join('\n');
+      }
+    }
+    
+    // Ensure each line starts with a bullet if it doesn't already
+    description = description
+      .split('\n')
+      .map((line: string) => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('•')) {
+          return `•${trimmed}`;
+        }
+        return line;
+      })
+      .join('\n');
+    
+    updated[`rms_experience_${i}_description`] = description;
   });
   
   return updated;
@@ -391,6 +663,39 @@ function applyEnhancedSkills(resume: any, enhanced: any[]): any {
     const i = skill.index;
     updated[`rms_skill_${i}_category`] = skill.category;
     updated[`rms_skill_${i}_keywords`] = skill.keywords;
+  });
+  
+  return updated;
+}
+
+function applyEnhancedProjects(resume: any, enhanced: any[]): any {
+  const updated = { ...resume };
+  
+  enhanced.forEach((project: any) => {
+    const i = project.index;
+    updated[`rms_project_${i}_description`] = project.description;
+  });
+  
+  return updated;
+}
+
+function applyEnhancedInvolvement(resume: any, enhanced: any[]): any {
+  const updated = { ...resume };
+  
+  enhanced.forEach((involvement: any) => {
+    const i = involvement.index;
+    updated[`rms_involvement_${i}_description`] = involvement.description;
+  });
+  
+  return updated;
+}
+
+function applyEnhancedCertifications(resume: any, enhanced: any[]): any {
+  const updated = { ...resume };
+  
+  enhanced.forEach((cert: any) => {
+    const i = cert.index;
+    updated[`rms_certification_${i}_description`] = cert.description;
   });
   
   return updated;
@@ -432,6 +737,7 @@ export async function targetResume(
     let optimizedResume = { ...resume };
     const enhancedSections: string[] = [];
     const integratedKeywords: string[] = [];
+    const usedActionVerbs: string[] = []; // Global tracking across ALL sections
 
     // Select appropriate action verbs for this role
     const roleBasedVerbs = [
@@ -441,45 +747,370 @@ export async function targetResume(
       ...ACTION_VERBS.improvement
     ];
 
-    // Enhance Experience Section
+    // Enhance Experience Section - Process each experience individually
     const experiences = extractRMSExperiences(resume);
     if (experiences.length > 0) {
-      const { output: enhancedExp } = await enhanceExperienceSection({
-        experiences,
-        keywords: criticalKeywords,
-        jobTitle,
-        jobDescription,
-        actionVerbs: roleBasedVerbs
-      });
+      const enhancedExperiences: any[] = [];
+      
+      // Serialize keywords for prompt (same for all experiences)
+      const keywordsText = criticalKeywords.map(k => 
+        `${k.keyword} (${k.category}, importance: ${k.importance})`
+      ).join(', ');
+      
+      // Process each experience individually to prevent cross-contamination
+      for (let i = 0; i < experiences.length; i++) {
+        const exp = experiences[i];
+        
+        // Create available verbs list (excluding already used ones)
+        const availableVerbs = roleBasedVerbs.filter(verb => 
+          !usedActionVerbs.includes(verb.toLowerCase())
+        );
+        
+        const availableVerbsText = availableVerbs.slice(0, 15).join(', ');
+        const usedVerbsText = usedActionVerbs.join(', ');
+        
+        console.log(`🔄 Processing experience ${i + 1}/${experiences.length}: ${exp.company} - ${exp.role}`);
+        
+        try {
+          const { output: enhancedSingle } = await enhanceSingleExperience({
+            company: exp.company || 'Unknown Company',
+            role: exp.role || 'Unknown Role',
+            location: exp.location || '',
+            dateBegin: exp.datebegin || 'Unknown',
+            dateEnd: exp.dateend || 'Unknown',
+            originalDescription: exp.description || 'No description available',
+            keywords: keywordsText,
+            jobTitle,
+            jobDescription,
+            availableActionVerbs: availableVerbsText,
+            usedActionVerbs: usedVerbsText
+          });
 
-      if (enhancedExp) {
-        optimizedResume = applyEnhancedExperiences(optimizedResume, enhancedExp.enhanced);
+          if (enhancedSingle) {
+            // Add the enhanced experience with original index
+            enhancedExperiences.push({
+              ...enhancedSingle.enhanced,
+              index: exp.index
+            });
+            
+            // Track used action verbs to prevent duplicates
+            enhancedSingle.verbsUsed.forEach(verb => {
+              if (!usedActionVerbs.includes(verb.toLowerCase())) {
+                usedActionVerbs.push(verb.toLowerCase());
+              }
+            });
+            
+            // Collect integrated keywords
+            integratedKeywords.push(...enhancedSingle.keywordsIntegrated);
+            
+            console.log(`✅ Enhanced ${exp.company} experience, used verbs: ${enhancedSingle.verbsUsed.join(', ')}`);
+          }
+        } catch (error) {
+          console.error(`❌ Failed to enhance experience ${i + 1}:`, error);
+          // Keep original experience if enhancement fails
+          enhancedExperiences.push({
+            ...exp,
+            index: exp.index
+          });
+        }
+      }
+
+      // Apply all enhanced experiences
+      if (enhancedExperiences.length > 0) {
+        optimizedResume = applyEnhancedExperiences(optimizedResume, enhancedExperiences);
         enhancedSections.push('experience');
-        integratedKeywords.push(...enhancedExp.keywordsIntegrated);
+        console.log(`🎯 Enhanced ${enhancedExperiences.length} experiences with ${usedActionVerbs.length} unique verbs`);
       }
     }
 
-    // Enhance Skills Section
+    // Enhance Skills Section - Process each category individually
     const skills = extractRMSSkills(resume);
     if (skills.length > 0) {
-      const { output: enhancedSkills } = await enhanceSkillsSection({
-        skills,
-        keywords: criticalKeywords,
-        jobTitle
-      });
+      const enhancedSkillCategories: any[] = [];
+      const usedSkills: string[] = []; // Track used skills to prevent duplicates
+      
+      // Serialize target keywords for prompt (same for all categories)
+      const targetKeywordsText = criticalKeywords
+        .filter(k => k.category === 'Technical Proficiencies' || k.category === 'Core Competencies')
+        .map(k => `${k.keyword} (${k.importance})`)
+        .join(', ');
+      
+      // Create a summary of all existing categories to prevent duplication
+      const existingCategoriesText = skills.map(s => s.category || 'Unnamed').join(', ');
+      
+      // Process each skill category individually
+      for (let i = 0; i < skills.length; i++) {
+        const skill = skills[i];
+        
+        console.log(`🔄 Processing skill category ${i + 1}/${skills.length}: ${skill.category}`);
+        
+        // Create list of already used skills to avoid duplicates
+        const usedSkillsText = usedSkills.join(', ');
+        
+        try {
+          const { output: enhancedCategory } = await enhanceSingleSkillCategory({
+            category: skill.category || `Category ${i + 1}`,
+            currentKeywords: skill.keywords || 'No keywords',
+            targetKeywords: targetKeywordsText,
+            jobTitle,
+            allExistingCategories: existingCategoriesText,
+            usedSkills: usedSkillsText
+          });
 
-      if (enhancedSkills) {
-        optimizedResume = applyEnhancedSkills(optimizedResume, enhancedSkills.enhanced);
+          if (enhancedCategory) {
+            // Parse and deduplicate keywords
+            const categoryKeywords = enhancedCategory.enhanced.keywords
+              .split(',')
+              .map(k => k.trim())
+              .filter(k => k && !usedSkills.some(used => 
+                used.toLowerCase() === k.toLowerCase() || 
+                k.toLowerCase().includes(used.toLowerCase()) ||
+                used.toLowerCase().includes(k.toLowerCase())
+              ));
+            
+            // Add unique keywords to the used list
+            categoryKeywords.forEach(keyword => {
+              if (!usedSkills.some(used => used.toLowerCase() === keyword.toLowerCase())) {
+                usedSkills.push(keyword);
+              }
+            });
+            
+            // Add the enhanced category with deduplicated keywords
+            enhancedSkillCategories.push({
+              category: enhancedCategory.enhanced.category,
+              keywords: categoryKeywords.join(', '),
+              index: skill.index
+            });
+            
+            // Collect integrated keywords
+            integratedKeywords.push(...enhancedCategory.keywordsIntegrated);
+            
+            console.log(`✅ Enhanced "${skill.category}" → "${enhancedCategory.enhanced.category}" (${categoryKeywords.length} unique skills)`);
+          }
+        } catch (error) {
+          console.error(`❌ Failed to enhance skill category ${i + 1}:`, error);
+          // Keep original category if enhancement fails
+          enhancedSkillCategories.push({
+            category: skill.category,
+            keywords: skill.keywords,
+            index: skill.index
+          });
+        }
+      }
+
+      // Apply all enhanced skill categories
+      if (enhancedSkillCategories.length > 0) {
+        optimizedResume = applyEnhancedSkills(optimizedResume, enhancedSkillCategories);
         enhancedSections.push('skills');
-        integratedKeywords.push(...enhancedSkills.keywordsIntegrated);
+        console.log(`🎯 Enhanced ${enhancedSkillCategories.length} skill categories`);
+        console.log('Final skill structure:', enhancedSkillCategories.map(s => ({ 
+          index: s.index, 
+          category: s.category, 
+          keywords: s.keywords?.substring(0, 50) + '...' 
+        })));
+      }
+    }
+
+    // Enhance Projects Section - Process each project individually
+    const projects = extractRMSProjects(resume);
+    if (projects.length > 0) {
+      const enhancedProjects: any[] = [];
+      
+      // Serialize keywords for prompt
+      const keywordsText = criticalKeywords
+        .filter(k => k.category === 'Technical Proficiencies' || k.category === 'Core Competencies')
+        .map(k => `${k.keyword} (${k.importance})`)
+        .join(', ');
+      
+      for (let i = 0; i < projects.length; i++) {
+        const project = projects[i];
+        
+        // Create available verbs list (excluding already used ones)
+        const availableVerbs = roleBasedVerbs.filter(verb => 
+          !usedActionVerbs.includes(verb.toLowerCase())
+        );
+        
+        const availableVerbsText = availableVerbs.slice(0, 10).join(', ');
+        const usedVerbsText = usedActionVerbs.join(', ');
+        
+        console.log(`🔄 Processing project ${i + 1}/${projects.length}: ${project.title}`);
+        
+        try {
+          const { output: enhancedProject } = await enhanceSingleProject({
+            title: project.title || 'Untitled Project',
+            originalDescription: project.description || 'No description available',
+            url: project.url || '',
+            dateBegin: project.dateBegin || '',
+            dateEnd: project.dateEnd || '',
+            keywords: keywordsText,
+            jobTitle,
+            availableActionVerbs: availableVerbsText,
+            usedActionVerbs: usedVerbsText
+          });
+
+          if (enhancedProject) {
+            enhancedProjects.push({
+              ...enhancedProject.enhanced,
+              index: project.index
+            });
+            
+            // Track used action verbs
+            enhancedProject.verbsUsed.forEach(verb => {
+              if (!usedActionVerbs.includes(verb.toLowerCase())) {
+                usedActionVerbs.push(verb.toLowerCase());
+              }
+            });
+            
+            integratedKeywords.push(...enhancedProject.keywordsIntegrated);
+            console.log(`✅ Enhanced "${project.title}" project, used verbs: ${enhancedProject.verbsUsed.join(', ')}`);
+          }
+        } catch (error) {
+          console.error(`❌ Failed to enhance project ${i + 1}:`, error);
+          enhancedProjects.push({
+            description: project.description,
+            index: project.index
+          });
+        }
+      }
+
+      if (enhancedProjects.length > 0) {
+        optimizedResume = applyEnhancedProjects(optimizedResume, enhancedProjects);
+        enhancedSections.push('projects');
+        console.log(`🎯 Enhanced ${enhancedProjects.length} projects`);
+      }
+    }
+
+    // Enhance Involvement Section - Process each involvement individually
+    const involvement = extractRMSInvolvement(resume);
+    if (involvement.length > 0) {
+      const enhancedInvolvement: any[] = [];
+      
+      // Serialize keywords for prompt
+      const keywordsText = criticalKeywords
+        .filter(k => k.category === 'Leadership Capabilities' || k.category === 'Core Competencies')
+        .map(k => `${k.keyword} (${k.importance})`)
+        .join(', ');
+      
+      for (let i = 0; i < involvement.length; i++) {
+        const inv = involvement[i];
+        
+        // Create available verbs list (excluding already used ones)
+        const availableVerbs = roleBasedVerbs.filter(verb => 
+          !usedActionVerbs.includes(verb.toLowerCase())
+        );
+        
+        const availableVerbsText = availableVerbs.slice(0, 10).join(', ');
+        const usedVerbsText = usedActionVerbs.join(', ');
+        
+        console.log(`🔄 Processing involvement ${i + 1}/${involvement.length}: ${inv.organization} - ${inv.role}`);
+        
+        try {
+          const { output: enhancedInv } = await enhanceSingleInvolvement({
+            organization: inv.organization || 'Organization',
+            role: inv.role || 'Volunteer',
+            originalDescription: inv.description || 'No description available',
+            dateBegin: inv.dateBegin || '',
+            dateEnd: inv.dateEnd || '',
+            keywords: keywordsText,
+            jobTitle,
+            availableActionVerbs: availableVerbsText,
+            usedActionVerbs: usedVerbsText
+          });
+
+          if (enhancedInv) {
+            enhancedInvolvement.push({
+              ...enhancedInv.enhanced,
+              index: inv.index
+            });
+            
+            // Track used action verbs
+            enhancedInv.verbsUsed.forEach(verb => {
+              if (!usedActionVerbs.includes(verb.toLowerCase())) {
+                usedActionVerbs.push(verb.toLowerCase());
+              }
+            });
+            
+            integratedKeywords.push(...enhancedInv.keywordsIntegrated);
+            console.log(`✅ Enhanced "${inv.organization}" involvement, used verbs: ${enhancedInv.verbsUsed.join(', ')}`);
+          }
+        } catch (error) {
+          console.error(`❌ Failed to enhance involvement ${i + 1}:`, error);
+          enhancedInvolvement.push({
+            description: inv.description,
+            index: inv.index
+          });
+        }
+      }
+
+      if (enhancedInvolvement.length > 0) {
+        optimizedResume = applyEnhancedInvolvement(optimizedResume, enhancedInvolvement);
+        enhancedSections.push('involvement');
+        console.log(`🎯 Enhanced ${enhancedInvolvement.length} involvements`);
+      }
+    }
+
+    // Enhance Certifications Section - Process each certification individually
+    const certifications = extractRMSCertifications(resume);
+    if (certifications.length > 0) {
+      const enhancedCertifications: any[] = [];
+      
+      // Serialize keywords for prompt
+      const keywordsText = criticalKeywords
+        .filter(k => k.category === 'Technical Proficiencies' || k.category === 'Industry Certifications')
+        .map(k => `${k.keyword} (${k.importance})`)
+        .join(', ');
+      
+      for (let i = 0; i < certifications.length; i++) {
+        const cert = certifications[i];
+        
+        console.log(`🔄 Processing certification ${i + 1}/${certifications.length}: ${cert.name}`);
+        
+        try {
+          const { output: enhancedCert } = await enhanceSingleCertification({
+            name: cert.name || 'Certification',
+            issuer: cert.issuer || 'Issuing Organization',
+            originalDescription: cert.description || 'Professional certification',
+            dateIssued: cert.dateIssued || '',
+            dateExpires: cert.dateExpires || '',
+            keywords: keywordsText,
+            jobTitle
+          });
+
+          if (enhancedCert) {
+            enhancedCertifications.push({
+              ...enhancedCert.enhanced,
+              index: cert.index
+            });
+            
+            integratedKeywords.push(...enhancedCert.keywordsIntegrated);
+            console.log(`✅ Enhanced "${cert.name}" certification`);
+          }
+        } catch (error) {
+          console.error(`❌ Failed to enhance certification ${i + 1}:`, error);
+          enhancedCertifications.push({
+            description: cert.description,
+            index: cert.index
+          });
+        }
+      }
+
+      if (enhancedCertifications.length > 0) {
+        optimizedResume = applyEnhancedCertifications(optimizedResume, enhancedCertifications);
+        enhancedSections.push('certifications');
+        console.log(`🎯 Enhanced ${enhancedCertifications.length} certifications`);
       }
     }
 
     // Enhance Summary (only if it exists)
     if (resume.rms_summary) {
+      // Serialize keywords for prompt
+      const keywordsText = criticalKeywords.map(k => 
+        `${k.keyword} (${k.category}, importance: ${k.importance})`
+      ).join(', ');
+      
       const { output: enhancedSummary } = await enhanceSummary({
         summary: resume.rms_summary,
-        keywords: criticalKeywords,
+        keywords: keywordsText,
         jobTitle,
         companyName
       });

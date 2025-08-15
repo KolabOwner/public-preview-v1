@@ -286,9 +286,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
 
   // Initialize form with formatted data
   const defaultFormValues = useMemo(() => {
-    console.log('Initial phone data:', initialData.rms_contact_phone);
     const extracted = extractContactFromRMS(initialData);
-    console.log('Formatted phone for display:', extracted.rms_contact_phone);
     return extracted;
   }, [initialData]);
 

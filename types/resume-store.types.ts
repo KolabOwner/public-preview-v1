@@ -1,4 +1,4 @@
-// lib/client/stores/types.ts
+// lib/client/stores/resume-store.types.ts
 
 export interface ContactFormData {
   fullName: string;
@@ -148,11 +148,3 @@ export interface ResumeDocument {
 
 // Dirty tracking types
 export type SectionKey = keyof UnifiedResumeData;
-export type DirtyState = Record<SectionKey, boolean>;
-
-export interface SaveStatus {
-  isSaving: boolean;
-  lastSaved: Date | null;
-  pendingSections: SectionKey[];
-  error: string | null;
-}

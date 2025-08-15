@@ -387,12 +387,8 @@ export default function ResumePreview({
 
 
 
-  // Debug logging
-  console.log('ResumePreview - resumeData:', resumeData);
-
   // Early return if no data
   if (!resumeData) {
-    console.log('ResumePreview - No resume data found');
     return (
       <div className={`w-full max-w-7xl mx-auto p-8 ${className}`}>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 flex items-start gap-3">
@@ -419,9 +415,7 @@ export default function ResumePreview({
     country: resumeData.rms_contact_country || resumeData.rms_contact_countrycode || ''
   };
   
-  console.log('ResumePreview - extracted contact data:', contact);
   const fullName = contact.fullName;
-  console.log('ResumePreview - fullName:', fullName);
 
   // Resume content component
   const ResumeContent = memo(() => {
@@ -473,6 +467,14 @@ export default function ResumePreview({
         keywords: resumeData[`rms_skill_${i}_keywords`] || '',
         skills: resumeData[`rms_skill_${i}_keywords`] || ''
       });
+    }
+    
+    // Debug skills extraction
+    if (skills.length > 0) {
+      console.log('🔍 Skills extracted in preview:', skills.map(s => ({ 
+        category: s.category, 
+        keywords: s.keywords?.substring(0, 30) + '...' 
+      })));
     }
 
     // Extract involvement data from RMS format

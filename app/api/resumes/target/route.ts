@@ -123,6 +123,40 @@ export async function POST(request: NextRequest) {
     // Save the targeted resume
     const docRef = await adminDb.collection('resumes').add(targetedResumeData);
 
+    // Apply optimized document settings for the targeted resume
+    try {
+      const optimizedSettings = {
+        zoom: 120,
+        fontFamily: 'Merriweather',
+        primaryColor: '#000000',
+        textColor: '#000000',
+        fontSize: 11,
+        lineHeight: 1.5,  // Optimized for readability
+        sectionSpacing: 1,  // Better section separation
+        paperSize: 'Letter',
+        margins: {
+          top: 0.5,    // Narrow margins for more content space
+          right: 0.5,
+          bottom: 0.5,
+          left: 0.5,
+        },
+        showIcons: false,
+        showDividers: true,
+        useIndent: false,
+        viewAsPages: true,
+        template: 'professional',
+        lastUpdated: new Date().toISOString(),
+        version: 1,
+      };
+      
+      await adminDb.collection('resumes').doc(docRef.id).update({
+        documentSettings: optimizedSettings
+      });
+    } catch (settingsError) {
+      console.warn('Failed to apply optimized settings to targeted resume:', settingsError);
+      // Continue even if settings update fails
+    }
+
     return NextResponse.json({
       success: true,
       targetedResumeId: docRef.id,

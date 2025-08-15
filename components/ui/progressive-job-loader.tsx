@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building, FileCheck, MoreHorizontal } from 'lucide-react';
 import { Job } from '@/types/job-board.types';
-import { useJobStream } from '@/hooks/useJobStream';
+import { useJobStream } from '@/lib/client/hooks/jobs/useJobStream';
 import { ApplicationConfirmationModal } from '@/components/features/job-search/application-confirmation-modal';
 import { TargetResumeModal } from '@/components/features/job-search/target-resume-modal';
 import { Timestamp } from 'firebase/firestore';

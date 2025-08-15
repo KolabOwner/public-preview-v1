@@ -1,5 +1,5 @@
 // components/resume/utils/summary-utils.ts
-import type { SummaryData } from '@/lib/client/stores/types';
+import type { SummaryData } from '@/types/resume-store.types';
 
 export const summaryDataToString = (summaryData: SummaryData): string => {
   const parts = [

@@ -8,7 +8,7 @@ import { useResumeStore } from '@/lib/client/stores/resume-store';
 import { FormComponents } from './components/form-components';
 import { stringToSummaryData, summaryDataToString } from './utils/summary-utils';
 import { preloadFormComponents } from './utils/component-loader';
-import type { UnifiedResumeData, SummaryData, ResumeDocument } from '@/lib/client/stores/types';
+import type { UnifiedResumeData, SummaryData, ResumeDocument } from '@/types/resume-store.types';
 
 // Export types for use in lazy-loaded components
 export type {
@@ -20,7 +20,7 @@ export type {
   InvolvementEntry,
   CourseworkEntry,
   CertificationEntry
-} from '@/lib/client/stores/types';
+} from '@/types/resume-store.types';
 
 interface ResumeEditorAreaProps {
   resume: ResumeDocument;

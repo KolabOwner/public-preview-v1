@@ -1,5 +1,5 @@
 // ==========================================
-// llib/features/api/summary.ts
+// lib/features/api/summary.ts
 // ==========================================
 
 import { auth } from '@/config/firebase-config';
