@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
           savedData.job = { id: jobDoc.id, ...jobDoc.data() } as any;
           
           // Get company info for the job
-          if (savedData.job.companyId) {
+          if (savedData.job?.companyId) {
             const companyDoc = await adminDb.collection('companies').doc(savedData.job.companyId).get();
             if (companyDoc.exists) {
               savedData.job.company = { id: companyDoc.id, ...companyDoc.data() } as any;
