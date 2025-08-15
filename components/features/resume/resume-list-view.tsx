@@ -1,13 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { createPortal } from 'react-dom';
-import { FileText, MoreVertical, Eye, Download, Copy, Trash2, ChevronRight, ChevronDown, Plus, FolderPlus, Lock } from 'lucide-react';
-import { deleteDoc, doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { FileText, MoreVertical, Eye, Download, Copy, Trash2, ChevronRight, ChevronDown, Plus, FolderPlus, Lock, Settings, FolderOpen } from 'lucide-react';
+import { deleteDoc, doc, getDoc, addDoc, collection, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase-config';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
 import { useAuth } from '@/contexts/firebase-auth-context';
 import UpgradeModal from './modals/upgrade-modal';
+import EditSectionModal from './modals/edit-section-modal';
+import dynamic from 'next/dynamic';
+
+const CreateResumeModal = dynamic(
+  () => import('./modals/create-resume-modal'),
+  { ssr: false }
+);
 
 interface Resume {
   id: string;
@@ -39,15 +46,29 @@ interface ResumeListViewProps {
   usage?: UserUsage;
   onRefresh: () => void;
   onCreateNew: () => void;
+  onAddSection?: () => void;
+  onUpdateSection?: (folderId: string, newName: string) => Promise<void>;
+  onDeleteSection?: (folderId: string) => Promise<void>;
+  onMoveResume?: (resumeId: string, folderId: string | null) => Promise<void>;
 }
 
-export default function ResumeListView({ resumes, folders = [], usage, onRefresh, onCreateNew }: ResumeListViewProps) {
+export default function ResumeListView({ resumes, folders = [], usage, onRefresh, onCreateNew, onAddSection, onUpdateSection, onDeleteSection, onMoveResume }: ResumeListViewProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showEditSectionModal, setShowEditSectionModal] = useState(false);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [editingSectionName, setEditingSectionName] = useState<string>('');
+  const [showCreateResumeModal, setShowCreateResumeModal] = useState(false);
+  const [createResumeFolderId, setCreateResumeFolderId] = useState<string | null>(null);
+  const [activeSectionDropdown, setActiveSectionDropdown] = useState<string | null>(null);
+  const [sectionDropdownPosition, setSectionDropdownPosition] = useState({ top: 0, left: 0 });
+  const activeSectionDropdownRef = useRef<HTMLDivElement>(null);
+  const [showMoveSubmenu, setShowMoveSubmenu] = useState<string | null>(null);
+  const [moveSubmenuPosition, setMoveSubmenuPosition] = useState({ top: 0, left: 0 });
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const activeDropdownRef = useRef<HTMLDivElement>(null);
@@ -56,14 +77,18 @@ export default function ResumeListView({ resumes, folders = [], usage, onRefresh
     const handleClickOutside = (event: MouseEvent) => {
       if (activeDropdownRef.current && !activeDropdownRef.current.contains(event.target as Node)) {
         setActiveDropdown(null);
+        setShowMoveSubmenu(null);
+      }
+      if (activeSectionDropdownRef.current && !activeSectionDropdownRef.current.contains(event.target as Node)) {
+        setActiveSectionDropdown(null);
       }
     };
 
-    if (activeDropdown) {
+    if (activeDropdown || activeSectionDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [activeDropdown]);
+  }, [activeDropdown, activeSectionDropdown]);
 
   const toggleFolder = (folderId: string) => {
     const newExpanded = new Set(expandedFolders);
@@ -196,6 +221,93 @@ export default function ResumeListView({ resumes, folders = [], usage, onRefresh
     }
   };
 
+  const handleSectionDropdownToggle = (folderId: string, event: React.MouseEvent<Element>) => {
+    event.stopPropagation();
+
+    if (activeSectionDropdown === folderId) {
+      setActiveSectionDropdown(null);
+    } else {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setSectionDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.right + window.scrollX - 200
+      });
+      setActiveSectionDropdown(folderId);
+    }
+  };
+
+  const handleEditSection = (folderId: string, currentName: string) => {
+    setEditingSectionId(folderId);
+    setEditingSectionName(currentName);
+    setShowEditSectionModal(true);
+    setActiveSectionDropdown(null);
+  };
+
+  const handleDeleteSection = async (folderId: string) => {
+    if (confirm('Are you sure you want to delete this section? All resumes in this section will be moved to the main area.')) {
+      try {
+        if (onDeleteSection) {
+          await onDeleteSection(folderId);
+        }
+        setActiveSectionDropdown(null);
+      } catch (error) {
+        console.error('Error deleting section:', error);
+        toast({
+          title: "Failed to delete section",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleCreateResumeInSection = (folderId: string) => {
+    setCreateResumeFolderId(folderId);
+    setShowCreateResumeModal(true);
+  };
+
+  const handleUpdateSection = async (newName: string) => {
+    if (!editingSectionId || !onUpdateSection) return;
+    
+    try {
+      await onUpdateSection(editingSectionId, newName);
+      toast({
+        title: "Section updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating section:', error);
+      throw error;
+    }
+  };
+
+  const handleMoveResume = async (resumeId: string, folderId: string | null) => {
+    try {
+      if (onMoveResume) {
+        await onMoveResume(resumeId, folderId);
+      }
+      setActiveDropdown(null);
+      setShowMoveSubmenu(null);
+      toast({
+        title: "Resume moved successfully",
+      });
+    } catch (error) {
+      console.error('Error moving resume:', error);
+      toast({
+        title: "Failed to move resume",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleShowMoveSubmenu = (resumeId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMoveSubmenuPosition({
+      top: rect.top + window.scrollY,
+      left: rect.right + window.scrollX + 5
+    });
+    setShowMoveSubmenu(resumeId);
+  };
+
   const ResumeItem = ({ resume, isLocked = false }: { resume: Resume; isLocked?: boolean }) => {
     const isDropdownOpen = activeDropdown === resume.id;
 
@@ -309,6 +421,102 @@ export default function ResumeListView({ resumes, folders = [], usage, onRefresh
                   Duplicate
                 </button>
                 <div className="border-t border-corporate-navy-200 dark:border-corporate-navy-700 my-1"></div>
+                <div className="relative">
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors"
+                    onClick={(e) => handleShowMoveSubmenu(resume.id, e)}
+                  >
+                    <FolderOpen className="h-4 w-4" />
+                    Move to Section
+                    <ChevronRight className="h-3 w-3 ml-auto" />
+                  </button>
+                  {showMoveSubmenu === resume.id && createPortal(
+                    <div 
+                      className="bg-surface-2 rounded-lg border border-surface-2-stroke absolute flex-col items-start bg-surface-2 py-2 shadow-lg z-50 min-w-28 max-w-72 opacity-1 flex flex-col items-start"
+                      style={{
+                        width: '170px',
+                        top: moveSubmenuPosition.top,
+                        left: moveSubmenuPosition.left
+                      }}
+                    >
+                      {/* My Dashboard (main area) */}
+                      <div 
+                        className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover bg-rezi-blue hover:none"
+                        onClick={() => handleMoveResume(resume.id, null)}
+                      >
+                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                          <div className="flex flex-row items-start gap-2 flex-1 min-w-0">
+                            <div>
+                              <div className="flex h-6 min-w-6 items-center justify-center">
+                                <i className="fad fa-file text-left text-base !text-white" aria-hidden="true"></i>
+                              </div>
+                            </div>
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <div className="w-fit max-w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 !text-white" title="My Dashboard">
+                                My Dashboard
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {folders.length > 0 && (
+                        <>
+                          <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
+                          {folders.map((folder) => (
+                            <div 
+                              key={folder.id}
+                              className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                              onClick={() => handleMoveResume(resume.id, folder.id)}
+                            >
+                              <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                                <div className="flex flex-row items-start gap-2 flex-1 min-w-0">
+                                  <div>
+                                    <div className="flex h-6 min-w-6 items-center justify-center">
+                                      <i className="fad fa-folder text-left text-base text-gray-900" aria-hidden="true"></i>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col flex-1 min-w-0">
+                                    <div className="w-fit max-w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900" title={folder.name}>
+                                      {folder.name}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                      
+                      <div className="w-full border-t border-surface-2-stroke mt-2 mb-2"></div>
+                      <div 
+                        className="relative flex flex-col justify-between self-stretch px-4 py-1.5 sm:py-1 cursor-pointer sm:hover:bg-menu-item-hover"
+                        onClick={() => {
+                          setShowMoveSubmenu(null);
+                          setActiveDropdown(null);
+                          if (onAddSection) onAddSection();
+                        }}
+                      >
+                        <div className="flex flex-row items-start gap-2 self-stretch justify-between p-0 w-full">
+                          <div className="flex flex-row items-start gap-2 flex-1 min-w-0">
+                            <div>
+                              <div className="flex h-6 min-w-6 items-center justify-center">
+                                <i className="fad fa-folder-plus text-left text-base text-gray-900" aria-hidden="true"></i>
+                              </div>
+                            </div>
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <div className="w-fit max-w-full select-none overflow-hidden text-ellipsis whitespace-nowrap text-base leading-6 text-gray-900" title="Add Section...">
+                                Add Section...
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
+                </div>
+                <div className="border-t border-corporate-navy-200 dark:border-corporate-navy-700 my-1"></div>
                 <button
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   onClick={() => handleDelete(resume.id)}
@@ -367,11 +575,11 @@ export default function ResumeListView({ resumes, folders = [], usage, onRefresh
           <div key={folder.id} className="mt-4">
             <div className="relative">
               <div className="relative flex h-8 flex-row items-center gap-4 py-4">
-                <div 
-                  className="group flex max-w-[calc(100%_-_50px)] flex-row items-center gap-1 cursor-pointer"
-                  onClick={() => toggleFolder(folder.id)}
-                >
-                  <button className="relative flex items-center justify-center font-bold uppercase text-corporate-navy-900 dark:text-gray-100 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 bg-transparent px-2 py-1 min-h-8 leading-4 rounded-md text-xs transition-colors">
+                <div className="group flex max-w-[calc(100%_-_50px)] flex-row items-center gap-1">
+                  <button 
+                    className="relative flex items-center justify-center font-bold uppercase text-corporate-navy-900 dark:text-gray-100 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 bg-transparent px-2 py-1 min-h-8 leading-4 rounded-md text-xs transition-colors cursor-pointer"
+                    onClick={() => toggleFolder(folder.id)}
+                  >
                     {expandedFolders.has(folder.id) ? (
                       <ChevronDown className="h-4 w-4 mr-1" />
                     ) : (
@@ -380,9 +588,46 @@ export default function ResumeListView({ resumes, folders = [], usage, onRefresh
                     <span className="truncate px-1 text-left max-w-full">{folder.name}</span>
                   </button>
                   <div className="invisible flex flex-row items-center gap-1 group-hover:visible">
-                    <Plus className="h-5 w-5 text-corporate-navy-900 dark:text-gray-100 hover:text-corporate-amber-600 dark:hover:text-corporate-amber-400 cursor-pointer" />
-                    <MoreVertical className="h-5 w-5 text-corporate-navy-900 dark:text-gray-100 hover:text-corporate-amber-600 dark:hover:text-corporate-amber-400 cursor-pointer" />
+                    <Plus 
+                      className="h-5 w-5 text-corporate-amber-600 dark:text-corporate-amber-400 hover:text-corporate-amber-700 dark:hover:text-corporate-amber-300 cursor-pointer transition-colors" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreateResumeInSection(folder.id);
+                      }}
+                    />
+                    <MoreVertical 
+                      className="h-5 w-5 text-corporate-navy-900 dark:text-gray-100 hover:text-corporate-amber-600 dark:hover:text-corporate-amber-400 cursor-pointer transition-colors" 
+                      onClick={(e) => handleSectionDropdownToggle(folder.id, e)}
+                    />
                   </div>
+                  {activeSectionDropdown === folder.id && createPortal(
+                    <div 
+                      ref={activeSectionDropdownRef}
+                      className="fixed z-[9999] min-w-[200px] bg-white dark:bg-corporate-navy-800 rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 shadow-2xl shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50 py-2"
+                      style={{
+                        top: sectionDropdownPosition.top,
+                        left: sectionDropdownPosition.left,
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors"
+                        onClick={() => handleEditSection(folder.id, folder.name)}
+                      >
+                        <Settings className="h-4 w-4" />
+                        Settings
+                      </button>
+                      <div className="border-t border-corporate-navy-200 dark:border-corporate-navy-700 my-1"></div>
+                      <button
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        onClick={() => handleDeleteSection(folder.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>,
+                    document.body
+                  )}
                 </div>
               </div>
               {expandedFolders.has(folder.id) && (
@@ -414,8 +659,11 @@ export default function ResumeListView({ resumes, folders = [], usage, onRefresh
 
         {/* Add Section Button */}
         <div className="flex flex-row items-center justify-start py-4">
-          <button className="relative flex items-center justify-center font-bold uppercase text-corporate-navy-900 dark:text-gray-100 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 bg-transparent px-2 py-1 min-h-8 leading-4 rounded-md text-xs transition-colors">
-            <FolderPlus className="h-4 w-4 mr-1" />
+          <button 
+            onClick={onAddSection}
+            className="group relative flex items-center justify-center font-bold uppercase text-xs leading-4 text-corporate-navy-700 dark:text-gray-300 hover:text-corporate-navy-900 dark:hover:text-white bg-transparent hover:bg-corporate-amber-50/50 dark:hover:bg-corporate-navy-700/50 px-3 py-2 rounded-md transition-all duration-200 border-none focus:outline-none focus:ring-2 focus:ring-corporate-amber-500/20"
+          >
+            <FolderPlus className="w-4 h-4 mr-1.5 text-corporate-amber-600 dark:text-corporate-amber-400 group-hover:text-corporate-amber-700 dark:group-hover:text-corporate-amber-300 transition-colors" />
             <span className="px-1">Add section</span>
           </button>
         </div>
@@ -425,6 +673,27 @@ export default function ResumeListView({ resumes, folders = [], usage, onRefresh
       <UpgradeModal 
         isOpen={showUpgradeModal} 
         onClose={() => setShowUpgradeModal(false)} 
+      />
+      
+      {/* Edit Section Modal */}
+      <EditSectionModal 
+        isOpen={showEditSectionModal}
+        onOpenChange={setShowEditSectionModal}
+        currentName={editingSectionName}
+        onSectionUpdate={handleUpdateSection}
+      />
+      
+      {/* Create Resume Modal */}
+      <CreateResumeModal 
+        isOpen={showCreateResumeModal}
+        onOpenChange={(open) => {
+          setShowCreateResumeModal(open);
+          if (!open) {
+            setCreateResumeFolderId(null);
+          }
+        }}
+        // Additional prop to specify folder ID when creating in section
+        folderId={createResumeFolderId}
       />
     </div>
   );

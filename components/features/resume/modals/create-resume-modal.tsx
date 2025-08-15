@@ -18,9 +18,10 @@ import {
 interface CreateResumeModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  folderId?: string | null;
 }
 
-export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResumeModalProps) {
+export default function CreateResumeModal({ isOpen, onOpenChange, folderId }: CreateResumeModalProps) {
   const [title, setTitle] = useState('');
   const [experience, setExperience] = useState('');
   const [showExperienceDropdown, setShowExperienceDropdown] = useState(false);
@@ -178,7 +179,8 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
           isTargeted,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
-          status: FileStatus.UPLOADED
+          status: FileStatus.UPLOADED,
+          ...(folderId && { folderId })
         };
         // If targeted and job info provided, save it
         if (isTargeted && jobTitle && jobDescription) {
@@ -223,7 +225,8 @@ export default function CreateResumeModal({ isOpen, onOpenChange }: CreateResume
         const updateData: any = {
           experience,
           isTargeted,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
+          ...(folderId && { folderId })
         };
         // If targeted and job info provided, save it
         if (isTargeted && jobTitle && jobDescription) {

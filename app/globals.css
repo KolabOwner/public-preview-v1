@@ -656,7 +656,7 @@
   transition: all var(--transition-smooth);
 }
 
-/* Collapsed state for resume editor routes */
+/* Collapsed state for resume editor routes and job search */
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"],
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"],
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"],
@@ -666,7 +666,8 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"],
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"],
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"],
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"],
+.app-sidebar[data-route*="/dashboard/job-search"] {
   width: var(--sidebar-collapsed);
   min-width: var(--sidebar-collapsed);
 }
@@ -680,7 +681,8 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] .sidebar-content,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] .sidebar-content,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] .sidebar-content,
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content,
+.app-sidebar[data-route*="/dashboard/job-search"] .sidebar-content {
   @apply items-center px-2;
 }
 
@@ -694,7 +696,8 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] .sidebar-content > *:not(nav):not(:first-child),
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] .sidebar-content > *:not(nav):not(:first-child),
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content > *:not(nav):not(:first-child) {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content > *:not(nav):not(:first-child),
+.app-sidebar[data-route*="/dashboard/job-search"] .sidebar-content > *:not(nav):not(:first-child) {
   @apply hidden;
 }
 
@@ -708,7 +711,8 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav,
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav,
+.app-sidebar[data-route*="/dashboard/job-search"] nav {
   @apply flex flex-col items-center;
 }
 
@@ -721,7 +725,8 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav a,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav a,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav a,
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a,
+.app-sidebar[data-route*="/dashboard/job-search"] nav a {
   @apply w-12 h-12 justify-center rounded-xl;
 }
 
@@ -735,7 +740,8 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav a > *:not(.sidebar-icon),
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav a > *:not(.sidebar-icon),
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav a > *:not(.sidebar-icon),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a > *:not(.sidebar-icon) {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a > *:not(.sidebar-icon),
+.app-sidebar[data-route*="/dashboard/job-search"] nav a > *:not(.sidebar-icon) {
   @apply hidden;
 }
 

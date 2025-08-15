@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/config/firebase-config';
-import { verifyIdToken } from '@/lib/server/auth/firebase-admin';
+import { verifyIdToken, adminDb } from '@/lib/server/auth/firebase-admin';
 import { FileStatus } from '@/lib/server/services/resume/pdf-generator';
 
 interface CreateResumeRequest {
@@ -12,6 +10,55 @@ interface CreateResumeRequest {
   jobDescription?: string;
 }
 
+export async function GET(request: NextRequest) {
+  try {
+    // Verify authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const idToken = authHeader.split('Bearer ')[1];
+    const decodedToken = await verifyIdToken(idToken);
+    
+    if (!decodedToken) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+    
+    const userId = decodedToken.uid;
+    
+    // Fetch user's resumes using admin SDK
+    const querySnapshot = await adminDb
+      .collection('resumes')
+      .where('userId', '==', userId)
+      .orderBy('updatedAt', 'desc')
+      .get();
+    const resumes: any[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      resumes.push({
+        id: doc.id,
+        title: data.title,
+        lastUpdated: data.updatedAt || data.createdAt,
+        createdAt: data.createdAt,
+        isTargeted: data.isTargeted || false,
+        objective: data.objective || '',
+        summary: data.summary || '',
+        folderId: data.folderId || null
+      });
+    });
+
+    return NextResponse.json({ resumes }, { status: 200 });
+    
+  } catch (error: any) {
+    console.error('Error fetching resumes:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,8 +92,6 @@ export async function POST(request: NextRequest) {
       userId,
       experience: experience || '',
       isTargeted: isTargeted || false,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
       status: FileStatus.UPLOADED,
       // Initialize with professional template by default
       documentSettings: {
@@ -85,8 +130,12 @@ export async function POST(request: NextRequest) {
       };
     }
     
-    // Create resume document
-    const docRef = await addDoc(collection(db, 'resumes'), resumeData);
+    // Create resume document using admin SDK
+    const docRef = await adminDb.collection('resumes').add({
+      ...resumeData,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
 
     return NextResponse.json(
       { 

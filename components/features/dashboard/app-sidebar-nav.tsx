@@ -28,6 +28,10 @@ const AppSidebarNav = () => {
      pathname.includes('/involvement') || pathname.includes('/coursework') ||
      pathname.includes('/certifications') || pathname.includes('/preview') ||
      pathname.includes('/cover-letter'));
+  
+  const isJobSearchRoute = pathname.includes('/dashboard/job-search');
+  
+  const shouldCollapseSidebar = isResumeEditorRoute || isJobSearchRoute;
   const navItems = [
     {
       href: '/dashboard',
@@ -58,6 +62,16 @@ const AppSidebarNav = () => {
       ),
       label: 'Resume Review',
       description: 'AI-powered feedback'
+    },
+    {
+      href: '/dashboard/job-search',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+        </svg>
+      ),
+      label: 'Job Search',
+      description: 'Find your next opportunity'
     },
   ];
   const gridPatternUrl = "data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cpattern id='grid' width='60' height='60' patternUnits='userSpaceOnUse'%3e%3cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3e%3c/pattern%3e%3c/defs%3e%3crect width='100%25' height='100%25' fill='url(%23grid)'/%3e%3c/svg%3e";
@@ -102,7 +116,7 @@ const AppSidebarNav = () => {
   return (
     <>
       <aside
-        className={`app-sidebar ${isResumeEditorRoute ? 'w-[72px]' : 'w-[280px]'} h-screen min-h-screen bg-white/80 dark:bg-navy-900/95 backdrop-blur-sm relative overflow-hidden flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200 dark:border-navy-700`}
+        className={`app-sidebar ${shouldCollapseSidebar ? 'w-[72px]' : 'w-[280px]'} h-screen min-h-screen bg-white/80 dark:bg-navy-900/95 backdrop-blur-sm relative overflow-hidden flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200 dark:border-navy-700`}
         data-route={pathname}
       >
         {/* Enhanced gradient background with corporate theme */}
@@ -160,22 +174,22 @@ const AppSidebarNav = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(251,191,36,0.02),transparent_50%)]" />
         </div>
         {/* Content */}
-        <div className={`relative z-10 sidebar-content flex flex-col h-full min-h-full ${isResumeEditorRoute ? 'p-2' : 'p-6'} overflow-y-auto`}>
+        <div className={`relative z-10 sidebar-content flex flex-col h-full min-h-full ${shouldCollapseSidebar ? 'p-2' : 'p-6'} overflow-y-auto`}>
           {/* Logo */}
-          <div className={`${isResumeEditorRoute ? 'mb-4' : 'mb-8'}`}>
-            <div className={`flex items-center gap-3 ${isResumeEditorRoute ? 'justify-center' : ''}`}>
+          <div className={`${shouldCollapseSidebar ? 'mb-4' : 'mb-8'}`}>
+            <div className={`flex items-center gap-3 ${shouldCollapseSidebar ? 'justify-center' : ''}`}>
               {/* Modern Logo Mark with corporate theme */}
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 rounded-2xl blur-xl opacity-60 group-hover:opacity-80 transition-all duration-300" />
                 <div className="relative bg-gradient-to-br from-corporate-gold-500 to-corporate-amber-500 p-2.5 rounded-2xl shadow-xl shadow-corporate-gold-500/20">
                   {/* Simple R Logo */}
-                  <div className={`${isResumeEditorRoute ? 'w-5 h-5' : 'w-7 h-7'} bg-white rounded-lg flex items-center justify-center text-corporate-gold-600 font-bold ${isResumeEditorRoute ? 'text-sm' : 'text-lg'}`}>
+                  <div className={`${shouldCollapseSidebar ? 'w-5 h-5' : 'w-7 h-7'} bg-white rounded-lg flex items-center justify-center text-corporate-gold-600 font-bold ${shouldCollapseSidebar ? 'text-sm' : 'text-lg'}`}>
                     R
                   </div>
                 </div>
               </div>
               {/* Company Name - Hidden in collapsed state */}
-              {!isResumeEditorRoute && (
+              {!shouldCollapseSidebar && (
                 <div className="flex items-baseline">
                   <span className="text-2xl font-bold text-corporate-navy-900 dark:text-white tracking-tight">Rezum</span>
                   <span className="text-2xl font-bold bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 text-transparent bg-clip-text ml-0.5">AI</span>
@@ -184,7 +198,7 @@ const AppSidebarNav = () => {
             </div>
           </div>
           {/* Create Resume Button with corporate theme */}
-          {!isResumeEditorRoute && (
+          {!shouldCollapseSidebar && (
             <button
               onClick={() => setShowCreateModal(true)}
               className="group relative overflow-hidden bg-gradient-to-r from-corporate-gold-500 to-corporate-amber-500 hover:from-corporate-gold-400 hover:to-corporate-amber-400 text-white font-semibold py-3 px-4 rounded-xl mb-6 w-full shadow-lg shadow-corporate-gold-500/30 transform hover:-translate-y-0.5 transition-all duration-200"
@@ -206,7 +220,7 @@ const AppSidebarNav = () => {
                 <div key={item.href} className="relative">
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-3 ${isResumeEditorRoute ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden transition-all duration-200 ${
+                    className={`group flex items-center gap-3 ${shouldCollapseSidebar ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden transition-all duration-200 ${
                       isActive
                         ? 'bg-corporate-amber-50/50 dark:bg-corporate-navy-800/50 text-corporate-navy-900 dark:text-white backdrop-blur-sm border border-corporate-amber-200/30 dark:border-corporate-amber-600/30'
                         : 'text-corporate-navy-600 dark:text-slate-400 hover:text-corporate-navy-900 dark:hover:text-white hover:bg-corporate-amber-50/30 dark:hover:bg-corporate-navy-800/30'
@@ -215,17 +229,17 @@ const AppSidebarNav = () => {
                     onMouseLeave={() => setHoveredItem(null)}
                   >
                     {/* Active indicator */}
-                    {isActive && !isResumeEditorRoute && (
+                    {isActive && !shouldCollapseSidebar && (
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-corporate-gold-500 to-corporate-amber-500 rounded-r-full" />
                     )}
                     {/* Icon */}
                     <span className={`sidebar-icon relative ${
                       isActive ? 'text-corporate-amber-600 dark:text-corporate-amber-400' : ''
-                    } ${isResumeEditorRoute ? 'text-lg' : ''}`}>
+                    } ${shouldCollapseSidebar ? 'text-lg' : ''}`}>
                       {item.icon}
                     </span>
                     {/* Label - Hidden in collapsed state */}
-                    {!isResumeEditorRoute && (
+                    {!shouldCollapseSidebar && (
                       <div className="flex-1 relative">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-sm">{item.label}</span>
@@ -239,7 +253,7 @@ const AppSidebarNav = () => {
                     )}
                   </Link>
                   {/* Tooltip for collapsed state */}
-                  {isResumeEditorRoute && hoveredItem === item.href && (
+                  {shouldCollapseSidebar && hoveredItem === item.href && (
                     <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50">
                       <div className="bg-white dark:bg-navy-800 text-slate-900 dark:text-white px-3 py-2 rounded-lg shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 border border-slate-200 dark:border-navy-700">
                         <p className="font-medium text-sm whitespace-nowrap">{item.label}</p>
@@ -256,7 +270,7 @@ const AppSidebarNav = () => {
             })}
           </nav>
           {/* Bottom section - Hidden in collapsed state and for Pro/Enterprise users */}
-          {!isResumeEditorRoute && usage.maxPdfGenerations !== -1 && (
+          {!shouldCollapseSidebar && usage.maxPdfGenerations !== -1 && (
             <div className="mx-1 flex flex-col items-start gap-y-4 self-stretch rounded-xl p-4 bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10" data-test-id="free-usage-counter">
               <div className="flex w-full flex-col gap-y-2">
                 <div className="flex w-full flex-row items-center justify-between gap-x-2 opacity-70">
@@ -297,7 +311,7 @@ const AppSidebarNav = () => {
             </div>
           )}
           {/* Upgrade Button for collapsed state */}
-          {isResumeEditorRoute && (
+          {shouldCollapseSidebar && (
             <div className="mt-auto mb-2">
               <button
                 onClick={() => setShowUpgradeModal(true)}

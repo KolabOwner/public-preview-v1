@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useToast } from '@/lib/client/hooks/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -16,6 +17,12 @@ const EditResumeModal = dynamic(
   { ssr: false }
 );
 
+interface Folder {
+  id: string;
+  name: string;
+  resumes: any[];
+}
+
 interface ResumeProps {
   resume: {
     id: string;
@@ -29,6 +36,9 @@ interface ResumeProps {
   usage?: any;
   onDelete?: () => void;
   onRefresh?: () => void;
+  folders?: Folder[];
+  onMoveResume?: (resumeId: string, folderId: string | null) => Promise<void>;
+  onAddSection?: () => void;
 }
 
 interface ContactInfo {
@@ -83,11 +93,22 @@ interface SkillCategory {
   }>;
 }
 
+interface Project {
+  id?: string;
+  title?: string;
+  description?: string;
+  url?: string;
+  startDate?: string;
+  endDate?: string;
+  technologies?: string[];
+}
+
 interface ResumeData {
   contactInfo?: ContactInfo;
   experiences?: Experience[];
   education?: Education[];
   skillCategories?: SkillCategory[];
+  projects?: Project[];
   summary?: string;
 }
 
@@ -104,7 +125,7 @@ interface EditResumeData {
   };
 }
 
-export default function ResumeGridView({ resume, isLocked = false, usage, onDelete, onRefresh }: ResumeProps) {
+export default function ResumeGridView({ resume, isLocked = false, usage, onDelete, onRefresh, folders = [], onMoveResume, onAddSection }: ResumeProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
@@ -114,9 +135,12 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
   const [showEditModal, setShowEditModal] = useState(false);
   const [editResumeData, setEditResumeData] = useState<EditResumeData | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
+  const [moveSubmenuPosition, setMoveSubmenuPosition] = useState({ top: 0, left: 0 });
   const dropdownButtonRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchResumeData = async () => {
@@ -157,7 +181,8 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
               summary: parsedData.rms_summary || '',
               experiences: [],
               education: [],
-              skillCategories: []
+              skillCategories: [],
+              projects: []
             };
 
             // Extract experience from parsedData format
@@ -211,6 +236,23 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
                 });
               }
             }
+
+            // Extract projects from parsedData format
+            const projectCount = parseInt(parsedData.rms_project_count || '0');
+            for (let i = 0; i < projectCount && i < 3; i++) {
+              const project: Project = {
+                id: `project_${i}`,
+                title: parsedData[`rms_project_${i}_title`] || '',
+                description: parsedData[`rms_project_${i}_description`] || '',
+                url: parsedData[`rms_project_${i}_url`] || '',
+                startDate: parsedData[`rms_project_${i}_startDate`] || '',
+                endDate: parsedData[`rms_project_${i}_endDate`] || '',
+                technologies: []
+              };
+              if (project.title || project.description) {
+                transformedData.projects?.push(project);
+              }
+            }
           }
           // Check if we have contactInfo directly (legacy format)
           else if (data.contactInfo) {
@@ -219,6 +261,7 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
               experiences: (data.experiences || []).slice(0, 3),
               education: (data.education || []).slice(0, 2),
               skillCategories: data.skillCategories || [],
+              projects: (data.projects || []).slice(0, 3),
               summary: data.summary || ''
             };
           }
@@ -317,18 +360,19 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownButtonRef.current && !dropdownButtonRef.current.contains(event.target as Node)) {
         const target = event.target as Element;
-        // Don't close if clicking inside the dropdown portal
-        if (!target.closest('[data-dropdown-portal]')) {
+        // Don't close if clicking inside the dropdown portal or submenu
+        if (!target.closest('[data-dropdown-portal]') && !target.closest('[data-submenu-portal]')) {
           setShowMenu(false);
+          setShowMoveSubmenu(false);
         }
       }
     };
 
-    if (showMenu) {
+    if (showMenu || showMoveSubmenu) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showMenu]);
+  }, [showMenu, showMoveSubmenu]);
 
   const handleMenuToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -524,6 +568,27 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
 
     console.log('Resume updated successfully:', updatedData);
   };
+
+  const handleMoveResume = async (folderId: string | null) => {
+    console.log('Grid view - Moving resume:', resume.id, 'to folder:', folderId);
+    try {
+      if (onMoveResume) {
+        await onMoveResume(resume.id, folderId);
+      }
+      setShowMenu(false);
+      setShowMoveSubmenu(false);
+      toast({
+        title: "Resume moved successfully",
+      });
+    } catch (error) {
+      console.error('Error moving resume:', error);
+      toast({
+        title: "Failed to move resume",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   return (
     <div className="relative">
@@ -1024,12 +1089,92 @@ export default function ResumeGridView({ resume, isLocked = false, usage, onDele
 
                     <div className="w-full border-t border-corporate-navy-200 dark:border-corporate-navy-700 mt-2 mb-2"></div>
 
+                    <div className="relative">
+                      <button
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setMoveSubmenuPosition({
+                            top: rect.top,
+                            left: rect.right + 5
+                          });
+                          setShowMoveSubmenu(true);
+                        }}
+                      >
+                        <i className="fad fa-folder-open text-base"></i>
+                        Move to Section
+                        <i className="fad fa-chevron-right text-xs ml-auto"></i>
+                      </button>
+                    </div>
+
+                    <div className="w-full border-t border-corporate-navy-200 dark:border-corporate-navy-700 mt-2 mb-2"></div>
+
                     <button
                       className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       onClick={handleDelete}
                     >
                       <i className="fad fa-trash text-base"></i>
                       {isDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>,
+                  document.body
+                )}
+
+                {/* Move Submenu - Rendered as Portal */}
+                {showMoveSubmenu && createPortal(
+                  <div
+                    data-submenu-portal="true"
+                    className="fixed bg-white dark:bg-corporate-navy-800 rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 py-2 shadow-2xl shadow-corporate-gold-500/20 dark:shadow-corporate-navy-900/50 z-[10000] min-w-[180px]"
+                    style={{
+                      top: moveSubmenuPosition.top,
+                      left: moveSubmenuPosition.left,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* My Dashboard (main area) */}
+                    <button 
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors text-left"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMoveResume(null);
+                      }}
+                    >
+                      <i className="fad fa-file text-base"></i>
+                      My Dashboard
+                    </button>
+                    
+                    {folders && folders.length > 0 && (
+                      <>
+                        <div className="w-full border-t border-corporate-navy-200 dark:border-corporate-navy-700 my-1"></div>
+                        {folders.map((folder) => (
+                          <button 
+                            key={folder.id}
+                            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors text-left"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveResume(folder.id);
+                            }}
+                          >
+                            <i className="fad fa-folder text-base"></i>
+                            {folder.name}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                    
+                    <div className="w-full border-t border-corporate-navy-200 dark:border-corporate-navy-700 my-1"></div>
+                    <button 
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-corporate-navy-700 dark:text-gray-300 hover:bg-corporate-amber-50 dark:hover:bg-corporate-navy-700 transition-colors text-left"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMenu(false);
+                        setShowMoveSubmenu(false);
+                        if (onAddSection) onAddSection();
+                      }}
+                    >
+                      <i className="fad fa-folder-plus text-base"></i>
+                      Add Section...
                     </button>
                   </div>,
                   document.body

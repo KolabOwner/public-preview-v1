@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/firebase-auth-context';
 
 const RESUME_KEYS = {
   all: ['resumes'] as const,
@@ -10,30 +11,51 @@ const RESUME_KEYS = {
   detail: (id: string) => [...RESUME_KEYS.details(), id] as const,
 };
 
-async function fetchResumes() {
-  const response = await fetch('/api/resumes');
+async function fetchResumes(user: any) {
+  if (!user) throw new Error('User not authenticated');
+  
+  const token = await user.getIdToken();
+  const response = await fetch('/api/resumes', {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  
   if (!response.ok) throw new Error('Failed to fetch resumes');
   return response.json();
 }
 
-async function fetchResume(id: string) {
-  const response = await fetch(`/api/resumes/${id}`);
+async function fetchResume(id: string, user: any) {
+  if (!user) throw new Error('User not authenticated');
+  
+  const token = await user.getIdToken();
+  const response = await fetch(`/api/resumes/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  
   if (!response.ok) throw new Error('Failed to fetch resume');
   return response.json();
 }
 
 export function useResumes() {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: RESUME_KEYS.lists(),
-    queryFn: fetchResumes,
+    queryFn: () => fetchResumes(user),
+    enabled: !!user,
   });
 }
 
 export function useResume(id: string) {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: RESUME_KEYS.detail(id),
-    queryFn: () => fetchResume(id),
-    enabled: !!id,
+    queryFn: () => fetchResume(id, user),
+    enabled: !!id && !!user,
   });
 }
 

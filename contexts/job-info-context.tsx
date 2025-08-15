@@ -33,7 +33,7 @@ interface JobInfoContextType {
 
   // Core actions
   setCurrentResumeId: (resumeId: string | null) => void;
-  updateJobInfo: (jobData: JobData, options?: AnalyzeOptions) => Promise<void>;
+  updateJobInfo: (jobData: JobData, options?: AnalyzeOptions, resumeId?: string) => Promise<void>;
   checkJobInfo: (resumeId?: string) => Promise<JobInfoStatus>;
   clearJobInfo: () => void;
 
@@ -213,8 +213,10 @@ export function JobInfoProvider({ children, initialResumeId }: JobInfoProviderPr
   }, [currentResumeId, user?.uid, checkJobInfo]);
 
   // Update job information and analyze
-  const updateJobInfo = useCallback(async (jobData: JobData, options: AnalyzeOptions = {}) => {
-    if (!user?.uid || !currentResumeId) {
+  const updateJobInfo = useCallback(async (jobData: JobData, options: AnalyzeOptions = {}, providedResumeId?: string) => {
+    const targetResumeId = providedResumeId || currentResumeId;
+    
+    if (!user?.uid || !targetResumeId) {
       throw new Error('User and resume ID required');
     }
 
@@ -224,7 +226,7 @@ export function JobInfoProvider({ children, initialResumeId }: JobInfoProviderPr
 
       // Update job info and get analysis results
       const results = await resumeAnalyzer.updateJobInfo({
-        resumeId: currentResumeId,
+        resumeId: targetResumeId,
         userId: user.uid,
         jobData,
         options,

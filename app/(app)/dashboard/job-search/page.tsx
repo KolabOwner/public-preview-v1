@@ -1,230 +1,171 @@
-// app/dashboard/job-search/page.tsx
+// Main JobSearchPage component
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Search, MapPin, Calendar, Clock, TrendingUp, Bell, ArrowRight } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/card';
-import { Button } from '@/components/shared/button';
-import { Badge } from '@/components/shared/badge';
+import React, { useState } from 'react';
+import { ProgressiveJobLoader } from '@/components/ui/progressive-job-loader';
+import { useJobSearch } from "@/lib/client/hooks/jobs/use-job-search";
+import { useJobActions } from "@/lib/client/hooks/jobs/use-job-actions";
+import { useAuth } from "@/contexts/firebase-auth-context";
+import { TabNavigation } from "@/components/features/job-search/tab-navigation";
+import { SearchFilters } from "@/components/features/job-search/search-filters";
+import { JobList } from "@/components/features/job-search/job-list";
+import { ApplicationStatus, Job, JobApplication, JobTabId } from '@/types/job-board.types';
+import { Timestamp } from 'firebase/firestore';
 
 export default function JobSearchPage() {
+  const { user } = useAuth();
+  const {
+    activeTab,
+    setActiveTab,
+    jobs,
+    setJobs,
+    applications,
+    setApplications,
+    savedJobs,
+    setSavedJobs,
+    loading,
+    searchQuery,
+    setSearchQuery,
+    location,
+    setLocation,
+    stats,
+    setStats,
+    loadData,
+    updateUserStats,
+    setIsUserInitiatedTabChange
+  } = useJobSearch();
+
+  const { handleApplyToJob, handleApplyToJobSilent } = useJobActions({
+    updateUserStats,
+    setJobs,
+    setSavedJobs,
+    loadData
+  });
+
+  const handleApplyToJobWithUIUpdate = async (jobId: string, job?: Job) => {
+    try {
+      // Ensure user is authenticated
+      if (!user?.uid) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      // Create proper timestamps
+      const now = Timestamp.now();
+
+      // Create an optimistic application object that matches JobApplication interface
+      const optimisticApplication: JobApplication = {
+        id: 'temp-' + Date.now(),
+        userId: user.uid, // Now properly typed as string
+        jobId,
+        job: job, // Type as Job instead of any
+        status: ApplicationStatus.APPLIED, // Use enum value
+        appliedAt: now, // Use Timestamp instead of Date
+        notes: 'Applied via job board',
+        resumeUsed: undefined,
+        coverLetter: undefined,
+        statusHistory: [
+          {
+            status: ApplicationStatus.APPLIED,
+            changedAt: now,
+            notes: 'Applied via job board'
+          }
+        ], // Required field that was missing
+        createdAt: now, // Use Timestamp instead of Date
+        updatedAt: now  // Use Timestamp instead of Date
+      };
+      
+      // Add to applications immediately for instant UI update
+      setApplications(prev => [optimisticApplication, ...prev]);
+      
+      // Update stats optimistically
+      setStats(prev => ({ ...prev, applied: prev.applied + 1 }));
+      
+      // Switch to Applied tab immediately (programmatically, not user-initiated)
+      setIsUserInitiatedTabChange(false);
+      setActiveTab('APPLIED');
+      
+      // Save the application in the background and sync real data
+      setTimeout(async () => {
+        try {
+          await handleApplyToJobSilent(jobId, job);
+          // Using silent version to avoid redundant API calls and data fetching
+        } catch (error) {
+          console.error('Background save failed:', error);
+          // Revert optimistic update on error
+          setApplications(prev => prev.filter(app => app.id !== optimisticApplication.id));
+          setStats(prev => ({ ...prev, applied: prev.applied - 1 }));
+        }
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error applying to job and updating UI:', error);
+    }
+  };
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [shouldTriggerSearch, setShouldTriggerSearch] = useState(false);
+
+  const handleSearch = async () => {
+    if (activeTab === 'ALL_JOBS') {
+      setJobs([]);
+      setShouldTriggerSearch(true);
+      // Reset trigger after a brief moment to allow for re-triggering
+      setTimeout(() => setShouldTriggerSearch(false), 100);
+    }
+    // For other tabs (Applied, Saved, etc.), search doesn't make sense
+    // since those show user's personal data, not external job searches
+  };
+
   return (
-    <div className="container max-w-6xl mx-auto py-8 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-8"
-      >
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4"
-          >
-            <Search className="w-8 h-8 text-white" />
-          </motion.div>
-          
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
-            AI-Powered Job Search
-          </h1>
-          
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Find your dream job with intelligent matching, personalized recommendations, and automated applications.
-          </p>
-          
-          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-4 py-2 text-sm font-semibold">
-            🚧 Coming Soon - Currently Under Development
-          </Badge>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* Tab Navigation */}
+        <TabNavigation
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          stats={stats}
+        />
+
+        {/* Search Filters */}
+        <SearchFilters
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          location={location}
+          setLocation={setLocation}
+          onSearch={handleSearch}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+        />
+
+        {/* Job Results */}
+        <div className="space-y-6">
+          {activeTab === 'ALL_JOBS' ? (
+            <ProgressiveJobLoader
+              searchQuery={searchQuery}
+              location={location}
+              limit={25}
+              onJobsUpdate={setJobs}
+              onApplyToJob={handleApplyToJobWithUIUpdate}
+              shouldTriggerSearch={shouldTriggerSearch}
+              className="space-y-4"
+            />
+          ) : (
+            <JobList
+              activeTab={activeTab}
+              jobs={jobs}
+              applications={applications}
+              savedJobs={savedJobs}
+              loading={loading}
+              updateUserStats={updateUserStats}
+              setJobs={setJobs}
+              setSavedJobs={setSavedJobs}
+              loadData={loadData}
+            />
+          )}
         </div>
-
-        {/* Preview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Smart Job Matching */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card className="border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <CardTitle className="text-lg">Smart Job Matching</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                  AI analyzes your resume and preferences to find perfectly matched job opportunities.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    Resume-based matching
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    Salary range optimization
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    Skills gap analysis
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Location-Based Search */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className="border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  </div>
-                  <CardTitle className="text-lg">Location Intelligence</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                  Find opportunities in your preferred locations with market insights and remote options.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    Remote-first filtering
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    Cost of living analysis
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    Commute optimization
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Application Tracking */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card className="border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <CardTitle className="text-lg">Application Tracking</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                  Track your applications, interviews, and follow-ups in one organized dashboard.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    Application pipeline
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    Interview scheduling
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    Follow-up reminders
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Development Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-8 text-center"
-        >
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white dark:bg-gray-800 rounded-full shadow-lg mb-6">
-            <Clock className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-          </div>
-          
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Exciting Features Coming Soon
-          </h2>
-          
-          <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-            We&apos;re building an intelligent job search platform that will revolutionize how you find and apply for jobs. 
-            Our AI-powered system will match you with the perfect opportunities based on your skills, experience, and preferences.
-          </p>
-          
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <Badge variant="secondary" className="px-4 py-2">
-              <Bell className="w-4 h-4 mr-2" />
-              Smart Alerts
-            </Badge>
-            <Badge variant="secondary" className="px-4 py-2">
-              <Search className="w-4 h-4 mr-2" />
-              AI Job Matching
-            </Badge>
-            <Badge variant="secondary" className="px-4 py-2">
-              <Calendar className="w-4 h-4 mr-2" />
-              Interview Prep
-            </Badge>
-            <Badge variant="secondary" className="px-4 py-2">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Salary Insights
-            </Badge>
-          </div>
-          
-          <Button 
-            disabled 
-            className="bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-          >
-            <Clock className="w-4 h-4 mr-2" />
-            Coming Soon
-          </Button>
-        </motion.div>
-
-        {/* Placeholder for future sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border-dashed border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <CardContent className="p-8 text-center">
-              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <Search className="w-6 h-6 text-gray-400" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Job Search Filters</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Advanced filtering and search capabilities</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-dashed border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <CardContent className="p-8 text-center">
-              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <Bell className="w-6 h-6 text-gray-400" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Job Alerts</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Personalized job notifications and alerts</p>
-            </CardContent>
-          </Card>
-        </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

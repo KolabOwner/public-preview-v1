@@ -18,6 +18,16 @@ service cloud.firestore {
         request.auth.uid == request.resource.data.userId;
     }
     
+    // Resume folders/sections - users can only access their own folders
+    match /resume_folders/{folderId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
     // Cover letter documents - users can only access their own cover letters
     match /cover_letters/{coverLetterId} {
       allow read, write: if request.auth != null && 
@@ -114,6 +124,52 @@ service cloud.firestore {
     match /analytics/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
       // Write operations should be done server-side with admin SDK
+    }
+    
+    // === JOB BOARD COLLECTIONS ===
+    
+    // Jobs - read-only for authenticated users, write for admins only
+    match /jobs/{jobId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Companies - read-only for authenticated users, write for admins only
+    match /companies/{companyId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Job applications - users can only access their own applications
+    match /job_applications/{applicationId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Saved jobs - users can only access their own saved jobs
+    match /saved_jobs/{savedJobId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Job searches - users can only access their own search history
+    match /job_searches/{searchId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creation if the userId matches the authenticated user
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
     }
     
     // Deny all other access

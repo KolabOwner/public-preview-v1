@@ -490,6 +490,23 @@ export default function ResumePreview({
       });
     }
 
+    // Extract projects data from RMS format  
+    const projectCount = resumeData.rms_project_count || 0;
+    const projects = [];
+    for (let i = 0; i < projectCount; i++) {
+      projects.push({
+        id: `project_${i}`,
+        title: resumeData[`rms_project_${i}_title`] || '',
+        name: resumeData[`rms_project_${i}_title`] || '',
+        description: resumeData[`rms_project_${i}_description`] || '',
+        url: resumeData[`rms_project_${i}_url`] || '',
+        repository: resumeData[`rms_project_${i}_url`] || '',
+        dateBegin: resumeData[`rms_project_${i}_dateBegin`] || '',
+        dateEnd: resumeData[`rms_project_${i}_dateEnd`] || '',
+        organization: resumeData[`rms_project_${i}_organization`] || ''
+      });
+    }
+
     // Safe array access helper
     const safeArray = (arr: any) => Array.isArray(arr) ? arr : [];
 
@@ -785,9 +802,9 @@ export default function ResumePreview({
         </ResumeSection>
       ),
 
-      projects: safeArray(resumeData.projects).length > 0 && (
+      projects: projects.length > 0 && (
         <ResumeSection key="projects" title={getSectionTitle('projects', currentTemplate)} styles={inlineStyles}>
-          {safeArray(resumeData.projects).map((project: any, idx: number) => (
+          {projects.map((project: any, idx: number) => (
             <div key={project.id || idx} className="resume-project-block" style={{ marginBottom: `${resumeStyles.spacing.blockGap}rem` }}>
               {currentTemplate === 'alternative' ? (
                 <>
@@ -800,33 +817,25 @@ export default function ResumePreview({
                       </h3>
                     </div>
                     
-                    {/* Right column: Organization, dates, description */}
+                    {/* Right column: URL, dates, description */}
                     <div>
-                      {project.organization && (
+                      {(project.url || project.repository || project.dateBegin || project.dateEnd) && (
                         <div className="resume-company" style={{ ...inlineStyles.company, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.body * 0.9}pt`, fontStyle: 'normal' }}>
-                          <span style={{ fontWeight: 500, fontStyle: 'normal' }}>{decodeHTMLEntities(project.organization)}</span>
-                          {(project.dateBegin || project.dateEnd) && (
-                            <>
-                              <span style={{ margin: '0 0.3rem' }}>|</span>
-                              <span style={{ fontStyle: 'normal' }}>{formatDate(project.dateBegin)} {project.dateBegin && project.dateEnd && '—'} {formatDate(project.dateEnd)}</span>
-                            </>
+                          {(project.url || project.repository) && (
+                            <span style={{ fontWeight: 500, fontStyle: 'normal' }}>{project.url || project.repository}</span>
                           )}
-                        </div>
-                      )}
-                      {!project.organization && (project.dateBegin || project.dateEnd) && (
-                        <div style={{ ...inlineStyles.detailText, marginBottom: '0.1rem', fontSize: `${resumeStyles.fontSizes.detail * 0.85}pt` }}>
-                          {formatDate(project.dateBegin)} {project.dateBegin && project.dateEnd && '—'} {formatDate(project.dateEnd)}
+                          {(project.url || project.repository) && (project.dateBegin || project.dateEnd) && (
+                            <span style={{ margin: '0 0.3rem' }}>•</span>
+                          )}
+                          {(project.dateBegin || project.dateEnd) && (
+                            <span style={{ fontStyle: 'normal' }}>{formatDate(project.dateBegin)} {project.dateBegin && project.dateEnd && '—'} {formatDate(project.dateEnd)}</span>
+                          )}
                         </div>
                       )}
                       {project.description && (
                         <div style={{ ...inlineStyles.bodyText, fontSize: `${resumeStyles.fontSizes.body * 0.85}pt`, lineHeight: 1.3 }}>
                           {/* Convert bullet points to single paragraph */}
                           {parseBulletPoints(project.description).join(' ')}
-                        </div>
-                      )}
-                      {project.repository && (
-                        <div style={{ ...inlineStyles.detailText, marginTop: '0.1rem', fontSize: `${resumeStyles.fontSizes.detail * 0.85}pt` }}>
-                          <span style={{ fontWeight: 600 }}>Repository:</span> {project.repository}
                         </div>
                       )}
                     </div>
@@ -846,9 +855,9 @@ export default function ResumePreview({
                       )}
                     </div>
                   </div>
-                  {project.organization && (
+                  {(project.url || project.repository) && (
                     <div className="resume-company" style={{ ...inlineStyles.company, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
-                      {decodeHTMLEntities(project.organization)}
+                      {project.url || project.repository}
                     </div>
                   )}
                   {project.description && (
@@ -856,12 +865,6 @@ export default function ResumePreview({
                       items={parseBulletPoints(project.description)}
                       styles={inlineStyles}
                     />
-                  )}
-                  {project.repository && (
-                    <div className="resume-skills-category" style={{ ...inlineStyles.detailText, marginTop: `${resumeStyles.spacing.bulletGap}rem` }}>
-                      <span style={{ fontWeight: 700 }}>Repository:</span>{' '}
-                      {project.repository}
-                    </div>
                   )}
                 </>
               )}

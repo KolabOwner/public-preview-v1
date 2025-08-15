@@ -1,18 +1,10 @@
 'use client';
 
 /**
- * ContactForm Component
+ * ContactForm Component - Fixed Phone Number Handling
  *
- * Features:
- * - Auto-save: Updates store in memory every 2 seconds (doesn't persist to database)
- * - Manual save: Persists to database via Save button or Ctrl+S
- * - Validation: Real-time validation with helpful error messages
- * - Keyboard shortcuts: Save (Ctrl+S), Undo (Ctrl+Z)
- * - Smart location handling with country/state selection
- * - Toggle visibility for location fields
- *
- * Completely rewritten to match the exact pattern used in education/experience/involvement forms
- * for consistency and reliability.
+ * Now properly handles phone numbers stored as numbers (e.g., 9167787700)
+ * and displays them formatted (e.g., (916) 778-7700)
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -48,13 +40,86 @@ import {
   US_STATES,
   CANADA_PROVINCES
 } from './utils/location-data';
-import { formatPhone, formatLinkedIn, formatWebsite, cleanValue } from './utils/formatters';
+import { formatLinkedIn, formatWebsite, cleanValue } from './utils/formatters';
 
-// Schema definition
+// ============================================================================
+// PHONE NUMBER UTILITIES
+// ============================================================================
+
+/**
+ * Format a phone number for display
+ * Accepts: number (9167787700) or string ("9167787700", "(916) 778-7700", etc.)
+ * Returns: formatted string like "(916) 778-7700"
+ */
+function formatPhoneForDisplay(phone: number | string | undefined): string {
+  if (!phone) return '';
+
+  // Convert to string and remove all non-digits
+  const digits = phone.toString().replace(/\D/g, '');
+
+  // Handle different lengths
+  if (digits.length === 10) {
+    // US format: (XXX) XXX-XXXX
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  } else if (digits.length === 11 && digits[0] === '1') {
+    // US with country code: +1 (XXX) XXX-XXXX
+    return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  } else if (digits.length === 7) {
+    // Local format: XXX-XXXX
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  }
+
+  // Return original if can't format
+  return phone.toString();
+}
+
+/**
+ * Convert phone to number for storage
+ * Accepts: string with any formatting
+ * Returns: number (9167787700) or undefined
+ */
+function phoneToNumber(phone: string | undefined): number | undefined {
+  if (!phone) return undefined;
+
+  const digits = phone.replace(/\D/g, '');
+  if (!digits) return undefined;
+
+  // Remove leading 1 for US numbers to store as 10 digits
+  if (digits.length === 11 && digits[0] === '1') {
+    return parseInt(digits.slice(1));
+  }
+
+  return parseInt(digits) || undefined;
+}
+
+/**
+ * Format phone as user types (for input field)
+ * Provides real-time formatting feedback
+ */
+function formatPhoneAsTyping(value: string): string {
+  const digits = value.replace(/\D/g, '');
+
+  if (digits.length <= 3) {
+    return digits;
+  } else if (digits.length <= 6) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  } else if (digits.length <= 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  } else {
+    // Limit to 10 digits for US numbers
+    const truncated = digits.slice(0, 10);
+    return `(${truncated.slice(0, 3)}) ${truncated.slice(3, 6)}-${truncated.slice(6)}`;
+  }
+}
+
+// ============================================================================
+// SCHEMA & TYPES
+// ============================================================================
+
 const contactSchema = z.object({
   rms_contact_fullname: z.string().min(1, "Full name is required"),
   rms_contact_email: z.string().email("Please enter a valid email address"),
-  rms_contact_phone: z.string().optional(),
+  rms_contact_phone: z.string().optional(), // Store as string in form for display
   rms_contact_linkedin: z.string().optional(),
   rms_contact_website: z.string().optional(),
   rms_contact_country: z.string().optional(),
@@ -67,12 +132,11 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-// RMS Contact data interface
 interface RMSContactData {
   [key: string]: any;
   rms_contact_fullname?: string;
   rms_contact_email?: string;
-  rms_contact_phone?: string;
+  rms_contact_phone?: number | string; // Can be either from database
   rms_contact_linkedin?: string;
   rms_contact_website?: string;
   rms_contact_country?: string;
@@ -88,23 +152,23 @@ interface ContactFormProps {
   onSave?: (data: RMSContactData) => Promise<void>;
 }
 
-// Constants
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
 const PLACEHOLDER_VALUES = ['n/a', 'N/A', 'none', 'null', '-', 'NA'];
 const AUTO_SAVE_DELAY = 2000;
 
-// Helper functions
 const cleanRMSValue = (value: any): string => {
   if (typeof value !== 'string') return '';
   const trimmed = value.trim();
   return PLACEHOLDER_VALUES.includes(trimmed) ? '' : trimmed;
 };
 
-// Convert country names to codes
 const convertCountryNameToCode = (countryName: string): string => {
   return COUNTRY_NAME_TO_CODE[countryName] || countryName;
 };
 
-// Convert state names to codes
 const convertStateNameToCode = (stateName: string): string => {
   const usState = US_STATES.find(s => s.label === stateName);
   if (usState) return usState.value;
@@ -115,12 +179,16 @@ const convertStateNameToCode = (stateName: string): string => {
   return stateName;
 };
 
-// Extract contact data from RMS format
+/**
+ * Extract contact data from RMS format
+ * Handles phone as either number or string
+ */
 const extractContactFromRMS = (rmsData: RMSContactData): ContactFormData => {
   return {
     rms_contact_fullname: cleanRMSValue(rmsData.rms_contact_fullname),
     rms_contact_email: cleanRMSValue(rmsData.rms_contact_email),
-    rms_contact_phone: cleanRMSValue(rmsData.rms_contact_phone),
+    // Format phone for display if it exists
+    rms_contact_phone: formatPhoneForDisplay(rmsData.rms_contact_phone),
     rms_contact_linkedin: cleanRMSValue(rmsData.rms_contact_linkedin),
     rms_contact_website: cleanRMSValue(rmsData.rms_contact_website),
     rms_contact_country: convertCountryNameToCode(cleanRMSValue(rmsData.rms_contact_country)),
@@ -132,12 +200,16 @@ const extractContactFromRMS = (rmsData: RMSContactData): ContactFormData => {
   };
 };
 
-// Convert form data back to RMS format
+/**
+ * Convert form data back to RMS format
+ * Stores phone as number
+ */
 const convertToRMSFormat = (formData: ContactFormData): RMSContactData => {
   return {
     rms_contact_fullname: formData.rms_contact_fullname || '',
     rms_contact_email: formData.rms_contact_email || '',
-    rms_contact_phone: formData.rms_contact_phone || '',
+    // Convert phone to number for storage
+    rms_contact_phone: phoneToNumber(formData.rms_contact_phone) || 0,
     rms_contact_linkedin: formData.rms_contact_linkedin || '',
     rms_contact_website: formData.rms_contact_website || '',
     rms_contact_country: formData.rms_contact_country || '',
@@ -149,7 +221,10 @@ const convertToRMSFormat = (formData: ContactFormData): RMSContactData => {
   };
 };
 
-// Auto-save indicator component
+// ============================================================================
+// COMPONENT HELPERS
+// ============================================================================
+
 const AutoSaveIndicator = ({ status }: { status: 'saving' | 'saved' | 'error' | null }) => {
   if (!status) return null;
 
@@ -174,7 +249,6 @@ const AutoSaveIndicator = ({ status }: { status: 'saving' | 'saved' | 'error' | 
   );
 };
 
-// Custom hook for keyboard shortcuts
 const useKeyboardShortcuts = (callbacks: {
   save: () => void;
   undo: () => void;
@@ -200,17 +274,23 @@ const useKeyboardShortcuts = (callbacks: {
   }, [callbacks]);
 };
 
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 export default function ContactForm({ initialData, onSave }: ContactFormProps) {
   const { toast } = useToast();
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Initialize form with RMS data
-  const defaultFormValues = useMemo(() =>
-    extractContactFromRMS(initialData),
-    [initialData]
-  );
+  // Initialize form with formatted data
+  const defaultFormValues = useMemo(() => {
+    console.log('Initial phone data:', initialData.rms_contact_phone);
+    const extracted = extractContactFromRMS(initialData);
+    console.log('Formatted phone for display:', extracted.rms_contact_phone);
+    return extracted;
+  }, [initialData]);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -220,10 +300,9 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
 
   const { control, handleSubmit, formState: { errors, isDirty }, watch, setValue, reset, getValues, trigger } = form;
 
-  // Watch form data
   const formData = watch();
 
-  // Set up auto-save with debouncing
+  // Auto-save with debouncing
   const debouncedAutoSave = useCallback(() => {
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
@@ -234,6 +313,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
       try {
         const currentData = getValues();
         const rmsData = convertToRMSFormat(currentData);
+        console.log('Auto-saving phone as number:', rmsData.rms_contact_phone);
         if (onSave) {
           await onSave(rmsData);
         }
@@ -246,7 +326,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
     }, AUTO_SAVE_DELAY);
   }, [getValues, onSave]);
 
-  // Trigger auto-save on form changes (but not on mount)
+  // Trigger auto-save on form changes
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) {
@@ -272,9 +352,10 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
 
   // Reset form when initialData changes
   useEffect(() => {
-    reset(defaultFormValues);
+    const newDefaults = extractContactFromRMS(initialData);
+    reset(newDefaults);
     isFirstRender.current = true;
-  }, [initialData, reset, defaultFormValues]);
+  }, [initialData, reset]);
 
   // Unsaved changes protection
   const {
@@ -300,12 +381,12 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
       setIsSaving(true);
       const currentData = getValues();
       const rmsData = convertToRMSFormat(currentData);
+      console.log('Manual save - phone as number:', rmsData.rms_contact_phone);
 
       if (onSave) {
         await onSave(rmsData);
       }
 
-      // Reset form state with current values to mark as clean
       reset(currentData);
 
       toast({
@@ -332,7 +413,6 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
     });
   }, [reset, defaultFormValues, toast]);
 
-  // Handle country change to reset state if needed
   const handleCountryChange = useCallback((value: string) => {
     setValue('rms_contact_country', value, { shouldDirty: true, shouldValidate: true });
     if (!isStateSelectionEnabled(value)) {
@@ -340,7 +420,6 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
     }
   }, [setValue]);
 
-  // Keyboard shortcuts
   useKeyboardShortcuts({
     save: handleManualSave,
     undo: handleUndo,
@@ -438,7 +517,7 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
               )}
             </div>
 
-            {/* Phone */}
+            {/* Phone - Now with proper formatting */}
             <div className="space-y-1">
               <Label className="uppercase flex items-center text-gray-900 dark:text-gray-100 font-normal text-sm leading-5">
                 <span className="cursor-default">
@@ -457,7 +536,12 @@ export default function ContactForm({ initialData, onSave }: ContactFormProps) {
                       className="resume-input"
                       disabled={isSaving}
                       onChange={(e) => {
-                        const formatted = formatPhone(cleanValue(e.target.value));
+                        const formatted = formatPhoneAsTyping(e.target.value);
+                        field.onChange(formatted);
+                      }}
+                      onBlur={(e) => {
+                        // Ensure consistent formatting on blur
+                        const formatted = formatPhoneForDisplay(e.target.value);
                         field.onChange(formatted);
                       }}
                     />
