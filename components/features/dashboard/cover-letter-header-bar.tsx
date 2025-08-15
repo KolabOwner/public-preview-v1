@@ -1,4 +1,5 @@
 // src/components/features/dashboard/cover-letter-header-bar.tsx
+
 'use client';
 
 import React, {

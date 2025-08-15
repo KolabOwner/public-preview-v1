@@ -36,8 +36,7 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [editedJobData, setEditedJobData] = useState({
     title: job.title || '',
-    description: job.description || '',
-    company: job.company?.name || ''
+    description: job.description || ''
   });
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -74,8 +73,7 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
     if (isOpen) {
       setEditedJobData({
         title: job.title || '',
-        description: job.description || '',
-        company: job.company?.name || ''
+        description: job.description || ''
       });
     }
   }, [isOpen, job]);
@@ -124,7 +122,7 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
       await updateJobInfo({
         title: editedJobData.title,
         description: editedJobData.description,
-        company: editedJobData.company
+        company: job.company?.name || ''
       }, {}, selectedResumeId);
       
       // Then run the targeting
@@ -145,7 +143,8 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
     }
   };
 
-  const resumes = resumesData?.resumes || [];
+  // Filter resumes to show only those not in folders (dashboard resumes)
+  const resumes = (resumesData?.resumes || []).filter((resume: any) => !resume.folderId);
 
   if (!isOpen) return null;
 
@@ -159,10 +158,10 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
         <div className="flex items-center justify-between p-6 border-b border-corporate-navy-200 dark:border-corporate-navy-600">
           <div>
             <h2 className="text-xl font-semibold text-corporate-navy-900 dark:text-white">
-              Target Resume with AI
+              AI Resume Targeting
             </h2>
             <p className="text-sm text-corporate-navy-600 dark:text-gray-400 mt-1">
-              Choose a resume to optimize for: <span className="font-medium text-corporate-amber-600 dark:text-corporate-amber-400">{job.title}</span>
+              Optimize your resume for this specific job opportunity
             </p>
           </div>
           <button
@@ -192,22 +191,7 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
                   value={editedJobData.title}
                   onChange={(e) => setEditedJobData(prev => ({ ...prev, title: e.target.value }))}
                   className="w-full px-3 py-2 border border-corporate-navy-300 dark:border-corporate-navy-600 rounded-md bg-white dark:bg-corporate-navy-700 text-corporate-navy-900 dark:text-white focus:ring-2 focus:ring-corporate-amber-500 focus:border-corporate-amber-500"
-                  placeholder="Enter job title..."
-                />
-              </div>
-
-              {/* Company */}
-              <div>
-                <label htmlFor="job-company" className="block text-sm font-medium text-corporate-navy-700 dark:text-gray-300 mb-1">
-                  Company
-                </label>
-                <input
-                  id="job-company"
-                  type="text"
-                  value={editedJobData.company}
-                  onChange={(e) => setEditedJobData(prev => ({ ...prev, company: e.target.value }))}
-                  className="w-full px-3 py-2 border border-corporate-navy-300 dark:border-corporate-navy-600 rounded-md bg-white dark:bg-corporate-navy-700 text-corporate-navy-900 dark:text-white focus:ring-2 focus:ring-corporate-amber-500 focus:border-corporate-amber-500"
-                  placeholder="Enter company name..."
+                  placeholder="e.g., Senior Software Engineer"
                 />
               </div>
 
@@ -222,7 +206,7 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
                   onChange={(e) => setEditedJobData(prev => ({ ...prev, description: e.target.value }))}
                   rows={4}
                   className="w-full px-3 py-2 border border-corporate-navy-300 dark:border-corporate-navy-600 rounded-md bg-white dark:bg-corporate-navy-700 text-corporate-navy-900 dark:text-white focus:ring-2 focus:ring-corporate-amber-500 focus:border-corporate-amber-500 resize-none"
-                  placeholder="Enter or paste the job description..."
+                  placeholder="Paste the full job description here..."
                 />
               </div>
             </div>
@@ -230,7 +214,7 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
 
           <div className="p-6">
             <h3 className="text-lg font-semibold text-corporate-navy-900 dark:text-white mb-4">
-              Select Resume to Target
+              Select Resume
             </h3>
             
             {isLoading ? (
@@ -249,8 +233,8 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <FileText className="w-12 h-12 text-corporate-navy-400 dark:text-gray-500 mx-auto mb-4" />
-                <p className="text-corporate-navy-600 dark:text-gray-400 mb-2">No resumes found</p>
-                <p className="text-sm text-corporate-navy-500 dark:text-gray-500">Create your first resume to get started</p>
+                <p className="text-corporate-navy-600 dark:text-gray-400 mb-2">No dashboard resumes found</p>
+                <p className="text-sm text-corporate-navy-500 dark:text-gray-500">Resumes in folders are not shown here</p>
               </div>
             </div>
           ) : (
@@ -322,10 +306,10 @@ export const TargetResumeModal: React.FC<TargetResumeModalProps> = ({
         <div className="flex items-center justify-between p-6 border-t border-corporate-navy-200 dark:border-corporate-navy-600 bg-corporate-navy-50/50 dark:bg-corporate-navy-900/30">
           <div className="text-xs text-corporate-navy-500 dark:text-gray-400">
             {!editedJobData.title || !editedJobData.description ? 
-              'Please fill in job title and description' : 
+              'Fill in required fields above' : 
               !selectedResumeId ? 
-              'Select a resume to continue' : 
-              'Ready to target your resume with AI'
+              'Select a resume' : 
+              'Ready to optimize'
             }
           </div>
           <div className="flex gap-3">

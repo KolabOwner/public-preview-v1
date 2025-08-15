@@ -16,6 +16,8 @@ import { generateResumePDFAsync, ResumeData } from "@/lib/server/services/resume
 import { ContactInfo } from "@/contexts/resume-data-context";
 import ResumeHeaderBar, {ResumeHeaderBarRef} from "@/components/features/dashboard/resume-header-bar";
 import KeywordTargetingPanel from "@/components/features/resume/panels/keyword-targeting-panel";
+import ResumeEditorPanel from "@/components/features/resume/panels/resume-editor-panel";
+import EditableBulletList from "@/components/features/resume/panels/editable-bullet-list";
 
 
 interface ResumePreviewProps {
@@ -24,6 +26,9 @@ interface ResumePreviewProps {
   showJobPanels?: boolean;
   className?: string;
   initialTemplate?: string;
+  onBulletAdded?: (experienceIndex: number, newBullet: string) => void;
+  typewriterBullet?: {experienceIndex: number, bullet: string} | null;
+  onTypewriterComplete?: (experienceIndex: number, newBullet: string) => void;
 }
 
 // Memoized components
@@ -46,36 +51,6 @@ const ResumeSection = memo(({
 
 ResumeSection.displayName = 'ResumeSection';
 
-const BulletList = memo(({
-  items,
-  styles
-}: {
-  items: string[];
-  styles: Record<string, any>;
-}) => (
-  <ul className="p-0 m-0 ml-0 pl-0 list-none" style={{...styles.bulletList, paddingLeft: 0, marginLeft: 0}}>
-    {items.map((item, index) => {
-      // Split the item to separate the bullet from the text
-      const cleanText = item.replace(/^[•·▪-]\s*/, '');
-      
-      return (
-        <li 
-          key={index} 
-          className="flex leading-[1.35em]"
-          style={{
-            ...styles.bulletItem, 
-            marginBottom: '0.2em'
-          }}
-        >
-          <span className="flex-shrink-0 pr-0.5 w-1.5">•</span>
-          <span className="flex-1">{cleanText}</span>
-        </li>
-      );
-    })}
-  </ul>
-));
-
-BulletList.displayName = 'BulletList';
 
 // Contact icon component
 const ContactIcon = memo(({ type, size = "0.9em", color }: { type: 'location' | 'email' | 'phone' | 'linkedin'; size?: string; color?: string }) => {
@@ -110,7 +85,10 @@ export default function ResumePreview({
   resumeId,
   showJobPanels = true,
   className = "",
-  initialTemplate = 'professional'
+  initialTemplate = 'professional',
+  onBulletAdded,
+  typewriterBullet,
+  onTypewriterComplete
 }: ResumePreviewProps) {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -121,6 +99,8 @@ export default function ResumePreview({
   const [sectionOrder, setSectionOrder] = useState<string[]>(() =>
     getDefaultSectionOrder(initialTemplate)
   );
+  const [isEditingMode, setIsEditingMode] = useState(false);
+  const [bulletUpdateTrigger, setBulletUpdateTrigger] = useState(0);
 
   // Resume styles hook
   const {
@@ -180,6 +160,18 @@ export default function ResumePreview({
 
   const handleJobUpdate = useCallback(() => {
     // Keyword panel update button clicked
+  }, []);
+
+  const handleBulletAdded = useCallback((experienceIndex: number, newBullet: string) => {
+    // Update parent component's state
+    onBulletAdded?.(experienceIndex, newBullet);
+    // Trigger re-render of resume preview
+    setBulletUpdateTrigger(prev => prev + 1);
+  }, [onBulletAdded]);
+
+  const handleBulletUpdate = useCallback((newBullets: string[]) => {
+    // Handle bullet updates from editable list
+    setBulletUpdateTrigger(prev => prev + 1);
   }, []);
 
   // Helper: Sanitize filename
@@ -639,12 +631,19 @@ export default function ResumePreview({
                   </div>
                 </>
               )}
-              {(exp.bulletPoints || exp.description) && currentTemplate !== 'alternative' && (
-                <BulletList
-                  items={exp.bulletPoints && exp.bulletPoints.length > 0 
-                    ? exp.bulletPoints 
-                    : parseBulletPoints(exp.description || '')}
+              {exp.description && currentTemplate !== 'alternative' && (
+                <EditableBulletList
+                  items={parseBulletPoints(exp.description || '')}
                   styles={inlineStyles}
+                  resumeId={resumeId}
+                  sectionType="experience"
+                  itemIndex={idx}
+                  onUpdate={handleBulletUpdate}
+                  isEditing={showJobPanels}
+                  key={`${exp.id}-${bulletUpdateTrigger}`}
+                  typewriterText={typewriterBullet?.experienceIndex === idx ? typewriterBullet.bullet : undefined}
+                  isTypewriting={typewriterBullet?.experienceIndex === idx}
+                  onTypewriterComplete={onTypewriterComplete ? () => onTypewriterComplete(idx, typewriterBullet?.bullet || '') : undefined}
                 />
               )}
             </div>
@@ -863,9 +862,15 @@ export default function ResumePreview({
                     </div>
                   )}
                   {project.description && (
-                    <BulletList
+                    <EditableBulletList
                       items={parseBulletPoints(project.description)}
                       styles={inlineStyles}
+                      resumeId={resumeId}
+                      sectionType="project"
+                      itemIndex={idx}
+                      onUpdate={handleBulletUpdate}
+                      isEditing={showJobPanels}
+                      key={`project-${project.id || idx}-${bulletUpdateTrigger}`}
                     />
                   )}
                 </>
@@ -978,9 +983,15 @@ export default function ResumePreview({
                   </div>
                   
                   {inv.description && (
-                    <BulletList
+                    <EditableBulletList
                       items={parseBulletPoints(inv.description)}
                       styles={inlineStyles}
+                      resumeId={resumeId}
+                      sectionType="involvement"
+                      itemIndex={idx}
+                      onUpdate={handleBulletUpdate}
+                      isEditing={showJobPanels}
+                      key={`involvement-${inv.id || idx}-${bulletUpdateTrigger}`}
                     />
                   )}
                 </>
@@ -1095,9 +1106,15 @@ export default function ResumePreview({
                 </span>
               </div>
               {vol.description && (
-                <BulletList
+                <EditableBulletList
                   items={parseBulletPoints(vol.description)}
                   styles={inlineStyles}
+                  resumeId={resumeId}
+                  sectionType="volunteer"
+                  itemIndex={idx}
+                  onUpdate={handleBulletUpdate}
+                  isEditing={showJobPanels}
+                  key={`volunteer-${vol.id || idx}-${bulletUpdateTrigger}`}
                 />
               )}
             </div>
@@ -1516,6 +1533,12 @@ export default function ResumePreview({
               <ATSScorePanel
                 resumeData={resumeData}
                 resumeId={resumeId}
+                className="shadow-lg"
+              />
+              <ResumeEditorPanel
+                resumeData={resumeData}
+                resumeId={resumeId}
+                onBulletAdded={handleBulletAdded}
                 className="shadow-lg"
               />
               <JobPanelWrapper />

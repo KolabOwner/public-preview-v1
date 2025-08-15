@@ -43,8 +43,18 @@ const AppSidebarNav = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
       ),
-      label: 'Dashboard',
+      label: 'My Dashboard',
       description: 'Your personal command center'
+    },
+    {
+      href: '/dashboard/job-search',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+        </svg>
+      ),
+      label: 'Job Search',
+      description: 'Find your next opportunity'
     },
     {
       href: '/dashboard/samples',
@@ -63,18 +73,8 @@ const AppSidebarNav = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
       ),
-      label: 'Resume Review',
+      label: 'Review My Resume',
       description: 'AI-powered feedback'
-    },
-    {
-      href: '/dashboard/job-search',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
-        </svg>
-      ),
-      label: 'Job Search',
-      description: 'Find your next opportunity'
     },
   ];
   const gridPatternUrl = "data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cpattern id='grid' width='60' height='60' patternUnits='userSpaceOnUse'%3e%3cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3e%3c/pattern%3e%3c/defs%3e%3crect width='100%25' height='100%25' fill='url(%23grid)'/%3e%3c/svg%3e";
@@ -218,7 +218,7 @@ const AppSidebarNav = () => {
             </button>
           )}
           {/* Navigation */}
-          <nav className="flex-1 space-y-1">
+          <nav className="flex-1 space-y-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
               return (
@@ -227,8 +227,8 @@ const AppSidebarNav = () => {
                     href={item.href}
                     className={`group flex items-center gap-3 ${shouldCollapseSidebar ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden transition-all duration-200 ${
                       isActive
-                        ? 'bg-gradient-to-r from-amber-100/70 to-amber-50/50 dark:bg-corporate-navy-800/50 text-amber-900 dark:text-white backdrop-blur-sm border border-amber-300/40 dark:border-corporate-amber-600/30 shadow-sm shadow-amber-200/30'
-                        : 'text-amber-700 dark:text-slate-400 hover:text-amber-900 dark:hover:text-white hover:bg-amber-50/50 dark:hover:bg-corporate-navy-800/30'
+                        ? 'bg-gradient-to-r from-amber-100/70 to-amber-50/50 dark:bg-corporate-navy-800/50 text-amber-900 dark:text-amber-100 backdrop-blur-sm border border-amber-300/40 dark:border-corporate-amber-600/30 shadow-sm shadow-amber-200/30'
+                        : 'text-amber-800 dark:text-slate-200 hover:text-amber-900 dark:hover:text-amber-50 hover:bg-amber-50/50 dark:hover:bg-corporate-navy-800/30'
                     }`}
                     onMouseEnter={() => setHoveredItem(item.href)}
                     onMouseLeave={() => setHoveredItem(null)}
@@ -238,8 +238,8 @@ const AppSidebarNav = () => {
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-amber-500 to-amber-600 rounded-r-full shadow-md shadow-amber-400/40" />
                     )}
                     {/* Icon */}
-                    <span className={`sidebar-icon relative ${
-                      isActive ? 'text-amber-600 dark:text-corporate-amber-400' : ''
+                    <span className={`sidebar-icon relative transform scale-125 ${
+                      isActive ? 'text-amber-700 dark:text-amber-300' : 'text-amber-700 dark:text-slate-100'
                     } ${shouldCollapseSidebar ? 'text-lg' : ''}`}>
                       {item.icon}
                     </span>
@@ -247,7 +247,7 @@ const AppSidebarNav = () => {
                     {!shouldCollapseSidebar && (
                       <div className="flex-1 relative">
                         <div className="flex items-center justify-between">
-                          <span className="font-medium text-sm">{item.label}</span>
+                          <span className="font-semibold text-sm uppercase tracking-wide">{item.label}</span>
                           {(item as any).badge && (
                             <span className={`${(item as any).badgeColor} text-white text-xs font-semibold px-2 py-0.5 rounded-full`}>
                               {(item as any).badge}
@@ -274,6 +274,7 @@ const AppSidebarNav = () => {
               );
             })}
           </nav>
+
           {/* Bottom section - Hidden in collapsed state and for Pro/Enterprise users */}
           {!shouldCollapseSidebar && usage.maxPdfGenerations !== -1 && (
             <div className="mx-1 flex flex-col items-start gap-y-4 self-stretch rounded-xl p-4 bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10" data-test-id="free-usage-counter">
@@ -317,7 +318,7 @@ const AppSidebarNav = () => {
           )}
           {/* Upgrade Button for collapsed state */}
           {shouldCollapseSidebar && (
-            <div className="mt-auto mb-2">
+            <div className="mb-2">
               <button
                 onClick={() => setShowUpgradeModal(true)}
                 className="p-2 rounded-lg bg-gradient-to-r from-corporate-gold-600/20 to-corporate-amber-600/20 group relative"
@@ -336,6 +337,52 @@ const AppSidebarNav = () => {
               </button>
             </div>
           )}
+
+          {/* Community Link - At very bottom of viewport */}
+          <div className="community-link relative mt-auto mb-2">
+            <a
+              href="#"
+              className={`group flex items-center gap-3 ${shouldCollapseSidebar ? 'px-2 py-2 justify-center' : 'px-3 py-2.5'} rounded-xl relative overflow-hidden transition-all duration-200 text-amber-700 dark:text-slate-400 hover:text-amber-900 dark:hover:text-white hover:bg-amber-50/50 dark:hover:bg-corporate-navy-800/30`}
+              onMouseEnter={() => setHoveredItem('community')}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              {/* Premium Community Icon */}
+              <span className={`sidebar-icon relative ${shouldCollapseSidebar ? 'w-8 h-8' : 'w-7 h-7'} transition-colors duration-200`}>
+                <div className="relative w-full h-full">
+                  <svg className="relative w-full h-full text-amber-600 dark:text-corporate-amber-400 group-hover:text-amber-700 dark:group-hover:text-corporate-amber-300" fill="currentColor" viewBox="0 0 24 24" strokeWidth="0.5" stroke="currentColor">
+                    {/* Main large sparkle */}
+                    <path d="M12 1L14.5 7.5L21 10L14.5 12.5L12 19L9.5 12.5L3 10L9.5 7.5L12 1Z" opacity="0.3" strokeWidth="1"/>
+                    <path d="M12 3L13.8 8.2L19 10L13.8 11.8L12 17L10.2 11.8L5 10L10.2 8.2L12 3Z" strokeWidth="1"/>
+                    
+                    {/* Top right sparkle */}
+                    <path d="M19.5 4L20.3 6.7L23 7.5L20.3 8.3L19.5 11L18.7 8.3L16 7.5L18.7 6.7L19.5 4Z" strokeWidth="0.8"/>
+                    
+                    {/* Bottom left sparkle */}
+                    <path d="M4.5 16L5.3 18.7L8 19.5L5.3 20.3L4.5 23L3.7 20.3L1 19.5L3.7 18.7L4.5 16Z" strokeWidth="0.8"/>
+                    
+                    {/* Small accent sparkles */}
+                    <circle cx="18" cy="16" r="1.5" opacity="0.6"/>
+                    <circle cx="6" cy="8" r="1" opacity="0.7"/>
+                  </svg>
+                </div>
+              </span>
+              {/* Label - Hidden in collapsed state */}
+              {!shouldCollapseSidebar && (
+                <div className="flex-1 relative">
+                  <span className="font-semibold text-sm uppercase tracking-wide">Talk To Other Users</span>
+                </div>
+              )}
+            </a>
+            {/* Tooltip for collapsed state */}
+            {shouldCollapseSidebar && hoveredItem === 'community' && (
+              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50">
+                <div className="bg-white dark:bg-navy-800 text-slate-900 dark:text-white px-3 py-2 rounded-lg shadow-2xl shadow-slate-300/30 dark:shadow-navy-900/50 border border-slate-200 dark:border-navy-700">
+                  <p className="font-medium text-sm whitespace-nowrap">Talk To Other Users</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Connect with the community</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
       {/* Upgrade Modal */}

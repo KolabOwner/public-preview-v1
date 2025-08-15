@@ -687,17 +687,17 @@
 }
 
 /* Hide non-essential elements in collapsed state */
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/education"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/skills"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/projects"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content > *:not(nav):not(:first-child),
-.app-sidebar[data-route*="/dashboard/job-search"] .sidebar-content > *:not(nav):not(:first-child) {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/summary"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/contact"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/experience"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/education"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/skills"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/projects"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
+.app-sidebar[data-route*="/dashboard/job-search"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link) {
   @apply hidden;
 }
 

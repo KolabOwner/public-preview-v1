@@ -3,7 +3,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
 import { useAuth } from '@/contexts/firebase-auth-context';
@@ -24,12 +24,41 @@ interface ResumeData {
 // Inner component that has access to JobInfoProvider
 function ResumePreviewContent() {
   const [resume, setResume] = useState<ResumeData | null>(null);
+  const [processedResumeData, setProcessedResumeData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [typewriterBullet, setTypewriterBullet] = useState<{experienceIndex: number, bullet: string} | null>(null);
 
   const params = useParams();
   const resumeId = params.resumeId as string;
   const { user } = useAuth();
+
+  // Callback to trigger typewriter effect when bullets are added
+  const handleBulletAdded = useCallback((experienceIndex: number, newBullet: string) => {
+    // Start typewriter effect
+    setTypewriterBullet({ experienceIndex, bullet: newBullet });
+  }, []);
+
+  // Callback when typewriter completes
+  const handleTypewriterComplete = useCallback((experienceIndex: number, newBullet: string) => {
+    // Update the actual resume data after typewriter completes
+    setProcessedResumeData(prev => {
+      if (!prev) return prev;
+      
+      const currentDescription = prev[`rms_experience_${experienceIndex}_description`] || '';
+      const bullets = currentDescription.split('\n').filter(b => b.trim());
+      const newBullets = [...bullets, `•${newBullet}`];
+      const newDescription = newBullets.join('\n');
+      
+      return {
+        ...prev,
+        [`rms_experience_${experienceIndex}_description`]: newDescription
+      };
+    });
+    
+    // Clear typewriter state
+    setTypewriterBullet(null);
+  }, []);
 
   useEffect(() => {
     const fetchResume = async () => {
@@ -61,10 +90,16 @@ function ResumePreviewContent() {
           return;
         }
 
-        setResume({
+        const resumeWithId = {
           ...resumeData,
           id: resumeSnap.id
-        });
+        };
+        
+        setResume(resumeWithId);
+        
+        // Process the resume data initially
+        const processed = resumeData.parsedData || processRMSData(resumeData.rmsRawData) || resumeData;
+        setProcessedResumeData(processed);
       } catch (err) {
         console.error('Error fetching resume:', err);
         setError('Failed to load resume');
@@ -105,16 +140,25 @@ function ResumePreviewContent() {
     );
   }
 
-  // Process the resume data - check for rmsRawData
-  const processedResumeData = resume.parsedData || processRMSData(resume.rmsRawData) || resume;
-
-  // Log what we're passing to the preview
+  if (!processedResumeData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-xl animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ResumePreview
       resumeData={processedResumeData}
       resumeId={resume.id}
       showJobPanels={true}
+      onBulletAdded={handleBulletAdded}
+      typewriterBullet={typewriterBullet}
+      onTypewriterComplete={handleTypewriterComplete}
     />
   );
 }

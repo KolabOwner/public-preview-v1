@@ -328,7 +328,7 @@ const KeywordTargetingPanel: React.FC<KeywordTargetingPanelProps> = ({
   }, [performAnalysis]);
 
   const containerClasses = useMemo(() =>
-    `bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 ${className}`.trim(),
+    `bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 ${className}`.trim(),
     [className]
   );
 

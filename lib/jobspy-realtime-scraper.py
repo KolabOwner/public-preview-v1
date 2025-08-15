@@ -20,7 +20,7 @@ class RealTimeJobSpyScraper:
             'results_wanted': 25,  # Reduced from 25 for faster scraping
             'hours_old': 72,      # Reduced from 72 hours for much faster search
             'country_indeed': 'USA',
-            'linkedin_fetch_description': False,  # MAJOR SPEED IMPROVEMENT - this takes 20+ seconds
+            'linkedin_fetch_description': True,  # Fetch full job descriptions (slower but more complete)
             'distance': 10        # Reduced from 25 for faster search
         }
         self.processed_jobs = []
@@ -42,16 +42,16 @@ class RealTimeJobSpyScraper:
             scrape_params = {**self.default_params, **search_params}
             scrape_params['site_name'] = ['linkedin']
             
-            # Force speed optimizations
-            scrape_params['linkedin_fetch_description'] = False  # Major speed boost
+            # Enable description fetching
+            scrape_params['linkedin_fetch_description'] = True  # Fetch full descriptions
             scrape_params['hours_old'] = min(scrape_params.get('hours_old', 72), 72)  # Max 24 hours
             scrape_params['results_wanted'] = min(scrape_params.get('results_wanted', 25), 25)  # Max 25 jobs
             
-            self.emit_progress("Starting optimized LinkedIn job search...", 20)
-            logger.info(f"Speed-optimized search params: {scrape_params}")
+            self.emit_progress("Starting LinkedIn job search with full descriptions...", 20)
+            logger.info(f"Search params with descriptions enabled: {scrape_params}")
             
             # Start the scraping process
-            self.emit_progress("Connecting to LinkedIn (fast mode)...", 30)
+            self.emit_progress("Connecting to LinkedIn and fetching descriptions...", 30)
             
             try:
                 jobs_df = scrape_jobs(**scrape_params)

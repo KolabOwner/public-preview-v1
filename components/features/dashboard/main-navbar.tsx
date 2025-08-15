@@ -12,12 +12,9 @@ import {
   Target, 
   FileText, 
   Mail, 
-  Search, 
   Grid3X3,
-  ArrowRight,
   Sparkles,
   Users,
-  BookOpen,
   Star,
   TrendingUp
 } from 'lucide-react';

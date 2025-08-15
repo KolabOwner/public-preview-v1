@@ -247,13 +247,15 @@ CRITICAL RULES:
 6. Show technical depth relevant to BOTH the original role AND target job
 7. Maintain complete authenticity - enhance what exists, don't fabricate
 8. NO DUPLICATING achievements from other experiences
+9. Keep bullets concise and natural
+10. Use clear, direct language
 
 FORMATTING REQUIREMENTS:
 - Create exactly 3-4 bullet points maximum
 - Each bullet: "•Action verb + achievement + quantified impact"
-- Keep bullets concise (aim for 1-2 lines when formatted on resume)
-- Avoid excessive technical detail lists - focus on impact over process
-- Use specific metrics and results
+- Keep bullets concise and scannable (under 120 characters)
+- Use specific metrics and direct language
+- Avoid redundant phrasing across bullets
 
 Focus exclusively on this one experience. Create compelling, authentic bullets that showcase how THIS specific role prepares the candidate for the target position.`
 });
@@ -391,8 +393,8 @@ CRITICAL RULES:
 FORMATTING:
 - Create exactly 3-4 bullet points maximum
 - Each bullet: "•Action verb + technical achievement + measurable impact"
-- Keep bullets concise (aim for 1-2 lines when formatted on resume)
-- Focus on key technologies and measurable outcomes, avoid lengthy tech stacks`
+- Keep bullets concise and scannable (under 120 characters)
+- Focus on key technologies and outcomes`
 });
 
 const enhanceSingleInvolvement = ai.definePrompt({
@@ -445,8 +447,8 @@ CRITICAL RULES:
 FORMATTING:
 - Create exactly 2-3 bullet points maximum
 - Each bullet: "•Action verb + contribution + measurable impact"
-- Keep bullets concise (aim for 1-2 lines when formatted on resume)
-- Focus on transferable professional skills and quantifiable results`
+- Keep bullets concise and scannable (under 100 characters)
+- Focus on transferable skills with specific results`
 });
 
 const enhanceSingleCertification = ai.definePrompt({
