@@ -3,31 +3,29 @@
 // PUT /api/jobs/applications/[id] - Update application status
 
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb, verifyIdToken } from '../../../../lib/server/auth/firebase-admin';
+import { adminDb } from '@/lib/server/auth/firebase-admin';
+import { verifyAuthToken } from '@/lib/server/auth/middleware';
 import { 
   JobApplication, 
   ApplicationStatus,
-  ApplyToJobRequest,
-  UpdateApplicationStatusRequest,
-  ApplicationStatusHistory
-} from '../../../../types/job-board.types';
+  ApplyToJobRequest
+} from '@/types/job-board.types';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user ID from the request (we'll verify the token later)
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const status = searchParams.get('status') as ApplicationStatus | null;
-
-    if (!userId) {
+    const authUser = await verifyAuthToken(request);
+    if (!authUser) {
       return NextResponse.json(
-        { error: 'User ID is required' }, 
-        { status: 400 }
+        { error: 'Unauthorized' }, 
+        { status: 401 }
       );
     }
 
-    // TODO: Add proper authentication verification here
-    // For now, we'll trust the userId parameter since it comes from the authenticated client
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status') as ApplicationStatus | null;
+    
+    // Use authenticated user's ID instead of trusting query parameter
+    const userId = authUser.uid;
     
     let applicationsQuery = adminDb.collection('job_applications')
       .where('userId', '==', userId)
@@ -50,7 +48,7 @@ export async function GET(request: NextRequest) {
           appData.job = { id: jobDoc.id, ...jobDoc.data() } as any;
           
           // Get company info for the job
-          if (appData.job.companyId) {
+          if (appData.job?.companyId) {
             const companyDoc = await adminDb.collection('companies').doc(appData.job.companyId).get();
             if (companyDoc.exists) {
               appData.job.company = { id: companyDoc.id, ...companyDoc.data() } as any;
@@ -74,14 +72,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, jobId, jobData, ...applicationData }: ApplyToJobRequest & { userId: string; jobId: string; jobData?: any } = await request.json();
-
-    if (!userId || !jobId) {
+    const authUser = await verifyAuthToken(request);
+    if (!authUser) {
       return NextResponse.json(
-        { error: 'User ID and Job ID are required' }, 
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
+    }
+
+    const { jobId, jobData, ...applicationData }: ApplyToJobRequest & { jobId: string; jobData?: any } = await request.json();
+
+    if (!jobId) {
+      return NextResponse.json(
+        { error: 'Job ID is required' }, 
         { status: 400 }
       );
     }
+
+    // Use authenticated user's ID
+    const userId = authUser.uid;
 
     // Check if user already applied
     const existingSnapshot = await adminDb.collection('job_applications')
