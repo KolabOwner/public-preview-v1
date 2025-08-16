@@ -12,7 +12,9 @@ import SharePanel from "@/components/features/resume/panels/share-panel";
 import { getDefaultSectionOrder, getSectionTitle } from '../sections/resume-sections';
 import { InlineDraggableSection, InlineDraggableSectionsContainer } from '../sections/inline-draggable-section';
 import { useResumeFont, useResumeStyles, useResumeTheme } from '@/lib/client/hooks/resume/use-resume-styles';
-import { generateResumePDFAsync, ResumeData } from "@/lib/server/services/resume/pdf-generator";
+// Import html2canvas and jsPDF for client-side PDF generation
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { ContactInfo } from "@/contexts/resume-data-context";
 import ResumeHeaderBar, {ResumeHeaderBarRef} from "@/components/features/dashboard/resume-header-bar";
 import KeywordTargetingPanel from "@/components/features/resume/panels/keyword-targeting-panel";
@@ -182,50 +184,148 @@ export default function ResumePreview({
     return undefined; // fallback, though this line is technically unreachable
   }
 
-  // The main function
+  // The main function - Direct browser print with CSS styling
   const handleDownloadPDF = async () => {
-    try {
-      // Extract contact info for filename
-      const contact: ContactInfo = resumeData?.contact || resumeData?.contactInfo || {};
-      const fullName = contact.fullName?.trim() || 'Resume';
+    // Get user's margin preference, paper size, and current zoom level
+    const margins = documentSettings.margins;
+    const marginInches = margins ? margins.top : 0.75;
+    const paperSize = documentSettings.paperSize || 'Letter';
+    const originalZoom = documentSettings.zoom;
+    
+    // Debug: Log the settings
+    console.log('PDF Generation - Settings:', {
+      margins,
+      marginInches,
+      paperSize,
+      originalZoom
+    });
 
-      // Prepare data for PDF generator with complete template and document settings
-      const resumeDataForPDF: ResumeData = {
-        title: resumeData?.title || 'Resume',
-        template: currentTemplate,
-        fontStyle:
-          documentSettings.fontFamily === 'Merriweather'
-            ? 'elegant'
-            : documentSettings.fontFamily === 'Times New Roman'
-            ? 'professional'
-            : 'modern',
-        fontSize: getFontSize(documentSettings.fontSize), // strictly typed!
-        parsedData: resumeData,
-        // Add document settings for PDF generation (only supported properties)
-        documentSettings: {
-          fontFamily: documentSettings.fontFamily,
-          fontSize: documentSettings.fontSize,
-          margins: documentSettings.margins,
-          paperSize: documentSettings.paperSize as "Letter" | "A4" | undefined,
-        },
-        sectionOrder: sectionOrder,
-      };
-  
-      // Generate PDF Blob
-      const pdfBlob = await generateResumePDFAsync(resumeDataForPDF);
-  
-      // Create download link
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      const safeFilename = sanitizeFilename(fullName) || 'Resume';
-      link.href = url;
-      link.download = `${safeFilename}_Resume.pdf`;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-  
+    // Store current zoom and temporarily set to 100% for PDF generation
+    const needsZoomReset = originalZoom !== 100;
+
+    try {
+      if (needsZoomReset) {
+        updateSetting('zoom', 100);
+        // Wait a bit for the DOM to update with the new zoom
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // Add print-specific CSS to the current document
+      const printStyles = document.createElement('style');
+      printStyles.id = 'print-styles';
+      printStyles.media = 'print';
+      printStyles.textContent = `
+        @page {
+          size: ${paperSize.toLowerCase()};
+          margin: default;
+        }
+        
+        @media print {
+          /* Reset all default margins and padding, but preserve resume borders */
+          * {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+          }
+          
+          /* Restore resume section borders */
+          .resume-section-header,
+          h2.resume-section-header {
+            border-bottom: 1px solid #000 !important;
+          }
+          
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+          }
+          
+          /* Hide everything except resume */
+          body * {
+            visibility: hidden;
+          }
+          
+          .resume-container, 
+          .resume-container * {
+            visibility: visible !important;
+          }
+          
+          /* Specifically ensure contact elements are displayed */
+          header,
+          .resume-name,
+          .resume-contact {
+            visibility: visible !important;
+            display: block !important;
+          }
+          
+          /* Keep contact spans inline for proper formatting */
+          .resume-contact span {
+            visibility: visible !important;
+            display: inline !important;
+          }
+          
+          .resume-container {
+            position: absolute;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            background: white !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          /* Hide interactive elements */
+          button, 
+          .pdf-hide, 
+          .no-print,
+          .bg-white\/80,
+          .bg-gray-800\/80,
+          .backdrop-blur-sm,
+          [class*="shadow"] {
+            display: none !important;
+          }
+          
+          /* Clean styling for PDF */
+          * {
+            box-shadow: none !important;
+            text-shadow: none !important;
+            color: black !important;
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+        }
+      `;
+
+      // Remove any existing print styles
+      const existingPrintStyles = document.getElementById('print-styles');
+      if (existingPrintStyles) {
+        existingPrintStyles.remove();
+      }
+
+      // Add the new print styles
+      document.head.appendChild(printStyles);
+
+      // Trigger print
+      window.print();
+
+      // Restore zoom immediately after print dialog opens
+      if (needsZoomReset) {
+        updateSetting('zoom', originalZoom);
+      }
+
+      // Clean up - remove print styles after printing
+      setTimeout(() => {
+        const stylesToRemove = document.getElementById('print-styles');
+        if (stylesToRemove) {
+          stylesToRemove.remove();
+        }
+      }, 1000);
+
       // Success toast
       toast({
         title: "PDF Downloaded",
@@ -234,6 +334,12 @@ export default function ResumePreview({
     } catch (error) {
       // Error handling
       console.error('Error downloading PDF:', error);
+      
+      // Restore original zoom on error
+      if (needsZoomReset && originalZoom) {
+        updateSetting('zoom', originalZoom);
+      }
+      
       toast({
         title: "Download Failed",
         description: "Unable to generate PDF. Please try again.",
@@ -1365,7 +1471,7 @@ export default function ResumePreview({
         }}
       >
         <div
-          className="shadow-2xl overflow-hidden max-w-full bg-white"
+          className="resume-container shadow-2xl overflow-hidden max-w-full bg-white"
           style={{
             transform: `scale(${documentSettings.zoom / 100})`,
             transformOrigin: 'top center',
