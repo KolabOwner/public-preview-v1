@@ -47,11 +47,11 @@ function ResumePreviewContent() {
   // Callback when typewriter completes
   const handleTypewriterComplete = useCallback((experienceIndex: number, newBullet: string) => {
     // Update the actual resume data after typewriter completes
-    setProcessedResumeData(prev => {
+    setProcessedResumeData((prev: any) => {
       if (!prev) return prev;
       
       const currentDescription = prev[`rms_experience_${experienceIndex}_description`] || '';
-      const bullets = currentDescription.split('\n').filter(b => b.trim());
+      const bullets = currentDescription.split('\n').filter((b: string) => b.trim());
       const newBullets = [...bullets, `•${newBullet}`];
       const newDescription = newBullets.join('\n');
       
@@ -126,7 +126,6 @@ function ResumePreviewContent() {
       toast({
         title: 'Resume Optimized Successfully!',
         description: 'Your resume has been tailored with relevant keywords and improved content for this job.',
-        duration: 5000,
       });
     }
   }, [targetingComplete, fetchResume, toast]);
