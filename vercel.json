@@ -3,5 +3,16 @@
     "app/api/resumes/parse/route.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/_next/static/css/(.*)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/css; charset=utf-8"
+        }
+      ]
+    }
+  ]
 }

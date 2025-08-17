@@ -15,7 +15,7 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
-  preload: true,
+  preload: false,
   fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif']
 });
 
@@ -24,7 +24,7 @@ const sourceSansPro = Source_Sans_3({
   weight: ['400', '600', '700'],
   display: 'swap',
   variable: '--font-source-sans',
-  preload: true,
+  preload: false,
   fallback: ['Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif']
 });
 
@@ -33,7 +33,7 @@ const merriweather = Merriweather({
   weight: ['300', '400', '700'],
   display: 'swap',
   variable: '--font-merriweather',
-  preload: true,
+  preload: false,
   fallback: ['Georgia', 'Times New Roman', 'serif']
 });
 

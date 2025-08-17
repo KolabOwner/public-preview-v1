@@ -12,11 +12,13 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Use fas (solid) as primary style with font-display: swap */
+/* Use fas (solid) as primary style with font-display: swap and fallbacks */
 .fad::before {
-  font-family: "Font Awesome 6 Free", serif;
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "Font Awesome 6 Pro", serif;
   font-weight: 900;
   font-display: swap;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Map all duotone icons to their solid variants */
@@ -47,22 +49,34 @@
 
 /* Additional icon mappings for toolbar - ensure regular (far) icons work */
 .far.fa-minus::before {
-  font-family: "Font Awesome 6 Free", serif;
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", serif;
   font-weight: 400;
-  content: "\f068"; 
+  content: "\f068";
+  font-display: swap;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .far.fa-plus::before {
-  font-family: "Font Awesome 6 Free", serif;
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", serif;
   font-weight: 400;
-  content: "\f067"; 
+  content: "\f067";
+  font-display: swap;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .fas.fa-line-height::before {
-  font-family: "Font Awesome 6 Free", serif;
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", serif;
   font-weight: 900;
-  content: "\f871"; 
+  content: "\f871";
+  font-display: swap;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .far.fa-angle-down::before {
-  font-family: "Font Awesome 6 Free", serif;
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", serif;
   font-weight: 400;
-  content: "\f107"; 
+  content: "\f107";
+  font-display: swap;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
