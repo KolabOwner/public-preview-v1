@@ -12,10 +12,7 @@ import SharePanel from "@/components/features/resume/panels/share-panel";
 import { getDefaultSectionOrder, getSectionTitle } from '../sections/resume-sections';
 import { InlineDraggableSection, InlineDraggableSectionsContainer } from '../sections/inline-draggable-section';
 import { useResumeFont, useResumeStyles, useResumeTheme } from '@/lib/client/hooks/resume/use-resume-styles';
-// Import html2canvas and jsPDF for client-side PDF generation
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
-import { ContactInfo } from "@/contexts/resume-data-context";
+
 import ResumeHeaderBar, {ResumeHeaderBarRef} from "@/components/features/dashboard/resume-header-bar";
 import KeywordTargetingPanel from "@/components/features/resume/panels/keyword-targeting-panel";
 import ResumeEditorPanel from "@/components/features/resume/panels/resume-editor-panel";

@@ -321,7 +321,7 @@ export async function targetResume(
 
     let optimizedResume = { ...resume };
     let totalChanges = 0;
-    let totalKeywordsAdded: string[] = [];
+    const totalKeywordsAdded: string[] = [];
 
     // Step 3: Process experiences (allow slightly more changes for better integration)
     const experienceCount = resume.rms_experience_count || 0;

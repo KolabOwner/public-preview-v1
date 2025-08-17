@@ -270,7 +270,7 @@ const ResumeEditorPanel: React.FC<ResumeEditorPanelProps> = ({
       
       // Get current description
       const currentDescription = resumeData[`rms_experience_${selectedExperienceIndex}_description`] || '';
-      const bullets = currentDescription.split('\n').filter(b => b.trim());
+      const bullets = currentDescription.split('\n').filter((b: string) => b.trim());
       
       // Add new bullet
       const newBullets = [...bullets, `•${generatedBullet}`];
@@ -424,7 +424,7 @@ const ResumeEditorPanel: React.FC<ResumeEditorPanelProps> = ({
 
         {workflowStep === 'success' && (
           <div className="text-sm text-gray-500 mb-4">
-            We've added a new bullet point to your experience.
+            We&apos;ve added a new bullet point to your experience.
           </div>
         )}
 
