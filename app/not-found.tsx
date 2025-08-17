@@ -1,12 +1,7 @@
-import Link from 'next/link';
-import { Metadata } from 'next';
-import { HomeIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+'use client';
 
-export const metadata: Metadata = {
-  title: '404 - Page Not Found | Rezum AI',
-  description: 'The page you are looking for could not be found. Browse our resume templates, AI tools, and resources to find what you need.',
-  robots: 'noindex, follow',
-};
+import Link from 'next/link';
+import { HomeIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export default function NotFound() {
   const popularPages = [
