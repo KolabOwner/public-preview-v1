@@ -91,7 +91,6 @@ export const metadata: Metadata = {
   verification: {
     google: 'google-site-verification-code',
     yandex: 'yandex-verification-code',
-    bing: 'bing-verification-code',
   },
 };
 
