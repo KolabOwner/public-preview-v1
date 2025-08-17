@@ -87,7 +87,7 @@ const nextConfig = {
             value: `
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://apis.google.com https://cdnjs.cloudflare.com https://www.google.com/recaptcha/ https://recaptcha.google.com;
-              script-src-elem 'self' 'unsafe-inline' 'sha256-hHUpxG06sCMTxk0oJgYdDNkai4FVQ0oNjpx2z4HmPxw=' 'sha256-7PZaH7TzFg4JdT5xJguN7Och6VcMcP1LW4N3fQ936Fs=' 'sha256-MqH8JJslY2fF2bGYY1rZlpCNrRCnWKRzrrDefixUJTI=' 'sha256-ZswfTY7H35rbv8WC7NXBoiC7WNu86vSzCDChNWwZZDM=' https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://apis.google.com https://cdnjs.cloudflare.com https://js.stripe.com https://m.stripe.network https://www.google.com/recaptcha/ https://recaptcha.google.com https://va.vercel-scripts.com;
+              script-src-elem 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://apis.google.com https://cdnjs.cloudflare.com https://js.stripe.com https://m.stripe.network https://www.google.com/recaptcha/ https://recaptcha.google.com https://va.vercel-scripts.com;
               worker-src 'self' blob: data: https://cdnjs.cloudflare.com;
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
               style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
