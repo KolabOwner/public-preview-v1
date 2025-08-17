@@ -52,7 +52,7 @@ export function generateMetadata(config: SEOConfig): Metadata {
         },
       ],
       locale: 'en_US',
-      type,
+      type: type as 'website' | 'article',
       ...(publishedTime && { publishedTime }),
       ...(modifiedTime && { modifiedTime }),
     },
