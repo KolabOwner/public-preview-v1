@@ -130,7 +130,7 @@ export default function TestimonialSection({
               </div>
               
               <blockquote className="flex-1 text-gray-700 dark:text-gray-300 italic" itemProp="reviewBody">
-                "{testimonial.content}"
+                &ldquo;{testimonial.content}&rdquo;
               </blockquote>
               
               <time 
