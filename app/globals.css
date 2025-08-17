@@ -666,8 +666,7 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"],
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"],
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"],
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"],
-.app-sidebar[data-route*="/dashboard/job-search"] {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] {
   width: var(--sidebar-collapsed);
   min-width: var(--sidebar-collapsed);
 }
@@ -681,8 +680,7 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] .sidebar-content,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] .sidebar-content,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] .sidebar-content,
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content,
-.app-sidebar[data-route*="/dashboard/job-search"] .sidebar-content {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content {
   @apply items-center px-2;
 }
 
@@ -696,8 +694,7 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link),
-.app-sidebar[data-route*="/dashboard/job-search"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link) {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] .sidebar-content > *:not(nav):not(:first-child):not(.community-link) {
   @apply hidden;
 }
 
@@ -711,8 +708,7 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav,
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav,
-.app-sidebar[data-route*="/dashboard/job-search"] nav {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav {
   @apply flex flex-col items-center;
 }
 
@@ -725,8 +721,7 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav a,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav a,
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav a,
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a,
-.app-sidebar[data-route*="/dashboard/job-search"] nav a {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a {
   @apply w-12 h-12 justify-center rounded-xl;
 }
 
@@ -740,8 +735,7 @@
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/involvement"] nav a > *:not(.sidebar-icon),
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/coursework"] nav a > *:not(.sidebar-icon),
 .app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/preview"] nav a > *:not(.sidebar-icon),
-.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a > *:not(.sidebar-icon),
-.app-sidebar[data-route*="/dashboard/job-search"] nav a > *:not(.sidebar-icon) {
+.app-sidebar[data-route*="/dashboard/resumes/"][data-route*="/cover-letter"] nav a > *:not(.sidebar-icon) {
   @apply hidden;
 }
 
@@ -995,4 +989,43 @@
       rgba(255, 0, 0, 0.1) var(--baseline)
     );
   }
+
+/* PDF Generation Styles */
+.pdf-mode {
+  /* Hide all interactive elements in PDF mode */
+}
+
+.pdf-mode .pdf-hide,
+.pdf-mode .no-print,
+.pdf-mode button,
+.pdf-mode .bg-white\/80,
+.pdf-mode .bg-gray-800\/80,
+.pdf-mode .backdrop-blur-sm,
+.pdf-mode [class*="shadow"],
+.pdf-mode .border-gray-200,
+.pdf-mode .border-gray-700 {
+  display: none !important;
+}
+
+/* Ensure clean PDF layout */
+.pdf-mode .max-w-6xl,
+.pdf-mode .xl\:max-w-7xl {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Clean background for PDF */
+.pdf-mode body,
+.pdf-mode html,
+.pdf-mode * {
+  background: white !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Ensure text is black */
+.pdf-mode * {
+  color: black !important;
+}
 }

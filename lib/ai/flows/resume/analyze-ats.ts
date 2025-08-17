@@ -84,11 +84,17 @@ const analyzeEnterpriseFlow = ai.defineFlow(
 export function extractResumeText(resumeData: any): string {
   const sections: string[] = [];
 
-  // Check if this is RMS format data
-  const isRMSFormat = resumeData.rmsRawData && resumeData.rmsVersion;
+  // Check if this is RMS format data - look for RMS field patterns
+  const hasRMSFields = resumeData.rms_contact_fullname || resumeData.rms_experience_count || 
+                      resumeData.Rms_contact_fullName || resumeData.Rms_experience_count ||
+                      (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count));
 
-  if (isRMSFormat) {
-    return extractRMSResumeText(resumeData.rmsRawData);
+  if (hasRMSFields) {
+    // If parsedData exists and has RMS fields, use that; otherwise use resumeData directly
+    const rmsData = (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count)) 
+      ? resumeData.parsedData 
+      : resumeData;
+    return extractRMSResumeText(rmsData);
   }
 
   // Add contact information
@@ -196,39 +202,57 @@ export function extractResumeText(resumeData: any): string {
 function extractRMSResumeText(rmsData: any): string {
   const sections: string[] = [];
 
+  // Helper to get field value (try both lowercase and uppercase variants)
+  const getRmsField = (field: string) => {
+    const lowerField = field.toLowerCase();
+    const upperField = field.replace('rms_', 'Rms_');
+    return rmsData[lowerField] || rmsData[upperField] || '';
+  };
+
   // Add contact information
-  if (rmsData.Rms_contact_fullName) {
-    sections.push(`Name: ${rmsData.Rms_contact_fullName}`);
+  const fullName = getRmsField('rms_contact_fullname') || getRmsField('rms_contact_fullName');
+  if (fullName) {
+    sections.push(`Name: ${fullName}`);
   }
-  if (rmsData.Rms_contact_email) {
-    sections.push(`Email: ${rmsData.Rms_contact_email}`);
+  
+  const email = getRmsField('rms_contact_email');
+  if (email) {
+    sections.push(`Email: ${email}`);
   }
-  if (rmsData.Rms_contact_phone) {
-    sections.push(`Phone: ${rmsData.Rms_contact_phone}`);
+  
+  const phone = getRmsField('rms_contact_phone');
+  if (phone) {
+    sections.push(`Phone: ${phone}`);
   }
-  if (rmsData.Rms_contact_city && rmsData.Rms_contact_state) {
-    sections.push(`Location: ${rmsData.Rms_contact_city}, ${rmsData.Rms_contact_state}`);
+  
+  const city = getRmsField('rms_contact_city');
+  const state = getRmsField('rms_contact_state');
+  if (city && state) {
+    sections.push(`Location: ${city}, ${state}`);
   }
-  if (rmsData.Rms_contact_linkedin) {
-    sections.push(`LinkedIn: ${rmsData.Rms_contact_linkedin}`);
+  
+  const linkedin = getRmsField('rms_contact_linkedin');
+  if (linkedin) {
+    sections.push(`LinkedIn: ${linkedin}`);
   }
 
   // Add summary
-  if (rmsData.Rms_summary) {
-    sections.push(`\nSUMMARY:\n${rmsData.Rms_summary}`);
+  const summary = getRmsField('rms_summary');
+  if (summary) {
+    sections.push(`\nSUMMARY:\n${summary}`);
   }
 
   // Add work experience
-  const experienceCount = rmsData.Rms_experience_count || 0;
+  const experienceCount = getRmsField('rms_experience_count') || 0;
   if (experienceCount > 0) {
     sections.push('\nWORK EXPERIENCE:');
     for (let i = 0; i < experienceCount; i++) {
-      const role = rmsData[`Rms_experience_${i}_role`];
-      const company = rmsData[`Rms_experience_${i}_company`];
-      const dateBegin = rmsData[`Rms_experience_${i}_dateBegin`];
-      const dateEnd = rmsData[`Rms_experience_${i}_dateEnd`];
-      const location = rmsData[`Rms_experience_${i}_location`];
-      const description = rmsData[`Rms_experience_${i}_description`];
+      const role = getRmsField(`rms_experience_${i}_role`);
+      const company = getRmsField(`rms_experience_${i}_company`);
+      const dateBegin = getRmsField(`rms_experience_${i}_datebegin`) || getRmsField(`rms_experience_${i}_dateBegin`);
+      const dateEnd = getRmsField(`rms_experience_${i}_dateend`) || getRmsField(`rms_experience_${i}_dateEnd`);
+      const location = getRmsField(`rms_experience_${i}_location`);
+      const description = getRmsField(`rms_experience_${i}_description`);
 
       if (role || company) {
         sections.push(`\n${role || 'Position'} at ${company || 'Company'}`);
@@ -240,15 +264,15 @@ function extractRMSResumeText(rmsData: any): string {
   }
 
   // Add education
-  const educationCount = rmsData.Rms_education_count || 0;
+  const educationCount = getRmsField('rms_education_count') || 0;
   if (educationCount > 0) {
     sections.push('\nEDUCATION:');
     for (let i = 0; i < educationCount; i++) {
-      const qualification = rmsData[`Rms_education_${i}_qualification`];
-      const institution = rmsData[`Rms_education_${i}_institution`];
-      const date = rmsData[`Rms_education_${i}_date`];
-      const location = rmsData[`Rms_education_${i}_location`];
-      const score = rmsData[`Rms_education_${i}_score`];
+      const qualification = getRmsField(`rms_education_${i}_qualification`);
+      const institution = getRmsField(`rms_education_${i}_institution`);
+      const date = getRmsField(`rms_education_${i}_date`);
+      const location = getRmsField(`rms_education_${i}_location`);
+      const score = getRmsField(`rms_education_${i}_score`);
 
       if (qualification || institution) {
         sections.push(`\n${qualification || 'Degree'}`);
@@ -261,12 +285,12 @@ function extractRMSResumeText(rmsData: any): string {
   }
 
   // Add skills
-  const skillCount = rmsData.Rms_skill_count || 0;
+  const skillCount = getRmsField('rms_skill_count') || 0;
   if (skillCount > 0) {
     sections.push('\nSKILLS:');
     for (let i = 0; i < skillCount; i++) {
-      const category = rmsData[`Rms_skill_${i}_category`];
-      const keywords = rmsData[`Rms_skill_${i}_keywords`];
+      const category = getRmsField(`rms_skill_${i}_category`);
+      const keywords = getRmsField(`rms_skill_${i}_keywords`);
       
       if (keywords) {
         sections.push(`${category || 'Skills'}: ${keywords}`);
@@ -275,13 +299,13 @@ function extractRMSResumeText(rmsData: any): string {
   }
 
   // Add certifications
-  const certificationCount = rmsData.Rms_certification_count || 0;
+  const certificationCount = getRmsField('rms_certification_count') || 0;
   if (certificationCount > 0) {
     sections.push('\nCERTIFICATIONS:');
     for (let i = 0; i < certificationCount; i++) {
-      const name = rmsData[`Rms_certification_${i}_name`];
-      const department = rmsData[`Rms_certification_${i}_department`];
-      const date = rmsData[`Rms_certification_${i}_date`];
+      const name = getRmsField(`rms_certification_${i}_name`);
+      const department = getRmsField(`rms_certification_${i}_department`) || getRmsField(`rms_certification_${i}_issuer`);
+      const date = getRmsField(`rms_certification_${i}_date`);
 
       if (name) {
         sections.push(`${name}${department ? ` - ${department}` : ''}`);
@@ -291,13 +315,13 @@ function extractRMSResumeText(rmsData: any): string {
   }
 
   // Add projects
-  const projectCount = rmsData.Rms_project_count || 0;
+  const projectCount = getRmsField('rms_project_count') || 0;
   if (projectCount > 0) {
     sections.push('\nPROJECTS:');
     for (let i = 0; i < projectCount; i++) {
-      const title = rmsData[`Rms_project_${i}_title`];
-      const description = rmsData[`Rms_project_${i}_description`];
-      const technologies = rmsData[`Rms_project_${i}_technologies`];
+      const title = getRmsField(`rms_project_${i}_title`);
+      const description = getRmsField(`rms_project_${i}_description`);
+      const technologies = getRmsField(`rms_project_${i}_technologies`);
 
       if (title) {
         sections.push(`\n${title}`);

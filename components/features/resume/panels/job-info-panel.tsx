@@ -1,4 +1,7 @@
+// src/components/resume/panels/job-info-panel.tsx
+
 'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useJobInfo } from '@/contexts/job-info-context';
@@ -12,13 +15,21 @@ interface JobInfoPanelProps {
 }
 
 export default function JobInfoPanel({ resumeId, onComplete, className = '' }: JobInfoPanelProps) {
-  const { updateJobInfo, isLoading, currentResumeId, analysisResults, jobInfo, setCurrentResumeId } = useJobInfo();
+  const { updateJobInfo, isLoading, currentResumeId, analysisResults, jobInfo, setCurrentResumeId, isTargeting } = useJobInfo();
   const { user } = useAuth();
   const { toast } = useToast();
   const [jobTitle, setJobTitle] = useState('');
   const [jobCompany, setJobCompany] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [autoTargetEnabled, setAutoTargetEnabled] = useState(() => {
+    // Load from localStorage, default to true
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('autoTargetEnabled');
+      return saved ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
 
   // Set the resume ID in the context when the component mounts
   useEffect(() => {
@@ -26,6 +37,13 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
       setCurrentResumeId(resumeId);
     }
   }, [resumeId, currentResumeId, setCurrentResumeId, user?.uid]);
+
+  // Save toggle state to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('autoTargetEnabled', JSON.stringify(autoTargetEnabled));
+    }
+  }, [autoTargetEnabled]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,14 +67,18 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
       console.log('Prop resume ID:', resumeId);
       console.log('User ID:', user?.uid);
       // Call updateJobInfo and log the result
-      const result = await updateJobInfo(jobData);
+      const result = await updateJobInfo(jobData, {
+        autoTarget: autoTargetEnabled
+      });
       console.log('updateJobInfo result:', result);
       console.log('Analysis results from context:', analysisResults);
       console.log('Job info from context:', jobInfo);
 
       toast({
         title: 'Analysis Complete',
-        description: 'Job keywords have been analyzed successfully',
+        description: autoTargetEnabled 
+          ? 'Job keywords have been analyzed and your resume is being optimized...'
+          : 'Job keywords have been analyzed successfully',
       });
       onComplete?.();
     } catch (err) {
@@ -75,6 +97,7 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
   };
 
   const isAnalyzing = isLoading || isSubmitting;
+  const isProcessing = isAnalyzing || isTargeting;
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 w-full h-full pb-6 ${className}`}>
@@ -85,12 +108,59 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
             <h2 className="text-lg leading-7 font-semibold text-gray-900 dark:text-white flex w-full justify-between items-center">
               <span className="w-full">AI Keyword Targeting</span>
             </h2>
+            {isAnalyzing && !isTargeting && (
+              <div className="flex items-center text-sm text-blue-600 dark:text-blue-400 mt-2">
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <span>Analyzing job keywords...</span>
+              </div>
+            )}
+            {isTargeting && (
+              <div className="flex items-center text-sm text-green-600 dark:text-green-400 mt-2">
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <span>Optimizing your resume content...</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Divider */}
       <div className="w-full border-t border-gray-200 dark:border-gray-700 mt-0 mb-0 !mt-4"></div>
+
+      {/* Auto-Target Toggle */}
+      <div className="bg-white dark:bg-gray-800 px-4 lg:px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+              Auto-optimize resume content
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Automatically tailor your resume using AI when job info is saved
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAutoTargetEnabled(!autoTargetEnabled)}
+            disabled={isProcessing}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+              autoTargetEnabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+            }`}
+            role="switch"
+            aria-checked={autoTargetEnabled}
+            aria-labelledby="auto-target-label"
+          >
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                autoTargetEnabled ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
 
       {/* Content */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 lg:p-6 !border-none !rounded-none !py-0">
@@ -133,7 +203,7 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
                         required
                         value={jobTitle}
                         onChange={(e) => setJobTitle(e.target.value)}
-                        disabled={isAnalyzing}
+                        disabled={isProcessing}
                       />
                     </div>
                   </div>
@@ -160,7 +230,7 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
                   style={{ height: '172px' }}
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  disabled={isAnalyzing}
+                  disabled={isProcessing}
                   required
                 />
               </div>
@@ -168,16 +238,23 @@ export default function JobInfoPanel({ resumeId, onComplete, className = '' }: J
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isAnalyzing}
+                disabled={isProcessing}
                 className="relative flex items-center justify-center font-bold uppercase focus:ring-0 focus:outline-none transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed !w-full border-0 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 focus:bg-blue-500 text-white px-3 py-2.5 h-10 leading-5 rounded-md text-sm"
               >
-                {isAnalyzing ? (
+                {isTargeting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <span className="px-1">Optimizing Resume...</span>
+                  </>
+                ) : isAnalyzing ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     <span className="px-1">Analyzing Keywords...</span>
                   </>
                 ) : (
-                  <span className="px-1">SAVE JOB DESCRIPTION</span>
+                  <span className="px-1">
+                    {autoTargetEnabled ? 'ANALYZE & OPTIMIZE' : 'ANALYZE JOB DESCRIPTION'}
+                  </span>
                 )}
               </button>
             </form>

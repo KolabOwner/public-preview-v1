@@ -29,6 +29,7 @@ interface JobInfoContextType {
   // Loading states
   isLoading: boolean;
   isAnalyzing: boolean;
+  isTargeting: boolean;
   error: string | null;
 
   // Core actions
@@ -43,6 +44,7 @@ interface JobInfoContextType {
   // Utility
   hasJobInfo: boolean;
   canAnalyze: boolean;
+  targetingComplete: boolean;
 }
 
 const JobInfoContext = createContext<JobInfoContextType | undefined>(undefined);
@@ -61,6 +63,8 @@ export function JobInfoProvider({ children, initialResumeId }: JobInfoProviderPr
   const [analysisResults, setAnalysisResults] = useState<KeywordAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isTargeting, setIsTargeting] = useState(false);
+  const [targetingComplete, setTargetingComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Computed values
@@ -247,6 +251,58 @@ export function JobInfoProvider({ children, initialResumeId }: JobInfoProviderPr
       setJobInfo(newJobInfo);
       setAnalysisResults(results);
 
+      // Automatically trigger resume targeting after job info is saved
+      if (options.autoTarget !== false) {
+        try {
+          setIsTargeting(true);
+          setTargetingComplete(false);
+          console.log('Triggering automatic resume targeting...');
+          const { doc, getDoc, updateDoc } = await import('firebase/firestore');
+          const { db } = await import('@/config/firebase-config');
+          
+          // Get the current resume data
+          const resumeRef = doc(db, 'resumes', targetResumeId);
+          const resumeSnap = await getDoc(resumeRef);
+          
+          if (resumeSnap.exists()) {
+            const resumeData = resumeSnap.data();
+            
+            // Only proceed with targeting if we have parsed data
+            if (resumeData.parsedData || resumeData.rmsRawData) {
+              // Import the targeting function
+              const { targetResume } = await import('@/lib/ai/flows/resume/target-resume');
+              
+              // Run the targeting
+              const targetingResult = await targetResume(
+                resumeData.parsedData || resumeData.rmsRawData || resumeData,
+                jobData.title,
+                jobData.description,
+                jobData.company
+              );
+              
+              // Update the resume with optimized fields
+              await updateDoc(resumeRef, {
+                parsedData: targetingResult.optimizedResume,
+                lastTargeted: new Date().toISOString(),
+                targetJobTitle: jobData.title,
+                targetCompany: jobData.company,
+                targetingScore: targetingResult.matchScore,
+                enhancedSections: targetingResult.enhancedSections,
+                keywordIntegration: targetingResult.keywordIntegration
+              });
+              
+              console.log('Resume automatically targeted with score:', targetingResult.matchScore);
+              setTargetingComplete(true);
+            }
+          }
+        } catch (targetError) {
+          console.error('Failed to auto-target resume:', targetError);
+          // Don't throw - targeting is a nice-to-have, not critical
+        } finally {
+          setIsTargeting(false);
+        }
+      }
+
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to update job info';
       setError(errorMsg);
@@ -313,6 +369,7 @@ export function JobInfoProvider({ children, initialResumeId }: JobInfoProviderPr
     analysisResults,
     isLoading,
     isAnalyzing,
+    isTargeting,
     error,
 
     // Actions
@@ -325,6 +382,7 @@ export function JobInfoProvider({ children, initialResumeId }: JobInfoProviderPr
     // Computed
     hasJobInfo,
     canAnalyze,
+    targetingComplete,
   };
 
   return (

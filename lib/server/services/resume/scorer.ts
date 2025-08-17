@@ -114,13 +114,20 @@ export function scoreResume(resumeData: any, jobInfo?: any): ResumeScore {
   // 1. Personal Information Completeness
   let contact = resumeData.contact || resumeData.contactInfo || {};
   
-  // Handle RMS format
-  if (resumeData.rmsRawData && resumeData.rmsVersion) {
-    const rmsData = resumeData.rmsRawData;
+  // Handle RMS format - check for both direct and nested parsedData
+  const hasRMSFields = resumeData.rms_contact_fullname || resumeData.rms_experience_count || 
+                      resumeData.Rms_contact_fullName || resumeData.Rms_experience_count ||
+                      (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count));
+
+  if (hasRMSFields) {
+    const rmsData = (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count)) 
+      ? resumeData.parsedData 
+      : resumeData;
+    
     contact = {
-      email: rmsData.Rms_contact_email,
-      phone: rmsData.Rms_contact_phone,
-      fullName: rmsData.Rms_contact_fullName
+      email: rmsData.rms_contact_email || rmsData.Rms_contact_email,
+      phone: rmsData.rms_contact_phone || rmsData.Rms_contact_phone,
+      fullName: rmsData.rms_contact_fullname || rmsData.Rms_contact_fullName
     };
   }
   
@@ -454,31 +461,45 @@ export function scoreResume(resumeData: any, jobInfo?: any): ResumeScore {
 function extractFullText(resumeData: any): string {
   const texts: string[] = [];
   
-  // Check if this is RMS format
-  if (resumeData.rmsRawData && resumeData.rmsVersion) {
-    const rmsData = resumeData.rmsRawData;
+  // Helper to get field value (try both lowercase and uppercase variants)
+  const getRmsField = (rmsData: any, field: string) => {
+    const lowerField = field.toLowerCase();
+    const upperField = field.replace('rms_', 'Rms_');
+    return rmsData[lowerField] || rmsData[upperField] || '';
+  };
+  
+  // Check if this is RMS format - look for RMS field patterns
+  const hasRMSFields = resumeData.rms_contact_fullname || resumeData.rms_experience_count || 
+                      resumeData.Rms_contact_fullName || resumeData.Rms_experience_count ||
+                      (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count));
+
+  if (hasRMSFields) {
+    const rmsData = (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count)) 
+      ? resumeData.parsedData 
+      : resumeData;
     
     // Add summary
-    if (rmsData.Rms_summary) texts.push(rmsData.Rms_summary);
+    const summary = getRmsField(rmsData, 'rms_summary');
+    if (summary) texts.push(summary);
     
     // Add experience descriptions
-    const experienceCount = rmsData.Rms_experience_count || 0;
+    const experienceCount = getRmsField(rmsData, 'rms_experience_count') || 0;
     for (let i = 0; i < experienceCount; i++) {
-      const description = rmsData[`Rms_experience_${i}_description`];
+      const description = getRmsField(rmsData, `rms_experience_${i}_description`);
       if (description) texts.push(description);
     }
     
     // Add project descriptions
-    const projectCount = rmsData.Rms_project_count || 0;
+    const projectCount = getRmsField(rmsData, 'rms_project_count') || 0;
     for (let i = 0; i < projectCount; i++) {
-      const description = rmsData[`Rms_project_${i}_description`];
+      const description = getRmsField(rmsData, `rms_project_${i}_description`);
       if (description) texts.push(description);
     }
     
     // Add skills
-    const skillCount = rmsData.Rms_skill_count || 0;
+    const skillCount = getRmsField(rmsData, 'rms_skill_count') || 0;
     for (let i = 0; i < skillCount; i++) {
-      const keywords = rmsData[`Rms_skill_${i}_keywords`];
+      const keywords = getRmsField(rmsData, `rms_skill_${i}_keywords`);
       if (keywords) texts.push(keywords);
     }
     
@@ -517,13 +538,27 @@ function analyzeBulletPoints(resumeData: any): any {
   let totalBullets = 0;
   let positions = 0;
   
-  // Handle RMS format
-  if (resumeData.rmsRawData && resumeData.rmsVersion) {
-    const rmsData = resumeData.rmsRawData;
-    const experienceCount = rmsData.Rms_experience_count || 0;
+  // Helper to get field value (try both lowercase and uppercase variants)
+  const getRmsField = (rmsData: any, field: string) => {
+    const lowerField = field.toLowerCase();
+    const upperField = field.replace('rms_', 'Rms_');
+    return rmsData[lowerField] || rmsData[upperField] || '';
+  };
+  
+  // Check if this is RMS format
+  const hasRMSFields = resumeData.rms_contact_fullname || resumeData.rms_experience_count || 
+                      resumeData.Rms_contact_fullName || resumeData.Rms_experience_count ||
+                      (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count));
+
+  if (hasRMSFields) {
+    const rmsData = (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count)) 
+      ? resumeData.parsedData 
+      : resumeData;
+    
+    const experienceCount = getRmsField(rmsData, 'rms_experience_count') || 0;
     
     for (let i = 0; i < experienceCount; i++) {
-      const description = rmsData[`Rms_experience_${i}_description`];
+      const description = getRmsField(rmsData, `rms_experience_${i}_description`);
       if (description) {
         positions++;
         // Count bullets (lines starting with bullet points or numbered items)
@@ -566,13 +601,27 @@ function analyzeQuantification(resumeData: any): any {
   let totalBullets = 0;
   let quantifiedBullets = 0;
   
-  // Handle RMS format
-  if (resumeData.rmsRawData && resumeData.rmsVersion) {
-    const rmsData = resumeData.rmsRawData;
-    const experienceCount = rmsData.Rms_experience_count || 0;
+  // Helper to get field value (try both lowercase and uppercase variants)
+  const getRmsField = (rmsData: any, field: string) => {
+    const lowerField = field.toLowerCase();
+    const upperField = field.replace('rms_', 'Rms_');
+    return rmsData[lowerField] || rmsData[upperField] || '';
+  };
+  
+  // Check if this is RMS format
+  const hasRMSFields = resumeData.rms_contact_fullname || resumeData.rms_experience_count || 
+                      resumeData.Rms_contact_fullName || resumeData.Rms_experience_count ||
+                      (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count));
+
+  if (hasRMSFields) {
+    const rmsData = (resumeData.parsedData && (resumeData.parsedData.rms_contact_fullname || resumeData.parsedData.rms_experience_count)) 
+      ? resumeData.parsedData 
+      : resumeData;
+    
+    const experienceCount = getRmsField(rmsData, 'rms_experience_count') || 0;
     
     for (let i = 0; i < experienceCount; i++) {
-      const description = rmsData[`Rms_experience_${i}_description`];
+      const description = getRmsField(rmsData, `rms_experience_${i}_description`);
       if (description) {
         const bullets = description.split(/[•\n]/).filter((b: string) => b.trim().length > 10);
         bullets.forEach((bullet: string) => {
@@ -741,10 +790,18 @@ function analyzeSkillsSection(resumeData: any): any {
   
   let totalSkills = 0;
   
+  // Helper to get field value (try both lowercase and uppercase variants)
+  const getRmsField = (rmsData: any, field: string) => {
+    const lowerField = field.toLowerCase();
+    const upperField = field.replace('rms_', 'Rms_');
+    return rmsData[lowerField] || rmsData[upperField] || '';
+  };
+
   // Handle RMS format
-  if (skillsData.Rms_skill_count) {
-    for (let i = 0; i < skillsData.Rms_skill_count; i++) {
-      const keywords = skillsData[`Rms_skill_${i}_keywords`] || '';
+  const skillCount = getRmsField(skillsData, 'rms_skill_count') || skillsData.Rms_skill_count;
+  if (skillCount) {
+    for (let i = 0; i < skillCount; i++) {
+      const keywords = getRmsField(skillsData, `rms_skill_${i}_keywords`) || skillsData[`Rms_skill_${i}_keywords`] || '';
       totalSkills += keywords.split(',').filter((s: string) => s.trim()).length;
     }
   }

@@ -18,8 +18,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
   Loader2, ChevronDown, ChevronRight, Plus, MoreHorizontal,
-  GripVertical, Sparkles, AlertCircle,
-  Palette, Check, Clock
+  GripVertical, Sparkles, AlertCircle, ChevronLeft,
+  Palette, Check, Clock, Trash2
 } from "lucide-react";
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
@@ -29,6 +29,8 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { $getRoot, EditorState } from 'lexical';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { Button } from '@/components/shared/button';
+import { Input } from '@/components/shared/input';
+import { Label } from '@/components/shared/label';
 import { useToast } from '@/lib/client/hooks/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/form-styles.css';
@@ -508,6 +510,50 @@ export default function SkillsForm({ initialData, onSave }: SkillsFormProps) {
                 <AnimatePresence mode="wait">
                   <AutoSaveIndicator status={autoSaveStatus} />
                 </AnimatePresence>
+
+                <div className="resume-form-nav">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={navigatePrev}
+                    disabled={activeIndex === 0 || isSaving}
+                    className="resume-form-nav-button"
+                    title="Previous skill category (← or Ctrl+←)"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  <span className="resume-form-nav-counter">
+                    {activeIndex + 1} / {fields.length}
+                  </span>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={navigateNext}
+                    disabled={activeIndex === fields.length - 1 || isSaving}
+                    className="resume-form-nav-button"
+                    title="Next skill category (→ or Ctrl+→)"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+
+                  {fields.length > 1 && (
+                    <>
+                      <div className="resume-form-nav-divider" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeSkillCategory(activeIndex)}
+                        disabled={isSaving}
+                        className="resume-form-delete-button"
+                        title="Delete this skill category"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -516,7 +562,39 @@ export default function SkillsForm({ initialData, onSave }: SkillsFormProps) {
               <div className="bg-white/90 dark:bg-corporate-navy-800/90 rounded-lg border border-corporate-navy-200 dark:border-corporate-navy-700 p-4 lg:p-6 relative">
                 <div className="opacity-100">
                   <form>
-                    <div className="relative grid items-end gap-x-6 gap-y-4 sm:grid-cols-2">
+                    {/* Add key to force re-render when switching entries */}
+                    <div key={`skill-entry-${activeIndex}`} className="relative grid items-end gap-x-6 gap-y-4 sm:grid-cols-2">
+                      {/* Skill Category Name */}
+                      <div className="relative">
+                        <div className="grid gap-y-1">
+                          <Label className="uppercase flex items-center text-corporate-navy-900 dark:text-gray-100 font-normal text-sm leading-5">
+                            <span className="cursor-default">
+                              <strong>SKILL CATEGORY</strong> <span className="text-red-500"> *</span>
+                            </span>
+                          </Label>
+                          <Controller
+                            name={`entries.${activeIndex}.category`}
+                            control={control}
+                            render={({ field }) => (
+                              <div className={`resume-input-container ${getFieldErrorMessage('category') ? 'resume-input-container--error' : ''}`}>
+                                <Input
+                                  {...field}
+                                  placeholder="e.g., Programming Languages, Soft Skills"
+                                  className="resume-input"
+                                  disabled={isSaving}
+                                />
+                              </div>
+                            )}
+                          />
+                          {getFieldErrorMessage('category') && (
+                            <div className="resume-field-error">
+                              <AlertCircle className="h-4 w-4" />
+                              <span>{getFieldErrorMessage('category')}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       <div className="relative sm:col-span-2">
                         {/* AI Skills Explorer Button */}
                         <div className="absolute bottom-0 right-0 p-2 z-50 md:p-0 md:-top-3 md:right-0">

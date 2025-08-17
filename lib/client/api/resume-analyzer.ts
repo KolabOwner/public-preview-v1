@@ -26,6 +26,9 @@ export interface AnalyzeOptions {
   priority?: 'low' | 'normal' | 'high';
   async?: boolean;
   includeRecommendations?: boolean;
+  
+  // Auto-targeting
+  autoTarget?: boolean;
 }
 
 export interface MatchedKeyword {

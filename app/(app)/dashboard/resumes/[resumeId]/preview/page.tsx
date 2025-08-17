@@ -2,12 +2,13 @@
 
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from "@/config/firebase-config";
 import { useAuth } from '@/contexts/firebase-auth-context';
-import { JobInfoProvider } from '@/contexts/job-info-context';
+import { JobInfoProvider, useJobInfo } from '@/contexts/job-info-context';
+import { useToast } from '@/lib/client/hooks/ui/use-toast';
 import ResumePreview from "@/components/features/resume/panels/resume-preview";
 
 
@@ -30,8 +31,12 @@ function ResumePreviewContent() {
   const [typewriterBullet, setTypewriterBullet] = useState<{experienceIndex: number, bullet: string} | null>(null);
 
   const params = useParams();
+  const searchParams = useSearchParams();
   const resumeId = params.resumeId as string;
   const { user } = useAuth();
+  const { targetingComplete, isTargeting } = useJobInfo();
+  const { toast } = useToast();
+  const isPDFMode = searchParams.get('pdf') === 'true';
 
   // Callback to trigger typewriter effect when bullets are added
   const handleBulletAdded = useCallback((experienceIndex: number, newBullet: string) => {
@@ -60,56 +65,71 @@ function ResumePreviewContent() {
     setTypewriterBullet(null);
   }, []);
 
-  useEffect(() => {
-    const fetchResume = async () => {
-      if (!resumeId || !user) {
-        setIsLoading(false);
+  const fetchResume = useCallback(async () => {
+    if (!resumeId || !user) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (!db) {
+      console.error('Firestore database is not initialized');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const resumeRef = doc(db, 'resumes', resumeId);
+      const resumeSnap = await getDoc(resumeRef);
+
+      if (!resumeSnap.exists()) {
+        setError('Resume not found');
         return;
       }
 
-      if (!db) {
-        console.error('Firestore database is not initialized');
-        setIsLoading(false);
+      const resumeData = resumeSnap.data() as ResumeData;
+
+      // Ensure user owns this resume
+      if (resumeData.userId !== user.uid) {
+        setError('You do not have permission to view this resume');
         return;
       }
 
-      try {
-        const resumeRef = doc(db, 'resumes', resumeId);
-        const resumeSnap = await getDoc(resumeRef);
-
-        if (!resumeSnap.exists()) {
-          setError('Resume not found');
-          return;
-        }
-
-        const resumeData = resumeSnap.data() as ResumeData;
-
-        // Ensure user owns this resume
-        if (resumeData.userId !== user.uid) {
-          setError('You do not have permission to view this resume');
-          return;
-        }
-
-        const resumeWithId = {
-          ...resumeData,
-          id: resumeSnap.id
-        };
-        
-        setResume(resumeWithId);
-        
-        // Process the resume data initially
-        const processed = resumeData.parsedData || processRMSData(resumeData.rmsRawData) || resumeData;
-        setProcessedResumeData(processed);
-      } catch (err) {
-        console.error('Error fetching resume:', err);
-        setError('Failed to load resume');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchResume();
+      const resumeWithId = {
+        ...resumeData,
+        id: resumeSnap.id
+      };
+      
+      setResume(resumeWithId);
+      
+      // Process the resume data initially
+      const processed = resumeData.parsedData || processRMSData(resumeData.rmsRawData) || resumeData;
+      setProcessedResumeData(processed);
+    } catch (err) {
+      console.error('Error fetching resume:', err);
+      setError('Failed to load resume');
+    } finally {
+      setIsLoading(false);
+    }
   }, [resumeId, user]);
+
+  useEffect(() => {
+    fetchResume();
+  }, [fetchResume]);
+
+  // Refetch resume data when targeting is complete
+  useEffect(() => {
+    if (targetingComplete) {
+      console.log('Resume targeting complete, refreshing data...');
+      fetchResume();
+      
+      // Show success notification
+      toast({
+        title: 'Resume Optimized Successfully!',
+        description: 'Your resume has been tailored with relevant keywords and improved content for this job.',
+        duration: 5000,
+      });
+    }
+  }, [targetingComplete, fetchResume, toast]);
 
   if (isLoading) {
     return (
@@ -118,6 +138,47 @@ function ResumePreviewContent() {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-xl animate-pulse"></div>
         </div>
+      </div>
+    );
+  }
+
+  // Show targeting overlay
+  if (isTargeting && processedResumeData) {
+    return (
+      <div className="relative">
+        <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md mx-4 border border-gray-200 dark:border-gray-700">
+            <div className="text-center">
+              <div className="relative mb-6">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-blue-500 mx-auto"></div>
+                <div className="absolute inset-0 rounded-full bg-blue-500/10 blur-xl animate-pulse"></div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                AI is Optimizing Your Resume
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Please wait while we tailor your resume content with relevant keywords and action verbs for this specific job position.
+              </p>
+              <div className="flex items-center justify-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+                <span>This usually takes 30-60 seconds</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ResumePreview
+          resumeData={processedResumeData}
+          resumeId={resume!.id}
+          showJobPanels={!isPDFMode}
+          onBulletAdded={handleBulletAdded}
+          typewriterBullet={typewriterBullet}
+          onTypewriterComplete={handleTypewriterComplete}
+          className={isPDFMode ? 'pdf-mode opacity-50' : 'opacity-50'}
+        />
       </div>
     );
   }
@@ -155,10 +216,11 @@ function ResumePreviewContent() {
     <ResumePreview
       resumeData={processedResumeData}
       resumeId={resume.id}
-      showJobPanels={true}
+      showJobPanels={!isPDFMode} // Hide panels in PDF mode
       onBulletAdded={handleBulletAdded}
       typewriterBullet={typewriterBullet}
       onTypewriterComplete={handleTypewriterComplete}
+      className={isPDFMode ? 'pdf-mode' : ''}
     />
   );
 }

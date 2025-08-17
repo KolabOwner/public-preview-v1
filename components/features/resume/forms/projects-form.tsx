@@ -28,7 +28,8 @@ import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { $getRoot, EditorState, $createParagraphNode, $createTextNode } from 'lexical';
+import { $getRoot, EditorState, $createParagraphNode, $createTextNode, KEY_ENTER_COMMAND, COMMAND_PRIORITY_LOW } from 'lexical';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { Button } from '@/components/shared/button';
 import { Input } from '@/components/shared/input';
@@ -78,6 +79,29 @@ interface ProjectsFormProps {
 // Constants
 const PLACEHOLDER_VALUES = ['n/a', 'N/A', 'none', 'null', '-', 'NA'];
 const AUTO_SAVE_DELAY = 2000;
+
+// Custom plugin to handle Enter key for creating new bullet points
+function EnterKeyPlugin({ onEnterPress }: { onEnterPress: () => void }) {
+  const [editor] = useLexicalComposerContext();
+
+  React.useEffect(() => {
+    const unregister = editor.registerCommand(
+      KEY_ENTER_COMMAND,
+      (event: KeyboardEvent | null) => {
+        if (event) {
+          event.preventDefault();
+        }
+        onEnterPress();
+        return true;
+      },
+      COMMAND_PRIORITY_LOW
+    );
+
+    return unregister;
+  }, [editor, onEnterPress]);
+
+  return null;
+}
 
 // Helper functions
 const cleanValue = (value: string | undefined | null): string => {
@@ -730,13 +754,64 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
                     name={`entries.${activeIndex}.description`}
                     control={control}
                     render={({ field }) => {
-                      const bulletPoints = field.value ? field.value.split('•').filter(p => p.trim()) : [''];
+                      const bulletPoints = field.value ? field.value.split('•').slice(1) : [''];
 
                       const handleBulletChange = (index: number, newContent: string) => {
                         const updatedPoints = [...bulletPoints];
                         updatedPoints[index] = newContent;
-                        const newValue = updatedPoints.filter(p => p.trim()).map(p => `• ${p.trim()}`).join('\n');
+                        const newValue = updatedPoints.map(p => `• ${p.trim()}`).join('\n');
                         field.onChange(newValue);
+                      };
+
+                      const handleAddNewBullet = (currentIndex: number) => {
+                        console.log('🔍 handleAddNewBullet called with index:', currentIndex);
+                        console.log('🔍 Current bulletPoints before:', bulletPoints);
+                        
+                        const updatedPoints = [...bulletPoints];
+                        // Insert a new empty bullet point after the current one
+                        updatedPoints.splice(currentIndex + 1, 0, '');
+                        console.log('🔍 updatedPoints after splice:', updatedPoints);
+                        
+                        const newValue = updatedPoints.map(p => `• ${p.trim()}`).join('\n');
+                        console.log('🔍 newValue:', newValue);
+
+                        field.onChange(newValue);
+
+                        // Focus on the new bullet point after React re-renders
+                        const focusNewBullet = () => {
+                          console.log('🔍 Looking for editor:', `[data-lexical-editor="ProjectEditor-${currentIndex + 1}"] [contenteditable]`);
+                          const newBulletEditor = document.querySelector(`[data-lexical-editor="ProjectEditor-${currentIndex + 1}"] [contenteditable]`);
+                          console.log('🔍 Found editor:', newBulletEditor);
+                          console.log('🔍 All bullet editors:', document.querySelectorAll('[data-lexical-editor*="ProjectEditor"] [contenteditable]'));
+                          
+                          if (newBulletEditor) {
+                            (newBulletEditor as HTMLElement).focus();
+                            // Set cursor at the beginning
+                            const selection = window.getSelection();
+                            const range = document.createRange();
+                            if (newBulletEditor.firstChild) {
+                              range.setStart(newBulletEditor.firstChild, 0);
+                            } else {
+                              range.setStart(newBulletEditor, 0);
+                            }
+                            range.collapse(true);
+                            selection?.removeAllRanges();
+                            selection?.addRange(range);
+                            return true;
+                          }
+                          return false;
+                        };
+
+                        // Try multiple times with increasing delays
+                        setTimeout(() => {
+                          if (!focusNewBullet()) {
+                            setTimeout(() => {
+                              if (!focusNewBullet()) {
+                                setTimeout(focusNewBullet, 500);
+                              }
+                            }, 200);
+                          }
+                        }, 50);
                       };
 
                       return (
@@ -762,7 +837,7 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
                             return (
                               <div key={index} className="flex items-start leading-[1.5] mb-1">
                                 <span className="flex-shrink-0 pr-1 w-3 text-gray-600 dark:text-gray-400">•</span>
-                                <div className="flex-1">
+                                <div className="flex-1" data-lexical-editor={`ProjectEditor-${index}`}>
                                   <LexicalComposer initialConfig={initialConfig}>
                                     <PlainTextPlugin
                                       contentEditable={
@@ -790,6 +865,9 @@ export default function ProjectsForm({ initialData, onSave }: ProjectsFormProps)
                                           }
                                         });
                                       }}
+                                    />
+                                    <EnterKeyPlugin 
+                                      onEnterPress={() => handleAddNewBullet(index)}
                                     />
                                     <HistoryPlugin />
                                   </LexicalComposer>

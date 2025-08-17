@@ -1,4 +1,5 @@
-// src/components/resume/panels/KeywordTargetingPanel.tsx
+// src/components/resume/panels/keyword-targeting-panel.tsx
+
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { X, Lock, Circle, RefreshCw, Loader, Target, AlertCircle } from 'lucide-react';
 import { useJobInfo } from "@/contexts/job-info-context";

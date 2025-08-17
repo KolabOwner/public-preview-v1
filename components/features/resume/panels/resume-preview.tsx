@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { AlertCircle, MapPin, Mail, Phone, Linkedin } from "lucide-react";
+import { AlertCircle, MapPin, Mail, Phone, Linkedin, Globe } from "lucide-react";
 import { useToast } from "@/lib/client/hooks/ui/use-toast";
 import { useAuth } from '@/contexts/firebase-auth-context';
 import { useJobInfo } from '@/contexts/job-info-context';
@@ -55,7 +55,7 @@ ResumeSection.displayName = 'ResumeSection';
 
 
 // Contact icon component
-const ContactIcon = memo(({ type, size = "0.9em", color }: { type: 'location' | 'email' | 'phone' | 'linkedin'; size?: string; color?: string }) => {
+const ContactIcon = memo(({ type, size = "0.9em", color }: { type: 'location' | 'email' | 'phone' | 'linkedin' | 'website'; size?: string; color?: string }) => {
   const iconStyle = {
     width: size,
     height: size,
@@ -75,6 +75,8 @@ const ContactIcon = memo(({ type, size = "0.9em", color }: { type: 'location' | 
       return <Phone style={iconStyle} />;
     case 'linkedin':
       return <Linkedin style={iconStyle} />;
+    case 'website':
+      return <Globe style={iconStyle} />;
     default:
       return null;
   }
@@ -191,7 +193,7 @@ export default function ResumePreview({
     const marginInches = margins ? margins.top : 0.75;
     const paperSize = documentSettings.paperSize || 'Letter';
     const originalZoom = documentSettings.zoom;
-    
+
     // Debug: Log the settings
     console.log('PDF Generation - Settings:', {
       margins,
@@ -274,7 +276,7 @@ export default function ResumePreview({
             background: white !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            transform: none !important;
+            transform-origin: top left !important;
             margin: 0 !important;
             padding: 0 !important;
           }
@@ -334,7 +336,7 @@ export default function ResumePreview({
     } catch (error) {
       // Error handling
       console.error('Error downloading PDF:', error);
-      
+
       // Restore original zoom on error
       if (needsZoomReset && originalZoom) {
         updateSetting('zoom', originalZoom);
@@ -354,6 +356,29 @@ export default function ResumePreview({
     const textArea = document.createElement('textarea');
     textArea.innerHTML = text;
     return textArea.value;
+  };
+
+  const formatPhoneNumber = (phone: any): string => {
+    if (!phone) return '';
+    
+    // Convert to string if it's not already
+    const phoneStr = String(phone);
+    
+    // Remove all non-digit characters
+    const digits = phoneStr.replace(/\D/g, '');
+    
+    // Format as (XXX) XXX-XXXX for 10-digit US numbers
+    if (digits.length === 10) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+    
+    // Format as +X (XXX) XXX-XXXX for 11-digit numbers starting with 1
+    if (digits.length === 11 && digits.startsWith('1')) {
+      return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+    }
+    
+    // Return original string if it doesn't match standard US format
+    return phoneStr;
   };
 
   const parseBulletPoints = (text: string): string[] => {
@@ -504,6 +529,7 @@ export default function ResumePreview({
     email: resumeData.rms_contact_email || '',
     phone: resumeData.rms_contact_phone || '',
     linkedin: resumeData.rms_contact_linkedin || '',
+    website: resumeData.rms_contact_website || '',
     city: resumeData.rms_contact_city || '',
     state: resumeData.rms_contact_state || '',
     country: resumeData.rms_contact_country || resumeData.rms_contact_countrycode || ''
@@ -554,12 +580,15 @@ export default function ResumePreview({
     const skillCount = resumeData.rms_skill_count || 0;
     const skills = [];
     for (let i = 0; i < skillCount; i++) {
+      const category = resumeData[`rms_skill_${i}_category`] || '';
+      const keywords = resumeData[`rms_skill_${i}_keywords`] || '';
+      
       skills.push({
         id: `skill_${i}`,
-        category: resumeData[`rms_skill_${i}_category`] || '',
-        name: resumeData[`rms_skill_${i}_category`] || '',
-        keywords: resumeData[`rms_skill_${i}_keywords`] || '',
-        skills: resumeData[`rms_skill_${i}_keywords`] || ''
+        category: category,
+        name: category,
+        keywords: keywords,
+        skills: keywords
       });
     }
     
@@ -721,6 +750,7 @@ export default function ResumePreview({
                       fontStyle: 'normal',
                       color: '#000000'
                     }}>{decodeHTMLEntities(exp.company || 'Company')}</span>
+                    <span style={{ margin: '0 0.5rem', fontSize: '0px', lineHeight: '0' }}> • </span>
                     <span className="resume-date" style={{
                       ...inlineStyles.date,
                       fontWeight: 600,
@@ -887,14 +917,15 @@ export default function ResumePreview({
       skills: skills.length > 0 && (
         <ResumeSection key="skills" title={getSectionTitle('skills', currentTemplate)} styles={inlineStyles}>
           {skills.map((category: any, idx: number) => (
-            <div key={category.id || idx} className="resume-skills-category" style={{ ...inlineStyles.bodyText, marginBottom: `${resumeStyles.spacing.bulletGap}rem` }}>
-              <span className="resume-skills-title" style={{ fontWeight: 700 }}>
+            <div key={category.id || idx} className="resume-skills-category" style={{ 
+              ...inlineStyles.bodyText, 
+              marginBottom: `${resumeStyles.spacing.bulletGap}rem`
+            }}>
+              <strong style={{ fontWeight: 700 }}>
                 {category.category || category.name}:
-              </span>
-              <span>
-                {' '}
-                {category.keywords || category.skills || ''}
-              </span>
+              </strong>
+              {' '}
+              {category.keywords || category.skills || ''}
             </div>
           ))}
         </ResumeSection>
@@ -1324,27 +1355,34 @@ export default function ResumePreview({
                     {documentSettings.showIcons && <ContactIcon type="location" color={inlineStyles.contact.color} />}
                     <span>{contact.city}, {contact.state}</span>
                     {contact.country && contact.country !== 'United States' && <span>, {contact.country}</span>}
-                    {!documentSettings.showIcons && (contact.email || contact.phone || contact.linkedin) && <span> • </span>}
+                    {!documentSettings.showIcons && (contact.email || contact.phone || contact.linkedin || contact.website) && <span> • </span>}
                   </span>
                 )}
                 {contact.email && (
                   <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
                     {documentSettings.showIcons && <ContactIcon type="email" color={inlineStyles.contact.color} />}
                     <span>{contact.email}</span>
-                    {!documentSettings.showIcons && (contact.phone || contact.linkedin) && <span> • </span>}
+                    {!documentSettings.showIcons && (contact.phone || contact.linkedin || contact.website) && <span> • </span>}
                   </span>
                 )}
                 {contact.phone && (
                   <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
                     {documentSettings.showIcons && <ContactIcon type="phone" color={inlineStyles.contact.color} />}
-                    <span>{contact.phone}</span>
-                    {!documentSettings.showIcons && contact.linkedin && <span> • </span>}
+                    <span>{formatPhoneNumber(contact.phone)}</span>
+                    {!documentSettings.showIcons && (contact.linkedin || contact.website) && <span> • </span>}
                   </span>
                 )}
                 {contact.linkedin && (
                   <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
                     {documentSettings.showIcons && <ContactIcon type="linkedin" color={inlineStyles.contact.color} />}
-                    <span>in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                    <span>linkedin.com/in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                    {!documentSettings.showIcons && contact.website && <span> • </span>}
+                  </span>
+                )}
+                {contact.website && (
+                  <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                    {documentSettings.showIcons && <ContactIcon type="website" color={inlineStyles.contact.color} />}
+                    <span>{contact.website.replace(/^https?:\/\//, '')}</span>
                   </span>
                 )}
               </div>
@@ -1397,27 +1435,34 @@ export default function ResumePreview({
                   {documentSettings.showIcons && <ContactIcon type="location" color={inlineStyles.contact.color} />}
                   <span>{contact.city}, {contact.state}</span>
                   {contact.country && contact.country !== 'United States' && <span>, {contact.country}</span>}
-                  {!documentSettings.showIcons && (contact.email || contact.phone || contact.linkedin) && <span> • </span>}
+                  {!documentSettings.showIcons && (contact.email || contact.phone || contact.linkedin || contact.website) && <span> • </span>}
                 </span>
               )}
               {contact.email && (
                 <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
                   {documentSettings.showIcons && <ContactIcon type="email" color={inlineStyles.contact.color} />}
                   <span>{contact.email}</span>
-                  {!documentSettings.showIcons && (contact.phone || contact.linkedin) && <span> • </span>}
+                  {!documentSettings.showIcons && (contact.phone || contact.linkedin || contact.website) && <span> • </span>}
                 </span>
               )}
               {contact.phone && (
                 <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
                   {documentSettings.showIcons && <ContactIcon type="phone" color={inlineStyles.contact.color} />}
-                  <span>{contact.phone}</span>
-                  {!documentSettings.showIcons && contact.linkedin && <span> • </span>}
+                  <span>{formatPhoneNumber(contact.phone)}</span>
+                  {!documentSettings.showIcons && (contact.linkedin || contact.website) && <span> • </span>}
                 </span>
               )}
               {contact.linkedin && (
                 <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
                   {documentSettings.showIcons && <ContactIcon type="linkedin" color={inlineStyles.contact.color} />}
-                  <span>in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                  <span>linkedin.com/in/{contact.linkedin.replace(/^.*\/in\//, '')}</span>
+                  {!documentSettings.showIcons && contact.website && <span> • </span>}
+                </span>
+              )}
+              {contact.website && (
+                <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
+                  {documentSettings.showIcons && <ContactIcon type="website" color={inlineStyles.contact.color} />}
+                  <span>{contact.website.replace(/^https?:\/\//, '')}</span>
                 </span>
               )}
             </div>
