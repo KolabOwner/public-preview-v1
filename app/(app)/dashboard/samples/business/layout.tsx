@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Business Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional business resume and cover letter templates for executives, managers, consultants, and business professionals. ATS-optimized designs for corporate success.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/business',
+    url: 'https://www.rezum-ai.com/dashboard/samples/business',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/business',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/business',
   },
 };
 
@@ -72,7 +72,7 @@ export default function BusinessSamplesLayout({
             '@type': 'WebPage',
             name: 'Business Resume & Cover Letter Samples',
             description: 'Professional business resume and cover letter templates for executives, managers, consultants, and business professionals. ATS-optimized designs for corporate success.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/business',
+            url: 'https://www.rezum-ai.com/dashboard/samples/business',
             about: {
               '@type': 'Service',
               name: 'Business Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function BusinessSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

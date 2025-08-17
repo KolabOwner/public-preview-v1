@@ -1,5 +1,10 @@
 import { Metadata } from 'next';
+import { aiToolsMetadata } from '@/lib/page-metadata';
 
+export const metadata: Metadata = aiToolsMetadata.summaryGenerator;
+
+/*
+Original metadata preserved as comment:
 export const metadata: Metadata = {
   title: 'AI Resume Summary Generator - Rezum AI | Instantly Generate Professional Resume Summaries',
   description: 'Create compelling resume summaries instantly with AI. Generate professional, job-specific summaries that grab recruiters\' attention and pass ATS systems.',
@@ -19,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AI Resume Summary Generator - Create Professional Summaries | Rezum AI',
     description: 'Generate professional resume summaries instantly with AI. Job-specific, ATS-optimized summaries that get you noticed.',
-    url: 'https://yourdomain.com/ai-resume-summary-generator',
+    url: 'https://www.rezum-ai.com/ai-resume-summary-generator',
     siteName: 'Rezum AI',
     images: [
       {
@@ -51,7 +56,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/ai-resume-summary-generator',
+    canonical: 'https://www.rezum-ai.com/ai-resume-summary-generator',
   },
 };
 
@@ -70,7 +75,7 @@ export default function AIResumeSummaryGeneratorLayout({
             '@type': 'WebApplication',
             name: 'Rezum AI Resume Summary Generator',
             description: 'AI-powered tool that generates professional resume summaries tailored to specific job positions',
-            url: 'https://yourdomain.com/ai-resume-summary-generator',
+            url: 'https://www.rezum-ai.com/ai-resume-summary-generator',
             applicationCategory: 'BusinessApplication',
             operatingSystem: 'Any',
             offers: {
@@ -82,7 +87,7 @@ export default function AIResumeSummaryGeneratorLayout({
             author: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
             },
             aggregateRating: {
               '@type': 'AggregateRating',

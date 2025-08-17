@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Professional Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Versatile professional resume and cover letter templates for various industries and career paths. Adaptable designs for any profession.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/other',
+    url: 'https://www.rezum-ai.com/dashboard/samples/other',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/other',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/other',
   },
 };
 
@@ -72,7 +72,7 @@ export default function OtherSamplesLayout({
             '@type': 'WebPage',
             name: 'Professional Resume & Cover Letter Samples',
             description: 'Versatile professional resume and cover letter templates for various industries and career paths. Adaptable designs for any profession.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/other',
+            url: 'https://www.rezum-ai.com/dashboard/samples/other',
             about: {
               '@type': 'Service',
               name: 'Professional Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function OtherSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

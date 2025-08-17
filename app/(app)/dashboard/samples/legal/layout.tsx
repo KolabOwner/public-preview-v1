@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Legal Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional legal resume and cover letter templates for lawyers, attorneys, paralegals, and legal professionals. Conservative, professional designs.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/legal',
+    url: 'https://www.rezum-ai.com/dashboard/samples/legal',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/legal',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/legal',
   },
 };
 
@@ -72,7 +72,7 @@ export default function LegalSamplesLayout({
             '@type': 'WebPage',
             name: 'Legal Resume & Cover Letter Samples',
             description: 'Professional legal resume and cover letter templates for lawyers, attorneys, paralegals, and legal professionals. Conservative, professional designs.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/legal',
+            url: 'https://www.rezum-ai.com/dashboard/samples/legal',
             about: {
               '@type': 'Service',
               name: 'Legal Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function LegalSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

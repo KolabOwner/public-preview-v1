@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Student Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional student resume and cover letter templates for college students, recent graduates, and entry-level job seekers. ATS-optimized designs for academic and career success.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/student',
+    url: 'https://www.rezum-ai.com/dashboard/samples/student',
     siteName: 'Rezum AI',
     images: [
       {
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/student',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/student',
   },
 };
 
@@ -73,7 +73,7 @@ export default function StudentSamplesLayout({
             '@type': 'WebPage',
             name: 'Student Resume & Cover Letter Samples',
             description: 'Professional student resume and cover letter templates for college students, recent graduates, and entry-level job seekers. ATS-optimized designs for academic and career success.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/student',
+            url: 'https://www.rezum-ai.com/dashboard/samples/student',
             about: {
               '@type': 'Service',
               name: 'Student Resume & Cover Letter Template Library',
@@ -82,7 +82,7 @@ export default function StudentSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

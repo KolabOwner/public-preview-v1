@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Healthcare Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional medical resume and cover letter templates for nurses, doctors, medical professionals, and medical workers. Industry-specific designs.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/healthcare',
+    url: 'https://www.rezum-ai.com/dashboard/samples/healthcare',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/healthcare',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/healthcare',
   },
 };
 
@@ -72,7 +72,7 @@ export default function HealthcareSamplesLayout({
             '@type': 'WebPage',
             name: 'Healthcare Resume & Cover Letter Samples',
             description: 'Professional medical resume and cover letter templates for nurses, doctors, medical professionals, and medical workers. Industry-specific designs.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/healthcare',
+            url: 'https://www.rezum-ai.com/dashboard/samples/healthcare',
             about: {
               '@type': 'Service',
               name: 'Healthcare Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function HealthcareSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

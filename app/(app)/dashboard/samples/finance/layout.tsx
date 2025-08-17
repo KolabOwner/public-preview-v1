@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Finance Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional finance resume and cover letter templates for financial analysts, accountants, bankers, and finance professionals. Corporate-ready designs.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/finance',
+    url: 'https://www.rezum-ai.com/dashboard/samples/finance',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/finance',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/finance',
   },
 };
 
@@ -72,7 +72,7 @@ export default function FinanceSamplesLayout({
             '@type': 'WebPage',
             name: 'Finance Resume & Cover Letter Samples',
             description: 'Professional finance resume and cover letter templates for financial analysts, accountants, bankers, and finance professionals. Corporate-ready designs.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/finance',
+            url: 'https://www.rezum-ai.com/dashboard/samples/finance',
             about: {
               '@type': 'Service',
               name: 'Finance Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function FinanceSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

@@ -1,6 +1,11 @@
 // app/keyword-scanner/layout.tsx
 import { Metadata } from 'next';
+import { aiToolsMetadata } from '@/lib/page-metadata';
 
+export const metadata: Metadata = aiToolsMetadata.keywordScanner;
+
+/*
+Original metadata preserved as comment:
 export const metadata: Metadata = {
   title: 'Resume Keyword Scanner - ATS Optimizer | Rezum AI',
   description: 'Free resume keyword scanner and ATS optimizer. Analyze your resume against job descriptions to identify missing keywords and improve your chances of getting interviews.',
@@ -22,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Free Resume Keyword Scanner & ATS Optimizer | Rezum AI',
     description: 'Scan your resume against job descriptions. Get instant keyword analysis and ATS optimization tips.',
-    url: 'https://yourdomain.com/keyword-scanner',
+    url: 'https://www.rezum-ai.com/keyword-scanner',
     siteName: 'Rezum AI',
     images: [
       {
@@ -54,7 +59,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/keyword-scanner',
+    canonical: 'https://www.rezum-ai.com/keyword-scanner',
   },
 };
 
@@ -74,7 +79,7 @@ export default function KeywordScannerLayout({
             '@type': 'WebApplication',
             name: 'Rezum AI Resume Keyword Scanner',
             description: 'Free tool to scan resumes for keywords and optimize for ATS systems',
-            url: 'https://yourdomain.com/keyword-scanner',
+            url: 'https://www.rezum-ai.com/keyword-scanner',
             applicationCategory: 'BusinessApplication',
             operatingSystem: 'Any',
             offers: {
@@ -94,7 +99,7 @@ export default function KeywordScannerLayout({
             author: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
             },
             aggregateRating: {
               '@type': 'AggregateRating',
@@ -121,13 +126,13 @@ export default function KeywordScannerLayout({
                 '@type': 'HowToStep',
                 name: 'Input Job Description',
                 text: 'Paste the job posting you are targeting into the scanner',
-                url: 'https://yourdomain.com/keyword-scanner#step1',
+                url: 'https://www.rezum-ai.com/keyword-scanner#step1',
               },
               {
                 '@type': 'HowToStep',
                 name: 'Get Optimization Insights',
                 text: 'Receive detailed analysis of missing keywords and placement recommendations',
-                url: 'https://yourdomain.com/keyword-scanner#step2',
+                url: 'https://www.rezum-ai.com/keyword-scanner#step2',
               },
             ],
             totalTime: 'PT2M',

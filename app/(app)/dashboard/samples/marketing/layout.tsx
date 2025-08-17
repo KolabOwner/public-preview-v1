@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Marketing Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Creative marketing resume and cover letter templates for digital marketers, brand managers, content creators, and marketing professionals. Stand out designs.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/marketing',
+    url: 'https://www.rezum-ai.com/dashboard/samples/marketing',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/marketing',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/marketing',
   },
 };
 
@@ -72,7 +72,7 @@ export default function MarketingSamplesLayout({
             '@type': 'WebPage',
             name: 'Marketing Resume & Cover Letter Samples',
             description: 'Creative marketing resume and cover letter templates for digital marketers, brand managers, content creators, and marketing professionals. Stand out designs.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/marketing',
+            url: 'https://www.rezum-ai.com/dashboard/samples/marketing',
             about: {
               '@type': 'Service',
               name: 'Marketing Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function MarketingSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

@@ -1,7 +1,12 @@
 import React from "react";
 import { Metadata } from 'next';
+import { templateMetadata } from '@/lib/page-metadata';
 import MainNavbar from '@/components/features/dashboard/main-navbar';
 
+export const metadata: Metadata = templateMetadata.resumeExamples;
+
+/*
+Original metadata preserved as comment:
 export const metadata: Metadata = {
   title: '36+ Professional Resume Examples by Industry & Experience Level | Rezum AI',
   description: 'Browse curated resume examples with detailed job descriptions, keywords, and experience levels. Find proven formats for programming, business, design, marketing, engineering, finance, legal, and medical careers. Search by skills and filter by experience level.',

@@ -1,5 +1,10 @@
 import { Metadata } from 'next';
+import { aiToolsMetadata } from '@/lib/page-metadata';
 
+export const metadata: Metadata = aiToolsMetadata.bulletPointGenerator;
+
+/*
+Original metadata preserved as comment:
 export const metadata: Metadata = {
   title: 'Free AI Resume Bullet Point Generator | Rezum AI',
   description: 'Transform your job responsibilities into compelling, ATS-friendly bullet points with our free AI-powered generator. Create professional resume bullet points in seconds.',
@@ -21,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Free AI Resume Bullet Point Generator | Rezum AI',
     description: 'Create compelling, ATS-friendly resume bullet points instantly with our AI-powered generator. Transform your experience into professional achievement statements.',
-    url: 'https://yourdomain.com/resume-bullet-point-generator',
+    url: 'https://www.rezum-ai.com/resume-bullet-point-generator',
     siteName: 'Rezum AI',
     images: [
       {
@@ -53,7 +58,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/resume-bullet-point-generator',
+    canonical: 'https://www.rezum-ai.com/resume-bullet-point-generator',
   },
 };
 
@@ -73,7 +78,7 @@ export default function ResumeBulletPointGeneratorLayout({
             '@type': 'WebApplication',
             name: 'AI Resume Bullet Point Generator',
             description: 'Free AI-powered tool that transforms job responsibilities into compelling, ATS-friendly resume bullet points',
-            url: 'https://yourdomain.com/resume-bullet-point-generator',
+            url: 'https://www.rezum-ai.com/resume-bullet-point-generator',
             applicationCategory: 'BusinessApplication',
             operatingSystem: 'Web Browser',
             offers: {
@@ -85,7 +90,7 @@ export default function ResumeBulletPointGeneratorLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
             },
             featureList: [
               'AI-powered bullet point generation',
@@ -121,7 +126,7 @@ export default function ResumeBulletPointGeneratorLayout({
             ],
             potentialAction: {
               '@type': 'UseAction',
-              target: 'https://yourdomain.com/resume-bullet-point-generator',
+              target: 'https://www.rezum-ai.com/resume-bullet-point-generator',
               object: 'Resume Bullet Point Generator',
             },
           }),
@@ -190,7 +195,7 @@ export default function ResumeBulletPointGeneratorLayout({
             '@type': 'HowTo',
             name: 'How to Create Professional Resume Bullet Points',
             description: 'Step-by-step guide to generating compelling resume bullet points using AI',
-            image: 'https://yourdomain.com/images/bullet-point-generator-og.jpg',
+            image: 'https://www.rezum-ai.com/images/bullet-point-generator-og.jpg',
             totalTime: 'PT5M',
             estimatedCost: {
               '@type': 'MonetaryAmount',
@@ -218,25 +223,25 @@ export default function ResumeBulletPointGeneratorLayout({
                 '@type': 'HowToStep',
                 name: 'Enter Your Job Information',
                 text: 'Provide your job title and optionally your company name for context.',
-                image: 'https://yourdomain.com/images/step1-job-info.jpg',
+                image: 'https://www.rezum-ai.com/images/step1-job-info.jpg',
               },
               {
                 '@type': 'HowToStep',
                 name: 'Describe Your Responsibilities',
                 text: 'Write a description of what you did in your role, focusing on key tasks and achievements.',
-                image: 'https://yourdomain.com/images/step2-responsibilities.jpg',
+                image: 'https://www.rezum-ai.com/images/step2-responsibilities.jpg',
               },
               {
                 '@type': 'HowToStep',
                 name: 'Generate Bullet Points',
                 text: 'Click the generate button and let our AI create professional bullet points from your input.',
-                image: 'https://yourdomain.com/images/step3-generate.jpg',
+                image: 'https://www.rezum-ai.com/images/step3-generate.jpg',
               },
               {
                 '@type': 'HowToStep',
                 name: 'Copy and Use',
                 text: 'Select the best bullet points and copy them to your resume. Edit as needed to match your style.',
-                image: 'https://yourdomain.com/images/step4-copy.jpg',
+                image: 'https://www.rezum-ai.com/images/step4-copy.jpg',
               },
             ],
           }),

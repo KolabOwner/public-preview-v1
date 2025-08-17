@@ -1,5 +1,10 @@
 import { Metadata } from 'next';
+import { aiToolsMetadata } from '@/lib/page-metadata';
 
+export const metadata: Metadata = aiToolsMetadata.resumeChecker;
+
+/*
+Original metadata preserved as comment:
 export const metadata: Metadata = {
   title: 'Resume Checker - Rezum AI | Analyze & Optimize Your Resume',
   description: 'Free AI-powered resume checker that analyzes your resume for ATS compatibility, formatting issues, and content optimization. Get instant feedback and improvement suggestions.',
@@ -20,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Resume Checker - Analyze & Optimize Your Resume | Rezum AI',
     description: 'Free AI-powered resume checker. Get instant feedback on ATS compatibility and content optimization.',
-    url: 'https://yourdomain.com/resume-checker',
+    url: 'https://www.rezum-ai.com/resume-checker',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +57,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/resume-checker',
+    canonical: 'https://www.rezum-ai.com/resume-checker',
   },
 };
 
@@ -72,7 +77,7 @@ export default function ResumeCheckerLayout({
             '@type': 'WebApplication',
             name: 'Rezum AI Resume Checker',
             description: 'AI-powered resume checker that analyzes resumes for ATS compatibility and optimization opportunities',
-            url: 'https://yourdomain.com/resume-checker',
+            url: 'https://www.rezum-ai.com/resume-checker',
             applicationCategory: 'BusinessApplication',
             operatingSystem: 'Any',
             offers: {
@@ -84,7 +89,7 @@ export default function ResumeCheckerLayout({
             author: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
             },
             aggregateRating: {
               '@type': 'AggregateRating',

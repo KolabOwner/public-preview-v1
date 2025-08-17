@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Programming Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Developer-focused resume and cover letter templates for software engineers, full-stack developers, programmers, and coding professionals. Clean, technical designs.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/programming',
+    url: 'https://www.rezum-ai.com/dashboard/samples/programming',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/programming',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/programming',
   },
 };
 
@@ -72,7 +72,7 @@ export default function ProgrammingSamplesLayout({
             '@type': 'WebPage',
             name: 'Programming Resume & Cover Letter Samples',
             description: 'Developer-focused resume and cover letter templates for software engineers, full-stack developers, programmers, and coding professionals. Clean, technical designs.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/programming',
+            url: 'https://www.rezum-ai.com/dashboard/samples/programming',
             about: {
               '@type': 'Service',
               name: 'Programming Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function ProgrammingSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

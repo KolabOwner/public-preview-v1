@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Design Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Creative design resume and cover letter templates for graphic designers, UX/UI designers, web designers, and creative professionals. Visually striking designs.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/design',
+    url: 'https://www.rezum-ai.com/dashboard/samples/design',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/design',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/design',
   },
 };
 
@@ -72,7 +72,7 @@ export default function DesignSamplesLayout({
             '@type': 'WebPage',
             name: 'Design Resume & Cover Letter Samples',
             description: 'Creative design resume and cover letter templates for graphic designers, UX/UI designers, web designers, and creative professionals. Visually striking designs.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/design',
+            url: 'https://www.rezum-ai.com/dashboard/samples/design',
             about: {
               '@type': 'Service',
               name: 'Design Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function DesignSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Professional Resume & Cover Letter Samples - All Industries | Rezum AI',
     description: 'Discover expert-crafted resume and cover letter samples for every industry and career level. ATS-optimized templates that get results.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples',
+    url: 'https://www.rezum-ai.com/dashboard/samples',
     siteName: 'Rezum AI',
     images: [
       {
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples',
   },
 };
 
@@ -77,7 +77,7 @@ export default function SamplesLayout({
             '@type': 'WebPage',
             name: 'Resume & Cover Letter Samples Library',
             description: 'Professional resume and cover letter samples across all industries with ATS-optimized designs',
-            url: 'https://rezum-app.vercel.app/dashboard/samples',
+            url: 'https://www.rezum-ai.com/dashboard/samples',
             about: {
               '@type': 'Service',
               name: 'Professional Template Sample Library',
@@ -86,7 +86,7 @@ export default function SamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',
@@ -97,56 +97,56 @@ export default function SamplesLayout({
                   position: 1,
                   name: 'Business Resume & Cover Letter Samples',
                   description: 'Professional templates for business professionals and executives',
-                  url: 'https://rezum-app.vercel.app/dashboard/samples/business'
+                  url: 'https://www.rezum-ai.com/dashboard/samples/business'
                 },
                 {
                   '@type': 'ListItem',
                   position: 2,
                   name: 'Technology Resume & Cover Letter Samples',
                   description: 'Modern templates for tech professionals and engineers',
-                  url: 'https://rezum-app.vercel.app/dashboard/samples/technology'
+                  url: 'https://www.rezum-ai.com/dashboard/samples/technology'
                 },
                 {
                   '@type': 'ListItem',
                   position: 3,
                   name: 'Healthcare Resume & Cover Letter Samples',
                   description: 'Professional templates for medical workers and medical professionals',
-                  url: 'https://rezum-app.vercel.app/dashboard/samples/healthcare'
+                  url: 'https://www.rezum-ai.com/dashboard/samples/healthcare'
                 },
                 {
                   '@type': 'ListItem',
                   position: 4,
                   name: 'Finance Resume & Cover Letter Samples',
                   description: 'Professional templates for financial services and banking professionals',
-                  url: 'https://rezum-app.vercel.app/dashboard/samples/finance'
+                  url: 'https://www.rezum-ai.com/dashboard/samples/finance'
                 },
                 {
                   '@type': 'ListItem',
                   position: 5,
                   name: 'Marketing Resume & Cover Letter Samples',
                   description: 'Creative templates for marketing professionals and digital marketers',
-                  url: 'https://rezum-app.vercel.app/dashboard/samples/marketing'
+                  url: 'https://www.rezum-ai.com/dashboard/samples/marketing'
                 },
                 {
                   '@type': 'ListItem',
                   position: 6,
                   name: 'Engineering Resume & Cover Letter Samples',
                   description: 'Technical templates for engineers and technical professionals',
-                  url: 'https://rezum-app.vercel.app/dashboard/samples/engineering'
+                  url: 'https://www.rezum-ai.com/dashboard/samples/engineering'
                 },
                 {
                   '@type': 'ListItem',
                   position: 7,
                   name: 'Education Resume & Cover Letter Samples',
                   description: 'Professional templates for teachers and education professionals',
-                  url: 'https://rezum-app.vercel.app/dashboard/samples/education'
+                  url: 'https://www.rezum-ai.com/dashboard/samples/education'
                 },
                 {
                   '@type': 'ListItem',
                   position: 8,
                   name: 'Legal Resume & Cover Letter Samples',
                   description: 'Professional templates for lawyers and legal professionals',
-                  url: 'https://rezum-app.vercel.app/dashboard/samples/legal'
+                  url: 'https://www.rezum-ai.com/dashboard/samples/legal'
                 }
               ],
             },

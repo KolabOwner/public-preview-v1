@@ -1,5 +1,10 @@
 import { Metadata } from 'next';
+import { templateMetadata } from '@/lib/page-metadata';
 
+export const metadata: Metadata = templateMetadata.resumeTemplates;
+
+/*
+Original metadata preserved as comment:
 export const metadata: Metadata = {
   title: 'Resume Templates - Professional ATS-Friendly Templates | Rezum AI',
   description: 'Choose from our collection of ATS-friendly resume templates. Modern, simple, creative, and compact designs built for the modern job hunt. Get hired faster.',
@@ -21,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ATS-Friendly Resume Templates - Professional Designs | Rezum AI',
     description: 'Browse our collection of professional resume templates designed to pass ATS scanners and impress hiring managers.',
-    url: 'https://yourdomain.com/resume-templates',
+    url: 'https://www.rezum-ai.com/resume-templates',
     siteName: 'Rezum AI',
     images: [
       {
@@ -53,7 +58,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/resume-templates',
+    canonical: 'https://www.rezum-ai.com/resume-templates',
   },
 };
 
@@ -73,7 +78,7 @@ export default function ResumeTemplatesLayout({
             '@type': 'WebPage',
             name: 'Resume Templates Collection',
             description: 'Professional ATS-friendly resume templates for modern job seekers',
-            url: 'https://yourdomain.com/resume-templates',
+            url: 'https://www.rezum-ai.com/resume-templates',
             about: {
               '@type': 'Service',
               name: 'Resume Template Library',
@@ -82,7 +87,7 @@ export default function ResumeTemplatesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

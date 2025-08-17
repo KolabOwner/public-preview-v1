@@ -38,12 +38,60 @@ const merriweather = Merriweather({
 });
 
 export const metadata: Metadata = {
-  title: 'Resume Analysis Service',
-  description: 'Modern resume analysis and parsing service',
+  title: 'Rezum AI - AI-Powered Resume Builder & ATS Optimization',
+  description: 'Create ATS-optimized resumes with AI. Professional resume templates, keyword scanner, and cover letter builder. Land your dream job with Rezum AI.',
+  keywords: 'AI resume builder, ATS resume, resume templates, cover letter templates, keyword scanner, resume optimization, job search tools, professional resume, CV builder, career tools',
+  authors: [{ name: 'Rezum AI Team' }],
+  creator: 'Rezum AI',
+  publisher: 'Rezum AI',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://www.rezum-ai.com',
+    siteName: 'Rezum AI',
+    title: 'Rezum AI - AI-Powered Resume Builder & ATS Optimization',
+    description: 'Create ATS-optimized resumes with AI. Professional resume templates, keyword scanner, and cover letter builder.',
+    images: [
+      {
+        url: 'https://www.rezum-ai.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Rezum AI - Professional Resume Builder',
+      }
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Rezum AI - AI-Powered Resume Builder',
+    description: 'Create ATS-optimized resumes with AI. Professional templates and keyword optimization.',
+    creator: '@rezumai',
+    images: ['https://www.rezum-ai.com/og-image.png'],
+  },
+  alternates: {
+    canonical: 'https://www.rezum-ai.com',
+  },
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
     apple: '/favicon.svg',
+  },
+  manifest: '/manifest.json',
+  metadataBase: new URL('https://www.rezum-ai.com'),
+  verification: {
+    google: 'google-site-verification-code',
+    yandex: 'yandex-verification-code',
+    bing: 'bing-verification-code',
   },
 };
 

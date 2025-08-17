@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://rezum-app.vercel.app';
+  const baseUrl = 'https://www.rezum-ai.com';
   
   return {
     rules: [

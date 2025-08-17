@@ -1,5 +1,10 @@
 import { Metadata } from 'next';
+import { templateMetadata } from '@/lib/page-metadata';
 
+export const metadata: Metadata = templateMetadata.coverLetterTemplates;
+
+/*
+Original metadata preserved as comment:
 export const metadata: Metadata = {
   title: 'Cover Letter Templates - Professional Templates for All Industries | Rezum AI',
   description: 'Create compelling cover letters with our professional templates. ATS-optimized, industry-specific designs with AI-powered writing assistance. Land your dream job faster.',
@@ -21,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Professional Cover Letter Templates - Stand Out to Employers | Rezum AI',
     description: 'Create impressive cover letters with our collection of professional templates. AI-powered writing assistance and industry-specific designs.',
-    url: 'https://yourdomain.com/cover-letter-templates',
+    url: 'https://www.rezum-ai.com/cover-letter-templates',
     siteName: 'Rezum AI',
     images: [
       {
@@ -53,7 +58,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/cover-letter-templates',
+    canonical: 'https://www.rezum-ai.com/cover-letter-templates',
   },
 };
 
@@ -73,7 +78,7 @@ export default function CoverLetterTemplatesLayout({
             '@type': 'WebPage',
             name: 'Cover Letter Templates Collection',
             description: 'Professional cover letter templates with AI writing assistance for all industries',
-            url: 'https://yourdomain.com/cover-letter-templates',
+            url: 'https://www.rezum-ai.com/cover-letter-templates',
             about: {
               '@type': 'Service',
               name: 'Cover Letter Template Library',
@@ -82,7 +87,7 @@ export default function CoverLetterTemplatesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

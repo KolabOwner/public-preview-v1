@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Education Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Professional education resume and cover letter templates for teachers, administrators, professors, and education professionals. Academic-focused designs.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/education',
+    url: 'https://www.rezum-ai.com/dashboard/samples/education',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/education',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/education',
   },
 };
 
@@ -72,7 +72,7 @@ export default function EducationSamplesLayout({
             '@type': 'WebPage',
             name: 'Education Resume & Cover Letter Samples',
             description: 'Professional education resume and cover letter templates for teachers, administrators, professors, and education professionals. Academic-focused designs.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/education',
+            url: 'https://www.rezum-ai.com/dashboard/samples/education',
             about: {
               '@type': 'Service',
               name: 'Education Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function EducationSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

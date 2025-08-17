@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Contact Support - Get Help with Rezum AI',
     description: 'Contact our support team for help with technical issues, billing, or general questions. 24-hour response time.',
-    url: 'https://yourdomain.com/contact',
+    url: 'https://www.rezum-ai.com/contact',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/contact',
+    canonical: 'https://www.rezum-ai.com/contact',
   },
 };
 
@@ -72,11 +72,11 @@ export default function ContactLayout({
             '@type': 'ContactPage',
             name: 'Rezum AI Contact Support',
             description: 'Contact Rezum AI support team for help with technical issues, billing, and general inquiries',
-            url: 'https://yourdomain.com/contact',
+            url: 'https://www.rezum-ai.com/contact',
             mainEntity: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
               contactPoint: {
                 '@type': 'ContactPoint',
                 email: 'support@rezum-ai.com',
@@ -98,7 +98,7 @@ export default function ContactLayout({
               '@type': 'CommunicateAction',
               target: {
                 '@type': 'EntryPoint',
-                urlTemplate: 'https://yourdomain.com/contact',
+                urlTemplate: 'https://www.rezum-ai.com/contact',
                 actionPlatform: [
                   'http://schema.org/DesktopWebPlatform',
                   'http://schema.org/MobileWebPlatform'

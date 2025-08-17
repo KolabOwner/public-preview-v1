@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'The Official Rezum Blog | Career Advice & Resume Tips',
     description: 'Take your resume, job search, and career to new heights with our blog! Expert career advice and professional development tips.',
-    url: 'https://yourdomain.com/blog',
+    url: 'https://www.rezum-ai.com/blog',
     siteName: 'Rezum AI',
     images: [
       {
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/blog',
+    canonical: 'https://www.rezum-ai.com/blog',
   },
 };
 
@@ -73,19 +73,19 @@ export default function BlogLayout({
             '@type': 'Blog',
             name: 'The Official Rezum Blog',
             description: 'Career advice, resume tips, and job search guidance from Rezum AI experts',
-            url: 'https://yourdomain.com/blog',
+            url: 'https://www.rezum-ai.com/blog',
             publisher: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
               logo: {
                 '@type': 'ImageObject',
-                url: 'https://yourdomain.com/images/logo.png',
+                url: 'https://www.rezum-ai.com/images/logo.png',
               },
             },
             mainEntityOfPage: {
               '@type': 'WebPage',
-              '@id': 'https://yourdomain.com/blog',
+              '@id': 'https://www.rezum-ai.com/blog',
             },
             about: [
               {
@@ -113,7 +113,7 @@ export default function BlogLayout({
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'Rezum AI',
-            url: 'https://yourdomain.com',
+            url: 'https://www.rezum-ai.com',
             sameAs: [
               'https://twitter.com/kolabai',
               'https://linkedin.com/company/rezum-ai',

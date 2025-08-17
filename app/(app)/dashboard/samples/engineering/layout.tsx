@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Engineering Resume & Cover Letter Samples - Professional Templates | Rezum AI',
     description: 'Technical engineering resume and cover letter templates for mechanical, electrical, civil, and software engineers. Professional engineering designs.',
-    url: 'https://rezum-app.vercel.app/dashboard/samples/engineering',
+    url: 'https://www.rezum-ai.com/dashboard/samples/engineering',
     siteName: 'Rezum AI',
     images: [
       {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rezum-app.vercel.app/dashboard/samples/engineering',
+    canonical: 'https://www.rezum-ai.com/dashboard/samples/engineering',
   },
 };
 
@@ -72,7 +72,7 @@ export default function EngineeringSamplesLayout({
             '@type': 'WebPage',
             name: 'Engineering Resume & Cover Letter Samples',
             description: 'Technical engineering resume and cover letter templates for mechanical, electrical, civil, and software engineers. Professional engineering designs.',
-            url: 'https://rezum-app.vercel.app/dashboard/samples/engineering',
+            url: 'https://www.rezum-ai.com/dashboard/samples/engineering',
             about: {
               '@type': 'Service',
               name: 'Engineering Resume & Cover Letter Template Library',
@@ -81,7 +81,7 @@ export default function EngineeringSamplesLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://rezum-app.vercel.app',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',

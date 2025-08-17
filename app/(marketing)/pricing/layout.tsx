@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Affordable Resume Builder & AI Career Tools Pricing | Rezum AI',
     description: 'Start free or choose Pro/Lifetime plans for unlimited AI-powered resume building, cover letters, and career optimization tools.',
-    url: 'https://yourdomain.com/pricing',
+    url: 'https://www.rezum-ai.com/pricing',
     siteName: 'Rezum AI',
     images: [
       {
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://yourdomain.com/pricing',
+    canonical: 'https://www.rezum-ai.com/pricing',
   },
 };
 
@@ -74,7 +74,7 @@ export default function PricingLayout({
             '@type': 'WebPage',
             name: 'Pricing Plans',
             description: 'Affordable pricing for professional resume builder and AI career tools',
-            url: 'https://yourdomain.com/pricing',
+            url: 'https://www.rezum-ai.com/pricing',
             about: {
               '@type': 'Service',
               name: 'Resume Builder & Career Tools',
@@ -83,7 +83,7 @@ export default function PricingLayout({
             provider: {
               '@type': 'Organization',
               name: 'Rezum AI',
-              url: 'https://yourdomain.com',
+              url: 'https://www.rezum-ai.com',
             },
             mainEntity: {
               '@type': 'ItemList',
@@ -199,7 +199,7 @@ export default function PricingLayout({
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'Rezum AI',
-            url: 'https://yourdomain.com',
+            url: 'https://www.rezum-ai.com',
             sameAs: [
               'https://twitter.com/kolabai',
               'https://linkedin.com/company/rezum-ai',
@@ -207,7 +207,7 @@ export default function PricingLayout({
             contactPoint: {
               '@type': 'ContactPoint',
               contactType: 'Customer Service',
-              email: 'support@yourdomain.com',
+              email: 'support@rezum-ai.com',
             },
             offers: {
               '@type': 'AggregateOffer',
