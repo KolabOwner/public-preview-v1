@@ -76,7 +76,6 @@ export async function POST(request: NextRequest) {
       jobTitle: jobInfo.title,
       jobDescription: jobInfo.description,
       companyName: jobInfo.company || '',
-      missingKeywords: missingKeywords
     });
     
     // The optimizedFields from our new implementation contains the ENTIRE optimized resume
