@@ -115,7 +115,7 @@ export async function generateUserProfileMetadata({
     ],
     image: user.avatar,
     url: `https://www.rezum-ai.com/profile/${params.username}`,
-    type: 'profile',
+    type: 'website',
     author: user.name,
   });
 }
