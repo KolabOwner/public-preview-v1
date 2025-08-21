@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { Loader, Check, X, RefreshCw, Edit3, ChevronDown, AlertCircle } from 'lucide-react';
+import { Loader, Check, X, Edit3, ChevronDown, AlertCircle } from 'lucide-react';
 import { useJobInfo } from '@/contexts/job-info-context';
 import { useAuth } from '@/contexts/firebase-auth-context';
 import { doc, updateDoc } from 'firebase/firestore';

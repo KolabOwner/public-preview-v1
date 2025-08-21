@@ -34,9 +34,12 @@ function ResumePreviewContent() {
   const searchParams = useSearchParams();
   const resumeId = params.resumeId as string;
   const { user } = useAuth();
-  const { targetingComplete, isTargeting } = useJobInfo();
+  const { targetingComplete, isTargeting, jobInfo, hasJobInfo } = useJobInfo();
   const { toast } = useToast();
   const isPDFMode = searchParams.get('pdf') === 'true';
+  
+  // Only show editor panel if job info exists and has missing keywords to process
+  const shouldShowEditorPanel = hasJobInfo && jobInfo?.missingKeywords && jobInfo.missingKeywords.length > 0;
 
   // Callback to trigger typewriter effect when bullets are added
   const handleBulletAdded = useCallback((experienceIndex: number, newBullet: string) => {
@@ -173,6 +176,7 @@ function ResumePreviewContent() {
           resumeData={processedResumeData}
           resumeId={resume!.id}
           showJobPanels={!isPDFMode}
+          showEditorPanel={shouldShowEditorPanel && !isPDFMode}
           onBulletAdded={handleBulletAdded}
           typewriterBullet={typewriterBullet}
           onTypewriterComplete={handleTypewriterComplete}
@@ -216,6 +220,7 @@ function ResumePreviewContent() {
       resumeData={processedResumeData}
       resumeId={resume.id}
       showJobPanels={!isPDFMode} // Hide panels in PDF mode
+      showEditorPanel={shouldShowEditorPanel && !isPDFMode}
       onBulletAdded={handleBulletAdded}
       typewriterBullet={typewriterBullet}
       onTypewriterComplete={handleTypewriterComplete}

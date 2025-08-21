@@ -23,6 +23,7 @@ interface ResumePreviewProps {
   resumeData: Record<string, any>;
   resumeId: string;
   showJobPanels?: boolean;
+  showEditorPanel?: boolean;
   className?: string;
   initialTemplate?: string;
   onBulletAdded?: (experienceIndex: number, newBullet: string) => void;
@@ -85,6 +86,7 @@ export default function ResumePreview({
   resumeData,
   resumeId,
   showJobPanels = true,
+  showEditorPanel = true,
   className = "",
   initialTemplate = 'professional',
   onBulletAdded,
@@ -1686,12 +1688,14 @@ export default function ResumePreview({
                 resumeId={resumeId}
                 className="shadow-lg"
               />
-              <ResumeEditorPanel
-                resumeData={resumeData}
-                resumeId={resumeId}
-                onBulletAdded={handleBulletAdded}
-                className="shadow-lg"
-              />
+              {showEditorPanel && (
+                <ResumeEditorPanel
+                  resumeData={resumeData}
+                  resumeId={resumeId}
+                  onBulletAdded={handleBulletAdded}
+                  className="shadow-lg"
+                />
+              )}
               <JobPanelWrapper />
               <SharePanel
                 resumeId={resumeId}
