@@ -529,10 +529,39 @@ export default function ResumePreview({
     website: resumeData.rms_contact_website || '',
     city: resumeData.rms_contact_city || '',
     state: resumeData.rms_contact_state || '',
-    country: resumeData.rms_contact_country || resumeData.rms_contact_countrycode || ''
+    country: resumeData.rms_contact_country || resumeData.rms_contact_countrycode || '',
+    // Visibility settings (default to true if not set)
+    showCity: resumeData.rms_contact_show_city !== false,
+    showState: resumeData.rms_contact_show_state !== false,
+    showCountry: resumeData.rms_contact_show_country !== false
   };
   
   const fullName = contact.fullName;
+
+  // Helper function to build location string based on visibility settings
+  const buildLocationString = () => {
+    const parts = [];
+    
+    // Build city, state part
+    if (contact.city && contact.showCity) {
+      if (contact.state && contact.showState) {
+        parts.push(`${contact.city}, ${contact.state}`);
+      } else {
+        parts.push(contact.city);
+      }
+    } else if (contact.state && contact.showState) {
+      parts.push(contact.state);
+    }
+    
+    // Add country if visible and not United States
+    if (contact.country && contact.showCountry && contact.country !== 'United States') {
+      parts.push(contact.country);
+    }
+    
+    return parts.join(', ');
+  };
+
+  const locationString = buildLocationString();
 
   // Resume content component
   const ResumeContent = memo(() => {
@@ -1347,11 +1376,10 @@ export default function ResumePreview({
                   justifyContent: 'center'
                 })
               }}>
-                {contact.city && contact.state && (
+                {locationString && (
                   <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
                     {documentSettings.showIcons && <ContactIcon type="location" color={inlineStyles.contact.color} />}
-                    <span>{contact.city}, {contact.state}</span>
-                    {contact.country && contact.country !== 'United States' && <span>, {contact.country}</span>}
+                    <span>{locationString}</span>
                     {!documentSettings.showIcons && (contact.email || contact.phone || contact.linkedin || contact.website) && <span> • </span>}
                   </span>
                 )}
@@ -1427,11 +1455,10 @@ export default function ResumePreview({
                 justifyContent: 'center'
               })
             }}>
-              {contact.city && contact.state && (
+              {locationString && (
                 <span className={documentSettings.showIcons ? 'flex flex-row items-center gap-1' : ''}>
                   {documentSettings.showIcons && <ContactIcon type="location" color={inlineStyles.contact.color} />}
-                  <span>{contact.city}, {contact.state}</span>
-                  {contact.country && contact.country !== 'United States' && <span>, {contact.country}</span>}
+                  <span>{locationString}</span>
                   {!documentSettings.showIcons && (contact.email || contact.phone || contact.linkedin || contact.website) && <span> • </span>}
                 </span>
               )}
