@@ -61,12 +61,14 @@ const TemplateImage = React.memo(({ src, alt, className = "", priority = false }
     <Image
       src={src}
       alt={alt}
-      fill
-      className="object-contain object-top transition-opacity duration-300"
+      width={1632}
+      height={2112}
+      className="w-full h-full object-contain object-top transition-opacity duration-300"
       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 50vw"
       priority={priority}
       quality={95}
       loading={priority ? 'eager' : 'lazy'}
+      style={{ padding: 0, margin: 0 }}
     />
   </div>
 ));
@@ -89,14 +91,14 @@ const FeatureBadge = React.memo(({ icon, title, description }: FeatureBadgeProps
 FeatureBadge.displayName = 'FeatureBadge';
 
 // Navigation Button Component
-const NavigationButton = React.memo(({ 
-  direction, 
-  onClick, 
-  disabled = false 
-}: { 
-  direction: 'prev' | 'next'; 
-  onClick: () => void; 
-  disabled?: boolean; 
+const NavigationButton = React.memo(({
+  direction,
+  onClick,
+  disabled = false
+}: {
+  direction: 'prev' | 'next';
+  onClick: () => void;
+  disabled?: boolean;
 }) => (
   <Button
     variant="outline"
@@ -198,15 +200,15 @@ const ResumeTemplateShowcase = () => {
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: { duration: 0.4, ease: "easeOut" }
     }
   };
 
   return (
-    <section 
+    <section
       className="py-24 bg-white relative overflow-hidden"
       aria-label="Resume template showcase"
     >
@@ -217,7 +219,7 @@ const ResumeTemplateShowcase = () => {
         <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-corporate-navy-500/3 rounded-full blur-2xl animate-bounce"></div>
         <div className="absolute inset-0 bg-grid-black opacity-[0.01]"></div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Corporate Header */}
         <motion.div
@@ -233,8 +235,8 @@ const ResumeTemplateShowcase = () => {
               <span className="text-corporate-navy-700 font-medium">Template Gallery</span>
             </div>
           </motion.div>
-          
-          <motion.h2 
+
+          <motion.h2
             variants={cardVariants}
             className="text-5xl md:text-7xl font-bold leading-tight mb-8"
           >
@@ -243,8 +245,8 @@ const ResumeTemplateShowcase = () => {
               Resume Templates
             </span>
           </motion.h2>
-          
-          <motion.p 
+
+          <motion.p
             variants={cardVariants}
             className="text-xl text-corporate-navy-600 leading-relaxed max-w-3xl mx-auto"
           >
@@ -278,9 +280,9 @@ const ResumeTemplateShowcase = () => {
                     </Badge>
                   </div>
                 )}
-                
+
                 <CardContent className="p-0">
-                  <div className="relative h-[400px] sm:h-[500px] md:h-[600px] lg:h-[800px]">
+                  <div className="relative w-full overflow-hidden" style={{ aspectRatio: '1632/2112' }}>
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={currentTemplate.id}
@@ -290,8 +292,8 @@ const ResumeTemplateShowcase = () => {
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                         className="absolute inset-0"
                       >
-                        <TemplateImage 
-                          src={currentTemplate.imageSrc} 
+                        <TemplateImage
+                          src={currentTemplate.imageSrc}
                           alt={currentTemplate.name}
                           priority={currentIndex === 0}
                         />

@@ -162,37 +162,54 @@ const HeroContent = memo(() => {
 
 HeroContent.displayName = 'HeroContent';
 
-// 3D Resume Header Bar Component
+// 3D Resume Header Bar Component - Refined to match actual editor
 const ResumeHeaderBar = memo(() => {
   return (
-    <div className="w-full bg-gradient-to-r from-slate-800 to-slate-700 p-3 rounded-t-2xl border-b border-slate-600" role="toolbar" aria-label="Resume editing toolbar">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <FileText className="w-5 h-5 text-blue-400" aria-hidden="true" />
-            <span className="text-white font-medium">Resume.pdf</span>
+    <div className="w-full bg-white/80 backdrop-blur-sm border border-gray-200 rounded-t-lg shadow-sm" role="toolbar" aria-label="Resume editing toolbar">
+      <div className="flex items-center justify-between px-3 py-2">
+        {/* Left Section - Control Buttons */}
+        <div className="flex items-center gap-2">
+          {/* Auto-adjust button (primary action) */}
+          <div className="flex items-center gap-1 bg-blue-600 text-white rounded text-[9px] px-2 py-1 font-medium">
+            <Zap className="w-3 h-3" />
+            <span>Auto-adjust</span>
           </div>
-          <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
-            ATS Optimized
+          
+          {/* Adjustments button */}
+          <div className="flex items-center gap-1 bg-white border border-gray-200 text-gray-700 rounded text-[9px] px-2 py-1 font-medium hover:bg-gray-50">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>Adjustments</span>
+          </div>
+          
+          {/* Templates button */}
+          <div className="flex items-center gap-1 bg-white border border-gray-200 text-gray-700 rounded text-[9px] px-2 py-1 font-medium hover:bg-gray-50">
+            <FileText className="w-3 h-3" />
+            <span>Templates</span>
+          </div>
+        </div>
+
+        {/* Center Section - Resume Name */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-semibold text-gray-900">Alex_Chen_Resume.pdf</span>
+          <Badge className="bg-green-50 text-green-700 border-green-200 text-[8px] px-1.5 py-0.5">
+            ATS Ready
           </Badge>
         </div>
-        <div className="flex items-center space-x-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-slate-300 hover:text-white hover:bg-slate-700/50"
-            aria-label="View resume statistics"
-          >
-            <BarChart3 className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-slate-300 hover:text-white hover:bg-slate-700/50"
-            aria-label="Download resume"
-          >
-            <Download className="w-4 h-4" />
-          </Button>
+
+        {/* Right Section - Download Button */}
+        <div className="flex items-center">
+          <div className="flex items-center bg-blue-600 text-white rounded text-[9px] font-medium overflow-hidden">
+            <div className="flex items-center gap-1 px-2 py-1 hover:bg-blue-700">
+              <Download className="w-3 h-3" />
+              <span>Download PDF</span>
+            </div>
+            <div className="border-l border-blue-700 px-1 py-1 hover:bg-blue-700">
+              <ChevronDown className="w-3 h-3" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -201,77 +218,86 @@ const ResumeHeaderBar = memo(() => {
 
 ResumeHeaderBar.displayName = 'ResumeHeaderBar';
 
-// Keywords Panel Component - Realistic Mini Version
+// Keywords Panel Component - Realistic Mini Version matching actual panel design
 const KeywordsPanel3D = memo(({ keywords }: { keywords: KeywordItem[] }) => {
   const matchedKeywords = keywords.filter(k => k.matched);
   const missingKeywords = keywords.filter(k => !k.matched);
 
   return (
-    <Card 
-      className="bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-250" 
-      style={{ width: '120px', height: 'fit-content' }}
+    <div 
+      className="bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200" 
+      style={{ width: '140px' }}
       role="complementary" 
       aria-labelledby="keywords-panel-title"
     >
-      <CardHeader className="pb-1 px-2 pt-2">
-        <div className="flex items-center gap-1 mb-1">
-          <div className="w-3 h-3 bg-blue-100 rounded flex items-center justify-center">
-            <Target className="w-2 h-2 text-blue-600" aria-hidden="true" />
-          </div>
-          <CardTitle id="keywords-panel-title" className="text-[10px] font-semibold text-gray-900">
-            Keywords
-          </CardTitle>
-        </div>
-      </CardHeader>
-
-      <CardContent className="px-2 pb-2 pt-0">
-        {/* Matched Keywords Section */}
+      {/* Keywords list with dividers */}
+      <div className="divide-y divide-gray-100">
+        {/* Header for matched keywords */}
         {matchedKeywords.length > 0 && (
-          <div className="mb-2">
-            <p className="text-[8px] text-gray-600 mb-1 font-medium">
-              Already included:
-            </p>
-            <div className="space-y-0.5" role="list" aria-label="Matched keywords">
-              {matchedKeywords.slice(0, 6).map((keyword, index) => (
-                <div key={index} className="flex items-center justify-between px-1 py-0.5 hover:bg-gray-50 transition-colors rounded" role="listitem">
-                  <span className="font-medium text-gray-900 truncate text-[8px] capitalize">{keyword.text}</span>
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></div>
-                </div>
-              ))}
+          <>
+            <div className="px-3 py-2 text-[7px] leading-tight text-gray-600">
+              Great! Your resume includes these:
             </div>
-          </div>
+            {matchedKeywords.slice(0, 3).map((keyword, index) => (
+              <div key={`matched-${index}`} className="flex justify-between items-center px-3 py-1 hover:bg-gray-50">
+                <span className="text-[8px] font-semibold capitalize text-gray-900">
+                  {keyword.text}
+                </span>
+                <div className="w-1.5 h-1.5 bg-green-500 fill-green-500 rounded-full flex-shrink-0" />
+              </div>
+            ))}
+          </>
         )}
-
-        {/* Missing Keywords Section */}
+        
+        {/* Header for missing keywords */}
         {missingKeywords.length > 0 && (
-          <div>
-            <p className="text-[8px] text-gray-600 mb-1 font-medium">
-              Add to resume:
-            </p>
-            <div className="space-y-0.5" role="list" aria-label="Missing keywords">
-              {missingKeywords.slice(0, 6).map((keyword, index) => (
-                <div key={index} className="flex items-center justify-between px-1 py-0.5 hover:bg-gray-50 transition-colors rounded" role="listitem">
-                  <span className="font-medium text-gray-900 truncate text-[8px] capitalize">{keyword.text}</span>
-                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full flex-shrink-0"></div>
-                </div>
-              ))}
+          <>
+            <div className="px-3 py-2 text-[7px] leading-tight text-gray-600">
+              Want to improve your chances? Add these keywords:
             </div>
-          </div>
+            {missingKeywords.slice(0, 5).map((keyword, index) => (
+              <div key={`missing-${index}`} className="flex justify-between items-center px-3 py-1 hover:bg-gray-50">
+                <span className="text-[8px] font-semibold capitalize text-gray-900">
+                  {keyword.text}
+                </span>
+                <div className="w-1.5 h-1.5 bg-gray-300 opacity-40 rounded-full flex-shrink-0" />
+              </div>
+            ))}
+          </>
         )}
 
-        {/* See More Link */}
-        <div className="text-center">
-          <button className="text-blue-600 hover:text-blue-700 text-[6px] font-medium transition-colors">
-            See more (35)
-          </button>
-        </div>
+        {/* Pro keywords (blurred) */}
+        {[1, 2].map((_, index) => (
+          <div key={`pro-${index}`} className="flex justify-between items-center px-3 py-1">
+            <span className="flex items-center gap-1">
+              <span className="text-[8px] font-semibold text-gray-300 bg-gray-300 px-1 rounded blur-sm select-none">
+                hidden keyword
+              </span>
+              <span className="text-[6px] font-bold text-gray-500">PRO</span>
+            </span>
+            <div className="w-3 h-3 text-gray-400">
+              <svg className="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+        ))}
+      </div>
 
-        {/* Update Job Button */}
-        <button className="w-full px-2 py-1 bg-white border border-gray-300 text-gray-900 rounded text-[7px] font-medium hover:bg-gray-50 transition-colors">
+      {/* Show more button */}
+      <div className="px-3 py-2 border-t border-gray-200">
+        <button className="text-[7px] font-medium text-blue-600 hover:text-blue-700">
+          Show all 35 keywords
+        </button>
+      </div>
+
+      {/* Update job description button */}
+      <div className="px-3 pb-3 pt-2">
+        <button className="w-full bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 px-2 py-1 rounded text-[7px] font-bold uppercase">
           Update job description
         </button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });
 
@@ -618,71 +644,129 @@ const ResumePreview3D = memo(({ resumeData, selectedColor, highlightKeywords }: 
 
 ResumePreview3D.displayName = 'ResumePreview3D';
 
-// ATS Score Display Component - Realistic Mini Version
-const ATSScore3D = memo(({ atsScore, isAnimating }: { atsScore: number; isAnimating: boolean }) => {
-  const getScoreStatus = (score: number) => {
-    if (score >= 90) return { label: 'Excellent', color: 'text-teal-600', bgColor: 'bg-teal-500' };
-    if (score >= 75) return { label: 'Good', color: 'text-amber-600', bgColor: 'bg-amber-500' };
-    return { label: 'Needs Work', color: 'text-red-600', bgColor: 'bg-red-500' };
-  };
-
-  const scoreStatus = getScoreStatus(atsScore);
+// Mini Gauge Chart Component for ATS Score
+const MiniGaugeChart = ({ score, size = 100 }: { score: number; size?: number }) => {
+  const radius = size / 2;
+  const strokeWidth = 8; // Thicker stroke for visibility at small size
+  const normalizedRadius = radius - strokeWidth;
+  const circumference = normalizedRadius * Math.PI; // Half circle
+  
+  // Calculate rotation angle for needle
+  const rotation = (score / 100) * 180;
+  
+  // Calculate stroke dash offset for the progress arc
+  const progressOffset = circumference - (score / 100) * circumference;
 
   return (
-    <Card
-      className="bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-250"
-      style={{ width: '120px', height: 'fit-content' }}
+    <div className="relative" style={{ width: size, height: size / 2 + 10 }}>
+      <div className="overflow-hidden" style={{ width: size, height: size / 2 }}>
+        <svg
+          width={size}
+          height={size}
+          viewBox={`0 0 ${size} ${size}`}
+          className="absolute top-0 left-0"
+        >
+          <defs>
+            <linearGradient id="miniGaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#EF4444" />
+              <stop offset="35%" stopColor="#EF4444" />
+              <stop offset="35%" stopColor="#F59E0B" />
+              <stop offset="70%" stopColor="#F59E0B" />
+              <stop offset="70%" stopColor="#14B8A6" />
+              <stop offset="100%" stopColor="#14B8A6" />
+            </linearGradient>
+          </defs>
+
+          {/* Background track */}
+          <path
+            d={`M ${strokeWidth} ${radius} A ${normalizedRadius} ${normalizedRadius} 0 0 1 ${size - strokeWidth} ${radius}`}
+            fill="none"
+            stroke="#E5E7EB"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            opacity="0.4"
+          />
+
+          {/* Active progress arc */}
+          <path
+            d={`M ${strokeWidth} ${radius} A ${normalizedRadius} ${normalizedRadius} 0 0 1 ${size - strokeWidth} ${radius}`}
+            fill="none"
+            stroke="url(#miniGaugeGradient)"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={progressOffset}
+            className="transition-all duration-1000 ease-out"
+          />
+        </svg>
+      </div>
+
+      {/* Needle */}
+      <div
+        className="absolute transition-transform duration-1000 ease-in-out"
+        style={{
+          transformOrigin: `${radius}px ${radius}px`,
+          transform: `rotate(${rotation - 90}deg)`,
+          width: size,
+          height: size,
+          top: 0,
+          left: 0
+        }}
+      >
+        <div
+          className="absolute bg-gray-900 rounded-full"
+          style={{
+            width: 2,
+            height: radius - 20,
+            top: 15,
+            left: radius - 1,
+            transformOrigin: '50% 100%'
+          }}
+        />
+      </div>
+
+      {/* Center dot */}
+      <div
+        className="absolute rounded-full border border-gray-900 bg-white"
+        style={{
+          width: 8,
+          height: 8,
+          top: radius - 4,
+          left: radius - 4
+        }}
+      />
+
+      {/* Score display */}
+      <div className="absolute bottom-0 w-full text-center">
+        <div className="text-lg font-bold text-gray-900">{score}</div>
+        <div className="text-[7px] font-medium text-gray-600">
+          {score >= 85 ? 'Excellent' : score >= 70 ? 'Good' : 'Needs improvement'}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ATS Score Display Component - Realistic Mini Version matching actual panel
+const ATSScore3D = memo(({ atsScore, isAnimating }: { atsScore: number; isAnimating: boolean }) => {
+  return (
+    <div
+      className="bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200 p-3"
+      style={{ width: '140px' }}
       role="complementary"
       aria-labelledby="ats-score-title"
     >
-      <CardHeader className="pb-1 px-2 pt-2">
-        <div className="flex items-center gap-1 mb-1">
-          <div className="w-3 h-3 bg-blue-100 rounded flex items-center justify-center">
-            <BarChart3 className="w-2 h-2 text-blue-600" aria-hidden="true" />
-          </div>
-          <CardTitle id="ats-score-title" className="text-[10px] font-semibold text-gray-900">
-            ATS Score
-          </CardTitle>
+      <div className="flex flex-col gap-3 justify-center items-center">
+        <div className="h-[60px] w-[100px]">
+          <MiniGaugeChart score={atsScore} />
         </div>
-        <CardDescription className="text-[8px] text-gray-600">
-          Resume optimization
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="px-2 pb-2 pt-0">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-baseline gap-1">
-            <span className="text-lg font-bold text-gray-900">
-              {atsScore}
-            </span>
-            <span className="text-[8px] text-gray-500">/100</span>
-          </div>
-          <div className={`text-[8px] font-medium ${scoreStatus.color}`}>
-            {scoreStatus.label}
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-2">
-          <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-1000 ease-out ${scoreStatus.bgColor} ${isAnimating ? 'animate-pulse' : ''}`}
-              style={{ width: `${atsScore}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-0.5">
-            <span className="text-[7px] text-gray-400">0</span>
-            <span className="text-[7px] text-gray-400">100</span>
-          </div>
-        </div>
-
-        {/* Explore Score Button */}
-        <button className="w-full px-2 py-1 bg-blue-600 text-white rounded text-[8px] font-medium flex items-center justify-center gap-1 hover:bg-blue-700 transition-colors">
-          <TrendingUp className="w-2 h-2" />
-          <span>Explore Score</span>
+        
+        <button className="w-full bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 px-2 py-1.5 rounded text-[7px] font-bold uppercase flex items-center justify-center gap-1">
+          <Sparkles className="w-3 h-3 text-corporate-amber-600" />
+          <span>Explore My ATS Score</span>
         </button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });
 
@@ -886,8 +970,8 @@ const resumeData: ResumeData = {
 
           {/* Right Side - 3D Resume Showcase (Desktop Only) */}
           <div className="order-2 lg:order-2 hidden lg:block">
-            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden shadow-2xl p-4 lg:p-6"
-                 style={{ minHeight: '420px' }}
+            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden shadow-2xl p-6 lg:p-8"
+                 style={{ minHeight: '480px' }}
                  role="region"
                  aria-label="3D Resume showcase demonstration">
               {/* Enhanced Background Effects */}
@@ -898,9 +982,9 @@ const resumeData: ResumeData = {
 
               {/* Desktop 3D Content Grid */}
               <div className="relative z-10 flex items-center justify-center h-full w-full max-w-full">
-                <div className="flex gap-3 xl:gap-4 items-start justify-center w-full">
+                <div className="flex gap-4 items-start justify-center w-full">
                   {/* Resume Preview - Center */}
-                  <div className="flex-shrink-0 min-w-0 mx-auto">
+                  <div className="flex-shrink-0 min-w-0">
                     <Suspense fallback={<LoadingSpinner />}>
                       <ResumePreview3D
                         resumeData={resumeData}
@@ -911,7 +995,7 @@ const resumeData: ResumeData = {
                   </div>
 
                   {/* Side Panels - Right */}
-                  <div className="flex flex-col space-y-2 w-32 flex-shrink-0 min-w-0">
+                  <div className="flex flex-col space-y-3 flex-shrink-0 min-w-0">
                     <Suspense fallback={<LoadingSpinner />}>
                       <ATSScore3D atsScore={atsScore} isAnimating={isAnimating} />
                     </Suspense>
