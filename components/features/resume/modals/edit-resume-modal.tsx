@@ -226,18 +226,26 @@ export default function EditResumeModal({
         isTargeted,
         updatedAt: serverTimestamp()
       };
-      // Update job targeting info if enabled
-      if (isTargeted) {
+      // Only update job_info if the targeting toggle has been changed from initial state
+      // or if targeting is enabled and job fields have been modified
+      if (isTargeted && (isTargeted !== resumeData.isTargeted || 
+          jobTitle.trim() !== (resumeData.job_info?.title || '') ||
+          companyName.trim() !== (resumeData.job_info?.company || '') ||
+          jobDescription.trim() !== (resumeData.job_info?.description || ''))) {
         updateData.job_info = {
+          // Preserve existing job_info structure including analysis data
+          ...resumeData.job_info,
+          // Only update the user-editable fields
           title: jobTitle.trim(),
           company: companyName.trim(),
           description: jobDescription.trim(),
           updated_at: new Date().toISOString()
         };
-      } else {
-        // Remove job_info if targeting is disabled
+      } else if (!isTargeted && isTargeted !== resumeData.isTargeted) {
+        // Only remove job_info if the user explicitly disabled targeting
         updateData.job_info = null;
       }
+      // If no targeting changes were made, preserve existing job_info by not updating it
       await updateDoc(resumeRef, updateData);
       // Create updated resume data for callback
       const updatedResumeData: ResumeData = {

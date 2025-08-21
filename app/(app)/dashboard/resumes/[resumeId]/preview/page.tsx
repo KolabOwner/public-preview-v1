@@ -37,7 +37,7 @@ function ResumePreviewContent() {
   const { targetingComplete, isTargeting, jobInfo, hasJobInfo } = useJobInfo();
   const { toast } = useToast();
   const isPDFMode = searchParams.get('pdf') === 'true';
-  
+
   // Only show editor panel if job info exists and has missing keywords to process
   const shouldShowEditorPanel = hasJobInfo && jobInfo?.missingKeywords && jobInfo.missingKeywords.length > 0;
 
@@ -52,18 +52,18 @@ function ResumePreviewContent() {
     // Update the actual resume data after typewriter completes
     setProcessedResumeData((prev: any) => {
       if (!prev) return prev;
-      
+
       const currentDescription = prev[`rms_experience_${experienceIndex}_description`] || '';
       const bullets = currentDescription.split('\n').filter((b: string) => b.trim());
       const newBullets = [...bullets, `•${newBullet}`];
       const newDescription = newBullets.join('\n');
-      
+
       return {
         ...prev,
         [`rms_experience_${experienceIndex}_description`]: newDescription
       };
     });
-    
+
     // Clear typewriter state
     setTypewriterBullet(null);
   }, []);
@@ -101,9 +101,9 @@ function ResumePreviewContent() {
         ...resumeData,
         id: resumeSnap.id
       };
-      
+
       setResume(resumeWithId);
-      
+
       // Process the resume data initially
       const processed = resumeData.parsedData || processRMSData(resumeData.rmsRawData) || resumeData;
       setProcessedResumeData(processed);
@@ -124,7 +124,7 @@ function ResumePreviewContent() {
     if (targetingComplete) {
       console.log('Resume targeting complete, refreshing data...');
       fetchResume();
-      
+
       // Show success notification
       toast({
         title: 'Resume Optimized Successfully!',
